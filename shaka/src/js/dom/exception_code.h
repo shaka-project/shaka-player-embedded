@@ -31,11 +31,17 @@ enum ExceptionCode {
   HierarchyRequestError,
 
   // IndexedDB.
+  AbortError,
+  ConstraintError,
   DataCloneError,
-  UnknownError,
-  TransactionInactiveError,
+  DataError,
+  InvalidAccessError,
   ReadOnlyError,
+  TransactionInactiveError,
+  UnknownError,
   VersionError,
+
+  MaxExceptionCode,  // Must remain last.
 };
 
 

@@ -20,44 +20,49 @@
 namespace shaka {
 namespace js {
 
-#define DEFINE_EVENTS_(DEFINE_EVENT)                   \
-  DEFINE_EVENT(Abort, "abort")                         \
-  DEFINE_EVENT(Error, "error")                         \
-  DEFINE_EVENT(ReadyStateChange, "readystatechange")   \
-  /** Media events */                                  \
-  DEFINE_EVENT(CanPlay, "canplay")                     \
-  DEFINE_EVENT(LoadedMetaData, "loadedmetadata")       \
-  DEFINE_EVENT(LoadedData, "loadeddata")               \
-  DEFINE_EVENT(Waiting, "waiting")                     \
-  DEFINE_EVENT(Emptied, "emptied")                     \
-  DEFINE_EVENT(Play, "play")                           \
-  DEFINE_EVENT(Playing, "playing")                     \
-  DEFINE_EVENT(Pause, "pause")                         \
-  DEFINE_EVENT(Seeked, "seeked")                       \
-  DEFINE_EVENT(Seeking, "seeking")                     \
-  DEFINE_EVENT(Ended, "ended")                         \
-  DEFINE_EVENT(CueChange, "cuechange")                 \
-  /* EME events. */                                    \
-  DEFINE_EVENT(KeyStatusesChange, "keystatuseschange") \
-  DEFINE_EVENT(Message, "message")                     \
-  DEFINE_EVENT(WaitingForKey, "waitingforkey")         \
-  DEFINE_EVENT(Encrypted, "encrypted")                 \
-  /* Progress tracking */                              \
-  DEFINE_EVENT(Load, "load")                           \
-  DEFINE_EVENT(LoadStart, "loadstart")                 \
-  DEFINE_EVENT(LoadEnd, "loadend")                     \
-  DEFINE_EVENT(Progress, "progress")                   \
-  DEFINE_EVENT(Update, "update")                       \
-  DEFINE_EVENT(UpdateStart, "updatestart")             \
-  DEFINE_EVENT(UpdateEnd, "updateend")                 \
-  /* XMLHttpRequest */                                 \
-  DEFINE_EVENT(Timeout, "timeout")                     \
-  /* MSE */                                            \
-  DEFINE_EVENT(SourceOpen, "sourceopen")               \
-  DEFINE_EVENT(SourceEnded, "sourceended")             \
-  DEFINE_EVENT(SourceClose, "sourceclose")             \
-  DEFINE_EVENT(AddSourceBuffer, "addsourcebuffer")     \
-  DEFINE_EVENT(RemoveSourceBuffer, "removesourcebuffer")
+#define DEFINE_EVENTS_(DEFINE_EVENT)                     \
+  DEFINE_EVENT(Abort, "abort")                           \
+  DEFINE_EVENT(Error, "error")                           \
+  DEFINE_EVENT(ReadyStateChange, "readystatechange")     \
+  /** Media events */                                    \
+  DEFINE_EVENT(CanPlay, "canplay")                       \
+  DEFINE_EVENT(LoadedMetaData, "loadedmetadata")         \
+  DEFINE_EVENT(LoadedData, "loadeddata")                 \
+  DEFINE_EVENT(Waiting, "waiting")                       \
+  DEFINE_EVENT(Emptied, "emptied")                       \
+  DEFINE_EVENT(Play, "play")                             \
+  DEFINE_EVENT(Playing, "playing")                       \
+  DEFINE_EVENT(Pause, "pause")                           \
+  DEFINE_EVENT(Seeked, "seeked")                         \
+  DEFINE_EVENT(Seeking, "seeking")                       \
+  DEFINE_EVENT(Ended, "ended")                           \
+  DEFINE_EVENT(CueChange, "cuechange")                   \
+  /* EME events. */                                      \
+  DEFINE_EVENT(KeyStatusesChange, "keystatuseschange")   \
+  DEFINE_EVENT(Message, "message")                       \
+  DEFINE_EVENT(WaitingForKey, "waitingforkey")           \
+  DEFINE_EVENT(Encrypted, "encrypted")                   \
+  /* Progress tracking */                                \
+  DEFINE_EVENT(Load, "load")                             \
+  DEFINE_EVENT(LoadStart, "loadstart")                   \
+  DEFINE_EVENT(LoadEnd, "loadend")                       \
+  DEFINE_EVENT(Progress, "progress")                     \
+  DEFINE_EVENT(Update, "update")                         \
+  DEFINE_EVENT(UpdateStart, "updatestart")               \
+  DEFINE_EVENT(UpdateEnd, "updateend")                   \
+  /* XMLHttpRequest */                                   \
+  DEFINE_EVENT(Timeout, "timeout")                       \
+  /* MSE */                                              \
+  DEFINE_EVENT(SourceOpen, "sourceopen")                 \
+  DEFINE_EVENT(SourceEnded, "sourceended")               \
+  DEFINE_EVENT(SourceClose, "sourceclose")               \
+  DEFINE_EVENT(AddSourceBuffer, "addsourcebuffer")       \
+  DEFINE_EVENT(RemoveSourceBuffer, "removesourcebuffer") \
+  /* IndexedDB */                                        \
+  DEFINE_EVENT(Complete, "complete")                     \
+  DEFINE_EVENT(Success, "success")                       \
+  DEFINE_EVENT(UpgradeNeeded, "upgradeneeded")           \
+  DEFINE_EVENT(VersionChange, "versionchange")
 
 DEFINE_ENUM_AND_TO_STRING_2(EventType, DEFINE_EVENTS_);
 #undef DEFINE_EVENTS_

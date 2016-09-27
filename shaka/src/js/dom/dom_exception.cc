@@ -44,24 +44,37 @@ struct ExceptionInfo {
     DEFINE_MAPPING(HierarchyRequestError,
                    "The operation would yield an incorrect node tree.", 3),
 
+    DEFINE_MAPPING(AbortError, "The request was aborted.", 20),
+    DEFINE_MAPPING(ConstraintError,
+                   "A mutation operation in the transaction failed because a "
+                   "constraint was not satisfied.",
+                   0),
     DEFINE_MAPPING(DataCloneError, "The object can not be cloned.", 25),
-    DEFINE_MAPPING(UnknownError,
-                   "The operation failed for an unknown transient reason (e.g. "
-                   "out of memory).",
+    DEFINE_MAPPING(DataError,
+                   "Data provided to an operation does not meet requirements.",
                    0),
-    DEFINE_MAPPING(TransactionInactiveError,
-                   "A request was placed against a transaction which is "
-                   "currently not active, or which is finished.",
-                   0),
+    DEFINE_MAPPING(InvalidAccessError,
+                   "An invalid operation was performed on an object.", 15),
     DEFINE_MAPPING(
         ReadOnlyError,
         "The mutating operation was attempted in a \"readonly\" transaction.",
         0),
+    DEFINE_MAPPING(TransactionInactiveError,
+                   "A request was placed against a transaction which is "
+                   "currently not active, or which is finished.",
+                   0),
+    DEFINE_MAPPING(UnknownError,
+                   "The operation failed for an unknown transient reason (e.g. "
+                   "out of memory).",
+                   0),
     DEFINE_MAPPING(VersionError,
                    "An attempt was made to open a database using a lower "
                    "version than the existing version.",
                    0),
 };
+static_assert(
+    sizeof(g_exception_map_) / sizeof(g_exception_map_[0]) == MaxExceptionCode,
+    "Not all exceptions appear in map");
 #undef DEFINE_MAPPING
 
 const ExceptionInfo& GetInfo(ExceptionCode type) {
