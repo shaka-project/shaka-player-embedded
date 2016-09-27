@@ -110,14 +110,14 @@ Error ConvertError(Handle<JsValue> except) {
 
   LocalVar<JsValue> code = GetMemberRaw(obj, "code");
   LocalVar<JsValue> category = GetMemberRaw(obj, "category");
-  if (GetValueType(code) != JSValueType::Number ||
-      GetValueType(category) != JSValueType::Number) {
+  if (GetValueType(code) != proto::ValueType::Number ||
+      GetValueType(category) != proto::ValueType::Number) {
     return Error(ErrorType::NonShakaError, ConvertToString(except));
   }
 
   LocalVar<JsValue> severity_val = GetMemberRaw(obj, "severity");
   int severity = 0;
-  if (GetValueType(severity_val) == JSValueType::Number)
+  if (GetValueType(severity_val) == proto::ValueType::Number)
     severity = static_cast<int>(NumberFromValue(severity_val));
 
   std::string message;
@@ -137,7 +137,7 @@ Converter<void>::variant_type CallMemberFunction(Handle<JsObject> that,
                                                  LocalVar<JsValue>* argv,
                                                  LocalVar<JsValue>* result) {
   LocalVar<JsValue> member = GetMemberRaw(that, name);
-  if (GetValueType(member) != JSValueType::Function) {
+  if (GetValueType(member) != proto::ValueType::Function) {
     return Error(ErrorType::BadMember,
                  "The member '" + name + "' is not a function.");
   }
@@ -205,7 +205,7 @@ class Player::Impl {
     const auto callback = [=]() -> Converter<void>::variant_type {
       LocalVar<JsValue> player_ctor = GetDescendant(
           JsEngine::Instance()->global_handle(), {"shaka", "Player"});
-      if (GetValueType(player_ctor) != JSValueType::Function) {
+      if (GetValueType(player_ctor) != proto::ValueType::Function) {
         LOG(ERROR) << "Cannot get 'shaka.Player' object; is "
                       "shaka-player.compiled.js corrupted?";
         return Error(ErrorType::BadMember,
@@ -385,7 +385,7 @@ AsyncResults<void> Player::SetLogLevel(JsManager* engine, LogLevel level) {
   const auto callback = [level]() -> Converter<void>::variant_type {
     LocalVar<JsValue> set_level = GetDescendant(
         JsEngine::Instance()->global_handle(), {"shaka", "log", "setLevel"});
-    if (GetValueType(set_level) != JSValueType::Function) {
+    if (GetValueType(set_level) != proto::ValueType::Function) {
       LOG(ERROR) << "Cannot get 'shaka.log.setLevel' function; is "
                     "shaka-player.compiled.js a Release build?";
       return Error(ErrorType::BadMember,
@@ -416,7 +416,7 @@ AsyncResults<Player::LogLevel> Player::GetLogLevel(JsManager* engine) {
     LocalVar<JsValue> current_level =
         GetDescendant(JsEngine::Instance()->global_handle(),
                       {"shaka", "log", "currentLevel"});
-    if (GetValueType(current_level) != JSValueType::Number) {
+    if (GetValueType(current_level) != proto::ValueType::Number) {
       LOG(ERROR) << "Cannot get 'shaka.log.currentLevel'; is "
                     "shaka-player.compiled.js a Release build?";
       return Error(ErrorType::BadMember,

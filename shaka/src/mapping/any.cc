@@ -31,14 +31,14 @@ Any& Any::operator=(Any&&) = default;
 
 bool Any::IsTruthy() const {
   switch (GetValueType(value_.handle())) {
-    case JSValueType::Undefined:
-    case JSValueType::Null:
+    case proto::ValueType::Undefined:
+    case proto::ValueType::Null:
       return false;
-    case JSValueType::String:
+    case proto::ValueType::String:
       return !ConvertToString(value_.handle()).empty();
-    case JSValueType::Boolean:
+    case proto::ValueType::Boolean:
       return BooleanFromValue(value_.handle());
-    case JSValueType::Number: {
+    case proto::ValueType::Number: {
       const double val = NumberFromValue(value_.handle());
       return !std::isnan(val) && val != 0;
     }
@@ -49,7 +49,7 @@ bool Any::IsTruthy() const {
 
 bool Any::TryConvert(Handle<JsValue> value) {
   value_ = value;
-  is_number_ = GetValueType(value_.handle()) == JSValueType::Number;
+  is_number_ = GetValueType(value_.handle()) == proto::ValueType::Number;
   return true;
 }
 

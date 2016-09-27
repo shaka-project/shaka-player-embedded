@@ -38,7 +38,7 @@ bool ParseKeyIds(const Data& data, std::vector<std::string>* base64_keyids) {
   }
   LocalVar<JsObject> data_obj = UnsafeJsCast<JsObject>(data_val);
   LocalVar<JsValue> kids = GetMemberRaw(data_obj, "kids");
-  if (GetValueType(kids) != JSValueType::Array) {
+  if (GetValueType(kids) != proto::ValueType::Array) {
     LOG(ERROR) << "Init data doesn't have valid 'kids' member.";
     return false;
   }
@@ -48,7 +48,7 @@ bool ParseKeyIds(const Data& data, std::vector<std::string>* base64_keyids) {
   base64_keyids->reserve(kid_count);
   for (size_t i = 0; i < kid_count; i++) {
     LocalVar<JsValue> entry = GetArrayIndexRaw(kids_obj, i);
-    if (GetValueType(entry) != JSValueType::String) {
+    if (GetValueType(entry) != proto::ValueType::String) {
       LOG(ERROR) << "Init data doesn't have valid 'kids' member.";
       return false;
     }
@@ -168,7 +168,7 @@ bool ParseResponse(const Data& data, std::list<KeyType>* keys) {
   }
   LocalVar<JsObject> data_obj = UnsafeJsCast<JsObject>(data_val);
   LocalVar<JsValue> keys_val = GetMemberRaw(data_obj, "keys");
-  if (GetValueType(keys_val) != JSValueType::Array) {
+  if (GetValueType(keys_val) != proto::ValueType::Array) {
     LOG(ERROR) << "License response doesn't contain a valid 'keys' member.";
     return false;
   }
@@ -185,8 +185,8 @@ bool ParseResponse(const Data& data, std::list<KeyType>* keys) {
 
     LocalVar<JsValue> k_val = GetMemberRaw(entry_obj, "k");
     LocalVar<JsValue> kid_val = GetMemberRaw(entry_obj, "kid");
-    if (GetValueType(k_val) != JSValueType::String ||
-        GetValueType(kid_val) != JSValueType::String) {
+    if (GetValueType(k_val) != proto::ValueType::String ||
+        GetValueType(kid_val) != proto::ValueType::String) {
       LOG(ERROR) << "License response contains invalid key object.";
       return false;
     }

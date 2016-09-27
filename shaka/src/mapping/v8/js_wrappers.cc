@@ -310,62 +310,62 @@ bool IsBuiltInObject(Handle<JsObject> object) {
   return ConvertToString(to_string.ToLocalChecked()) != "[object Object]";
 }
 
-JSValueType GetValueType(Handle<JsValue> value) {
+proto::ValueType GetValueType(Handle<JsValue> value) {
   if (value.IsEmpty())
-    return JSValueType::Unknown;
+    return proto::ValueType::Unknown;
   if (value->IsUndefined())
-    return JSValueType::Undefined;
+    return proto::ValueType::Undefined;
   if (value->IsNull())
-    return JSValueType::Null;
+    return proto::ValueType::Null;
   if (value->IsBoolean())
-    return JSValueType::Boolean;
+    return proto::ValueType::Boolean;
   if (value->IsNumber())
-    return JSValueType::Number;
+    return proto::ValueType::Number;
   if (value->IsString())
-    return JSValueType::String;
+    return proto::ValueType::String;
   if (value->IsSymbol())
-    return JSValueType::Symbol;
+    return proto::ValueType::Symbol;
   if (value->IsFunction())
-    return JSValueType::Function;
+    return proto::ValueType::Function;
   if (value->IsArray())
-    return JSValueType::Array;
+    return proto::ValueType::Array;
   if (value->IsPromise())
-    return JSValueType::Promise;
+    return proto::ValueType::Promise;
   if (value->IsBooleanObject())
-    return JSValueType::BooleanObject;
+    return proto::ValueType::BooleanObject;
   if (value->IsNumberObject())
-    return JSValueType::NumberObject;
+    return proto::ValueType::NumberObject;
   if (value->IsStringObject())
-    return JSValueType::StringObject;
+    return proto::ValueType::StringObject;
   if (value->IsArrayBuffer())
-    return JSValueType::ArrayBuffer;
+    return proto::ValueType::ArrayBuffer;
   if (value->IsInt8Array())
-    return JSValueType::Int8Array;
+    return proto::ValueType::Int8Array;
   if (value->IsUint8Array())
-    return JSValueType::Uint8Array;
+    return proto::ValueType::Uint8Array;
   if (value->IsUint8ClampedArray())
-    return JSValueType::Uint8ClampedArray;
+    return proto::ValueType::Uint8ClampedArray;
   if (value->IsInt16Array())
-    return JSValueType::Int16Array;
+    return proto::ValueType::Int16Array;
   if (value->IsUint16Array())
-    return JSValueType::Uint16Array;
+    return proto::ValueType::Uint16Array;
   if (value->IsInt32Array())
-    return JSValueType::Int32Array;
+    return proto::ValueType::Int32Array;
   if (value->IsUint32Array())
-    return JSValueType::Uint32Array;
+    return proto::ValueType::Uint32Array;
   if (value->IsFloat32Array())
-    return JSValueType::Float32Array;
+    return proto::ValueType::Float32Array;
   if (value->IsFloat64Array())
-    return JSValueType::Float64Array;
+    return proto::ValueType::Float64Array;
   if (value->IsDataView())
-    return JSValueType::DataView;
+    return proto::ValueType::DataView;
   if (value->IsObject())
-    return JSValueType::OtherObject;
+    return proto::ValueType::OtherObject;
 
   // The only thing a value can be is a primitive or an object.  We should
   // be checking every primitive above so it should be an object.
   LOG(WARNING) << "Unknown JavaScript value given=" << ConvertToString(value);
-  return JSValueType::Unknown;
+  return proto::ValueType::Unknown;
 }
 
 double NumberFromValue(Handle<JsValue> value) {

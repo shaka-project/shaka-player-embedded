@@ -158,32 +158,32 @@ std::string ConvertObjectToLongPrettyString(Handle<JsObject> object) {
 }
 
 std::string ConvertToPrettyString(Handle<JsValue> value, bool allow_long) {
-  const JSValueType type = GetValueType(value);
+  const proto::ValueType type = GetValueType(value);
 
   switch (type) {
-    case JSValueType::Undefined:
-    case JSValueType::Null:
-    case JSValueType::Boolean:
-    case JSValueType::Number:
+    case proto::ValueType::Undefined:
+    case proto::ValueType::Null:
+    case proto::ValueType::Boolean:
+    case proto::ValueType::Number:
       return ConvertToString(value);
 
-    case JSValueType::Function:
+    case proto::ValueType::Function:
       return "function() {...}";
 
-    case JSValueType::String: {
+    case proto::ValueType::String: {
       const std::string string = ConvertToString(value);
       return ConvertStringToPrettyString(string);
     }
-    case JSValueType::Array:
+    case proto::ValueType::Array:
       return allow_long ? ConvertArrayToLongPrettyString(value) : "[...]";
 
-    case JSValueType::Symbol:
+    case proto::ValueType::Symbol:
       return "Symbol(" + ConvertToString(value) + ")";
-    case JSValueType::BooleanObject:
+    case proto::ValueType::BooleanObject:
       return "Boolean(" + ConvertToString(value) + ")";
-    case JSValueType::NumberObject:
+    case proto::ValueType::NumberObject:
       return "Number(" + ConvertToString(value) + ")";
-    case JSValueType::StringObject:
+    case proto::ValueType::StringObject:
       return "String(" + ConvertStringToPrettyString(ConvertToString(value)) +
              ")";
 

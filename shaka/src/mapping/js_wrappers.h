@@ -21,6 +21,9 @@
 #include <vector>
 
 #include "src/util/macros.h"
+// Use the IndexedDB protobuf for ValueType so we don't have to duplicate
+// the enum here and for IndexedDB storage.
+#include "src/js/idb/database.pb.h"
 
 #if defined(USING_V8)
 #  include <v8.h>
@@ -197,50 +200,6 @@ class CallbackArguments {
 #endif
 
 
-// enum class JSValueType
-#define DEFINE_ENUM_(DEFINE)                                                   \
-  DEFINE(Undefined)                                                            \
-  DEFINE(Null)                                                                 \
-  DEFINE(Boolean)                                                              \
-  DEFINE(Number)                                                               \
-  DEFINE(String)                                                               \
-  DEFINE(Symbol)                                                               \
-  DEFINE(Function)                                                             \
-  DEFINE(Array)                                                                \
-  DEFINE(Promise)                                                              \
-                                                                               \
-  /*                                                                           \
-   * These represents native objects that wrap the given primitive value (e.g. \
-   * |new Number(2)|).                                                         \
-   */                                                                          \
-  DEFINE(BooleanObject)                                                        \
-  DEFINE(NumberObject)                                                         \
-  DEFINE(StringObject)                                                         \
-                                                                               \
-  DEFINE(ArrayBuffer)                                                          \
-  DEFINE(Int8Array)                                                            \
-  DEFINE(Uint8Array)                                                           \
-  DEFINE(Uint8ClampedArray)                                                    \
-  DEFINE(Int16Array)                                                           \
-  DEFINE(Uint16Array)                                                          \
-  DEFINE(Int32Array)                                                           \
-  DEFINE(Uint32Array)                                                          \
-  DEFINE(Float32Array)                                                         \
-  DEFINE(Float64Array)                                                         \
-  DEFINE(DataView)                                                             \
-                                                                               \
-  /*                                                                           \
-   * This is only used for objects that don't fall into any of the above       \
-   * categories.  Use IsObject() to check if it is any kind of object.         \
-   */                                                                          \
-  DEFINE(OtherObject)                                                          \
-                                                                               \
-  DEFINE(Unknown)
-
-DEFINE_ENUM_AND_TO_STRING(JSValueType, DEFINE_ENUM_);
-#undef DEFINE_ENUM_
-
-
 /** @return The number of arguments that were given. */
 inline size_t ArgumentCount(const CallbackArguments& arguments) {
 #if defined(USING_V8)
@@ -402,7 +361,7 @@ bool IsObject(Handle<JsValue> value);
 bool IsBuiltInObject(Handle<JsObject> object);
 
 /** @return The type of value contained. */
-JSValueType GetValueType(Handle<JsValue> value);
+proto::ValueType GetValueType(Handle<JsValue> value);
 
 
 ///@{
@@ -450,7 +409,7 @@ inline ReturnVal<JsValue> RawToJsValue<JsString>(Handle<JsString> source) {
 
 inline size_t ArrayLength(Handle<JsObject> value) {
 #if defined(USING_V8)
-  DCHECK_EQ(GetValueType(value), JSValueType::Array);
+  DCHECK(GetValueType(value) == proto::ValueType::Array);
   return value.As<v8::Array>()->Length();
 #elif defined(USING_JSC)
   auto* ctx = GetContext();

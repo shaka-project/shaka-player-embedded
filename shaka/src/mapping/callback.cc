@@ -27,7 +27,7 @@ Callback& Callback::operator=(const Callback&) = default;
 Callback& Callback::operator=(Callback&&) = default;
 
 bool Callback::TryConvert(Handle<JsValue> given) {
-  if (GetValueType(given) != JSValueType::Function)
+  if (GetValueType(given) != proto::ValueType::Function)
     return false;
   callback_ = UnsafeJsCast<JsFunction>(given);
   return true;

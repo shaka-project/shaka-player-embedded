@@ -146,7 +146,7 @@ void SetGenericPropertyRaw(Handle<JsObject> object, const std::string& name,
   CHECK(js_Object && IsObject(js_Object));
   LocalVar<JsValue> define_prop =
       GetMemberRaw(UnsafeJsCast<JsObject>(js_Object), "defineProperty");
-  CHECK(define_prop && GetValueType(define_prop) == JSValueType::Function);
+  CHECK(define_prop && GetValueType(define_prop) == proto::ValueType::Function);
 
   LocalVar<JsObject> props(CreateObject());
   SetMemberRaw(props, "get", getter);
@@ -294,7 +294,7 @@ ReturnVal<JsMap> CreateMap() {
 void SetMapValue(Handle<JsMap> map, Handle<JsValue> key,
                  Handle<JsValue> value) {
   LocalVar<JsValue> func_value = GetMemberRaw(map, "set");
-  DCHECK(GetValueType(func_value) == JSValueType::Function);
+  DCHECK(GetValueType(func_value) == proto::ValueType::Function);
   LocalVar<JsFunction> func = UnsafeJsCast<JsFunction>(func_value);
 
   LocalVar<JsValue> args[] = {key, value};
@@ -323,19 +323,19 @@ bool IsBuiltInObject(Handle<JsObject> object) {
   return ConvertToString(value) != "[object Object]";
 }
 
-JSValueType GetValueType(Handle<JsValue> value) {
+proto::ValueType GetValueType(Handle<JsValue> value) {
   JSContextRef cx = GetContext();
   switch (JSValueGetType(cx, value)) {
     case kJSTypeUndefined:
-      return JSValueType::Undefined;
+      return proto::ValueType::Undefined;
     case kJSTypeNull:
-      return JSValueType::Null;
+      return proto::ValueType::Null;
     case kJSTypeBoolean:
-      return JSValueType::Boolean;
+      return proto::ValueType::Boolean;
     case kJSTypeNumber:
-      return JSValueType::Number;
+      return proto::ValueType::Number;
     case kJSTypeString:
-      return JSValueType::String;
+      return proto::ValueType::String;
     case kJSTypeObject:
       break;
     default:
@@ -344,31 +344,31 @@ JSValueType GetValueType(Handle<JsValue> value) {
   // Note JSC doesn't support symbols.
 
   if (JSValueIsArray(cx, value))
-    return JSValueType::Array;
+    return proto::ValueType::Array;
   if (JSObjectIsFunction(cx, JSValueToObject(cx, value, nullptr)))
-    return JSValueType::Function;
+    return proto::ValueType::Function;
 
   switch (JSValueGetTypedArrayType(cx, value, nullptr)) {
     case kJSTypedArrayTypeArrayBuffer:
-      return JSValueType::ArrayBuffer;
+      return proto::ValueType::ArrayBuffer;
     case kJSTypedArrayTypeFloat32Array:
-      return JSValueType::Float32Array;
+      return proto::ValueType::Float32Array;
     case kJSTypedArrayTypeFloat64Array:
-      return JSValueType::Float64Array;
+      return proto::ValueType::Float64Array;
     case kJSTypedArrayTypeInt16Array:
-      return JSValueType::Int16Array;
+      return proto::ValueType::Int16Array;
     case kJSTypedArrayTypeInt32Array:
-      return JSValueType::Int32Array;
+      return proto::ValueType::Int32Array;
     case kJSTypedArrayTypeInt8Array:
-      return JSValueType::Int8Array;
+      return proto::ValueType::Int8Array;
     case kJSTypedArrayTypeUint16Array:
-      return JSValueType::Uint16Array;
+      return proto::ValueType::Uint16Array;
     case kJSTypedArrayTypeUint32Array:
-      return JSValueType::Uint32Array;
+      return proto::ValueType::Uint32Array;
     case kJSTypedArrayTypeUint8Array:
-      return JSValueType::Uint8Array;
+      return proto::ValueType::Uint8Array;
     case kJSTypedArrayTypeUint8ClampedArray:
-      return JSValueType::Uint8ClampedArray;
+      return proto::ValueType::Uint8ClampedArray;
 
     case kJSTypedArrayTypeNone:
       break;
@@ -377,15 +377,15 @@ JSValueType GetValueType(Handle<JsValue> value) {
   }
 
   if (IsInstanceOfStandardType(value, "Boolean"))
-    return JSValueType::BooleanObject;
+    return proto::ValueType::BooleanObject;
   if (IsInstanceOfStandardType(value, "String"))
-    return JSValueType::StringObject;
+    return proto::ValueType::StringObject;
   if (IsInstanceOfStandardType(value, "Number"))
-    return JSValueType::NumberObject;
+    return proto::ValueType::NumberObject;
   if (IsInstanceOfStandardType(value, "Promise"))
-    return JSValueType::Promise;
+    return proto::ValueType::Promise;
 
-  return JSValueType::OtherObject;
+  return proto::ValueType::OtherObject;
 }
 
 double NumberFromValue(Handle<JsValue> value) {

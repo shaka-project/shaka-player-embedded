@@ -1,0 +1,88 @@
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto2";
+
+package shaka.proto;
+
+option optimize_for = LITE_RUNTIME;
+
+
+enum ValueType {
+  Unknown = 0;
+
+  Undefined = 1;
+  Null = 2;
+  Boolean = 3;
+  Number = 4;
+  String = 5;
+  Symbol = 6;
+  Function = 7;
+  Array = 8;
+  Promise = 9;
+
+  // These represents native objects that wrap the given primitive value (e.g.
+  // |new Number(2)|).
+  BooleanObject = 10;
+  NumberObject = 11;
+  StringObject = 12;
+
+  ArrayBuffer = 13;
+  Int8Array = 14;
+  Uint8Array = 15;
+  Uint8ClampedArray = 16;
+  Int16Array = 17;
+  Uint16Array = 18;
+  Int32Array = 19;
+  Uint32Array = 20;
+  Float32Array = 21;
+  Float64Array = 22;
+  DataView = 23;
+
+  // This is only used for objects that don't fall into any of the above
+  // categories.  Use IsObject() to check if it is any kind of object.
+  OtherObject = 24;
+}
+
+// Describes a stored JavaScript Object or Array.
+message Object {
+  message Entry {
+    // JavaScript keys are converted to strings, so |obj['1'] === obj[1]|.
+    required string key = 1;
+    required Value value = 2;
+  }
+
+  repeated Entry entries = 1;
+  // The length of the Array, or missing if not an Array.
+  optional uint32 array_length = 2;
+}
+
+// Describes a single JavaScript value.  It is represented as one-of several
+// possible values.
+message Value {
+  required ValueType kind = 1;
+
+  oneof value {
+    // These can also represent the Object kinds, depending on |kind|.
+    bool value_bool = 2;
+    double value_number = 3;
+    string value_string = 4;
+
+    // Object or Array
+    Object value_object = 5;
+    // ArrayBuffer or ArrayBufferView.  Don't store any extra fields, just the
+    // data and the type in |kind|.
+    bytes value_bytes = 6;
+  }
+}

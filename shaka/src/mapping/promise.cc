@@ -43,7 +43,7 @@ Handle<JSObjectRef> NewPromise(WeakJsPtr<JsObject>* resolve,
 
   JSValueRef ctor =
       GetMemberRaw(JSContextGetGlobalObject(GetContext()), "Promise");
-  DCHECK_EQ(GetValueType(ctor), JSValueType::Function);
+  DCHECK_EQ(GetValueType(ctor), proto::ValueType::Function);
   LocalVar<JsFunction> ctor_obj = UnsafeJsCast<JsFunction>(ctor);
 
   LocalVar<JsValue> ret;
@@ -70,7 +70,7 @@ Promise& Promise::operator=(const Promise&) = default;
 Promise& Promise::operator=(Promise&&) = default;
 
 bool Promise::TryConvert(Handle<JsValue> value) {
-  if (GetValueType(value) != JSValueType::Promise)
+  if (GetValueType(value) != proto::ValueType::Promise)
     return false;
 
 #ifdef USING_JSC

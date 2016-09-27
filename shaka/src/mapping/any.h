@@ -39,7 +39,7 @@ class Any : public GenericConverter, public memory::Traceable {
   template <typename T>
   explicit Any(const T& value) {
     value_ = ::shaka::ToJsValue(value);
-    is_number_ = GetValueType(value_.handle()) == JSValueType::Number;
+    is_number_ = GetValueType(value_.handle()) == proto::ValueType::Number;
   }
   ~Any() override;
 

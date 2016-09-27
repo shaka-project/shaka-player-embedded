@@ -71,7 +71,7 @@ class TestImpl : public testing::Test {
         return;
       }
 
-      if (GetValueType(result) == JSValueType::Undefined) {
+      if (GetValueType(result) == proto::ValueType::Undefined) {
         test_done.set_value();
         return;
       }

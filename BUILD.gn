@@ -22,6 +22,7 @@ if (is_mac) {
 import("//build/config/sysroot.gni")
 import("//common.gni")
 import("//testing/test.gni")
+import("//third_party/protobuf/protobuf.gni")
 
 declare_args() {
   # The JavaScript engine to use.
@@ -87,6 +88,7 @@ config("internal_config") {
     "--system-header-prefix=gflags/",
     "--system-header-prefix=glog/",
     "--system-header-prefix=gmock/",
+    "--system-header-prefix=google/",
     "--system-header-prefix=googletest/",
     "--system-header-prefix=gtest/",
     "--system-header-prefix=libav",
@@ -404,6 +406,11 @@ action_foreach("gen_exposed_idl") {
   ]
 }
 
+proto_library("indexeddb-proto") {
+  visibility = [ ":*" ]
+  sources = [ "shaka/src/js/idb/database.proto" ]
+}
+
 if (js_engine == "v8") {
   action("embed_v8_snapshots") {
     visibility = [ ":*" ]
@@ -675,6 +682,7 @@ source_set("internal_sources") {
     ":gen_config_h",
     ":gen_version_h",
     ":gen_exposed_idl",
+    ":indexeddb-proto",
     "//third_party/curl:libcurl",
     "//third_party/ffmpeg:ffmpeg_libs",
     "//third_party/libxml:libxml",
@@ -1181,6 +1189,8 @@ test("tests") {
     ":eme_plugin_files",
     ":gen_js_tests",
     ":internal_sources",
+    # Because the tests use internal headers, it requires the protobuf.
+    ":indexeddb-proto",
     "//testing/gmock:gmock",
     "//testing/gtest:gtest",
     "//third_party/ffmpeg:ffmpeg_libs",

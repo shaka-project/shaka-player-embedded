@@ -72,8 +72,9 @@ template <typename Number>
 struct ConvertHelper<Number, _number_identifier> {
   static bool FromJsValue(Handle<JsValue> source, Number* dest) {
     // Number types.
-    const JSValueType type = GetValueType(source);
-    if (type != JSValueType::Number && type != JSValueType::NumberObject) {
+    const proto::ValueType type = GetValueType(source);
+    if (type != proto::ValueType::Number &&
+        type != proto::ValueType::NumberObject) {
       return false;
     }
     const double value = NumberFromValue(source);
@@ -197,7 +198,7 @@ struct ConvertHelper<shaka::variant<Types...>> {
 template <typename T>
 struct ConvertHelper<std::vector<T>, void> {
   static bool FromJsValue(Handle<JsValue> source, std::vector<T>* dest) {
-    if (GetValueType(source) != JSValueType::Array)
+    if (GetValueType(source) != proto::ValueType::Array)
       return false;
 
     LocalVar<JsObject> array(UnsafeJsCast<JsObject>(source));
@@ -259,9 +260,11 @@ struct ConvertHelper<T*, void> {
 template <>
 struct ConvertHelper<std::string, void> {
   static bool FromJsValue(Handle<JsValue> source, std::string* dest) {
-    const JSValueType type = GetValueType(source);
-    if (type != JSValueType::String && type != JSValueType::StringObject)
+    const proto::ValueType type = GetValueType(source);
+    if (type != proto::ValueType::String &&
+        type != proto::ValueType::StringObject) {
       return false;
+    }
 
     *dest = ConvertToString(source);
     return true;
@@ -278,9 +281,11 @@ struct ConvertHelper<std::string, void> {
 template <>
 struct ConvertHelper<bool, void> {
   static bool FromJsValue(Handle<JsValue> source, bool* dest) {
-    const JSValueType type = GetValueType(source);
-    if (type != JSValueType::Boolean && type != JSValueType::BooleanObject)
+    const proto::ValueType type = GetValueType(source);
+    if (type != proto::ValueType::Boolean &&
+        type != proto::ValueType::BooleanObject) {
       return false;
+    }
 
     *dest = BooleanFromValue(source);
     return true;
