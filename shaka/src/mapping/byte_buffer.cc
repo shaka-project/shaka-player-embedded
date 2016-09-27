@@ -109,8 +109,10 @@ bool ByteBuffer::TryConvert(Handle<JsValue> value) {
         JSObjectGetArrayBufferBytesPtr(cx, object, nullptr));
     size_ = JSObjectGetArrayBufferByteLength(cx, object, nullptr);
   } else {
-    ptr_ = reinterpret_cast<uint8_t*>(
-        JSObjectGetTypedArrayBytesPtr(cx, object, nullptr));
+    ptr_ =
+        reinterpret_cast<uint8_t*>(
+            JSObjectGetTypedArrayBytesPtr(cx, object, nullptr)) +
+        JSObjectGetTypedArrayByteOffset(cx, object, nullptr);
     size_ = JSObjectGetTypedArrayByteLength(cx, object, nullptr);
   }
   buffer_ = object;
@@ -133,6 +135,107 @@ ReturnVal<JsValue> ByteBuffer::ToJsValue() const {
     own_ptr_ = false;
   }
   return buffer_.value();
+}
+
+ReturnVal<JsValue> ByteBuffer::ToJsValue(proto::ValueType kind) const {
+  ToJsValue();  // Ensure the buffer is available.
+  DCHECK(!own_ptr_);
+  DCHECK(!buffer_.empty());
+
+#if defined(USING_V8)
+  LocalVar<JsObject> local_buffer = buffer_.handle();
+  LocalVar<v8::ArrayBuffer> array_buffer;
+  size_t start = 0;
+  if (local_buffer->IsArrayBuffer()) {
+    array_buffer = local_buffer.As<v8::ArrayBuffer>();
+  } else {
+    DCHECK(array_buffer->IsArrayBufferView());
+    LocalVar<v8::ArrayBufferView> view = local_buffer.As<v8::ArrayBufferView>();
+    array_buffer = view->Buffer();
+    start = view->ByteOffset();
+  }
+
+  switch (kind) {
+    case proto::ArrayBuffer:
+      return array_buffer;
+    case proto::DataView:
+      return v8::DataView::New(array_buffer, start, size_);
+    case proto::Int8Array:
+      return v8::Int8Array::New(array_buffer, start, size_);
+    case proto::Uint8Array:
+      return v8::Uint8Array::New(array_buffer, start, size_);
+    case proto::Uint8ClampedArray:
+      return v8::Uint8ClampedArray::New(array_buffer, start, size_);
+    case proto::Int16Array:
+      return v8::Int16Array::New(array_buffer, start, size_ / 2);
+    case proto::Uint16Array:
+      return v8::Uint16Array::New(array_buffer, start, size_ / 2);
+    case proto::Int32Array:
+      return v8::Int32Array::New(array_buffer, start, size_ / 4);
+    case proto::Uint32Array:
+      return v8::Uint32Array::New(array_buffer, start, size_ / 4);
+    case proto::Float32Array:
+      return v8::Float32Array::New(array_buffer, start, size_ / 4);
+    case proto::Float64Array:
+      return v8::Float64Array::New(array_buffer, start, size_ / 8);
+    default:
+      LOG(FATAL) << "Invalid enum value " << kind;
+  }
+#elif defined(USING_JSC)
+  JSContextRef cx = GetContext();
+  LocalVar<JsObject> array_buffer = buffer_.handle();
+  size_t start = 0;
+  auto buffer_type = JSValueGetTypedArrayType(cx, array_buffer, nullptr);
+  DCHECK_NE(buffer_type, kJSTypedArrayTypeNone);
+  if (buffer_type != kJSTypedArrayTypeArrayBuffer) {
+    array_buffer = JSObjectGetTypedArrayBuffer(cx, buffer_.handle(), nullptr);
+    start = JSObjectGetTypedArrayByteOffset(cx, buffer_.handle(), nullptr);
+  }
+
+  JSTypedArrayType jsc_kind;
+  size_t elem_size = 1;
+  switch (kind) {
+    case proto::ArrayBuffer:
+      return array_buffer;
+    case proto::Int8Array:
+      jsc_kind = kJSTypedArrayTypeInt8Array;
+      break;
+    case proto::Uint8Array:
+      jsc_kind = kJSTypedArrayTypeUint8Array;
+      break;
+    case proto::Uint8ClampedArray:
+      jsc_kind = kJSTypedArrayTypeUint8ClampedArray;
+      break;
+    case proto::Int16Array:
+      jsc_kind = kJSTypedArrayTypeInt16Array;
+      elem_size = 2;
+      break;
+    case proto::Uint16Array:
+      jsc_kind = kJSTypedArrayTypeUint16Array;
+      elem_size = 2;
+      break;
+    case proto::Int32Array:
+      jsc_kind = kJSTypedArrayTypeInt32Array;
+      elem_size = 4;
+      break;
+    case proto::Uint32Array:
+      jsc_kind = kJSTypedArrayTypeUint32Array;
+      elem_size = 4;
+      break;
+    case proto::Float32Array:
+      jsc_kind = kJSTypedArrayTypeFloat32Array;
+      elem_size = 4;
+      break;
+    case proto::Float64Array:
+      jsc_kind = kJSTypedArrayTypeFloat64Array;
+      elem_size = 8;
+      break;
+    default:
+      LOG(FATAL) << "Invalid enum value " << kind;
+  }
+  return JSObjectMakeTypedArrayWithArrayBufferAndOffset(
+      cx, jsc_kind, array_buffer, start, size_ / elem_size, nullptr);
+#endif
 }
 
 void ByteBuffer::Trace(memory::HeapTracer* tracer) const {

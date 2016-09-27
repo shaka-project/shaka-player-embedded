@@ -22,6 +22,7 @@
 #include "src/js/events/event_target.h"
 #include "src/mapping/any.h"
 #include "src/mapping/backing_object_factory.h"
+#include "src/mapping/exception_or.h"
 
 namespace shaka {
 namespace js {
@@ -39,6 +40,8 @@ class IDBFactory : public events::EventTarget {
   RefPtr<IDBOpenDBRequest> Open(const std::string& name,
                                 optional<uint32_t> version);
   RefPtr<IDBRequest> DeleteDatabase(const std::string& name);
+
+  ExceptionOr<Any> CloneForTesting(Any value);
 };
 
 class IDBFactoryFactory

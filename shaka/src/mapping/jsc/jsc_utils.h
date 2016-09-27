@@ -16,14 +16,18 @@
 #define SHAKA_EMBEDDED_MAPPING_JSC_JSC_UTILS_H_
 
 #include <JavaScriptCore/JavaScriptCore.h>
-
 #include <glog/logging.h>
+
+#include <string>
 
 namespace shaka {
 
 JSContextRef GetContext();
 
 void OnUncaughtException(JSValueRef exception, bool in_promise);
+
+JSValueRef CreateNativeObject(const std::string& name, JSValueRef* args,
+                              size_t argc);
 
 }  // namespace shaka
 

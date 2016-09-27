@@ -14,6 +14,9 @@
 
 #include "src/js/idb/idb_factory.h"
 
+#include <utility>
+
+#include "src/js/idb/idb_utils.h"
 #include "src/js/idb/open_db_request.h"
 #include "src/js/idb/request.h"
 
@@ -35,9 +38,18 @@ RefPtr<IDBRequest> IDBFactory::DeleteDatabase(const std::string& /* name */) {
   return nullptr;
 }
 
+ExceptionOr<Any> IDBFactory::CloneForTesting(Any value) {
+  proto::Value temp;
+  ExceptionOr<void> exception = StoreInProto(value, &temp);
+  if (holds_alternative<JsError>(exception))
+    return get<JsError>(std::move(exception));
+  return LoadFromProto(temp);
+}
+
 
 IDBFactoryFactory::IDBFactoryFactory() {
   AddMemberFunction("open", &IDBFactory::Open);
+  AddMemberFunction("cloneForTesting", &IDBFactory::CloneForTesting);
   AddMemberFunction("deleteDatabase", &IDBFactory::DeleteDatabase);
   NotImplemented("cmp");
 }

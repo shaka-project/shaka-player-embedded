@@ -14,7 +14,10 @@
 
 #include "src/mapping/jsc/jsc_utils.h"
 
+#include <vector>
+
 #include "src/mapping/js_engine.h"
+#include "src/mapping/js_wrappers.h"
 
 namespace shaka {
 
@@ -33,5 +36,20 @@ void OnUncaughtException(JSValueRef exception, bool in_promise) {
 
   // TODO: Print stack trace?
 }
+
+JSValueRef CreateNativeObject(const std::string& name, JSValueRef* args,
+                              size_t argc) {
+  JSContextRef cx = GetContext();
+  LocalVar<JsObject> global = JSContextGetGlobalObject(cx);
+  JSValueRef ctor = GetMemberRaw(global, name);
+  DCHECK(ctor && IsObject(ctor));
+  LocalVar<JsObject> ctor_obj = UnsafeJsCast<JsObject>(ctor);
+
+  LocalVar<JsValue> ret;
+  std::vector<LocalVar<JsValue>> local_args{args, args + argc};
+  CHECK(InvokeConstructor(ctor_obj, argc, local_args.data(), &ret));
+  return ret;
+}
+
 
 }  // namespace shaka

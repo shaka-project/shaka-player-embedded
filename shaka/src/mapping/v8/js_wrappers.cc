@@ -63,14 +63,20 @@ v8::Local<v8::String> MakeExternalString(const uint8_t* data,
 }
 
 template <typename T>
-ReturnVal<JsValue> GetMemberImpl(Handle<JsObject> object, T ind) {
+ReturnVal<JsValue> GetMemberImpl(Handle<JsObject> object, T ind,
+                                 LocalVar<JsValue>* exception) {
   v8::Isolate* isolate = GetIsolate();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
+  v8::TryCatch trycatch(isolate);
   v8::MaybeLocal<v8::Value> maybe_field = object->Get(context, ind);
   v8::Local<v8::Value> field;
-  if (!maybe_field.ToLocal(&field))
+  if (!maybe_field.ToLocal(&field)) {
+    if (exception) {
+      *exception = trycatch.Exception();
+    }
     return v8::Undefined(isolate);
+  }
   return field;
 }
 
@@ -94,6 +100,7 @@ bool RunScriptImpl(const std::string& path, Handle<JsString> source) {
   v8::Local<v8::Script> script;
   if (!maybe_script.ToLocal(&script) || script.IsEmpty()) {
     LOG(ERROR) << "Error loading script " << path;
+    OnUncaughtException(trycatch.Exception(), false);
     return false;
   }
 
@@ -127,12 +134,14 @@ std::vector<std::string> GetMemberNames(Handle<JsObject> object) {
 }
 
 ReturnVal<JsValue> GetMemberRaw(Handle<JsObject> object,
-                                const std::string& name) {
-  return GetMemberImpl(object, JsStringFromUtf8(name));
+                                const std::string& name,
+                                LocalVar<JsValue>* exception) {
+  return GetMemberImpl(object, JsStringFromUtf8(name), exception);
 }
 
-ReturnVal<JsValue> GetArrayIndexRaw(Handle<JsObject> object, size_t index) {
-  return GetMemberImpl(object, index);
+ReturnVal<JsValue> GetArrayIndexRaw(Handle<JsObject> object, size_t index,
+                                    LocalVar<JsValue>* exception) {
+  return GetMemberImpl(object, index, exception);
 }
 
 void SetMemberRaw(Handle<JsObject> object, const std::string& name,
@@ -323,8 +332,6 @@ proto::ValueType GetValueType(Handle<JsValue> value) {
     return proto::ValueType::Number;
   if (value->IsString())
     return proto::ValueType::String;
-  if (value->IsSymbol())
-    return proto::ValueType::Symbol;
   if (value->IsFunction())
     return proto::ValueType::Function;
   if (value->IsArray())

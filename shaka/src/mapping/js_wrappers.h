@@ -220,10 +220,12 @@ std::vector<std::string> GetMemberNames(Handle<JsObject> object);
 
 /** @return The given member of the given object. */
 ReturnVal<JsValue> GetMemberRaw(Handle<JsObject> object,
-                                const std::string& name);
+                                const std::string& name,
+                                LocalVar<JsValue>* exception = nullptr);
 
 /** @return The member at the given index of the given object. */
-ReturnVal<JsValue> GetArrayIndexRaw(Handle<JsObject> object, size_t index);
+ReturnVal<JsValue> GetArrayIndexRaw(Handle<JsObject> object, size_t index,
+                                    LocalVar<JsValue>* exception = nullptr);
 
 /** Sets the given member on the given object. */
 void SetMemberRaw(Handle<JsObject> object, const std::string& name,

@@ -78,6 +78,9 @@ class ByteBuffer : public GenericConverter, public memory::Traceable {
   ReturnVal<JsValue> ToJsValue() const override;
   void Trace(memory::HeapTracer* tracer) const override;
 
+  /** Creates an ArrayBuffer/TypedArray of the given type. */
+  ReturnVal<JsValue> ToJsValue(proto::ValueType kind) const;
+
  private:
   /** Resets all fields to empty. */
   void ClearFields();

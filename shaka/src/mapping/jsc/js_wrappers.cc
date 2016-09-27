@@ -115,13 +115,26 @@ std::vector<std::string> GetMemberNames(Handle<JsObject> object) {
 }
 
 ReturnVal<JsValue> GetMemberRaw(Handle<JsObject> object,
-                                const std::string& name) {
-  return JSObjectGetProperty(GetContext(), object, JsStringFromUtf8(name),
-                             nullptr);
+                                const std::string& name,
+                                LocalVar<JsValue>* exception) {
+  JSValueRef raw_except = nullptr;
+  auto* ret = JSObjectGetProperty(GetContext(), object,
+                                  JsStringFromUtf8(name), &raw_except);
+  if (exception) {
+    *exception = raw_except;
+  }
+  return ret;
 }
 
-ReturnVal<JsValue> GetArrayIndexRaw(Handle<JsObject> object, size_t index) {
-  return JSObjectGetPropertyAtIndex(GetContext(), object, index, nullptr);
+ReturnVal<JsValue> GetArrayIndexRaw(Handle<JsObject> object, size_t index,
+                                    LocalVar<JsValue>* exception) {
+  JSValueRef raw_except = nullptr;
+  auto* ret =
+      JSObjectGetPropertyAtIndex(GetContext(), object, index, &raw_except);
+  if (exception) {
+    *exception = raw_except;
+  }
+  return ret;
 }
 
 void SetMemberRaw(Handle<JsObject> object, const std::string& name,
@@ -280,15 +293,7 @@ ReturnVal<JsObject> CreateObject() {
 }
 
 ReturnVal<JsMap> CreateMap() {
-  JSContextRef cx = GetContext();
-  LocalVar<JsObject> global = JSContextGetGlobalObject(cx);
-  JSValueRef ctor = GetMemberRaw(global, "Map");
-  DCHECK(ctor && IsObject(ctor));
-  LocalVar<JsObject> ctor_obj = UnsafeJsCast<JsObject>(ctor);
-
-  LocalVar<JsValue> ret;
-  CHECK(InvokeConstructor(ctor_obj, 0, nullptr, &ret));
-  return UnsafeJsCast<JsObject>(ret);
+  return UnsafeJsCast<JsObject>(CreateNativeObject("Map", nullptr, 0));
 }
 
 void SetMapValue(Handle<JsMap> map, Handle<JsValue> key,
@@ -397,8 +402,17 @@ double NumberFromValue(Handle<JsValue> value) {
 
 bool BooleanFromValue(Handle<JsValue> value) {
   JSContextRef cx = GetContext();
-  DCHECK(JSValueIsBoolean(cx, value) ||
-         IsInstanceOfStandardType(value, "Boolean"));
+  if (IsInstanceOfStandardType(value, "Boolean")) {
+    LocalVar<JsValue> func = GetMemberRaw(
+        UnsafeJsCast<JsObject>(value), "valueOf");
+    CHECK(GetValueType(func) == proto::ValueType::Function);
+    LocalVar<JsValue> except;
+    CHECK(InvokeMethod(UnsafeJsCast<JsFunction>(func),
+                       UnsafeJsCast<JsObject>(value), 0, nullptr, &except));
+    value = except;
+  } else {
+    DCHECK(JSValueIsBoolean(cx, value));
+  }
   return JSValueToBoolean(cx, value);
 }
 
