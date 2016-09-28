@@ -5,5 +5,6 @@ FFmpeg: ffmpeg/LICENSE
 gflags: gflags/LICENSE
 glog: glog/LICENSE
 libxml: libxml/LICENSE
+protobuf: protobuf/LICENSE
 sdl2: sdl2/LICENSE
 zlib: zlib/LICENSE

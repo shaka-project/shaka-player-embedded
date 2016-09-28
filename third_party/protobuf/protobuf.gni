@@ -1,0 +1,88 @@
+# Copyright 2017 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# Creates a target that can be listed in |deps| of another target.  This
+# compiles a .proto file into C++ source and header files.
+#
+# Example:
+#   proto_library("mylib") {
+#     sources = [
+#       "example.proto",
+#     ]
+#   }
+template("proto_library") {
+  assert(defined(invoker.sources), "proto_library must have sources")
+  proto_sources = invoker.sources
+
+  # The path to the current BUILD.gn file, relative to the output directory
+  rel_base_path = rebase_path(".", root_out_dir)
+  # The path to the generation folder, relative to the output directory.
+  rel_out_path = rebase_path(root_gen_dir, root_out_dir)
+
+  # Get output files (relative to output directory).
+  proto_outputs = []
+  foreach(proto, proto_sources) {
+    proto_dir = get_path_info(proto, "dir")
+    proto_name = get_path_info(proto, "name")
+
+    proto_outputs += [
+      # "dir/name" will strip the .proto file extension.
+      "$root_gen_dir/$proto_dir/$proto_name.pb.cc",
+      "$root_gen_dir/$proto_dir/$proto_name.pb.h",
+    ]
+  }
+
+  gen_name = "${target_name}_gen"
+  config_name = "${target_name}_config"
+  lib_name = target_name
+
+  config(config_name) {
+    visibility = [ ":$lib_name" ]
+    include_dirs = [
+      "src/src",
+      "$root_gen_dir/shaka",
+    ]
+  }
+
+  action(gen_name) {
+    # Get the path to the protoc executable, relative to the current output
+    # directory.  It is probably just './protoc', but we want to be sure.
+    protoc_label = "//third_party/protobuf:protoc(" + host_toolchain + ")"
+    protoc_out_dir = get_label_info(protoc_label, "root_out_dir")
+    protoc = rebase_path(protoc_out_dir, root_build_dir) + "/protoc"
+
+    # Note the working directory is the output directory.
+    args = [ protoc, "--cpp_out=" + rel_out_path, "-I", rel_base_path, ]
+    args += rebase_path(proto_sources, root_out_dir)
+
+    script = "//third_party/protobuf/wrapper.py"
+    deps = [ protoc_label ]
+    visibility = [ ":$lib_name" ]
+    sources = proto_sources
+    outputs = get_path_info(proto_outputs, "abspath")
+  }
+
+  static_library(lib_name) {
+    forward_variables_from(invoker, [ "defines", "testonly", "visibility" ])
+
+    sources = get_target_outputs(":$gen_name")
+
+    deps = [ ":$gen_name" ]
+    # Forward the defines from protobuf_lite.
+    public_deps = [ "//third_party/protobuf:protobuf_lite" ]
+
+    public_configs = [ ":$config_name" ]
+  }
+}

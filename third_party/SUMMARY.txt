@@ -78,6 +78,11 @@ third_party/markupsafe
   BSD-style license (3-clause)
   https://chromium.googlesource.com/chromium/src/third_party/markupsafe.git
 
+third_party/protobuf/src
+  Language-neutral, platform-neutral extensible serialized structured data.
+  BSD-style license (3-clause)
+  https://developers.google.com/protocol-buffers
+
 third_party/pymake
   make implementation in Python.
   MIT License
