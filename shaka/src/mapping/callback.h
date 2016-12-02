@@ -19,17 +19,21 @@
 #include <utility>
 
 #include "src/mapping/convert_js.h"
+#include "src/mapping/exception_or.h"
 #include "src/mapping/js_engine.h"
 #include "src/mapping/js_wrappers.h"
 #include "src/mapping/weak_js_ptr.h"
+#include "src/util/macros.h"
 
 namespace shaka {
 
 /**
  * Defines a helper type that is used to store and call JavaScript functions.
- * This wraps a given callback and converts it into a C++ std::function. This
- * will swallow exceptions, printing the stack trace in the debug log if one is
- * thrown.
+ *
+ * This defines a call operator that will call the function and swallow
+ * exceptions, printing the stack trace in the debug log if one is thrown.  This
+ * also defines a named function to call the JavaScript function and return any
+ * exception instead.
  */
 class Callback : public GenericConverter, public memory::Traceable {
  public:
@@ -58,32 +62,19 @@ class Callback : public GenericConverter, public memory::Traceable {
 
   template <typename... Args>
   void operator()(Args&&... args) const {
-    DCHECK(!empty());
-
-    // Add another element to avoid a 0-length array with no arguments.  This
-    // won't change the number of arguments passed in JavaScript.
-    LocalVar<JsValue> arguments[] = {
-        ::shaka::ToJsValue(std::forward<Args>(args))..., JsUndefined()};
-    LocalVar<JsValue> except;
-    if (!InvokeMethod(callback_.handle(), JsEngine::Instance()->global_handle(),
-                      sizeof...(Args), arguments, &except)) {
-      OnUncaughtException(except, /* in_promise */ false);
+    const auto exception = CallInternal(JsEngine::Instance()->global_handle(),
+                                        std::forward<Args>(args)...);
+    if (holds_alternative<js::JsError>(exception)) {
+      OnUncaughtException(get<js::JsError>(exception).error(),
+                          /* in_promise */ false);
     }
   }
 
   template <typename T, typename... Args>
-  void CallWithThis(T&& that, Args&&... args) const {
-    DCHECK(!empty());
-
+  MUST_USE_RESULT ExceptionOr<void> CallWithThis(T&& that,
+                                                 Args&&... args) const {
     LocalVar<JsValue> that_val = ::shaka::ToJsValue(that);
-    LocalVar<JsObject> that_obj = UnsafeJsCast<JsObject>(that_val);
-    LocalVar<JsValue> arguments[] = {
-        ::shaka::ToJsValue(std::forward<Args>(args))..., JsUndefined()};
-    LocalVar<JsValue> except;
-    if (!InvokeMethod(callback_.handle(), that_obj, sizeof...(Args), arguments,
-                      &except)) {
-      OnUncaughtException(except, /* in_promise */ false);
-    }
+    return CallInternal(that_val, std::forward<Args>(args)...);
   }
 
   bool TryConvert(Handle<JsValue> given) override;
@@ -91,6 +82,24 @@ class Callback : public GenericConverter, public memory::Traceable {
   void Trace(memory::HeapTracer* tracer) const override;
 
  private:
+  template <typename... Args>
+  ExceptionOr<void> CallInternal(Handle<JsValue> that, Args&&... args) const {
+    DCHECK(!empty());
+    DCHECK(IsObject(that));
+
+    LocalVar<JsObject> that_obj = UnsafeJsCast<JsObject>(that);
+    // Add another element to avoid a 0-length array with no arguments.  This
+    // won't change the number of arguments passed in JavaScript.
+    LocalVar<JsValue> arguments[] = {
+        ::shaka::ToJsValue(std::forward<Args>(args))..., JsUndefined()};
+    LocalVar<JsValue> except;
+    if (!InvokeMethod(callback_.handle(), that_obj, sizeof...(Args), arguments,
+                      &except)) {
+      return js::JsError::Rethrow(except);
+    }
+    return {};
+  }
+
   WeakJsPtr<JsFunction> callback_;
 };
 

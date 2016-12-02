@@ -83,7 +83,19 @@ class EventTarget : public BackingObject {
    * @param event The event to dispatch.
    * @return False if one listener called preventDefault, otherwise true.
    */
-  ExceptionOr<bool> DispatchEvent(RefPtr<Event> event);
+  ExceptionOr<bool> DispatchEvent(RefPtr<Event> event) {
+    return DispatchEventInternal(event, nullptr);
+  }
+
+  /**
+   * @see DispatchEvent
+   * @param event The event to dispatch
+   * @param did_listeners_throw [OUT] If given, will be set to whether a
+   *   listener threw an exception.
+   * @return False if one listener called preventDefault, otherwise true.
+   */
+  ExceptionOr<bool> DispatchEventInternal(RefPtr<Event> event,
+                                          bool* did_listeners_throw);
 
   /**
    * Asynchronously raises the given event on this.  It is safe to call this
@@ -156,7 +168,7 @@ class EventTarget : public BackingObject {
   };
 
   /** Invokes all the listeners for the given event */
-  void InvokeListeners(RefPtr<Event> event);
+  void InvokeListeners(RefPtr<Event> event, bool* did_listeners_throw);
 
   /** Finds the listener info that matches the given callback. */
   std::list<ListenerInfo>::iterator FindListener(const Listener& callback,

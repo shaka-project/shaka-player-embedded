@@ -65,12 +65,15 @@ void EventTarget::UnsetCppEventListener(EventType type) {
   cpp_listeners_.erase(to_string(type));
 }
 
-ExceptionOr<bool> EventTarget::DispatchEvent(RefPtr<Event> event) {
+ExceptionOr<bool> EventTarget::DispatchEventInternal(
+    RefPtr<Event> event, bool* did_listeners_throw) {
   if (is_dispatching_) {
     return JsError::DOMException(InvalidStateError,
                                  "Already dispatching events.");
   }
 
+  if (did_listeners_throw)
+    *did_listeners_throw = false;
   is_dispatching_ = true;
 
   event->target = this;
@@ -79,7 +82,7 @@ ExceptionOr<bool> EventTarget::DispatchEvent(RefPtr<Event> event) {
   // about the initial target.  Normally we would need to construct a path
   // going up the DOM.
   event->event_phase = Event::AT_TARGET;
-  InvokeListeners(event);
+  InvokeListeners(event, did_listeners_throw);
 
   // Now that we are done firing events, remove the event listeners that have
   // been marked for removal.
@@ -102,7 +105,8 @@ EventTarget::ListenerInfo::ListenerInfo(Listener listener,
 
 EventTarget::ListenerInfo::~ListenerInfo() {}
 
-void EventTarget::InvokeListeners(RefPtr<Event> event) {
+void EventTarget::InvokeListeners(RefPtr<Event> event,
+                                  bool* did_listeners_throw) {
   if (event->is_stopped())
     return;
 
@@ -121,7 +125,14 @@ void EventTarget::InvokeListeners(RefPtr<Event> event) {
     // Note that even though it exists in the map does not mean the field is
     // set.
     if (on_iter->second->has_value()) {
-      on_iter->second->value().CallWithThis(this, event);
+      ExceptionOr<void> except =
+          on_iter->second->value().CallWithThis(this, event);
+      if (holds_alternative<JsError>(except)) {
+        OnUncaughtException(get<JsError>(except).error(),
+                            /* in_promise */ false);
+        if (did_listeners_throw)
+          *did_listeners_throw = true;
+      }
       if (event->is_immediate_stopped()) {
         return;
       }
@@ -146,7 +157,13 @@ void EventTarget::InvokeListeners(RefPtr<Event> event) {
       continue;
 
     if (it->type_ == event->type && it->callback_.has_value()) {
-      it->callback_->CallWithThis(this, event);
+      ExceptionOr<void> except = it->callback_->CallWithThis(this, event);
+      if (holds_alternative<JsError>(except)) {
+          OnUncaughtException(get<JsError>(except).error(),
+                              /* in_promise */ false);
+        if (did_listeners_throw)
+          *did_listeners_throw = true;
+      }
     }
 
     if (event->is_immediate_stopped())
