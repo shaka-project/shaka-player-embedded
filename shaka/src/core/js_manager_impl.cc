@@ -16,6 +16,7 @@
 
 #include "src/mapping/convert_js.h"
 #include "src/mapping/js_engine.h"
+#include "src/util/clock.h"
 #include "src/util/file_system.h"
 
 namespace shaka {
@@ -25,7 +26,7 @@ using std::placeholders::_1;
 JsManagerImpl::JsManagerImpl(const JsManager::StartupOptions& options)
     : startup_options_(options),
       event_loop_(std::bind(&JsManagerImpl::EventThreadWrapper, this, _1),
-                  /* is_worker */ false) {}
+                  &util::Clock::Instance, /* is_worker */ false) {}
 
 JsManagerImpl::~JsManagerImpl() {
   Stop();

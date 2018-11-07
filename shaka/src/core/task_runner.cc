@@ -20,15 +20,15 @@
 #include <limits>
 
 #include "src/mapping/js_wrappers.h"
-#include "src/util/clock.h"
 
 namespace shaka {
 
 namespace impl {
 
-PendingTaskBase::PendingTaskBase(TaskPriority priority, uint64_t delay_ms,
+PendingTaskBase::PendingTaskBase(const util::Clock* clock,
+                                 TaskPriority priority, uint64_t delay_ms,
                                  int id, bool loop)
-    : start_ms(util::Clock::Instance.GetMonotonicTime()),
+    : start_ms(clock->GetMonotonicTime()),
       delay_ms(delay_ms),
       priority(priority),
       id(id),
@@ -39,8 +39,10 @@ PendingTaskBase::~PendingTaskBase() {}
 
 }  // namespace impl
 
-TaskRunner::TaskRunner(std::function<void(RunLoop)> wrapper, bool is_worker)
+TaskRunner::TaskRunner(std::function<void(RunLoop)> wrapper,
+                       const util::Clock* clock, bool is_worker)
     : mutex_(is_worker ? "TaskRunner worker" : "TaskRunner main"),
+      clock_(clock),
       waiting_("TaskRunner wait until finished"),
       running_(true),
       next_id_(0),
@@ -132,7 +134,7 @@ void TaskRunner::Run(std::function<void(RunLoop)> wrapper) {
 void TaskRunner::OnIdle() {
   // TODO: Since we have no work, we will never add work ourselves.  Consider
   // using signalling rather than polling.
-  util::Clock::Instance.SleepSeconds(0.001);
+  clock_->SleepSeconds(0.001);
 }
 
 bool TaskRunner::HandleTask() {
@@ -140,7 +142,7 @@ bool TaskRunner::HandleTask() {
   // 1) We may be called from another thread to change tasks.
   // 2) The callback may change tasks (including its own).
 
-  const uint64_t now = util::Clock::Instance.GetMonotonicTime();
+  const uint64_t now = clock_->GetMonotonicTime();
   impl::PendingTaskBase* task = nullptr;
   {
     // Find the earliest timer we can finish.  If there are multiple with the
@@ -157,7 +159,7 @@ bool TaskRunner::HandleTask() {
           task = it->get();
         } else if (max_priority == TaskPriority::Timer) {
           const uint64_t it_time = (*it)->start_ms + (*it)->delay_ms;
-          if (it_time < now && it_time < min_time) {
+          if (it_time <= now && it_time < min_time) {
             min_time = it_time;
             task = it->get();
           }

@@ -14,11 +14,16 @@
 
 #include "src/js/timeouts.h"
 
+#include <algorithm>
+
 #include "src/core/js_manager_impl.h"
 #include "src/mapping/register_member.h"
 
 namespace shaka {
 namespace js {
+
+// The minimum delay (in milliseconds) that a timer can be set to.
+constexpr const uint64_t kMinTimerDelay = 4;
 
 void Timeouts::Install() {
   RegisterGlobalFunction("setTimeout", &Timeouts::SetTimeout);
@@ -28,13 +33,15 @@ void Timeouts::Install() {
 }
 
 int Timeouts::SetTimeout(Callback callback, optional<uint64_t> timeout) {
-  return JsManagerImpl::Instance()->MainThread()->AddTimer(timeout.value_or(0),
+  const uint64_t real_timeout = std::max(timeout.value_or(0), kMinTimerDelay);
+  return JsManagerImpl::Instance()->MainThread()->AddTimer(real_timeout,
                                                            callback);
 }
 
 int Timeouts::SetInterval(Callback callback, optional<uint64_t> timeout) {
-  return JsManagerImpl::Instance()->MainThread()->AddRepeatedTimer(
-      timeout.value_or(0), callback);
+  const uint64_t real_timeout = std::max(timeout.value_or(0), kMinTimerDelay);
+  return JsManagerImpl::Instance()->MainThread()->AddRepeatedTimer(real_timeout,
+                                                                   callback);
 }
 
 void Timeouts::ClearTimeout(optional<int> id) {

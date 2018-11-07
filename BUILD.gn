@@ -1176,6 +1176,7 @@ if (is_ios) {
 
 test("tests") {
   sources = [
+    "shaka/test/src/core/task_runner_unittest.cc",
     "shaka/test/src/core/ref_ptr_unittest.cc",
     "shaka/test/src/debug/integration.cc",
     "shaka/test/src/eme/clearkey_implementation_unittest.cc",

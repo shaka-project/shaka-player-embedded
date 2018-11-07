@@ -30,6 +30,7 @@
 #include "src/debug/thread.h"
 #include "src/debug/thread_event.h"
 #include "src/memory/heap_tracer.h"
+#include "src/util/clock.h"
 #include "src/util/utils.h"
 
 namespace shaka {
@@ -41,9 +42,6 @@ enum class TaskPriority {
   Immediate,
 };
 
-// The minimum delay (in milliseconds) that a timer can be set to.
-constexpr const uint8_t kMinTimerDelay = 4;
-
 namespace impl {
 
 template <typename Func>
@@ -52,7 +50,8 @@ using RetOf = typename std::result_of<Func()>::type;
 /** Defines a base class for a pending task. */
 class PendingTaskBase : public memory::Traceable {
  public:
-  PendingTaskBase(TaskPriority priority, uint64_t delay_ms, int id, bool loop);
+  PendingTaskBase(const util::Clock* clock, TaskPriority priority,
+                  uint64_t delay_ms, int id, bool loop);
   ~PendingTaskBase() override;
 
   /** Performs the task. */
@@ -88,9 +87,10 @@ class PendingTask : public PendingTaskBase {
                 "Traceable callback object must be Traceable");
   using Ret = typename std::result_of<Func()>::type;
 
-  PendingTask(Func&& callback, const std::string& name, TaskPriority priority,
-              uint64_t delay_ms, int id, bool loop)
-      : PendingTaskBase(priority, delay_ms, id, loop),
+  PendingTask(const util::Clock* clock, Func&& callback,
+              const std::string& name, TaskPriority priority, uint64_t delay_ms,
+              int id, bool loop)
+      : PendingTaskBase(clock, priority, delay_ms, id, loop),
         callback(std::forward<Func>(callback)),
         event(new ThreadEvent<Ret>(name)) {}
 
@@ -211,7 +211,8 @@ class TaskRunner : public memory::Traceable {
  public:
   using RunLoop = std::function<void()>;
 
-  TaskRunner(std::function<void(RunLoop)> wrapper, bool is_worker);
+  TaskRunner(std::function<void(RunLoop)> wrapper, const util::Clock* clock,
+             bool is_worker);
   ~TaskRunner() override;
 
   /** @return Whether the background thread is running. */
@@ -257,8 +258,9 @@ class TaskRunner : public memory::Traceable {
 
     std::unique_lock<Mutex> lock(mutex_);
     const int id = ++next_id_;
-    auto pending_task = new impl::PendingTask<Func>(
-        std::forward<Func>(callback), name, priority, 0, id, /* loop */ false);
+    auto pending_task =
+        new impl::PendingTask<Func>(clock_, std::forward<Func>(callback), name,
+                                    priority, 0, id, /* loop */ false);
     tasks_.emplace_back(pending_task);
     pending_task->event->SetProvider(&worker_);
 
@@ -279,13 +281,12 @@ class TaskRunner : public memory::Traceable {
   template <typename Func>
   int AddTimer(uint64_t delay_ms, Func&& callback) {
     std::unique_lock<Mutex> lock(mutex_);
-    if (delay_ms < kMinTimerDelay)
-      delay_ms = kMinTimerDelay;
     const int id = ++next_id_;
 
-    tasks_.emplace_back(new impl::PendingTask<Func>(
-        std::forward<Func>(callback), "", TaskPriority::Timer, delay_ms, id,
-        /* loop */ false));
+    tasks_.emplace_back(
+        new impl::PendingTask<Func>(clock_, std::forward<Func>(callback), "",
+                                    TaskPriority::Timer, delay_ms, id,
+                                    /* loop */ false));
 
     return id;
   }
@@ -304,13 +305,12 @@ class TaskRunner : public memory::Traceable {
   template <typename Func>
   int AddRepeatedTimer(uint64_t delay_ms, Func&& callback) {
     std::unique_lock<Mutex> lock(mutex_);
-    if (delay_ms < kMinTimerDelay)
-      delay_ms = kMinTimerDelay;
     const int id = ++next_id_;
 
-    tasks_.emplace_back(new impl::PendingTask<Func>(
-        std::forward<Func>(callback), "", TaskPriority::Timer, delay_ms, id,
-        /* loop */ true));
+    tasks_.emplace_back(
+        new impl::PendingTask<Func>(clock_, std::forward<Func>(callback), "",
+                                    TaskPriority::Timer, delay_ms, id,
+                                    /* loop */ true));
 
     return id;
   }
@@ -347,6 +347,7 @@ class TaskRunner : public memory::Traceable {
   std::list<std::unique_ptr<impl::PendingTaskBase>> tasks_;
 
   mutable Mutex mutex_;
+  const util::Clock* clock_;
   ThreadEvent<void> waiting_;
   std::atomic<bool> running_;
   int next_id_;

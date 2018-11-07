@@ -18,7 +18,7 @@ testGroup('timeouts', function() {
       let start = Date.now();
       setTimeout(function() {
         var end = Date.now();
-        expectTrue(end - start > 49);
+        expectTrue(end - start >= 49);
         resolve();
       }, 50);
     });
