@@ -14,4 +14,5 @@
 # limitations under the License.
 
 # Expose all the parser types on the |webidl| package.
-from .idl_parser import *
+from .idl_parser import IdlParser
+from .types import *

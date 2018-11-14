@@ -17,41 +17,42 @@ import unittest
 
 from webidl import idl_parser
 from webidl import idl_tokenizer
+from webidl import types
 
 
-class NoArgsExtension(idl_parser.IdlExtension):
+class NoArgsExtension(types.Extension):
   name = 'NoArgs'
-  kind = idl_parser.IdlExtensionKind.NO_ARGS
+  kind = types.ExtensionKind.NO_ARGS
   # Allow this everywhere.
-  locations = list(idl_parser.IdlExtensionLocation)
+  locations = list(types.ExtensionLocation)
 
 
-class ArgListExtension(idl_parser.IdlExtension):
+class ArgListExtension(types.Extension):
   name = 'ArgList'
-  kind = idl_parser.IdlExtensionKind.ARG_LIST
+  kind = types.ExtensionKind.ARG_LIST
   # Allow this everywhere.
-  locations = list(idl_parser.IdlExtensionLocation)
+  locations = list(types.ExtensionLocation)
 
 
-class NamedArgListExtension(idl_parser.IdlExtension):
+class NamedArgListExtension(types.Extension):
   name = 'NamedArgList'
-  kind = idl_parser.IdlExtensionKind.NAMED_ARG_LIST
+  kind = types.ExtensionKind.NAMED_ARG_LIST
   # Allow this everywhere.
-  locations = list(idl_parser.IdlExtensionLocation)
+  locations = list(types.ExtensionLocation)
 
 
-class IdentExtension(idl_parser.IdlExtension):
+class IdentExtension(types.Extension):
   name = 'Ident'
-  kind = idl_parser.IdlExtensionKind.IDENT
+  kind = types.ExtensionKind.IDENT
   # Allow this everywhere.
-  locations = list(idl_parser.IdlExtensionLocation)
+  locations = list(types.ExtensionLocation)
 
 
-class IdentListExtension(idl_parser.IdlExtension):
+class IdentListExtension(types.Extension):
   name = 'IdentList'
-  kind = idl_parser.IdlExtensionKind.IDENT_LIST
+  kind = types.ExtensionKind.IDENT_LIST
   # Allow this everywhere.
-  locations = list(idl_parser.IdlExtensionLocation)
+  locations = list(types.ExtensionLocation)
 
 
 ALL_EXTENSIONS = [
@@ -78,7 +79,7 @@ class ParserTest(unittest.TestCase):
     results = idl_parser.IdlParser().parse_file(
         'file.idl', '/** Doc */ dictionary Foo {};')
     self.assertEqual(len(results.types), 1)
-    self.assertIsInstance(results.types[0], idl_parser.Dictionary)
+    self.assertIsInstance(results.types[0], types.Dictionary)
     self.assertEqual(results.types[0].name, 'Foo')
     self.assertEqual(results.types[0].attributes, [])
     self.assertEqual(results.types[0].doc, '/** Doc */')
@@ -99,26 +100,26 @@ class ParserTest(unittest.TestCase):
     attrs = results.types[0].attributes
     self.assertEqual(len(attrs), 4)
     expected_attrs = [
-        idl_parser.IdlAttribute(
+        types.Attribute(
             name='attr1', doc='          /** Foobar */',
-            type=idl_parser.IdlType(
+            type=types.IdlType(
                 name='double', nullable=False, element_type=None)),
-        idl_parser.IdlAttribute(
+        types.Attribute(
             name='attr2', doc=None,
-            type=idl_parser.IdlType(
+            type=types.IdlType(
                 name='double', nullable=True, element_type=None)),
-        idl_parser.IdlAttribute(
+        types.Attribute(
             name='attr3', doc=None,
-            type=idl_parser.IdlType(
+            type=types.IdlType(
                 name='sequence', nullable=False,
-                element_type=idl_parser.IdlType(name='double', nullable=False,
-                                                element_type=None))),
-        idl_parser.IdlAttribute(
+                element_type=types.IdlType(name='double', nullable=False,
+                                           element_type=None))),
+        types.Attribute(
             name='attr4', doc=None,
-            type=idl_parser.IdlType(
+            type=types.IdlType(
                 name='sequence', nullable=True,
-                element_type=idl_parser.IdlType(name='double', nullable=True,
-                                                element_type=None))),
+                element_type=types.IdlType(name='double', nullable=True,
+                                           element_type=None))),
     ]
     self.assertEqual(attrs, expected_attrs)
 
@@ -131,28 +132,28 @@ class ParserTest(unittest.TestCase):
     args = _do_parse('()')
     self.assertEqual(args, [])
 
-    int_ = idl_parser.IdlType(name='int', nullable=False, element_type=None)
+    int_ = types.IdlType(name='int', nullable=False, element_type=None)
 
     args = _do_parse('(int foo, optional int bar)')
     self.assertEqual(args, [
-        idl_parser.IdlArgument(
+        types.Argument(
             name='foo', optional=False, default=None, type=int_,
             is_variadic=False),
-        idl_parser.IdlArgument(
+        types.Argument(
             name='bar', optional=True, default=None, type=int_,
             is_variadic=False),
     ])
 
     args = _do_parse('(int... foo)')
     self.assertEqual(args, [
-        idl_parser.IdlArgument(
+        types.Argument(
             name='foo', optional=False, default=None, type=int_,
             is_variadic=True),
     ])
 
     args = _do_parse('(optional int foo = 123)')
     self.assertEqual(args, [
-        idl_parser.IdlArgument(
+        types.Argument(
             name='foo', optional=True, default=123, type=int_,
             is_variadic=False),
     ])
@@ -183,7 +184,7 @@ class ParserTest(unittest.TestCase):
     parser = idl_parser.IdlParser(ALL_EXTENSIONS)
     parser._reader = idl_tokenizer.IdlTokenizer('', '[NoArgs]')
     results = parser.read_extensions(
-        [idl_parser.IdlExtensionLocation.DEFINITION])
+        [types.ExtensionLocation.DEFINITION])
     self.assertEqual(len(results), 1)
     self.assertExtensionValue(results[0], NoArgsExtension)
 
@@ -192,16 +193,16 @@ class ParserTest(unittest.TestCase):
     parser._reader = idl_tokenizer.IdlTokenizer(
         '', '[ArgList(int x, optional long y)]')
     results = parser.read_extensions(
-        [idl_parser.IdlExtensionLocation.DEFINITION])
+        [types.ExtensionLocation.DEFINITION])
     self.assertEqual(len(results), 1)
     args = [
-        idl_parser.IdlArgument(
+        types.Argument(
             name='x', optional=False, default=None, is_variadic=False,
-            type=idl_parser.IdlType(
+            type=types.IdlType(
                 name='int', nullable=False, element_type=None)),
-        idl_parser.IdlArgument(
+        types.Argument(
             name='y', optional=True, default=None, is_variadic=False,
-            type=idl_parser.IdlType(
+            type=types.IdlType(
                 name='long', nullable=False, element_type=None)),
     ]
     self.assertExtensionValue(results[0], ArgListExtension, args=args)
@@ -210,7 +211,7 @@ class ParserTest(unittest.TestCase):
     parser = idl_parser.IdlParser(ALL_EXTENSIONS)
     parser._reader = idl_tokenizer.IdlTokenizer('', '[NamedArgList=Foo()]')
     results = parser.read_extensions(
-        [idl_parser.IdlExtensionLocation.DEFINITION])
+        [types.ExtensionLocation.DEFINITION])
     self.assertEqual(len(results), 1)
     self.assertExtensionValue(
         results[0], NamedArgListExtension, argsName='Foo', args=[])
@@ -219,7 +220,7 @@ class ParserTest(unittest.TestCase):
     parser = idl_parser.IdlParser(ALL_EXTENSIONS)
     parser._reader = idl_tokenizer.IdlTokenizer('', '[Ident=Something]')
     results = parser.read_extensions(
-        [idl_parser.IdlExtensionLocation.DEFINITION])
+        [types.ExtensionLocation.DEFINITION])
     self.assertEqual(len(results), 1)
     self.assertExtensionValue(results[0], IdentExtension, arg='Something')
 
@@ -228,7 +229,7 @@ class ParserTest(unittest.TestCase):
     parser._reader = idl_tokenizer.IdlTokenizer(
         '', '[IdentList=(First, Second)]')
     results = parser.read_extensions(
-        [idl_parser.IdlExtensionLocation.DEFINITION])
+        [types.ExtensionLocation.DEFINITION])
     self.assertEqual(len(results), 1)
     self.assertExtensionValue(
         results[0], IdentListExtension, args=['First', 'Second'])
@@ -236,7 +237,7 @@ class ParserTest(unittest.TestCase):
     # An identifier list can be specified as a single identifier too.
     parser._reader = idl_tokenizer.IdlTokenizer('', '[IdentList=First]')
     results = parser.read_extensions(
-        [idl_parser.IdlExtensionLocation.DEFINITION])
+        [types.ExtensionLocation.DEFINITION])
     self.assertEqual(len(results), 1)
     self.assertExtensionValue(results[0], IdentListExtension, args=['First'])
 
@@ -245,33 +246,33 @@ class ParserTest(unittest.TestCase):
     parser._reader = idl_tokenizer.IdlTokenizer(
         '', '[NoArgs, Ident=first, Ident=second]')
     results = parser.read_extensions(
-        [idl_parser.IdlExtensionLocation.DEFINITION])
+        [types.ExtensionLocation.DEFINITION])
     self.assertEqual(len(results), 3)
     self.assertExtensionValue(results[0], NoArgsExtension)
     self.assertExtensionValue(results[1], IdentExtension, arg='first')
     self.assertExtensionValue(results[2], IdentExtension, arg='second')
 
   def test_extensions_checks_location(self):
-    class LocationExtension(idl_parser.IdlExtension):
+    class LocationExtension(types.Extension):
       name = 'Foo'
-      kind = idl_parser.IdlExtensionKind.NO_ARGS
-      locations = [idl_parser.IdlExtensionLocation.MEMBER]
+      kind = types.ExtensionKind.NO_ARGS
+      locations = [types.ExtensionLocation.MEMBER]
 
     parser = idl_parser.IdlParser([LocationExtension])
     with self.assertRaises(SyntaxError):
       parser._reader = idl_tokenizer.IdlTokenizer('', '[Foo]')
-      parser.read_extensions([idl_parser.IdlExtensionLocation.DEFINITION])
+      parser.read_extensions([types.ExtensionLocation.DEFINITION])
 
     with self.assertRaises(SyntaxError):
       parser._reader = idl_tokenizer.IdlTokenizer('', '[Foo]')
-      locs = [idl_parser.IdlExtensionLocation.MIXIN_MEMBER,
-              idl_parser.IdlExtensionLocation.TYPE]
+      locs = [types.ExtensionLocation.MIXIN_MEMBER,
+              types.ExtensionLocation.TYPE]
       parser.read_extensions(locs)
 
     # So long as one matches it should work.
     parser._reader = idl_tokenizer.IdlTokenizer('', '[Foo]')
-    locs = [idl_parser.IdlExtensionLocation.MEMBER,
-            idl_parser.IdlExtensionLocation.TYPE]
+    locs = [types.ExtensionLocation.MEMBER,
+            types.ExtensionLocation.TYPE]
     results = parser.read_extensions(locs)
     self.assertEqual(len(results), 1)
     self.assertExtensionValue(results[0], LocationExtension)
@@ -301,7 +302,7 @@ class ParserTest(unittest.TestCase):
       with self.assertRaises(SyntaxError):
         parser = idl_parser.IdlParser(ALL_EXTENSIONS)
         parser._reader = idl_tokenizer.IdlTokenizer('', code)
-        parser.read_extensions([idl_parser.IdlExtensionLocation.DEFINITION])
+        parser.read_extensions([types.ExtensionLocation.DEFINITION])
 
   def test_syntax_error(self):
     bad_code = [
