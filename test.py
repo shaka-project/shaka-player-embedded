@@ -37,8 +37,12 @@ def _RunTests(build_dir, no_colors):
     return 1
 
   webidl_path = os.path.join(ROOT_DIR, 'shaka', 'tools', 'webidl')
+  # Add our PLY checkout so the subprocess can find it.
+  env = os.environ.copy()
+  env['PYTHONPATH'] = (os.path.join(ROOT_DIR, 'third_party', 'ply', 'src') +
+                       os.pathsep + env.get('PYTHONPATH', ''))
   if subprocess.call([sys.executable, '-m', 'unittest', 'discover',
-                      '-s', webidl_path, '-p', '*_test.py']) != 0:
+                      '-s', webidl_path, '-p', '*_test.py'], env=env) != 0:
     return 1
 
   target_os = (utils.GetGnArg(build_dir, 'target_os') or

@@ -68,3 +68,6 @@
 [submodule "third_party/styleguide/src"]
 	path = third_party/styleguide/src
 	url = https://github.com/google/styleguide
+[submodule "third_party/ply/src"]
+	path = third_party/ply/src
+	url = https://github.com/dabeaz/ply

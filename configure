@@ -154,6 +154,7 @@ _REQUIRED_SUBMODULES = [
     'third_party/glog/src',
     'third_party/googletest/src',
     'third_party/libxml/src',
+    'third_party/ply/src',
     'third_party/pymake/src',
     'third_party/sdl2/src',
     'third_party/zlib/src',
