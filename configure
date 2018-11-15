@@ -1,0 +1,842 @@
+#!/usr/bin/python
+# Copyright 2017 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Generates build files for a given configuration.
+
+This works similar to any normal ./configure script.  This generates build files
+to build the project using the given command-line options.
+
+This doesn't use the make program to compile the project, this uses ninja.
+However, there is a Makefile that simply calls ./build.py for you.  You don't
+have to re-run ./configure if you edit BUILD.gn files.
+
+This doesn't support in-tree configures.  You have two options: (1) create
+another directory (or sub-directory) to do the configure in; or (2) use the
+--config-name option.  --config-name will create a subdirectory in the source
+root called "out" to hold that configuration.  If --config-name is used, the
+Makefile will be generated in the working directory, but the generated files
+will be put in out/$CONFIG_NAME.  Multiple parallel configurations can exist, so
+you can have one for Debug and one for Release.
+
+You can use the generated Makefile or ./build.py to build.  If you used the
+--config-name parameter, be sure to pass that to ./build.py also.
+"""
+
+from __future__ import print_function
+
+import argparse
+import errno
+import logging
+import os
+import platform
+import re
+import subprocess
+import sys
+
+ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
+DEFAULT_SETTINGS = {
+    'use_cxx11': True,
+    # The embedded sysroot in V8 has bugs in <chrono> meaning we cannot use
+    # <thread> or <condition_variable>.
+    'use_sysroot': False,
+    'use_custom_libcxx': False,
+    # Even though we don't compile Chromium, there is some global scripts that
+    # try to find glib.  This ensures we can build without glib installed.
+    'use_glib': False,
+}
+PLATFORM_SPECIFIC_SETTINGS = {
+    'darwin': {
+        'enable_dsyms': True,
+    },
+}
+V8_SETTINGS = {
+    'v8_extra_library_files': [],
+    'v8_experimental_extra_library_files': [],
+    # TODO: Building V8 in debug mode is currently broken.
+    'v8_enable_debugging_features': False,
+}
+
+sys.path.append(os.path.join(ROOT_DIR, 'build'))
+sys.path.append(os.path.join(ROOT_DIR, 'shaka', 'tools'))
+import run_configure
+import utils
+
+
+def _SilentRun(*cmd, **kwargs):
+  """Runs the given subprocess and only prints output on error."""
+  try:
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            **kwargs)
+  except OSError as e:
+    if e.errno == errno.ENOENT:
+      logging.error('Required command not found: %s', cmd[0])
+      return 1
+    raise
+
+  out, err = proc.communicate()
+  if proc.returncode != 0:
+    logging.error('Standard output:')
+    logging.error(out)
+    logging.error('')
+    logging.error('Standard error:')
+    logging.error(err)
+
+  return proc.returncode
+
+
+# Setting up GN arguments
+#{{{
+class _MaybeUseCcache(argparse.Action):
+  """An argparse Action that searches for ccache on PATH."""
+
+  def __init__(self, *args, **kwargs):
+    super(_MaybeUseCcache, self).__init__(*args, **kwargs)
+    self.nargs = 0
+
+  def _IsNewEnough(self, cmd):
+    """Returns whether ccache is new enough."""
+    try:
+      output = subprocess.check_output([cmd, '--version'],
+                                       stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+      logging.error('Error executing |ccache --version|:')
+      logging.error(e.output)
+      sys.exit(1)
+
+    match = re.search(r'ccache version ([0-9.]+)', output)
+    if not match:
+      logging.error('Unable to parse |ccache --version| output.')
+      return False
+
+    version = tuple(int(s) for s in match.group(1).split('.'))
+    if version >= (3, 2):
+      # See comment in //build/toolchain/cc_wrapper.gni about the minimum
+      # version.
+      return True
+    else:
+      logging.error('ccache is too old, upgrade to at least version 3.2')
+      return False
+
+  def __call__(self, parser, ns, values, option_string=None):
+    if utils.ExistsOnPath('ccache'):
+      exe = 'ccache'
+    elif utils.ExistsOnPath('ccache.exe'):
+      exe = 'ccache.exe'
+    else:
+      logging.error('Unable to find ccache on PATH')
+      return
+
+    if self._IsNewEnough(exe):
+      setattr(ns, self.dest, exe)
+
+
+_REQUIRED_SUBMODULES = [
+    'base/trace_event/common',
+    'build',
+    'buildtools',
+    'testing',
+    'third_party/boringssl/src',
+    'third_party/curl/src',
+    'third_party/ffmpeg/src',
+    'third_party/gflags/src',
+    'third_party/glog/src',
+    'third_party/googletest/src',
+    'third_party/libxml/src',
+    'third_party/pymake/src',
+    'third_party/sdl2/src',
+    'third_party/zlib/src',
+    'tools/clang',
+]
+_V8_SUBMODULES = [
+    'third_party/icu',
+    'third_party/jinja2',
+    'third_party/markupsafe',
+    'v8',
+]
+
+
+def _LoadSubmodules(has_v8):
+  """Loads the required submodules to build."""
+  logging.error('Loading required submodules...')
+  modules = _REQUIRED_SUBMODULES
+  if has_v8:
+    modules += _V8_SUBMODULES
+  for module in modules:
+    utils.LoadSubmodule(module)
+
+
+def _DownloadGn():
+  """Downloads the GN binary from cloud storage."""
+  logging.error('Downloading GN from cloud storage...')
+  platform_name = platform.uname()[0]
+  if platform_name == 'Linux':
+    path = 'buildtools/linux64/gn.sha1'
+  elif platform_name == 'Darwin':
+    path = 'buildtools/mac/gn.sha1'
+  elif platform_name == 'Windows' or 'CYGWIN' in platform_name:
+    path = 'buildtools/win/gn.exe.sha1'
+  else:
+    raise RuntimeError('Unknown platform type')
+
+  # TODO: Consider an alternative that doesn't use depot_tools.  This would
+  # allow us to only depend on ninja, which can be installed separately.
+  return _SilentRun('download_from_google_storage', '--no_auth', '--bucket',
+                    'chromium-gn', '-s', os.path.join(ROOT_DIR, path))
+
+
+def _ConstructGnArgs(parsed_args):
+  """Constructs a GN args list from the given parsed command-line arguments."""
+  obj = DEFAULT_SETTINGS.copy()
+  obj.update(PLATFORM_SPECIFIC_SETTINGS.get(sys.platform, {}))
+  if parsed_args.js_engine == 'v8':
+    obj.update(V8_SETTINGS)
+  for k, v in vars(parsed_args).iteritems():
+    if k[-1] != '_' and v is not None:
+      obj[k] = v
+  import gn_helpers  # Don't import until we have downloaded the submodule.
+  return gn_helpers.ToGNString(obj) + ' ' + parsed_args.gn_args_
+
+
+def GenGn(config_name, args, gen_ide=None):
+  """Calls 'gn gen' with the given GN arguments."""
+  cmd = [utils.FindGn(), 'gen', '--root=' + ROOT_DIR, '--args=' + args,
+         utils.ConfigPath(config_name)]
+  if gen_ide:
+    cmd += ['--ide=' + gen_ide]
+  return _SilentRun(*cmd)
+
+
+def RecoverGn(config_name):
+  """Attempts to regenerate ninja files using an existing configuration."""
+  return subprocess.call([utils.FindGn(), '--root=' + ROOT_DIR, '-q', 'gen',
+                          utils.ConfigPath(config_name)])
+
+# }}}
+
+
+# Running third-party configure
+# {{{
+_CONFIGURE_STEPS = []
+
+
+def _Step(name):
+  """Defines a configure step."""
+  def Wrapper(func):
+    _CONFIGURE_STEPS.append((name, func))
+    return func
+  return Wrapper
+
+
+def _RunMake(out_dir, *targets):
+  return _SilentRun('make', '-j8', '-C', out_dir, *targets)
+
+
+def _Split(s):
+  """Splits the string on commas.
+
+  Args:
+    s: The string to split.
+
+  Returns:
+    A list of strings, or an empty list if the input is empty.
+  """
+  if not s or not s.strip():
+    return []
+  return s.strip().split(',')
+
+
+# TODO: Investigate whether we need to run v8/gypfiles/vs_toolschain.py.  Only
+# required on windows.
+
+
+@_Step('binutils')
+def _BinutilsSymlink(unused_src_dir, unused_dest_dir, unused_cpu, target_os,
+                     unused_sysroot, unused_parsed_args):
+  """Creates a symlink from V8's binutils to our root path."""
+  if target_os == 'ios':
+    return 0
+
+  utils.SymLink(os.path.join(ROOT_DIR, 'v8', 'third_party', 'binutils'),
+                os.path.join(ROOT_DIR, 'third_party', 'binutils'))
+
+  # Pull binutils for linux, enabled debug fission for faster linking /
+  # debugging when used with clang on Ubuntu Precise.
+  # https://code.google.com/p/chromium/issues/detail?id=352046
+  download = os.path.join(ROOT_DIR, 'v8', 'third_party', 'binutils',
+                          'download.py')
+  return _SilentRun(sys.executable, download)
+
+
+@_Step('clang')
+def _DownloadClang(*unused_args):
+  # Pull clang if needed or requested via GYP_DEFINES.
+  # Note: On Win, this should run after win_toolchain, as it may use it.
+  # This also needs to be one of the first _Steps so other steps can use clang.
+  update = os.path.join(ROOT_DIR, 'tools', 'clang', 'scripts', 'update.py')
+  return _SilentRun(sys.executable, update, '--if-needed')
+
+
+def _GetSdlPath(obj):
+  """Converts an SDL2 object path to a source path."""
+  # The input will be "build/foo.la", we should return "sdl2/gen/foo.c".
+  return 'sdl2/gen/%s.c' % os.path.splitext(os.path.basename(obj))[0]
+
+
+@_Step('sdl2')
+def _RunSdlConfigure(src_dir, dest_dir, cpu, target_os, sysroot, parsed_args):
+  """Runs configure for SDL2."""
+  extra_flags = [
+      # Disable third-party libraries to avoid finding the required paths in GN.
+      '--disable-libudev',
+      '--disable-dbus',
+      '--disable-ime',
+      '--disable-ibus',
+      '--disable-fcitx',
+      '--disable-sndio',
+      '--includedir=' + os.path.join(dest_dir, 'include'),
+
+      # Disable unused features for internal-only build.
+      '--disable-joystick',
+      '--disable-haptic',
+      '--disable-power',
+      '--disable-filesystem',
+      '--disable-timers',
+      '--disable-libsamplerate',  # We resample ourselves.
+      '--disable-libsamplerate-shared',
+  ]
+  if platform.uname()[0] != 'Darwin':
+    extra_flags += ['--disable-file']
+  if not parsed_args.sdl_utils:
+    extra_flags += [
+        # When using native textures, disable video output too.  We should only
+        # have audio components now.
+        '--disable-events',
+        '--disable-video',
+        '--disable-render',
+    ]
+
+  if run_configure.CrossConfigure(src_dir, dest_dir, cpu, target_os,
+                                  sysroot, extra_flags) != 0:
+    return 1
+
+  import parse_makefile  # Only import once we have downloaded the submodule.
+  makefile = parse_makefile.Makefile([os.path.join(dest_dir, 'Makefile')])
+  base_path = os.path.abspath(os.path.join(src_dir, '..'))
+
+  # The SDL Makefile contains a variable OBJECTS that contains a list of targets
+  # to build.  Each target has a dependency which is the file that will be built
+  # For example:
+  #   OBJECTS=Foo.lo Bar.lo
+  #   Foo.lo: src/audio/Foo.c
+  #     $(CC) "$*"
+  objects = makefile.GetListVariable('OBJECTS')
+  sources = [makefile.GetTargetDepdency(t) for t in objects]
+  parsed_args.sdl2_sources = [os.path.relpath(p, base_path) for p in sources]
+
+  targets = makefile.GetListVariable('GEN_OBJECTS')
+  if targets:
+    parsed_args.sdl2_extra_files = map(_GetSdlPath, targets)
+  targets += makefile.GetListVariable('GEN_HEADERS')
+  targets += ['install-hdrs']
+  return _RunMake(dest_dir, *targets)
+
+
+def _ConvertFFmpegFlags(parsed_args):
+  """Converts the flags for this script into flags for FFmpeg configure."""
+  if not parsed_args.enable_hardware_decode:
+    parsed_args.extra_decoders_ = []
+    parsed_args.hwaccels_ = []
+
+  containers = _Split(parsed_args.containers_)
+  codecs = _Split(parsed_args.codecs_)
+  flags = ['--enable-demuxer=' + demuxer for demuxer in containers]
+  flags += ['--enable-parser=' + codec for codec in codecs]
+  flags += ['--enable-decoder=' + codec for codec in codecs]
+  flags += ['--enable-decoder=' + codec
+            for codec in _Split(parsed_args.extra_decoders_)]
+  flags += ['--enable-hwaccel=' + codec
+            for codec in _Split(parsed_args.hwaccels_)]
+  if 'mov' in containers and 'mpeg4video' not in codecs:
+    flags += ['--enable-parser=mpeg4video']
+
+  if parsed_args.is_debug:
+    flags += [
+        '--disable-optimizations',
+        '--enable-debug',
+    ]
+  else:
+    flags += [
+        '--enable-optimizations',
+        '--disable-debug',
+    ]
+  return flags
+
+
+@_Step('ffmpeg')
+def _RunFFmpegConfigure(src_dir, dest_dir, cpu, target_os, sysroot,
+                        parsed_args):
+  """Generates the required build files."""
+  third_party_dir = os.path.join(ROOT_DIR, 'third_party')
+  prefix = os.path.join(third_party_dir, 'llvm-build', 'Release+Asserts', 'bin')
+  cpu_flags = run_configure.FlagsForCpu(cpu, target_os, sysroot)
+  flags = [
+      '--cc=%s/clang %s' % (prefix, cpu_flags),
+      '--cxx=%s/clang++ %s' % (prefix, cpu_flags),
+      '--objcc=%s/clang %s' % (prefix, cpu_flags),
+      '--as=%s/clang %s' % (prefix, cpu_flags),
+      '--enable-cross-compile',
+
+      '--fatal-warnings',
+      '--disable-shared',
+      '--enable-static',
+      '--disable-programs',
+      '--disable-doc',
+
+      '--disable-avdevice',
+      '--enable-avcodec',
+      '--enable-avformat',
+      '--enable-swresample',
+      '--disable-swscale',
+      '--disable-postproc',
+      '--disable-avfilter',
+      '--disable-avresample',
+      '--disable-network',
+
+      '--disable-everything',
+
+      '--disable-bzlib',
+      '--disable-iconv',
+      '--disable-libxcb',
+      '--disable-libxcb-shm',
+      '--disable-libxcb-xfixes',
+      '--disable-libxcb-shape',
+      '--disable-lzma',
+      '--disable-schannel',
+      '--disable-sdl2',
+      '--disable-securetransport',
+      '--disable-xlib',
+
+      '--disable-asm',  # TODO(modmaker): Consider using assembly.
+  ]
+  flags += _ConvertFFmpegFlags(parsed_args)
+
+  if not os.path.exists(dest_dir):
+    os.makedirs(dest_dir)
+
+  # Can't use GPL or non-free licensing.  The FFmpeg configure won't enable
+  # those features without these flags.
+  assert '--enable-gpl' not in flags, "Can't use GPL licensed code."
+  assert '--enable-nonfree' not in flags, "Can't use non-free code."
+  if _SilentRun(os.path.join(src_dir, 'configure'), *flags, cwd=dest_dir) != 0:
+    return 1
+
+  import parse_makefile  # Only import once we have downloaded the submodule.
+  def _GetFiles(prefix):
+    makefile = parse_makefile.Makefile(
+        [
+            os.path.join(dest_dir, 'ffbuild', 'config.mak'),
+            os.path.join(src_dir, prefix, 'Makefile'),
+        ])
+    objs = (makefile.GetListVariable('OBJS') +
+            makefile.GetListVariable('OBJS-yes'))
+    return [os.path.join('src', prefix, f[:-2] + '.c') for f in set(objs)]
+  parsed_args.ffmpeg_codec_files = _GetFiles('libavcodec')
+  parsed_args.ffmpeg_util_files = _GetFiles('libavutil')
+  parsed_args.ffmpeg_swscale_files = _GetFiles('libswscale')
+  parsed_args.ffmpeg_swresample_files = _GetFiles('libswresample')
+  parsed_args.ffmpeg_format_files = _GetFiles('libavformat')
+  if 'src/libavformat/mov.c' in parsed_args.ffmpeg_format_files:
+    parsed_args.ffmpeg_format_files.remove('src/libavformat/mov.c')
+    parsed_args.ffmpeg_patch_mov = True
+  if 'src/libavformat/matroskadec.c' in parsed_args.ffmpeg_format_files:
+    parsed_args.ffmpeg_format_files.remove('src/libavformat/matroskadec.c')
+    parsed_args.ffmpeg_patch_mkv = True
+  if 'src/libavcodec/opus_parser.c' in parsed_args.ffmpeg_codec_files:
+    parsed_args.ffmpeg_codec_files.remove('src/libavcodec/opus_parser.c')
+    parsed_args.ffmpeg_patch_opus = True
+  if 'src/libavformat/utils.c' in parsed_args.ffmpeg_format_files:
+    parsed_args.ffmpeg_format_files.remove('src/libavformat/utils.c')
+    parsed_args.ffmpeg_patch_utils = True
+
+  return _RunMake(dest_dir, 'libavformat/ffversion.h')
+
+
+@_Step('gflags')
+def _RunGflagsConfigure(src_dir, dest_dir, cpu, target_os, sysroot, _):
+  """Runs configure for gflags."""
+  if not os.path.exists(dest_dir):
+    os.makedirs(dest_dir)
+
+  compiler = os.path.join(ROOT_DIR, 'third_party', 'llvm-build',
+                          'Release+Asserts', 'bin', 'clang')
+  # Don't pass the sysroot since cmake will also pass in CMAKE_SYSROOT.
+  flags = run_configure.FlagsForCpu(cpu, target_os, '')
+  extra_flags = [
+      '-DCMAKE_C_COMPILER=' + compiler,
+      '-DCMAKE_CXX_COMPILER=%s++' % compiler,
+      '-DCMAKE_C_FLAGS=' + flags,
+      '-DCMAKE_CXX_FLAGS=' + flags,
+      '-DCMAKE_SYSROOT=' + sysroot,
+  ]
+  return _SilentRun('cmake', src_dir, *extra_flags, cwd=dest_dir)
+
+
+@_Step('glog')
+def _RunGlogConfigure(src_dir, dest_dir, cpu, target_os, sysroot, _):
+  """Runs configure for glog."""
+  if _SilentRun('autoreconf', '-i', src_dir) != 0:
+    return 1
+
+  extra_flags = [
+      '--disable-rtti',
+      '--with-gflags=' + os.path.join(src_dir, '..', '..', 'gflags', 'src'),
+  ]
+  if run_configure.CrossConfigure(src_dir, dest_dir, cpu, target_os,
+                                  sysroot, extra_flags) != 0:
+    return 1
+
+  # glog checks in files generated by autoreconf, so the directory is dirty.
+  # Now that ./configure is done, we don't need any of the files in src_dir,
+  # so have git reset everything.  This ensures that gclient doesn't complain
+  # later about changes.  See https://github.com/google/glog/issues/308
+  if _SilentRun('git', '-C', src_dir, 'reset', '--hard') != 0:
+    return 1
+  # -d: remove directories, -f: force delete, -x: remove untracked files.
+  return _SilentRun('git', '-C', src_dir, 'clean', '-dfx')
+
+
+@_Step('libxml')
+def _RunLibxmlConfigure(src_dir, dest_dir, cpu, target_os, sysroot, _):
+  """Runs configure for libxml."""
+  if _SilentRun('autoreconf', '-if', '-Wall', src_dir) != 0:
+    return 1
+
+  extra_flags = [
+      '--without-c14n',
+      '--without-catalog',
+      '--without-debug',
+      '--without-docbook',
+      '--without-ftp',
+      '--without-http',
+      '--without-iconv',
+      '--without-iso8859x',
+      '--without-legacy',
+      '--without-lzma',
+      '--without-modules',
+      '--without-output',
+      '--without-pattern',
+      '--without-push',
+      '--without-reader',
+      '--without-regexps',
+      '--without-schemas',
+      '--without-schematron',
+      '--without-threads',
+      '--without-tree',
+      '--without-valid',
+      '--without-writer',
+      '--without-xinclude',
+      '--without-xpath',
+      '--without-xptr',
+      '--without-zlib',
+  ]
+  return run_configure.CrossConfigure(src_dir, dest_dir, cpu, target_os,
+                                      sysroot, extra_flags)
+
+
+def _RunThirdPartyConfigure(parsed_args):
+  """Runs any third-party configure scripts that are needed."""
+  config_dir = utils.ConfigPath(parsed_args.config_name_)
+
+  cpu = (utils.GetGnArg(config_dir, 'target_cpu') or
+         utils.GetGnArg(config_dir, 'host_cpu'))
+  target_os = (utils.GetGnArg(config_dir, 'target_os') or
+               utils.GetGnArg(config_dir, 'host_os'))
+  gen_dir = utils.GetGnVar(config_dir, 'root_gen_dir')
+  sysroot = utils.GetGnVar(config_dir, 'sysroot')
+
+  if not cpu or not target_os:
+    logging.error('Error determining CPU or OS')
+    return 1
+
+  for name, func in _CONFIGURE_STEPS:
+    logging.error('Running configure for %s...', name)
+    src_dir = os.path.join(ROOT_DIR, 'third_party', name, 'src')
+    dest_dir = os.path.join(gen_dir, name)
+    if func(src_dir, dest_dir, cpu, target_os, sysroot, parsed_args) != 0:
+      return 1
+
+  return 0
+
+
+def _BoringSslGenerated():
+  """Generates files for BoringSSL."""
+  logging.error('Generating files for boringssl...')
+  ssl_dir = os.path.join(ROOT_DIR, 'third_party', 'boringssl')
+  env = os.path.join(ssl_dir, 'src', 'util', 'bot', 'go', 'env.py')
+  generate = os.path.join(ssl_dir, 'src', 'util', 'generate_build_files.py')
+  return subprocess.call([sys.executable, env, 'python', generate, 'gn'],
+                         cwd=ssl_dir)
+
+# }}}
+
+
+def _CreateArgParser():
+  """Creates the argument parser for this script."""
+  # Note: dest values that end with '_' are used by this script; keys that do
+  # not end with '_' are GN argument names and are passed directly to GN.
+  parser = argparse.ArgumentParser(
+      description=__doc__, usage='%(prog)s [options]',
+      formatter_class=argparse.RawDescriptionHelpFormatter)
+  parser.add_argument(
+      '--config-name', dest='config_name_', metavar='NAME',
+      help='Do a special in-tree build with this configuration name.')
+  parser.add_argument(
+      '--ide', choices=['eclipse', 'vs', 'vs2013', 'vs2015', 'vs2017', 'xcode',
+                        'qtcreator', 'json'],
+      dest='ide_', help='The name of an IDE to generate project files for.')
+  parser.add_argument(
+      '--recover', dest='recover_', action='store_true',
+      help='Generate ninja files for an existing configuration.')
+
+  type_parser = parser.add_argument_group('Build Types')
+  type_parser.add_argument(
+      '--debug', action='store_true', dest='is_debug', default=True,
+      help='Build in debug mode (default).')
+  type_parser.add_argument(
+      '--release', action='store_false', dest='is_debug', default=True,
+      help='Build in release mode.')
+  type_parser.add_argument(
+      '--disable-demo', action='store_false', dest='enable_demo', default=True,
+      help="Don't build the demo app.")
+  type_parser.add_argument(
+      '--disable-tests', action='store_false', dest='enable_tests',
+      default=True, help="Don't build the unit tests.")
+  type_parser.add_argument(
+      '--enable-shared', action='store_true', dest='enable_shared',
+      default=True, help=argparse.SUPPRESS)
+  type_parser.add_argument(
+      '--disable-shared', action='store_false', dest='enable_shared',
+      default=True, help="Don't build a shared library.")
+  type_parser.add_argument(
+      '--enable-static', action='store_true', dest='enable_static',
+      default=False, help='Build a static library.')
+  type_parser.add_argument(
+      '--disable-static', action='store_false', dest='enable_static',
+      default=False, help=argparse.SUPPRESS)
+
+  engine_parser = parser.add_argument_group('JavaScript Engines')
+  engine_parser.add_argument(
+      '--v8', action='store_const', dest='js_engine', const='v8',
+      help='Use V8 (Chrome) as the JavaScript engine.')
+  engine_parser.add_argument(
+      '--jsc', action='store_const', dest='js_engine', const='jsc',
+      help='Use JavaScriptCore (Safari) as the JavaScript engine.')
+
+  media_parser = parser.add_argument_group(
+      'Media Options',
+      description='These settings are passed directly to FFmpeg, so see '
+                  'their documentation for\nsupported values.')
+  media_parser.add_argument(
+      '--containers', dest='containers_', metavar='CONTAINERS', default=None,
+      help='A comma separated list of media containers to support.')
+  media_parser.add_argument(
+      '--codecs', dest='codecs_', metavar='CODECS', default=None,
+      help='A comma separated list of media codecs to support.')
+  # TODO: Test with other hardware decoders/accelerators.
+  media_parser.add_argument(
+      '--extra-decoders', dest='extra_decoders_', metavar='EXTRA_DECODERS',
+      default='h264_cuvid,hevc_cuvid,vp8_cuvid,vp9_cuvid,aac_at,ac3_at',
+      help='A comma separated list of extra decoders to use.  These should be '
+           'used for hardware decoders (e.g. "h264_cuvid"), "plain" codecs '
+           'should be in --codecs.  Any unsupported values are removed.')
+  media_parser.add_argument(
+      '--hwaccels', dest='hwaccels_', metavar='HWACCELS',
+      default='h264_nvdec,h264_videotoolbox,hevc_nvdec,hevc_videotoolbox,'
+              'vp8_nvdec,vp9_nvdec',
+      help='A comma separated list of hardware acelerators to use.  Any '
+           'unsupported values are removed.')
+  media_parser.add_argument(
+      '--disable-hardware-decode', dest='enable_hardware_decode',
+      action='store_false', help='Disable hardware accelerated decode.')
+  media_parser.add_argument(
+      '--force-hardware-decode', dest='force_hardware_decode',
+      action='store_const', const=True,
+      help='Require hardware accelerated or OS-provided decoding.')
+
+  sanitizer = parser.add_argument_group('Sanitizers')
+  sanitizer.add_argument(
+      '--asan', dest='is_asan', action='store_true',
+      help='AddressSanitizer to find memory bugs.')
+  sanitizer.add_argument(
+      '--tsan', dest='is_tsan', action='store_true',
+      help='ThreadSanitizer to detect data races.')
+  sanitizer.add_argument(
+      '--ubsan', dest='is_ubsan', action='store_true',
+      help='UndefinedBehaviorSanitizer to find undefined behavior bugs.')
+
+  extra_parser = parser.add_argument_group('Extra arguments')
+  extra_parser.add_argument(
+      '--cpu', dest='target_cpu', choices=['x86', 'x64', 'arm', 'arm64'],
+      help='Sets the target CPU to build for.')
+  extra_parser.add_argument(
+      '--ios', action='store_const', dest='target_os', const='ios',
+      help='Build for iOS devices (only available on Mac).')
+  extra_parser.add_argument(
+      '--sdl-utils', action='store_const', dest='sdl_utils', const=True,
+      help='Include SDL utilities in the Library.')
+  extra_parser.add_argument(
+      '--no-sdl-utils', action='store_const', dest='sdl_utils', const=False,
+      help="Don't include SDL utilities in the Library.")
+  extra_parser.add_argument(
+      '--ios-sdl-demo', action='store_const', dest='ios_sdl_demo', const=True,
+      help='Use SDL for the iOS demo app.')
+  extra_parser.add_argument(
+      '--eme-impl', action='append', dest='eme_impls_',
+      help='Include the given EME implementation in the build.  Can be given '
+           'multiple times.')
+  extra_parser.add_argument(
+      '--ccache-if-possible', dest='cc_wrapper', action=_MaybeUseCcache,
+      help='Use ccache to speed up builds, if found on PATH.')
+  extra_parser.add_argument(
+      '--v8-debug', action='store_false', dest='v8_optimized_debug',
+      default=None,
+      help='Enable debugging symbols and disable optimizations in V8.')
+  extra_parser.add_argument(
+      '--gn-args', dest='gn_args_', default='', metavar='ARGS',
+      help='A space separated list of extra arguments for GN.')
+  extra_parser.add_argument(
+      '--no-makefile', dest='makefile_', action='store_false',
+      help="Don't create a Makefile in the working directory.")
+
+  return parser
+
+
+def _ParseArgs(args):
+  """Parses the given command-line args and validates them."""
+  parser = _CreateArgParser()
+  parsed_args = parser.parse_args(args)
+  is_ios = parsed_args.target_os == 'ios'
+
+  if (parsed_args.v8_optimized_debug is not None and
+      parsed_args.js_engine != 'v8'):
+    parser.error('--v8-debug is only valid with --v8.')
+  if is_ios and platform.uname()[0] != 'Darwin':
+    parser.error('Can only build for iOS on Mac.')
+  if parsed_args.is_ubsan and parsed_args.is_debug:
+    parser.error('Can only use --ubsan with --release.')
+  if not parsed_args.enable_shared and not parsed_args.enabled_static:
+    parser.error('Not configured to build something; use --enable-static or '
+                 '--enable-shared.')
+  if (os.path.abspath(os.getcwd()) == os.path.abspath(ROOT_DIR) and
+      not parsed_args.config_name_):
+    parser.error('Either do an out-of-tree build or use --config-name.')
+
+  if parsed_args.sdl_utils is False and parsed_args.enable_demo and not is_ios:
+    parser.error('Cannot disable SDL utils with the default demo; disable it '
+                 'with --disable-demo.')
+  if parsed_args.sdl_utils is False and parsed_args.ios_sdl_demo:
+    parser.error('Cannot pass both --ios-sdl-demo and --no-sdl-utils')
+  if not parsed_args.enable_demo and parsed_args.ios_sdl_demo:
+    parser.error('Cannot pass both --disable-demo and --ios-sdl-demo')
+
+  if parsed_args.cc_wrapper and (parsed_args.is_asan or parsed_args.is_tsan or
+                                 parsed_args.is_ubsan):
+    logging.warning('Using ccache with sanitizers is not advised since '
+                    'it will not recompile if you change the blacklists.')
+
+  if parsed_args.js_engine is None:
+    parsed_args.js_engine = 'jsc' if is_ios else 'v8'
+
+  if not is_ios and parsed_args.sdl_utils is None:
+    parsed_args.sdl_utils = True
+
+  if parsed_args.ios_sdl_demo:
+    parsed_args.sdl_utils = True
+
+  if parsed_args.is_ubsan:
+    parsed_args.is_ubsan_null = True
+    parsed_args.is_ubsan_vptr = True
+
+  if parsed_args.eme_impls_:
+    parsed_args.eme_implementations = []
+    for impl in parsed_args.eme_impls_:
+      if not os.path.exists(impl):
+        parser.error('Unable to find EME implementation %r' % impl)
+      parsed_args.eme_implementations.append(
+          os.path.relpath(os.path.abspath(impl), ROOT_DIR))
+
+  if not parsed_args.containers_:
+    if is_ios:
+      parsed_args.containers_ = 'mov'
+    else:
+      parsed_args.containers_ = 'matroska,mov'
+  if not parsed_args.codecs_:
+    if is_ios:
+      parsed_args.codecs_ = 'h264,hevc,aac'
+    else:
+      parsed_args.codecs_ = 'h264,hevc,vp8,vp9,aac,aac_latm,ac3,opus,vorbis'
+
+  return parsed_args
+
+
+def main(args):
+  parsed_args = _ParseArgs(args)
+
+  # We can't ask GN what the default JavaScript engine is because we haven't
+  # downloaded it yet.  We can't download it first because we need to load the
+  # submodule that contains its hash.
+  _LoadSubmodules(parsed_args.js_engine == 'v8')
+
+  # Download GN before we do anything else.
+  if _DownloadGn() != 0:
+    return 1
+
+  # Need to generate boringssl before running GN since this generates .gni
+  # files needed by GN.
+  if _BoringSslGenerated() != 0:
+    return 1
+
+  if parsed_args.recover_:
+    return RecoverGn(parsed_args.config_name_)
+
+  # We need to generate GN files first so we can query things like target_os.
+  gn_args = _ConstructGnArgs(parsed_args)
+  if GenGn(parsed_args.config_name_, gn_args, parsed_args.ide_) != 0:
+    return 1
+
+  if _RunThirdPartyConfigure(parsed_args) != 0:
+    return 1
+
+  # After we have generated third-party dependencies, we need to update the GN
+  # configurations for extra third-party files.
+  logging.error('Generating build files...')
+  gn_args = _ConstructGnArgs(parsed_args)
+  if GenGn(parsed_args.config_name_, gn_args, parsed_args.ide_) != 0:
+    return 1
+
+  if parsed_args.makefile_:
+    with open(os.path.join(ROOT_DIR, 'Makefile.in')) as f:
+      with open('Makefile', 'w') as out:
+        out.write(f.read()
+                  .replace('{{SOURCE_ROOT}}', ROOT_DIR)
+                  .replace('{{CONFIG_NAME}}', parsed_args.config_name_ or '')
+                  .replace('{{TARGET_OS}}', parsed_args.target_os or ''))
+
+  return 0
+
+
+if __name__ == '__main__':
+  logging.basicConfig(format='')
+  sys.exit(main(sys.argv[1:]))

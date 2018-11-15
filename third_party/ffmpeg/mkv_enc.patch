@@ -1,0 +1,253 @@
+diff --git a/matroskadec.c b/matroskadec.c
+index 1ded431b801..a187240d89d 100644
+--- a/matroskadec.c
++++ b/matroskadec.c
+@@ -367,6 +367,9 @@ typedef struct MatroskaDemuxContext {
+ 
+     /* Bandwidth value for WebM DASH Manifest */
+     int bandwidth;
++
++    /* Parsing encryption info flag */
++    int parse_encryption;
+ } MatroskaDemuxContext;
+ 
+ typedef struct MatroskaBlock {
+@@ -2080,7 +2083,8 @@ static int matroska_parse_tracks(AVFormatContext *s)
+         int extradata_offset = 0;
+         uint32_t fourcc = 0;
+         AVIOContext b;
+-        char* key_id_base64 = NULL;
++        char* key_id = NULL;
++        int key_id_size = 0;
+         int bit_depth = -1;
+ 
+         /* Apply some sanity checks. */
+@@ -2133,14 +2137,8 @@ static int matroska_parse_tracks(AVFormatContext *s)
+                 if (encodings[0].encryption.key_id.size > 0) {
+                     /* Save the encryption key id to be stored later as a
+                        metadata tag. */
+-                    const int b64_size = AV_BASE64_SIZE(encodings[0].encryption.key_id.size);
+-                    key_id_base64 = av_malloc(b64_size);
+-                    if (key_id_base64 == NULL)
+-                        return AVERROR(ENOMEM);
+-
+-                    av_base64_encode(key_id_base64, b64_size,
+-                                     encodings[0].encryption.key_id.data,
+-                                     encodings[0].encryption.key_id.size);
++                    key_id = encodings[0].encryption.key_id.data;
++                    key_id_size = encodings[0].encryption.key_id.size;
+                 } else {
+                     encodings[0].scope = 0;
+                     av_log(matroska->ctx, AV_LOG_ERROR,
+@@ -2198,14 +2196,40 @@ static int matroska_parse_tracks(AVFormatContext *s)
+ 
+         st = track->stream = avformat_new_stream(s, NULL);
+         if (!st) {
+-            av_free(key_id_base64);
+             return AVERROR(ENOMEM);
+         }
+ 
+-        if (key_id_base64) {
++        if (key_id) {
++            AVEncryptionInitInfo *init_info;
++            uint8_t *side_data;
++            size_t side_data_size;
++            const int b64_size = AV_BASE64_SIZE(key_id_size);
++            char *key_id_base64 = av_malloc(b64_size);
++            if (!key_id_base64)
++                return AVERROR(ENOMEM);
++            av_base64_encode(key_id_base64, b64_size, key_id, key_id_size);
++
+             /* export encryption key id as base64 metadata tag */
+             av_dict_set(&st->metadata, "enc_key_id", key_id_base64, 0);
+             av_freep(&key_id_base64);
++
++
++            /* Convert the key ID to a generic encryption init info */
++            init_info = av_encryption_init_info_alloc(/* system_id_size */ 0, /* num_key_ids */ 1,
++                                                      /* key_id_size */ key_id_size, /* data_size */ 0);
++            if (!init_info)
++                return AVERROR(ENOMEM);
++            memcpy(init_info->key_ids[0], key_id, key_id_size);
++            side_data = av_encryption_init_info_add_side_data(init_info, &side_data_size);
++            av_encryption_init_info_free(init_info);
++            if (!side_data)
++                return AVERROR(ENOMEM);
++            ret = av_stream_add_side_data(st, AV_PKT_DATA_ENCRYPTION_INIT_INFO,
++                                          side_data, side_data_size);
++            if (ret < 0) {
++                av_free(side_data);
++                return ret;
++            }
+         }
+ 
+         if (!strcmp(track->codec_id, "V_MS/VFW/FOURCC") &&
+@@ -3179,6 +3203,111 @@ static int matroska_parse_webvtt(MatroskaDemuxContext *matroska,
+     return 0;
+ }
+ 
++static int matroska_parse_encryption_info(MatroskaDemuxContext *matroska, MatroskaTrackEncryption *encryption,
++                                          AVPacket *pkt) {
++    uint8_t signal_byte;
++    uint8_t *side_data;
++    size_t side_data_size;
++    int has_subsamples, partition_count, subsample_count, header_size, res = 0;
++    AVEncryptionInfo *info;
++
++    if (encryption->algo != 5) {
++        av_log(matroska->ctx, AV_LOG_ERROR,
++               "Only AES encryption is supported.\n");
++        return AVERROR_PATCHWELCOME;
++    }
++    if (encryption->key_id.size == 0) {
++        av_log(matroska->ctx, AV_LOG_ERROR, "No key ID given.\n");
++        return AVERROR_INVALIDDATA;
++    }
++
++    if (pkt->size == 0) {
++        av_log(matroska->ctx, AV_LOG_ERROR,
++               "Not enough packet data for encryption header.\n");
++        return AVERROR_INVALIDDATA;
++    }
++
++    signal_byte = pkt->data[0];
++    has_subsamples = signal_byte & 0x2;
++    if (signal_byte & 0xfc) {
++        av_log(matroska->ctx, AV_LOG_ERROR, "Reserved bit set.\n");
++        return AVERROR_PATCHWELCOME;
++    }
++    if (!(signal_byte & 0x1)) {
++        // Frame in clear, skip signal byte.
++        pkt->data++;
++        pkt->size--;
++        return 0;
++    }
++
++    if (has_subsamples) {
++        partition_count = pkt->data[9];
++        subsample_count = partition_count / 2 + 1;
++        header_size = 10 + partition_count * 4;
++    } else {
++        partition_count = 0;
++        subsample_count = 0;
++        header_size = 9;
++    }
++    if (pkt->size < header_size) {
++        av_log(matroska->ctx, AV_LOG_ERROR,
++               "Not enough packet data for encryption header.\n");
++        return AVERROR_INVALIDDATA;
++    }
++
++    info = av_encryption_info_alloc(subsample_count, encryption->key_id.size,
++                                    /* iv_size */ 16);
++    if (!info)
++        return AVERROR(ENOMEM);
++
++    info->scheme = MKBETAG('c','e','n','c');
++    // Copy the 8-byte IV into the high bytes of |info->iv|, the low bytes should already be set to 0.
++    memcpy(info->iv, pkt->data + 1, 8);
++    memcpy(info->key_id, encryption->key_id.data, encryption->key_id.size);
++
++    if (has_subsamples) {
++        uint32_t partition_offset = 0;
++        for (int i = 0; i < partition_count + 1; i++) {
++            const uint32_t next_partition_offset =
++                i == partition_count ? pkt->size - header_size : AV_RB32(pkt->data + 10 + i * 4);
++            if (next_partition_offset < partition_offset) {
++                av_log(matroska->ctx, AV_LOG_ERROR,
++                       "Partition offsets out of order.\n");
++                res = AVERROR_INVALIDDATA;
++                goto error;
++            }
++            if (next_partition_offset > pkt->size - header_size) {
++                av_log(matroska->ctx, AV_LOG_ERROR,
++                       "Partition offset past end of frame data.\n");
++                res = AVERROR_INVALIDDATA;
++                goto error;
++            }
++
++            if (i % 2 == 0)
++                info->subsamples[i / 2].bytes_of_clear_data = next_partition_offset - partition_offset;
++            else
++                info->subsamples[i / 2].bytes_of_protected_data = next_partition_offset - partition_offset;
++            partition_offset = next_partition_offset;
++        }
++    }
++
++    side_data = av_encryption_info_add_side_data(info, &side_data_size);
++    if (side_data) {
++        res = av_packet_add_side_data(pkt, AV_PKT_DATA_ENCRYPTION_INFO, side_data, side_data_size);
++        if (res < 0)
++            av_free(side_data);
++    } else {
++        res = AVERROR(ENOMEM);
++    }
++
++    pkt->data += header_size;
++    pkt->size -= header_size;
++
++error:
++    av_encryption_info_free(info);
++    return res;
++}
++
+ static int matroska_parse_frame(MatroskaDemuxContext *matroska,
+                                 MatroskaTrack *track, AVStream *st,
+                                 AVBufferRef *buf, uint8_t *data, int pkt_size,
+@@ -3241,6 +3370,14 @@ static int matroska_parse_frame(MatroskaDemuxContext *matroska,
+     pkt->flags        = is_keyframe;
+     pkt->stream_index = st->index;
+ 
++    if (matroska->parse_encryption && encodings && encodings->type == 1) {
++        res = matroska_parse_encryption_info(matroska, &encodings->encryption, pkt);
++        if (res < 0) {
++            av_packet_unref(pkt);
++            return res;
++        }
++    }
++
+     if (additional_size > 0) {
+         uint8_t *side_data = av_packet_new_side_data(pkt,
+                                                      AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL,
+@@ -4010,16 +4147,29 @@ static int webm_dash_manifest_read_packet(AVFormatContext *s, AVPacket *pkt)
+ }
+ 
+ #define OFFSET(x) offsetof(MatroskaDemuxContext, x)
+-static const AVOption options[] = {
++static const AVOption dash_options[] = {
+     { "live", "flag indicating that the input is a live file that only has the headers.", OFFSET(is_live), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, AV_OPT_FLAG_DECODING_PARAM },
+     { "bandwidth", "bandwidth of this stream to be specified in the DASH manifest.", OFFSET(bandwidth), AV_OPT_TYPE_INT, {.i64 = 0}, 0, INT_MAX, AV_OPT_FLAG_DECODING_PARAM },
++    { "parse_encryption", "flag indicating the demuxer should parse generic encryption info.", OFFSET(parse_encryption), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, AV_OPT_FLAG_DECODING_PARAM },
++    { NULL },
++};
++
++static const AVOption matroska_options[] = {
++    { "parse_encryption", "flag indicating the demuxer should parse generic encryption info.", OFFSET(parse_encryption), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, AV_OPT_FLAG_DECODING_PARAM },
+     { NULL },
+ };
+ 
+ static const AVClass webm_dash_class = {
+     .class_name = "WebM DASH Manifest demuxer",
+     .item_name  = av_default_item_name,
+-    .option     = options,
++    .option     = dash_options,
++    .version    = LIBAVUTIL_VERSION_INT,
++};
++
++static const AVClass matroska_class = {
++    .class_name = "Matroska / WebM demuxer",
++    .item_name  = av_default_item_name,
++    .option     = matroska_options,
+     .version    = LIBAVUTIL_VERSION_INT,
+ };
+ 
+@@ -4033,7 +4183,8 @@ AVInputFormat ff_matroska_demuxer = {
+     .read_packet    = matroska_read_packet,
+     .read_close     = matroska_read_close,
+     .read_seek      = matroska_read_seek,
+-    .mime_type      = "audio/webm,audio/x-matroska,video/webm,video/x-matroska"
++    .mime_type      = "audio/webm,audio/x-matroska,video/webm,video/x-matroska",
++    .priv_class     = &matroska_class,
+ };
+ 
+ AVInputFormat ff_webm_dash_manifest_demuxer = {

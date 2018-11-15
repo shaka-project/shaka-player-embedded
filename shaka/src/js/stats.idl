@@ -1,0 +1,122 @@
+// Copyright 2018 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * Holds info about a track selection choice that was made.
+ * @ingroup externs
+ */
+dictionary TrackChoice {
+  /**
+   * The timestamp the choice was made, in seconds since 1970
+   * (i.e. Date.now() / 1000).
+   */
+  double timestamp;
+
+  /** The id of the track that was chosen. */
+  double id;
+
+  /** The type of track chosen ('variant' or 'text'). */
+  DOMString type;
+
+  /**
+   * True if the choice was made by AbrManager for adaptation; false if it
+   * was made by the application through selectTrack.
+   */
+  boolean fromAdaptation;
+
+  /** The bandwidth of the chosen track (null for text). */
+  double? bandwidth;
+};
+
+
+/**
+ * Holds info about a state change that occurred.
+ * @ingroup externs
+ */
+dictionary StateChange {
+  /**
+   * The timestamp the state was entered, in seconds since 1970
+   * (i.e. Date.now() / 1000).
+   */
+  double timestamp;
+
+  /**
+   * The state the player entered.  This could be 'buffering', 'playing',
+   * 'paused', or 'ended'.
+   */
+  DOMString state;
+
+  /**
+   * The number of seconds the player was in this state.  If this is the last
+   * entry in the list, the player is still in this state, so the duration will
+   * continue to increase.
+   */
+  double duration;
+};
+
+
+/**
+ * Contains statistics and information about the current state of the player.
+ * This is meant for applications that want to log quality-of-experience (QoE)
+ * or other stats.  These values will reset when load() is called again.
+ *
+ * @ingroup externs
+ */
+dictionary Stats {
+  /** The width of the current video track. */
+  double width;
+
+  /** The height of the current video track. */
+  double height;
+
+  /** The bandwidth required for the current streams (total, in bit/sec). */
+  double streamBandwidth;
+
+
+  /**
+   * The total number of frames decoded by the Player.  This may be NaN if this
+   * is not supported by the browser.
+   */
+  double decodedFrames;
+
+  /**
+   * The total number of frames dropped by the Player.  This may be NaN if this
+   * is not supported by the browser.
+   */
+  double droppedFrames;
+
+  /** The current estimated network bandwidth (in bit/sec). */
+  double estimatedBandwidth;
+
+
+  /**
+   * This is the number of seconds it took for the video element to have enough
+   * data to begin playback.  This is measured from the time load() is called to
+   * the time the 'loadeddata' event is fired by the media element.
+   */
+  double loadLatency;
+
+  /** The total time spent in a playing state in seconds. */
+  double playTime;
+
+  /** The total time spent in a buffering state in seconds. */
+  double bufferingTime;
+
+
+  /** A history of the stream changes. */
+  sequence<TrackChoice> switchHistory;
+
+  /** A history of the state changes. */
+  sequence<StateChange> stateHistory;
+};

@@ -1,0 +1,244 @@
+# Copyright 2017 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//common.gni")
+
+declare_args() {
+  # Whether to include swscale to convert pixel formats that aren't natively
+  # supported by the platform.
+  include_swscale = true
+
+  ffmpeg_format_files = []
+  ffmpeg_codec_files = []
+  ffmpeg_util_files = []
+  ffmpeg_swscale_files = []
+  ffmpeg_swresample_files = []
+
+  ffmpeg_patch_mov = false
+  ffmpeg_patch_mkv = false
+  ffmpeg_patch_opus = false
+  ffmpeg_patch_utils = false
+}
+
+config("internal_config") {
+  visibility = [ ":*" ]
+
+  defines = [ "HAVE_AV_CONFIG_H" ]
+
+  if (is_mac || is_ios) {
+    libs = [
+      "AudioToolbox.framework",
+      "CoreFoundation.framework",
+      "CoreMedia.framework",
+      "CoreGraphics.framework",
+      "CoreVideo.framework",
+      "VideoToolbox.framework",
+    ]
+  }
+
+  cflags = [ "-w" ]
+}
+
+config("external_config") {
+  visibility = [ ":*" ]
+
+  include_dirs = [
+    "$root_gen_dir/ffmpeg",
+    "src",
+  ]
+
+  defines = []
+  if (include_swscale) {
+    defines += [ "HAS_SWSCALE" ]
+  }
+  if (enable_hardware_decode) {
+    defines += [ "ENABLE_HARDWARE_DECODE" ]
+    if (force_hardware_decode) {
+      defines += [ "FORCE_HARDWARE_DECODE" ]
+    }
+  }
+}
+
+config("set_install_name") {
+  ldflags = [
+    "-Xlinker",
+    "-install_name",
+    "-Xlinker",
+    "@loader_path/Frameworks/FFmpeg.framework/FFmpeg",
+  ]
+}
+
+
+# To comply with the LGPL license for ffmpeg code, we should only link against
+# it as a shared library.
+framework_library("ffmpeg_libs") {
+  output_name = "FFmpeg"
+  info_plist = "Info.plist"
+
+  deps = [
+    ":libavcodec",
+    ":libavformat",
+    ":libavutil",
+    # TODO: Consider making libavresample optional?
+    ":swresample",
+  ]
+
+  if (include_swscale) {
+    deps += [ ":swscale" ]
+  }
+
+  public_configs = [ ":external_config" ]
+}
+
+template("ffmpeg_part") {
+  source_set(target_name) {
+    forward_variables_from(invoker, "*", [ "exclude", "prefix" ])
+
+    if (!defined(deps)) {
+      deps = []
+    }
+
+    visibility = [ ":*" ]
+
+    deps += [
+      # TODO: In non-component mode (i.e. when using static libraries) there
+      # will be two versions of zlib (one in this shared library and one in
+      # Shaka library).  This won't cause problems, but we should consider
+      # removing one.
+      "//third_party/zlib:zlib",
+    ]
+
+    configs += [ ":internal_config" ]
+    public_configs = [ ":external_config" ]
+
+    if (is_ios) {
+      public_configs += [ ":set_install_name" ]
+    }
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+    configs += [ "//build/config/gcc:symbol_visibility_default" ]
+  }
+}
+
+
+patch("patch_mov") {
+  # Patch the mov (MP4) demuxer to handle adaptation the way we need.
+  visibility = [ ":*" ]
+
+  directory = "src"
+  input = "src/libavformat/mov.c"
+  output = "$root_gen_dir/mov.c"
+  patch = "mov.patch"
+}
+
+patch("patch_opus") {
+  # Patch the Opus parser to ignore errors when parsing.  This ensures it
+  # doesn't drop encrypted frames when demuxing.
+  visibility = [ ":*" ]
+
+  directory = "src"
+  input = "src/libavcodec/opus_parser.c"
+  output = "$root_gen_dir/opus_parser.c"
+  patch = "opus.patch"
+}
+
+patch("patch_mkv") {
+  # Patch the mkv (WebM) demuxer to handle adaptation the way we need.
+  visibility = [ ":*" ]
+
+  directory = "src"
+  input = "src/libavformat/matroskadec.c"
+  output = "$root_gen_dir/matroskadec.c"
+  patch = "mkv.patch"
+}
+
+patch("patch_mkv_enc") {
+  # Patch the mkv (WebM) demuxer to handle encryption
+  # TODO: Remove once merged upstream.
+  visibility = [ ":*" ]
+  deps = [ ":patch_mkv" ]
+
+  directory = root_gen_dir
+  input = "$root_gen_dir/matroskadec.c"
+  output = "$root_gen_dir/matroskadec2.c"
+  patch = "mkv_enc.patch"
+}
+
+patch("patch_utils") {
+  # Patch the utils file to ignore duplicate frames for seeking.
+  visibility = [ ":*" ]
+
+  directory = "src"
+  input = "src/libavformat/utils.c"
+  output = "$root_gen_dir/utils.c"
+  patch = "utils.patch"
+}
+
+patch("patch_avformat") {
+  # Patch avformat.h to include av_stream_remove_side_data.
+  visibility = [ ":*" ]
+
+  directory = "src"
+  input = "src/libavformat/avformat.h"
+  output = "$root_gen_dir/ffmpeg/libavformat/avformat.h"
+  patch = "avformat.patch"
+}
+
+
+ffmpeg_part("libavcodec") {
+  deps = []
+  sources = ffmpeg_codec_files
+
+  if (ffmpeg_patch_opus) {
+    deps += [ ":patch_opus" ]
+    sources += get_target_outputs(":patch_opus")
+  }
+}
+
+ffmpeg_part("libavformat") {
+  deps = [":patch_avformat"]
+  sources = ffmpeg_format_files
+
+  if (ffmpeg_patch_mov) {
+    deps += [ ":patch_mov" ]
+    sources += get_target_outputs(":patch_mov")
+  }
+  if (ffmpeg_patch_mkv) {
+    deps += [ ":patch_mkv_enc" ]
+    sources += get_target_outputs(":patch_mkv_enc")
+  }
+  if (ffmpeg_patch_utils) {
+    deps += [ ":patch_utils" ]
+    sources += get_target_outputs(":patch_utils")
+  }
+
+  # Since the patched file is in the generated directory, we need to manually
+  # include the original path for headers.
+  include_dirs = [ "src/libavformat" ]
+}
+
+ffmpeg_part("libavutil") {
+  sources = ffmpeg_util_files
+}
+
+ffmpeg_part("swscale") {
+  sources = ffmpeg_swscale_files
+}
+
+ffmpeg_part("swresample") {
+  sources = ffmpeg_swresample_files
+}

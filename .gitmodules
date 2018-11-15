@@ -1,0 +1,70 @@
+# TODO: Send patches to remove the need for ignore.
+
+[submodule "third_party/gflags/src"]
+	path = third_party/gflags/src
+	url = https://github.com/gflags/gflags.git
+[submodule "v8"]
+	path = v8
+	url = https://chromium.googlesource.com/v8/v8.git
+[submodule "build"]
+	path = build
+	url = https://chromium.googlesource.com/chromium/src/build.git
+[submodule "buildtools"]
+	path = buildtools
+	url = https://chromium.googlesource.com/chromium/buildtools.git
+[submodule "testing"]
+	path = testing
+	url = https://chromium.googlesource.com/chromium/src/testing
+[submodule "third_party/boringssl/src"]
+	path = third_party/boringssl/src
+	url = https://boringssl.googlesource.com/boringssl
+	ignore = dirty
+[submodule "third_party/curl/src"]
+	path = third_party/curl/src
+	url = https://github.com/curl/curl.git
+[submodule "third_party/doxygen/src"]
+	path = third_party/doxygen/src
+	url = https://github.com/doxygen/doxygen.git
+[submodule "third_party/ffmpeg/src"]
+	path = third_party/ffmpeg/src
+	url = https://github.com/FFmpeg/FFmpeg.git
+[submodule "third_party/glog/src"]
+	path = third_party/glog/src
+	url = https://github.com/google/glog.git
+[submodule "third_party/googletest/src"]
+	path = third_party/googletest/src
+	url = https://chromium.googlesource.com/external/github.com/google/googletest.git
+[submodule "third_party/icu"]
+	path = third_party/icu
+	url = https://chromium.googlesource.com/chromium/deps/icu.git
+[submodule "third_party/jinja2"]
+	path = third_party/jinja2
+	url = https://chromium.googlesource.com/chromium/src/third_party/jinja2.git
+	ignore = dirty
+[submodule "third_party/libxml/src"]
+	path = third_party/libxml/src
+	url = https://gitlab.gnome.org/GNOME/libxml2.git
+	ignore = dirty
+[submodule "third_party/markupsafe"]
+	path = third_party/markupsafe
+	url = https://chromium.googlesource.com/chromium/src/third_party/markupsafe.git
+	ignore = dirty
+[submodule "third_party/pymake/src"]
+	path = third_party/pymake/src
+	url = https://github.com/mozilla/pymake.git
+[submodule "third_party/sdl2/src"]
+	path = third_party/sdl2/src
+	url = https://github.com/SDL-mirror/SDL
+[submodule "third_party/zlib/src"]
+	path = third_party/zlib/src
+	url = https://github.com/madler/zlib.git
+[submodule "tools/clang"]
+	path = tools/clang
+	url = https://chromium.googlesource.com/chromium/src/tools/clang.git
+	ignore = dirty
+[submodule "base/trace_event/common"]
+	path = base/trace_event/common
+	url = https://chromium.googlesource.com/chromium/src/base/trace_event/common.git
+[submodule "third_party/styleguide/src"]
+	path = third_party/styleguide/src
+	url = https://github.com/google/styleguide

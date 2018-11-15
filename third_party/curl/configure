@@ -1,0 +1,41 @@
+#!/bin/bash
+# Copyright 2017 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This is not run normally, this should only be run manually when updating the
+# curl version.  This runs configure with the correct settings so the developer
+# can update the BUILD.gn file appropriately.
+
+# This script will also create the curl_config.h file.  That file should be
+# manually modified and copied to //third_party/curl/config/*/.
+# The file will need to be modified for our custom BoringSSL build:
+# - BoringSSL doesn't have ENGINE_cleanup.
+# - BoringSSL doesn't have ENGINE_load_builtin_engines.
+# - BoringSSL doesn't have the <openssl/engine.h> file.
+
+set -e
+
+cd $(dirname $0)/source/
+
+THIRD_PARTY=../..
+export CC=$THIRD_PARTY/llvm-build/Release+Asserts/bin/clang
+
+./buildconf
+./configure --disable-ftp --disable-file --disable-ldap         \
+    --disable-ldaps --disable-rtsp --disable-dict --disable-telnet             \
+    --disable-tftp --disable-pop3 --disable-imap --disable-smb --disable-smtp  \
+    --disable-gopher --disable-manual --enable-ipv6 --disable-unix-sockets     \
+    --enable-cookies --disable-tls-srp --without-libssh2 --without-librtmp     \
+    --without-ca-bundle --without-ca-path                                      \
+    --with-ssl="$THIRD_PARTY/boringssl/src/"

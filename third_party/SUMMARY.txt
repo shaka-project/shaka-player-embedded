@@ -1,0 +1,99 @@
+build
+  The Chromium build framework, by Google.
+  BSD-style license (3-clause)
+  https://chromium.googlesource.com/chromium/src.git
+
+base
+  The Chromium base library, by Google.
+  BSD-style license (3-clause)
+  https://chromium.googlesource.com/chromium/src/base/trace_event/common/
+
+buildtools
+  Build tools from the Chromium library, by Google.
+  BSD-style license (3-clause)
+  https://chromium.googlesource.com/chromium/buildtools/
+
+testing
+  Chromium testing framework.
+  BSD-style license (3-clause)
+  https://chromium.googlesource.com/chromium/src/testing.git
+
+third_party/boringssl/src
+  BoringSSL crypto library, by Google.
+  Original BSD License
+  https://boringssl.googlesource.com/boringssl
+
+third_party/curl/source
+  Networking and data transfer library.
+  MIT-style
+  https://github.com/curl/curl
+
+third_party/doxygen
+  Documentation generator, by Free Software Foundation Inc.
+  GPL license
+  https://github.com/doxygen/doxygen
+
+third_party/ffmpeg/src
+  A complete, cross-platform solution to record, convert and stream audio and video.
+  (varies, our config uses): GNU Lesser General Public License
+  https://github.com/FFmpeg/FFmpeg
+
+third_party/gecko/src
+  Mozilla Firefox browser.
+  Mozilla Public License
+  https://github.com/mozilla/gecko-dev
+
+third_party/gflags/src
+  Google flag parsing library.
+  BSD-style license (3-clause)
+  https://github.com/gflags/gflags
+
+third_party/glog/src
+  Google logging library.
+  BSD-style license (3-clause)
+  https://github.com/google/glog
+
+third_party/googletest/src
+  Google's C++ Testing Framework
+  BSD-style license (3-clause)
+  https://chromium.googlesource.com/external/github.com/google/googletest.git
+
+third_party/icu
+  A Unicode support library, by ICU.
+  ICU License
+  https://chromium.googlesource.com/chromium/deps/icu.git
+
+third_party/jinja2
+  Template engine for code generation in Blink.
+  BSD-style license (3-clause)
+  https://chromium.googlesource.com/chromium/src/third_party/jinja2.git
+
+third_party/libxml
+  An XML parser, by the Gnome Project.
+  MIT License
+  https://gitlab.gnome.org/GNOME/libxml2
+
+third_party/markupsafe
+  Safe string class, used by Jinja2 template engine.
+  BSD-style license (3-clause)
+  https://chromium.googlesource.com/chromium/src/third_party/markupsafe.git
+
+third_party/pymake
+  make implementation in Python.
+  MIT License
+  https://github.com/mozilla/pymake
+
+third_party/sdl2
+  Simple DirectMedia Layer.
+  zlib License
+  https://libsdl.org
+
+third_party/zlib/src
+  A massively spiffy yet delicately unobtrusive compression library.
+  BSD-style license (3-clause)
+  https://github.com/madler/zlib
+
+src/v8
+  The JavaScript engine that Chrome uses, by Google.
+  BSD-style license (3-clause)
+  https://chromium.googlesource.com/v8/v8.git

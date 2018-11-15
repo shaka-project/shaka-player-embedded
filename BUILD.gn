@@ -1,0 +1,1149 @@
+# Copyright 2016 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+if (is_ios) {
+  import("//build/config/ios/rules.gni")
+}
+if (is_mac) {
+  import("//build/config/ios/ios_sdk.gni")
+  import("//build/config/mac/rules.gni")
+}
+import("//build/config/sysroot.gni")
+import("//common.gni")
+import("//testing/test.gni")
+
+declare_args() {
+  # The JavaScript engine to use.
+  # Can be: "auto", "v8", or "jsc".
+  js_engine = "auto"
+
+  # Whether to use the SDL demo for the iOS app.
+  ios_sdl_demo = false
+
+  # A list of JSON files that define EME implementations.
+  eme_implementations = []
+
+  # Whether to include debug info about threads and locks to detect deadlocks.
+  debug_deadlocks = false
+
+  # True to include build IDs in the shared library.  This allows debugging
+  # stripped binaries.
+  use_build_id = false
+
+  # Whether to build a shared library version of the library.
+  enable_shared = true
+  # Whether to build a static library version of the library.
+  enable_static = false
+  # Whether to build the demo.
+  enable_demo = true
+  # Whether to build the tests.
+  enable_tests = true
+}
+
+eme_implementations += [ "shaka/src/eme/clearkey.json" ]
+
+if (js_engine == "auto") {
+  if (is_ios) {
+    js_engine = "jsc"
+  } else {
+    js_engine = "v8"
+  }
+}
+
+if (js_engine == "v8") {
+  import("//v8/gni/v8.gni")
+}
+
+assert(js_engine == "v8" || js_engine == "jsc", "Invalid JavaScript engine")
+assert(!(js_engine == "v8" && is_ios), "Cannot use V8 on iOS")
+assert(!(js_engine == "jsc"  && !(is_ios || is_mac)),
+       "Can only use JSC on Mac and iOS")
+
+
+config("internal_config") {
+  include_dirs = [
+    "shaka",
+    "shaka/include",
+    "shaka/include/shaka",
+    "$root_gen_dir/shaka",
+  ]
+
+  cflags = [
+    "-Weverything",
+
+    # Ignore warnings from the given header prefixes.
+    "--system-header-prefix=curl/",
+    "--system-header-prefix=gflags/",
+    "--system-header-prefix=glog/",
+    "--system-header-prefix=gmock/",
+    "--system-header-prefix=googletest/",
+    "--system-header-prefix=gtest/",
+    "--system-header-prefix=libav",
+    "--system-header-prefix=libxml/",
+    "--system-header-prefix=openssl/",
+    "--system-header-prefix=SDL2/",
+    "--system-header-prefix=v8.h",
+
+    "-Wno-c++98-compat",  # We use -std=c++11, not sure why these still enabled
+    "-Wno-c++98-compat-pedantic",
+    "-Wno-c99-extensions",
+    "-Wno-documentation",  # We use doxygen which adds some doc tags
+    "-Wno-documentation-unknown-command",
+    "-Wno-shadow-field-in-constructor",  # Ok to have ctor arguments match field
+    "-Wno-double-promotion",  # Ok to convert float to double
+    "-Wno-float-equal",  # Ok to compare floats using ==
+    "-Wno-disabled-macro-expansion",  # Ok to use nested macro expansion
+    "-Wno-padded",  # Ok if types have padding
+    # Ok if enum not handled; -Wswitch will warn if there is also not a default.
+    "-Wno-switch-enum",
+    "-Wno-missing-noreturn",
+    "-Wno-direct-ivar-access",  # Ok to access Obj-C properties directly
+    "-Wno-over-aligned",
+    "-Wno-arc-repeated-use-of-weak",  # Ok to re-use Obj-C weak variables.
+
+    # TODO: Consider fixing and enabling these:
+    "-Wno-cstring-format-directive",
+    "-Wno-deprecated",
+    "-Wno-shadow",
+    "-Wno-shorten-64-to-32",
+    "-Wno-sign-conversion",
+    "-Wno-undefined-func-template",
+    "-Wno-weak-vtables",
+  ]
+
+  if (!use_xcode_clang) {
+    cflags += [
+      "-Wno-return-std-move-in-c++11",
+    ]
+  }
+
+  os = ""
+  if (is_linux) {
+    os = "Linux"
+  } else if (is_mac) {
+    os = "Mac"
+  } else if (is_ios) {
+    os = "iOS"
+  } else {
+    assert(false, "Not implemented for this platform")
+  }
+
+  defines = [
+    "PLATFORM=\"" + os + " " + current_cpu + "\"",
+    "BUILDING_SHAKA",
+  ]
+
+  if (is_posix) {
+    defines += [ "OS_POSIX" ]
+  }
+
+  if (is_mac) {
+    defines += [ "OS_MAC" ]
+  }
+  if (is_ios) {
+    defines += [ "OS_IOS" ]
+  }
+
+  if (debug_deadlocks) {
+    defines += [ "DEBUG_DEADLOCKS" ]
+  }
+
+  if (js_engine == "v8") {
+    defines += [ "USING_V8" ]
+    if (v8_use_snapshot && v8_use_external_startup_data) {
+      defines += [ "V8_EMBEDDED_SNAPSHOT" ]
+    }
+  } else if (js_engine == "jsc") {
+    defines += [ "USING_JSC" ]
+
+    # TODO: Add availability guards?
+    cflags += [ "-Wno-unguarded-availability" ]
+  }
+
+  if (is_debug) {
+    # Bundle debug symbols in binary.  This makes symbols more visible to gdb.
+    cflags += [ "-fstandalone-debug" ]
+  }
+
+  if (use_build_id && !is_official_build) {
+    # Official builds already have build ID.
+    ldflags = [ "-Wl,--build-id=sha1" ]
+  }
+}
+
+config("test_config") {
+  include_dirs = [
+    # Need to include internal directories for tests.
+    "shaka",
+    "shaka/test",
+  ]
+
+  cflags = [
+    "-Wno-exit-time-destructors",
+    "-Wno-global-constructors",
+    "-Wno-gnu-zero-variadic-macro-arguments",
+    "-Wno-missing-prototypes",
+    "-Wno-missing-variable-declarations",
+    "-Wno-unused-member-function",
+    "-Wno-used-but-marked-unused",
+    "-Wno-zero-as-null-pointer-constant",
+  ]
+}
+
+config("external_config") {
+  include_dirs = [
+    "shaka/include",
+    "shaka/include/shaka",
+    "$root_gen_dir/shaka",
+  ]
+}
+
+# These exist so we can get these variables from the configure script.
+config("get_root_gen_dir") {
+  visibility = [ ":*" ]
+  include_dirs = [ "value:", "$root_gen_dir" ]
+}
+config("get_sysroot") {
+  visibility = [ ":*" ]
+  if (sysroot != "") {
+    include_dirs = [ "value:", "$sysroot" ]
+  } else {
+    # Having an empty include_dirs causes `gn desc` to fail.
+    include_dirs = [ "value:", "EMPTY" ]
+  }
+}
+
+
+group("player") {
+  deps = []
+  testonly = true
+  if (enable_shared) {
+    deps += [ ":player_shared" ]
+  }
+  if (enable_static) {
+    deps += [ ":player_static" ]
+  }
+  if (enable_demo) {
+    deps += [ ":demo" ]
+  }
+  if (enable_tests) {
+    deps += [ ":tests" ]
+  }
+}
+
+# -----------------------------------------------------------------------------
+# Generate EME Plugin
+
+action("gen_eme_plugins") {
+  visibility = [ ":*" ]
+
+  outputs = [ "$root_gen_dir/eme_plugins.cc" ]
+  script = "//shaka/tools/gen_eme_plugins.py"
+
+  args = [
+    "--output",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+  args += rebase_path(eme_implementations, root_build_dir)
+
+  inputs = eme_implementations
+}
+
+source_set("eme_plugins") {
+  visibility = [ ":*" ]
+
+  # TODO: Combine these dependencies with the "internal_sources" target.
+  deps = [
+    ":gen_eme_plugins",
+    "//third_party/curl:libcurl",
+    "//third_party/ffmpeg:ffmpeg_libs",
+    "//third_party/glog:glog",
+    "//third_party/libxml:libxml",
+    "//third_party/sdl2:sdl2",
+    "//third_party/zlib:zlib",
+  ]
+
+  libs = []
+  if (js_engine == "v8") {
+    deps += [
+      "//v8:v8",
+      "//v8:v8_libplatform",
+    ]
+  } else if (js_engine == "jsc") {
+    libs += [
+      "CoreFoundation.framework",
+      "JavaScriptCore.framework",
+    ]
+  }
+  if (is_mac || is_ios) {
+    libs += [
+      "CoreFoundation.framework",
+      "Security.framework",
+    ]
+  } else {
+    deps += [ "//third_party/boringssl:boringssl" ]
+  }
+
+  if (is_debug) {
+    _config_name = "Debug"
+  } else {
+    _config_name = "Release"
+  }
+  _eme_plugin_info = exec_script(
+      "//shaka/tools/eme_plugin_build_info.py",
+      [ "--config", _config_name, "--arch", target_cpu, "--os", target_os ] +
+          rebase_path(eme_implementations, root_build_dir),
+      "scope", eme_implementations)
+
+  sources = get_target_outputs(":gen_eme_plugins")
+  sources += _eme_plugin_info.sources
+
+  include_dirs = get_path_info(eme_implementations, "dir")
+  include_dirs += _eme_plugin_info.include_dirs
+
+  libs += _eme_plugin_info.libs
+
+  configs += [ ":internal_config" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+}
+
+# -----------------------------------------------------------------------------
+# Library
+
+action("gen_config_h") {
+  visibility = [ ":*" ]
+
+  outputs = [ "$root_gen_dir/shaka_config.h" ]
+  script = "//shaka/tools/gen_config_h.py"
+
+  args = [
+    "--output",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+  if (sdl_utils) {
+    args += [ "--sdl-utils" ]
+  }
+}
+
+action_foreach("gen_exposed_idl") {
+  _internal_dir = "{{source_gen_dir}}"
+  _public_dir = "$root_gen_dir/shaka"
+
+  script = "shaka/tools/idl/exposed_type_generator.py"
+  args = [
+    "--internal-dir", _internal_dir,
+    "--internal-rel-dir", "{{source_root_relative_dir}}",
+    "--public-dir", rebase_path(_public_dir, root_build_dir),
+    "{{source}}",
+  ]
+
+  sources = [
+    "shaka/src/js/manifest.idl",
+    "shaka/src/js/player_externs.idl",
+    "shaka/src/js/stats.idl",
+    "shaka/src/js/track.idl",
+  ]
+
+  inputs = [
+    "shaka/tools/webidl/webidl/idl_parser.py",
+    "shaka/tools/webidl/webidl/idl_tokenizer.py",
+  ]
+  outputs = [
+    "$_public_dir/{{source_name_part}}.h",
+    "$_public_dir/{{source_name_part}}.cc",
+    "$_internal_dir/{{source_name_part}}.h",
+    "$_internal_dir/{{source_name_part}}_js.cc",
+
+    "$_public_dir/{{source_name_part}}_objc.h",
+    "$_public_dir/{{source_name_part}}_objc.mm",
+    "$_internal_dir/{{source_name_part}}+Internal.h",
+  ]
+}
+
+if (js_engine == "v8") {
+  action("embed_v8_snapshots") {
+    visibility = [ ":*" ]
+
+    # Ensure the snapshot is built before this is run.
+    deps = [ "//v8:v8_maybe_snapshot" ]
+
+    output_name = "$root_gen_dir/embedded_v8_snapshots.cc"
+    outputs = [ output_name ]
+
+    args = [ "--output", rebase_path(output_name, root_build_dir) ]
+    script = "//shaka/tools/embed_v8_snapshot.py"
+    sources = [ "//shaka/tools/embed_utils.py" ]
+  }
+}
+
+source_set("internal_sources") {
+  visibility = [ ":*" ]
+
+  sources = [
+    "shaka/src/core/environment.cc",
+    "shaka/src/core/environment.h",
+    "shaka/src/core/js_manager_impl.cc",
+    "shaka/src/core/js_manager_impl.h",
+    "shaka/src/core/member.h",
+    "shaka/src/core/network_thread.cc",
+    "shaka/src/core/network_thread.h",
+    "shaka/src/core/ref_ptr.h",
+    "shaka/src/core/rejected_promise_handler.cc",
+    "shaka/src/core/rejected_promise_handler.h",
+    "shaka/src/core/task_runner.cc",
+    "shaka/src/core/task_runner.h",
+    "shaka/src/debug/mutex.h",
+    "shaka/src/debug/thread.cc",
+    "shaka/src/debug/thread.h",
+    "shaka/src/debug/thread_event.cc",
+    "shaka/src/debug/thread_event.h",
+    "shaka/src/debug/waitable.cc",
+    "shaka/src/debug/waitable.h",
+    "shaka/src/debug/waiting_tracker.cc",
+    "shaka/src/debug/waiting_tracker.h",
+    "shaka/src/eme/clearkey_implementation.cc",
+    "shaka/src/eme/clearkey_implementation.h",
+    "shaka/src/eme/clearkey_implementation_factory.cc",
+    "shaka/src/eme/clearkey_implementation_factory.h",
+    "shaka/src/eme/implementation.cc",
+    "shaka/src/js/base_64.cc",
+    "shaka/src/js/base_64.h",
+    "shaka/src/js/console.cc",
+    "shaka/src/js/console.h",
+    "shaka/src/js/debug.cc",
+    "shaka/src/js/debug.h",
+    "shaka/src/js/dom/attr.cc",
+    "shaka/src/js/dom/attr.h",
+    "shaka/src/js/dom/character_data.cc",
+    "shaka/src/js/dom/character_data.h",
+    "shaka/src/js/dom/comment.cc",
+    "shaka/src/js/dom/comment.h",
+    "shaka/src/js/dom/container_node.cc",
+    "shaka/src/js/dom/container_node.h",
+    "shaka/src/js/dom/document.cc",
+    "shaka/src/js/dom/document.h",
+    "shaka/src/js/dom/dom_exception.cc",
+    "shaka/src/js/dom/dom_exception.h",
+    "shaka/src/js/dom/dom_parser.cc",
+    "shaka/src/js/dom/dom_parser.h",
+    "shaka/src/js/dom/element.cc",
+    "shaka/src/js/dom/element.h",
+    "shaka/src/js/dom/exception_code.h",
+    "shaka/src/js/dom/node.cc",
+    "shaka/src/js/dom/node.h",
+    "shaka/src/js/dom/text.cc",
+    "shaka/src/js/dom/text.h",
+    "shaka/src/js/dom/xml_document_parser.cc",
+    "shaka/src/js/dom/xml_document_parser.h",
+    "shaka/src/js/eme/implementation_helper_impl.cc",
+    "shaka/src/js/eme/implementation_helper_impl.h",
+    "shaka/src/js/eme/implementation_registry.cc",
+    "shaka/src/js/eme/media_key_session.cc",
+    "shaka/src/js/eme/media_key_session.h",
+    "shaka/src/js/eme/media_key_system_access.cc",
+    "shaka/src/js/eme/media_key_system_access.h",
+    "shaka/src/js/eme/media_key_system_configuration.h",
+    "shaka/src/js/eme/media_keys.cc",
+    "shaka/src/js/eme/media_keys.h",
+    "shaka/src/js/eme/search_registry.cc",
+    "shaka/src/js/eme/search_registry.h",
+    "shaka/src/js/events/event.cc",
+    "shaka/src/js/events/event.h",
+    "shaka/src/js/events/event_names.h",
+    "shaka/src/js/events/event_target.cc",
+    "shaka/src/js/events/event_target.h",
+    "shaka/src/js/events/media_encrypted_event.cc",
+    "shaka/src/js/events/media_encrypted_event.h",
+    "shaka/src/js/events/media_key_message_event.cc",
+    "shaka/src/js/events/media_key_message_event.h",
+    "shaka/src/js/events/progress_event.cc",
+    "shaka/src/js/events/progress_event.h",
+    "shaka/src/js/js_error.cc",
+    "shaka/src/js/js_error.h",
+    "shaka/src/js/location.cc",
+    "shaka/src/js/location.h",
+    "shaka/src/js/mse/media_error.cc",
+    "shaka/src/js/mse/media_error.h",
+    "shaka/src/js/mse/media_source.cc",
+    "shaka/src/js/mse/media_source.h",
+    "shaka/src/js/mse/source_buffer.cc",
+    "shaka/src/js/mse/source_buffer.h",
+    "shaka/src/js/mse/text_track.cc",
+    "shaka/src/js/mse/text_track.h",
+    "shaka/src/js/mse/time_ranges.cc",
+    "shaka/src/js/mse/time_ranges.h",
+    "shaka/src/js/mse/video_element.cc",
+    "shaka/src/js/mse/video_element.h",
+    "shaka/src/js/navigator.cc",
+    "shaka/src/js/navigator.h",
+    "shaka/src/js/test_type.cc",
+    "shaka/src/js/test_type.h",
+    "shaka/src/js/timeouts.cc",
+    "shaka/src/js/timeouts.h",
+    "shaka/src/js/url.cc",
+    "shaka/src/js/url.h",
+    "shaka/src/js/vtt_cue.cc",
+    "shaka/src/js/vtt_cue.h",
+    "shaka/src/js/xml_http_request.cc",
+    "shaka/src/js/xml_http_request.h",
+    "shaka/src/mapping/any.cc",
+    "shaka/src/mapping/any.h",
+    "shaka/src/mapping/backing_object.cc",
+    "shaka/src/mapping/backing_object.h",
+    "shaka/src/mapping/backing_object_factory.cc",
+    "shaka/src/mapping/backing_object_factory.h",
+    "shaka/src/mapping/byte_buffer.cc",
+    "shaka/src/mapping/byte_buffer.h",
+    "shaka/src/mapping/byte_string.cc",
+    "shaka/src/mapping/byte_string.h",
+    "shaka/src/mapping/callback.cc",
+    "shaka/src/mapping/callback.h",
+    "shaka/src/mapping/convert_js.h",
+    "shaka/src/mapping/enum.h",
+    "shaka/src/mapping/exception_or.h",
+    "shaka/src/mapping/generic_converter.h",
+    "shaka/src/mapping/js_engine.h",
+    "shaka/src/mapping/js_wrappers.h",
+    "shaka/src/mapping/js_utils.cc",
+    "shaka/src/mapping/js_utils.h",
+    "shaka/src/mapping/names.h",
+    "shaka/src/mapping/promise.cc",
+    "shaka/src/mapping/promise.h",
+    "shaka/src/mapping/register_member.cc",
+    "shaka/src/mapping/register_member.h",
+    "shaka/src/mapping/struct.cc",
+    "shaka/src/mapping/struct.h",
+    "shaka/src/mapping/weak_js_ptr.h",
+    "shaka/src/media/audio_renderer.cc",
+    "shaka/src/media/audio_renderer.h",
+    "shaka/src/media/base_frame.cc",
+    "shaka/src/media/base_frame.h",
+    "shaka/src/media/decoder_thread.cc",
+    "shaka/src/media/decoder_thread.h",
+    "shaka/src/media/demuxer_thread.cc",
+    "shaka/src/media/demuxer_thread.h",
+    "shaka/src/media/ffmpeg_decoded_frame.cc",
+    "shaka/src/media/ffmpeg_decoded_frame.h",
+    "shaka/src/media/ffmpeg_encoded_frame.cc",
+    "shaka/src/media/ffmpeg_encoded_frame.h",
+    "shaka/src/media/frame_buffer.cc",
+    "shaka/src/media/frame_buffer.h",
+    "shaka/src/media/frame_converter.cc",
+    "shaka/src/media/frame_converter.h",
+    "shaka/src/media/frame_drawer.cc",
+    "shaka/src/media/frame_drawer.h",
+    "shaka/src/media/locked_frame_list.cc",
+    "shaka/src/media/locked_frame_list.h",
+    "shaka/src/media/media_processor.cc",
+    "shaka/src/media/media_processor.h",
+    "shaka/src/media/media_utils.cc",
+    "shaka/src/media/media_utils.h",
+    "shaka/src/media/pipeline_manager.cc",
+    "shaka/src/media/pipeline_manager.h",
+    "shaka/src/media/pipeline_monitor.cc",
+    "shaka/src/media/pipeline_monitor.h",
+    "shaka/src/media/renderer.cc",
+    "shaka/src/media/renderer.h",
+    "shaka/src/media/stream.cc",
+    "shaka/src/media/stream.h",
+    "shaka/src/media/types.cc",
+    "shaka/src/media/types.h",
+    "shaka/src/media/video_controller.cc",
+    "shaka/src/media/video_controller.h",
+    "shaka/src/media/video_renderer.cc",
+    "shaka/src/media/video_renderer.h",
+    "shaka/src/memory/heap_tracer.cc",
+    "shaka/src/memory/heap_tracer.h",
+    "shaka/src/memory/object_tracker.cc",
+    "shaka/src/memory/object_tracker.h",
+    "shaka/src/public/data.cc",
+    "shaka/src/public/eme_promise.cc",
+    "shaka/src/public/eme_promise_impl.h",
+    "shaka/src/public/error.cc",
+    "shaka/src/public/frame.cc",
+    "shaka/src/public/js_manager.cc",
+    "shaka/src/public/optional.cc",
+    "shaka/src/public/player.cc",
+    "shaka/src/public/shaka_utils.cc",
+    "shaka/src/public/text_track_public.cc",
+    "shaka/src/public/video.cc",
+    "shaka/src/public/vtt_cue_public.cc",
+    "shaka/src/util/buffer_reader.cc",
+    "shaka/src/util/buffer_reader.h",
+    "shaka/src/util/clock.cc",
+    "shaka/src/util/clock.h",
+    "shaka/src/util/crypto.h",
+    "shaka/src/util/decryptor.h",
+    "shaka/src/util/dynamic_buffer.cc",
+    "shaka/src/util/dynamic_buffer.h",
+    "shaka/src/util/file_system.cc",
+    "shaka/src/util/file_system.h",
+    "shaka/src/util/js_wrapper.h",
+    "shaka/src/util/macros.h",
+    "shaka/src/util/objc_utils.h",
+    "shaka/src/util/shared_lock.cc",
+    "shaka/src/util/shared_lock.h",
+    "shaka/src/util/templates.h",
+    "shaka/src/util/utils.cc",
+    "shaka/src/util/utils.h",
+
+    # GN will filter these based on the OS.
+    "shaka/src/util/file_system_posix.cc",
+    "shaka/src/util/file_system_win.cc",
+  ]
+
+  sources += get_target_outputs(":gen_exposed_idl")
+
+  if (force_hardware_decode) {
+    sources += [
+      "shaka/src/media/hardware_support.cc",
+      "shaka/src/media/hardware_support.h",
+    ]
+  }
+  if (sdl_utils) {
+    sources += [ "shaka/src/public/sdl_frame_drawer.cc" ]
+  }
+  if (is_ios) {
+    sources += [ "shaka/src/public/ShakaPlayerView.mm" ]
+  }
+
+  deps = [
+    ":eme_plugins",
+    ":gen_config_h",
+    ":gen_exposed_idl",
+    "//third_party/curl:libcurl",
+    "//third_party/ffmpeg:ffmpeg_libs",
+    "//third_party/libxml:libxml",
+    "//third_party/zlib:zlib",
+  ]
+  libs = []
+
+  public_deps = [
+    "//third_party/glog:glog",
+    "//third_party/sdl2:sdl2",
+  ]
+
+  if (is_ios || is_mac) {
+    libs += [
+      "CoreMedia.framework",
+      "Foundation.framework",
+      "Security.framework",
+      "VideoToolbox.framework",
+    ]
+    sources += [
+      "shaka/src/util/crypto_darwin.cc",
+      "shaka/src/util/darwin_utils.h",
+      "shaka/src/util/darwin_utils.mm",
+      "shaka/src/util/decryptor_darwin.cc",
+    ]
+  } else {
+    deps += [ "//third_party/boringssl:boringssl" ]
+    sources += [
+      "shaka/src/util/crypto_openssl.cc",
+      "shaka/src/util/decryptor_openssl.cc",
+    ]
+  }
+
+  if (js_engine == "v8") {
+    sources += [
+      "shaka/src/mapping/v8/backing_object_factory.h",
+      "shaka/src/mapping/v8/js_engine.cc",
+      "shaka/src/mapping/v8/js_wrappers.cc",
+      "shaka/src/mapping/v8/register_member.h",
+      "shaka/src/mapping/v8/v8_utils.cc",
+      "shaka/src/mapping/v8/v8_utils.h",
+      "shaka/src/memory/v8_heap_tracer.cc",
+      "shaka/src/memory/v8_heap_tracer.h",
+    ]
+    public_deps += [
+      "//v8:v8",
+      "//v8:v8_libplatform",
+    ]
+
+    if (v8_use_snapshot && v8_use_external_startup_data) {
+      sources += get_target_outputs(":embed_v8_snapshots")
+      deps += [ ":embed_v8_snapshots" ]
+    }
+  } else if (js_engine == "jsc") {
+    sources += [
+      "shaka/src/mapping/jsc/backing_object_factory.h",
+      "shaka/src/mapping/jsc/js_engine.cc",
+      "shaka/src/mapping/jsc/js_wrappers.cc",
+      "shaka/src/mapping/jsc/register_member.h",
+      "shaka/src/mapping/jsc/jsc_utils.cc",
+      "shaka/src/mapping/jsc/jsc_utils.h",
+    ]
+    libs += [
+      "CoreFoundation.framework",
+      "JavaScriptCore.framework",
+    ]
+  }
+
+  if (is_mac || is_ios) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+  configs += [ ":internal_config" ]
+}
+
+if (is_mac || is_ios) {
+  bundle_data("scripts_bundle") {
+    visibility = [ ":*" ]
+    if (is_debug) {
+      sources = [ "shaka/js/shaka-player.compiled.debug.js" ]
+    } else {
+      sources = [ "shaka/js/shaka-player.compiled.js" ]
+    }
+    outputs = [ "{{bundle_resources_dir}}/shaka-player.compiled.js" ]
+  }
+
+  action("make_license_file") {
+    outputs = [ "$root_gen_dir/licenses.json" ]
+    script = "//shaka/tools/make_license_file.py"
+
+    sources = [
+      "//third_party/extraLicenses.txt",
+      "//third_party/licensePaths.txt",
+    ]
+
+    args = [
+      "--output",
+      rebase_path(outputs[0], root_build_dir),
+      "--extras-file",
+      rebase_path(sources[0], root_build_dir),
+      "--paths-file",
+      rebase_path(sources[1], root_build_dir),
+    ]
+  }
+
+  bundle_data("license_bundle") {
+    public_deps = [ ":make_license_file" ]
+
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+    sources = get_target_outputs(":make_license_file")
+  }
+
+  bundle_data("cpp_eme_api_headers") {
+    visibility = [ ":*" ]
+    sources = [
+      "shaka/include/shaka/eme/configuration.h",
+      "shaka/include/shaka/eme/data.h",
+      "shaka/include/shaka/eme/implementation.h",
+      "shaka/include/shaka/eme/implementation_factory.h",
+      "shaka/include/shaka/eme/implementation_helper.h",
+      "shaka/include/shaka/eme/implementation_registry.h",
+    ]
+    if (is_mac) {
+      outputs = [
+        "{{bundle_root_dir}}/Versions/A/Headers/eme/{{source_file_part}}",
+      ]
+    } else {
+      outputs = [ "{{bundle_root_dir}}/Headers/eme/{{source_file_part}}" ]
+    }
+  }
+
+  # This needs to be its own target since ios_framework_bundle header field
+  # doesn't work well with generated files.
+  bundle_data("cpp_api_headers") {
+    visibility = [ ":*" ]
+    public_deps = [
+      ":gen_config_h",
+      ":gen_exposed_idl",
+    ]
+    sources = [
+      # C++ headers
+      "$root_gen_dir/shaka/manifest.h",
+      "$root_gen_dir/shaka/player_externs.h",
+      "$root_gen_dir/shaka/track.h",
+      "$root_gen_dir/shaka/stats.h",
+      "shaka/include/shaka/async_results.h",
+      "shaka/include/shaka/config_names.h",
+      "shaka/include/shaka/error.h",
+      "shaka/include/shaka/frame.h",
+      "shaka/include/shaka/js_manager.h",
+      "shaka/include/shaka/macros.h",
+      "shaka/include/shaka/optional.h",
+      "shaka/include/shaka/player.h",
+      "shaka/include/shaka/text_track.h",
+      "shaka/include/shaka/utils.h",
+      "shaka/include/shaka/variant.h",
+      "shaka/include/shaka/video.h",
+      "shaka/include/shaka/vtt_cue.h",
+
+      # Objective-C headers
+      "$root_gen_dir/shaka/manifest_objc.h",
+      "$root_gen_dir/shaka/player_externs_objc.h",
+      "$root_gen_dir/shaka/track_objc.h",
+      "$root_gen_dir/shaka/stats_objc.h",
+      "shaka/include/shaka/ShakaPlayerView.h",
+    ]
+    sources += get_target_outputs(":gen_config_h")
+    if (sdl_utils) {
+      sources += [
+        "shaka/include/shaka/sdl_frame_drawer.h",
+      ]
+    }
+    if (is_mac) {
+      outputs = [
+        "{{bundle_root_dir}}/Versions/A/Headers/{{source_file_part}}",
+      ]
+      # Don't include these for iOS since it is included in the player_shared
+      # target.
+      sources += [
+        # Umbrella header.
+        "shaka/include/shaka/ShakaPlayerEmbedded.h",
+      ]
+    } else {
+      outputs = [ "{{bundle_root_dir}}/Headers/{{source_file_part}}" ]
+    }
+  }
+
+  if (is_ios) {
+    _player_target = "ios_framework_bundle"
+  } else {
+    _player_target = "mac_framework_bundle"
+  }
+  target(_player_target, "player_shared") {
+    if (is_mac) {
+      framework_version = "A"
+      framework_contents = []
+      extra_substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
+    } else {
+      # ios_framework_bundle requires that sources and public_headers not be
+      # empty.
+      sources = [ "shaka/include/shaka/ShakaPlayerEmbedded.h" ]
+      public_headers = sources
+    }
+
+    deps = [
+      ":internal_sources",
+      ":cpp_eme_api_headers",
+      ":cpp_api_headers",
+    ]
+
+    if (is_ios) {
+      # TODO: Add support for Mac builds.
+      deps += [
+        ":license_bundle",
+        ":scripts_bundle",
+        "//third_party/ffmpeg:ffmpeg_libs_framework+bundle",
+      ]
+    }
+
+    # Simply use the FFmpeg plist since there is nothing specific to it.
+    info_plist = "third_party/ffmpeg/Info.plist"
+
+    # Apple API naming guidelines are to pick a two or three letter prefix for
+    # the purpose of namespacing. That is not necessary for us, as every
+    # exposed class starts with "Shaka", which is unlikely to show up in other
+    # frameworks.
+    output_name = "ShakaPlayerEmbedded"
+
+    # Mark this symbol as undefined so we don't get linker errors when building
+    # the framework.  The app will need to define this.
+    ldflags = [ "-Wl,-U,_SDL_main" ]
+
+    public_configs = [ ":external_config" ]
+  }
+} else {
+  shared_library("player_shared") {
+    deps = [ ":internal_sources" ]
+    output_name = "shaka-player-embedded"
+    configs += [ ":internal_config" ]
+    public_configs = [ ":external_config" ]
+  }
+}
+# If this is iOS, use the same path as for other platforms: simply create a
+# static library.  This should only be used by advanced users and mirrors
+# what we do for desktop.
+static_library("player_static") {
+  public_deps = [ ":internal_sources" ]
+  output_name = "shaka-player-embedded"
+  public_configs = [ ":external_config" ]
+  complete_static_lib = true
+}
+
+
+# -----------------------------------------------------------------------------
+# Demo
+
+if (is_ios) {
+  action("compile_demo_assets") {
+    visibility = [ ":*" ]
+
+    _input_dir = "sample_xcode_project/sample_xcode_project/Assets.xcassets"
+    inputs = [ "$_input_dir/Contents.json" ]
+
+    output_name = "$root_gen_dir/Assets.car"
+    outputs = [ output_name ]
+
+    if (target_cpu == "x86" || target_cpu == "x64") {
+      _platform = "iphonesimulator"
+    } else {
+      _platform = "iphoneos"
+    }
+
+    args = [
+      "--output", rebase_path(output_name, root_build_dir),
+      "--platform", _platform,
+      "--product-type", "APPL",
+      "--minimum-deployment-target", ios_deployment_target,
+      rebase_path(_input_dir, root_build_dir),
+    ]
+    script = "//build/toolchain/mac/compile_xcassets.py"
+  }
+  if (js_engine == "v8") {
+    defines += [ "USING_V8" ]
+  }
+
+  bundle_data("extra_demo_assets") {
+    public_deps = [ ":compile_demo_assets" ]
+
+    sources = [
+      "sample_xcode_project/sample_xcode_project/assets.plist",
+    ]
+    sources += get_target_outputs(":compile_demo_assets")
+
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+  }
+
+  bundle_data_ib_file("launch_storyboard") {
+    source = "sample_xcode_project/sample_xcode_project/Base.lproj/LaunchScreen.storyboard"
+  }
+
+  bundle_data_ib_file("main_storyboard") {
+    source = "sample_xcode_project/sample_xcode_project/Base.lproj/Main.storyboard"
+  }
+
+  action("gen_player_shared") {
+    # We need the ShakaPlayerEmbedded.framework to be generated before the
+    # demo files are built; this is traditionally done with the |deps|
+    # attribute.  But this also causes the transitive framework dependencies to
+    # be loaded too.  So if we add "player_shared" to the |deps|, then the demo
+    # will try to load FFmpeg, which will fail since the path is incorrect.
+    # This action will ensure the framework is generated but without depending
+    # on it directly.
+    data_deps = [ ":player_shared" ]
+
+    outputs = [ "$root_gen_dir/shaka/framework_generated" ]
+    script = "//shaka/tools/touch.py"
+    args = [ "--new-file" ] + rebase_path(outputs, root_build_dir)
+  }
+
+  ios_app_bundle("demo") {
+    if (!ios_sdl_demo) {
+      info_plist = "sample_xcode_project/sample_xcode_project/Info.plist"
+      extra_substitutions = [ "DEVELOPMENT_LANGUAGE=en-us" ]
+
+      sources = [
+        "sample_xcode_project/sample_xcode_project/AppDelegate.h",
+        "sample_xcode_project/sample_xcode_project/AppDelegate.m",
+        "sample_xcode_project/sample_xcode_project/AssetSelectionTableViewController.h",
+        "sample_xcode_project/sample_xcode_project/AssetSelectionTableViewController.m",
+        "sample_xcode_project/sample_xcode_project/ConfigTableViewController.h",
+        "sample_xcode_project/sample_xcode_project/ConfigTableViewController.m",
+        "sample_xcode_project/sample_xcode_project/ConfigTableValue.h",
+        "sample_xcode_project/sample_xcode_project/ConfigTableValue.m",
+        "sample_xcode_project/sample_xcode_project/ErrorDisplayView.h",
+        "sample_xcode_project/sample_xcode_project/ErrorDisplayView.m",
+        "sample_xcode_project/sample_xcode_project/NSObject+ShakaLayoutHelpers.h",
+        "sample_xcode_project/sample_xcode_project/NSObject+ShakaLayoutHelpers.m",
+        "sample_xcode_project/sample_xcode_project/LicenseTableViewController.h",
+        "sample_xcode_project/sample_xcode_project/LicenseTableViewController.m",
+        "sample_xcode_project/sample_xcode_project/LicenseViewController.h",
+        "sample_xcode_project/sample_xcode_project/LicenseViewController.m",
+        "sample_xcode_project/sample_xcode_project/PlayerViewController.h",
+        "sample_xcode_project/sample_xcode_project/PlayerViewController.m",
+        "sample_xcode_project/sample_xcode_project/ProgressAndBufferedSlider.h",
+        "sample_xcode_project/sample_xcode_project/ProgressAndBufferedSlider.m",
+        "sample_xcode_project/sample_xcode_project/main.m",
+      ]
+      bundle_deps = [
+        ":player_shared+bundle",
+      ]
+      deps = [
+        ":extra_demo_assets",
+        ":gen_player_shared",
+        ":launch_storyboard",
+        ":main_storyboard",
+      ]
+      cflags = [ "-F." ]
+      ldflags = [ "-F." ]
+      libs = [
+        "ShakaPlayerEmbedded.framework",
+        "QuartzCore.framework",
+      ]
+
+      # TODO: Fix warnings.
+      configs -= [ "//build/config/compiler:chromium_code" ]
+    } else {
+      info_plist = "Info.plist"
+      sources = [ "shaka/demo/main.cc" ]
+      deps = [
+        ":player_static",
+        "//third_party/gflags:gflags",
+      ]
+
+      # Ignore warnings from SDL.
+      cflags = [ "--system-header-prefix=SDL2/" ]
+    }
+
+    defines = [ "OS_IOS" ]
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+} else {
+  executable("demo") {
+    sources = [ "shaka/demo/main.cc" ]
+    deps = [
+      ":player_static",
+      "//third_party/gflags:gflags",
+    ]
+
+    defines = []
+    if (is_posix) {
+      defines += [ "OS_POSIX" ]
+    }
+
+    # Ignore warnings from SDL.
+    cflags = [ "--system-header-prefix=SDL2/" ]
+
+    if (is_linux) {
+      # Ensure we set rpath so we can find the shared libraries.
+      # TODO: This could be a security vulnerability, a real app should verify
+      # the library.  See comment in //build/config/gcc/BUILD.gn.
+      configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+    }
+  }
+}
+
+
+# -----------------------------------------------------------------------------
+# Tests
+
+action("gen_js_tests") {
+  visibility = [ ":*" ]
+  testonly = true
+
+  # The order of the files here is the order they are executed.
+  inputs = [
+    # Setup Jasmine first.
+    "third_party/jasmine/jasmine.js",
+    "third_party/jasmine/jasmine_boot.js",
+
+    # Setup the test helpers first.
+    "shaka/test/tests/_test_fixture.js",
+
+    "shaka/test/tests/base64.js",
+    "shaka/test/tests/dom.js",
+    "shaka/test/tests/eme.js",
+    "shaka/test/tests/test_type.js",
+    "shaka/test/tests/timeouts.js",
+    "shaka/test/tests/xml.js",
+    "shaka/test/tests/xml_http_request.js",
+  ]
+
+  output_name = "$root_gen_dir/embedded_js.cc"
+  outputs = [ output_name ]
+
+  args = [ "--output", rebase_path(output_name, root_build_dir) ]
+  args += rebase_path(inputs, root_build_dir)
+  script = "//shaka/tools/embed_tests.py"
+  sources = [ "//shaka/tools/embed_utils.py" ]
+}
+
+if (is_ios) {
+  bundle_data("test_media_data") {
+    visibility = [ ":*" ]
+    sources = [
+      "shaka/test/media/clear_high.mp4",
+      "shaka/test/media/clear_low_frag_init.mp4",
+      "shaka/test/media/clear_low_frag_seg1.mp4",
+      "shaka/test/media/encrypted_key_rotation.mp4",
+      "shaka/test/media/encrypted_low.mp4",
+      "shaka/test/media/encrypted_low.webm",
+      "shaka/test/media/encrypted_low_cbc1.mp4",
+      "shaka/test/media/encrypted_low_cbcs.mp4",
+      "shaka/test/media/encrypted_low_cenc.mp4",
+      "shaka/test/media/encrypted_low_cens.mp4",
+      "shaka/test/media/hash_file.txt",
+    ]
+    outputs = [ "{{bundle_root_dir}}/{{source_file_part}}" ]
+  }
+}
+
+test("tests") {
+  sources = [
+    "shaka/test/src/core/ref_ptr_unittest.cc",
+    "shaka/test/src/debug/integration.cc",
+    "shaka/test/src/eme/clearkey_implementation_unittest.cc",
+    "shaka/test/src/media/frame_buffer_unittest.cc",
+    "shaka/test/src/media/locked_frame_list_unittest.cc",
+    "shaka/test/src/media/media_processor_integration.cc",
+    "shaka/test/src/media/media_utils_unittest.cc",
+    "shaka/test/src/media/pipeline_manager_unittest.cc",
+    "shaka/test/src/media/pipeline_monitor_unittest.cc",
+    "shaka/test/src/media/video_renderer_unittest.cc",
+    "shaka/test/src/memory/heap_tracer_unittest.cc",
+    "shaka/test/src/memory/object_tracker_integration.cc",
+    "shaka/test/src/memory/object_tracker_unittest.cc",
+    "shaka/test/src/public/variant_unittest.cc",
+    "shaka/test/src/util/buffer_reader_unittest.cc",
+    "shaka/test/src/util/dynamic_buffer_unittest.cc",
+    "shaka/test/src/util/file_system_unittest.cc",
+    "shaka/test/src/util/shared_lock_unittest.cc",
+    "shaka/test/src/util/utils_unittest.cc",
+    "shaka/test/src/test/js_test_fixture.cc",
+    "shaka/test/src/test/js_test_fixture.h",
+    "shaka/test/src/test/media_files.h",
+    "shaka/test/src/test/v8_test.cc",
+    "shaka/test/src/test/v8_test.h",
+    "shaka/test/main.cc",
+  ]
+  sources += get_target_outputs(":gen_js_tests")
+
+  if (is_ios) {
+    sources += [ "shaka/test/src/test/media_files_ios.cc" ]
+  } else {
+    sources += [ "shaka/test/src/test/media_files_other.cc" ]
+  }
+
+  deps = [
+    ":gen_js_tests",
+    ":internal_sources",
+    "//testing/gmock:gmock",
+    "//testing/gtest:gtest",
+    "//third_party/ffmpeg:ffmpeg_libs",
+    "//third_party/gflags:gflags",
+    "//third_party/glog:glog",
+    "//third_party/sdl2:sdl2",
+    "//third_party/zlib:zlib",
+  ]
+
+  if (is_ios) {
+    deps += [
+      ":scripts_bundle",
+      "//third_party/ffmpeg:ffmpeg_libs_framework+bundle",
+    ]
+  }
+
+  if (is_linux) {
+    # Ensure we set rpath so we can find the shared libraries.
+    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  }
+  if (is_ios) {
+    deps += [ ":test_media_data" ]
+  }
+
+  configs += [ ":internal_config" ]
+  configs += [ ":test_config" ]
+}

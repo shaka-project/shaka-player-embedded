@@ -1,0 +1,157 @@
+# Copyright 2017 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//common.gni")
+
+declare_args() {
+  # Whether to build SDL2 from source.
+  sdl2_from_source = true
+
+  # Only used when not building from source.  The directory that contains the
+  # SDL headers.  Must be an absolute path.  If not given, this will assume SDL2
+  # is globally installed.
+  sdl2_header_dir = ""
+
+  # Only used when not building from source.  The directory that contains the
+  # SDL library files.  Must be an absolute path.  If not given, this will
+  # assume SDL2 is globally installed.
+  sdl2_lib_dir = ""
+
+  # Extra .c files to compile.  Paths relative to $root_gen_dir.
+  sdl2_extra_files = []
+
+  # A list of .c files to compile.  Paths relative to BUILD.gn file.
+  sdl2_sources = []
+}
+
+
+config("external_build_config") {
+  visibility = [ ":*" ]
+
+  if (sdl2_header_dir != "") {
+    include_dirs = [ sdl2_header_dir ]
+  }
+  if (sdl2_lib_dir != "") {
+    lib_dirs = [ sdl2_lib_dir ]
+  }
+  libs = [ "SDL2" ]
+}
+
+config("source_internal_config") {
+  visibility = [ ":*" ]
+
+  defines = [
+    "BUILD_SDL",
+  ]
+  include_dirs = [
+    # Wee need to include this entry in both internal and external configs since
+    # we need a specific include order.
+    "$root_gen_dir/sdl2/include",
+    "src/include",
+    "src/src/video/khronos",
+  ]
+  cflags = [ "-w" ]
+
+  if (is_mac || is_ios) {
+    libs = [
+      "AudioToolbox.framework",
+      "AVFoundation.framework",
+      "CoreAudio.framework",
+      "CoreFoundation.framework",
+      "CoreVideo.framework",
+      "GameController.framework",
+      "IOKit.framework",
+      "QuartzCore.framework",
+      "iconv",
+    ]
+
+    if (is_mac) {
+      libs += [
+        "Carbon.framework",
+        "Cocoa.framework",
+        "ForceFeedback.framework",
+      ]
+    } else {
+      cflags += [ "-fobjc-arc" ]
+
+      libs += [
+        "CoreMotion.framework",
+        "OpenGLES.framework",
+        "UIKit.framework",
+      ]
+      if (sdl_utils) {
+        # TODO: See why this isn't being set in ./configure.
+        defines += [ "SDL_VIDEO_DRIVER_UIKIT" ]
+      }
+    }
+  }
+}
+
+config("source_external_config") {
+  visibility = [ ":*" ]
+
+  defines = [
+    "USING_GENERATED_CONFIG_H",
+  ]
+  include_dirs = [
+    "$root_gen_dir/sdl2/gen",
+    "$root_gen_dir/sdl2/include",
+  ]
+
+  if (!is_component_build) {
+    # Define DECLSPEC to force SDL to not export symbols.
+    defines += [ "DECLSPEC=" ]
+  }
+}
+
+group("sdl2") {
+  if (sdl2_from_source) {
+    public_deps = [ ":sdl2_source" ]
+  } else {
+    public_configs = [ ":external_build_config" ]
+  }
+}
+
+action("gen_files") {
+  # This exists to tell GN that these generated files exist.  They were
+  # generated before-hand by the configure script, but since GN sees that they
+  # are in $root_gen_dir, then it thinks something should be generating them.
+  script = "//shaka/tools/touch.py"
+  outputs = [ "$root_gen_dir/sdl2/signal.h" ]
+  foreach (file, sdl2_extra_files) {
+    outputs += [ "$root_gen_dir/$file" ]
+  }
+
+  # The first path is the signal.h, which can be created; the others must exist.
+  args = ["--new-file"]
+  args += rebase_path(outputs, root_build_dir)
+}
+
+component("sdl2_source") {
+  visibility = [ ":*" ]
+
+  # Ignore the source assignment filter since we have already filtered by
+  # platform.  Otherwise it will try to remove the cocoa/ files on iOS.
+  set_sources_assignment_filter([])
+  sources = sdl2_sources
+
+  deps = [ ":gen_files" ]
+  sources += get_target_outputs(":gen_files")
+
+  configs += [ ":source_internal_config" ]
+  public_configs = [ ":source_external_config" ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+}

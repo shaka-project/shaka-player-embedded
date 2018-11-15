@@ -1,0 +1,9 @@
+{
+  "implementations": [
+    {
+      "factory_type": "shaka::eme::ClearKeyImplementationFactory",
+      "header": "clearkey_implementation_factory.h",
+      "key_system": "org.w3.clearkey"
+    }
+  ]
+}

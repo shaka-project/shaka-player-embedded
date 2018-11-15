@@ -1,0 +1,83 @@
+// Copyright 2018 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * An object describing a media track.  This object should be treated as
+ * read-only as changing any values does not have any effect.  This is the
+ * public view of an audio/video paring (variant type) or text track (text
+ * type).
+ *
+ * @ingroup externs
+ */
+dictionary Track {
+  /** The unique ID of the track. */
+  double id;
+  /**
+   * If true, this is the track being streamed (another track may be
+   * visible/audible in the buffer).
+   */
+  boolean active;
+
+  /** The type of track, either 'variant' or 'text'. */
+  DOMString type;
+  /** The bandwidth required to play the track, in bits/sec. */
+  double bandwidth;
+
+  /**
+   * The language of the track, or 'und' if not given.  This is the exact
+   * value provided in the manifest; it may need to be normalized.
+   */
+  DOMString language;
+  /** The track label, which is unique text that should describe the track. */
+  DOMString? label;
+  /**
+   * (only for text tracks) The kind of text track, either 'caption' or
+   * 'subtitle'.
+   */
+  DOMString? kind;
+  /** The video width provided in the manifest, if present. */
+  double? width;
+  /** The video height provided in the manifest, if present. */
+  double? height;
+  /** The video framerate provided in the manifest, if present. */
+  double? frameRate;
+  /** The MIME type of the content provided in the manifest. */
+  DOMString? mimeType;
+  /** The audio/video codecs string provided in the manifest, if present. */
+  DOMString? codecs;
+  /** The audio codecs string provided in the manifest, if present. */
+  DOMString? audioCodec;
+  /** The video codecs string provided in the manifest, if present. */
+  DOMString? videoCodec;
+  /**
+   * True indicates that this in the primary language for the content.
+   * This flag is based on signals from the manifest.
+   * This can be a useful hint about which language should be the default, and
+   * indicates which track Shaka will use when the user's language preference
+   * cannot be satisfied.
+   */
+  boolean primary;
+  /** The roles of the track, e.g. 'main', 'caption', or 'commentary'. */
+  sequence<DOMString> roles;
+  /** (only for variant tracks) The video stream id. */
+  double? videoId;
+  /** (only for variant tracks) The audio stream id. */
+  double? audioId;
+  /** The count of the audio track channels. */
+  double? channelsCount;
+  /** (only for variant tracks) The audio stream's bandwidth if known. */
+  double? audioBandwidth;
+  /** (only for variant tracks) The video stream's bandwidth if known. */
+  double? videoBandwidth;
+};

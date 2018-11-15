@@ -1,0 +1,121 @@
+// Copyright 2016 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include <SDL2/SDL.h>
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+#include <stdlib.h>
+#ifdef USING_V8
+#  include <v8.h>
+#endif
+
+#include <algorithm>
+#include <fstream>
+#include <functional>
+#include <string>
+
+#include "shaka/js_manager.h"
+#include "src/core/js_manager_impl.h"
+#include "src/mapping/callback.h"
+#include "src/mapping/register_member.h"
+#include "src/test/media_files.h"
+#include "src/util/file_system.h"
+#include "test/src/test/js_test_fixture.h"
+
+namespace shaka {
+
+// Defined in generated code by //shaka/test/embed_tests.py
+void LoadJsTests();
+
+namespace {
+
+DEFINE_bool(no_colors, false, "Don't print colors in test output.");
+#ifdef USING_V8
+DEFINE_string(v8_flags, "", "Pass the given flags to V8.");
+#endif
+
+int RunTests(int argc, char** argv) {
+#ifdef OS_IOS
+  const std::string dynamic_data_dir = std::string(getenv("HOME")) + "/Library";
+  const std::string static_data_dir = ".";
+#else
+  const std::string dynamic_data_dir = util::FileSystem::DirName(argv[0]);
+  const std::string static_data_dir = dynamic_data_dir;
+#endif
+
+  // Init gflags.
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+  // Init logging.
+  FLAGS_alsologtostderr = true;
+  google::InitGoogleLogging(argv[0]);
+
+#ifdef USING_V8
+  // Expose GC to tests (must be done before initializing V8).
+  const std::string flags_for_v8 = "--expose-gc";
+  v8::V8::SetFlagsFromString(flags_for_v8.c_str(), flags_for_v8.length());
+  v8::V8::SetFlagsFromString(FLAGS_v8_flags.c_str(), FLAGS_v8_flags.length());
+#endif
+
+  // Init gtest.
+  if (FLAGS_no_colors) {
+    testing::FLAGS_gtest_color = "no";
+    setenv("AV_LOG_FORCE_NOCOLOR", "1", 0);
+  }
+  if (testing::FLAGS_gtest_output.empty()) {
+    const std::string file = util::FileSystem::GetPathForDynamicFile(
+        dynamic_data_dir, "TESTS-results.xml");
+    testing::FLAGS_gtest_output = "xml:" + file;
+  }
+  testing::InitGoogleTest(&argc, argv);
+
+  // Find the location of the media files.
+  InitMediaFiles(argv[0]);
+
+
+  // Start the main JavaScript engine that contains the JavaScript tests.
+  JsManager::StartupOptions opts;
+  opts.dynamic_data_dir = dynamic_data_dir;
+  opts.static_data_dir = static_data_dir;
+  opts.is_static_relative_to_bundle = true;
+  JsManager engine(opts);
+
+  JsManagerImpl::Instance()->MainThread()->AddInternalTask(
+      TaskPriority::Immediate, "", PlainCallbackTask(&RegisterTestFixture));
+
+  LoadJsTests();
+
+  // Run all the tests.
+  return RUN_ALL_TESTS();
+}
+
+}  // namespace
+
+}  // namespace shaka
+
+#if defined(OS_IOS) && !defined(SHAKA_SDL_UTILS)
+// SDL defines |main| so it can wrap it and handle startup.  If we don't have
+// the SDL utils, then we need to define out own entry point here.
+#  undef main
+#endif
+
+int main(int argc, char** argv) {
+  const int code = shaka::RunTests(argc, argv);
+  if (code == 0)
+    fprintf(stderr, "TEST RESULTS: PASS\n");
+  else
+    fprintf(stderr, "TEST RESULTS: FAIL\n");
+  return code;
+}

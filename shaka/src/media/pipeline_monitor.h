@@ -1,0 +1,64 @@
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef SHAKA_EMBEDDED_MEDIA_PIPELINE_MONITOR_H_
+#define SHAKA_EMBEDDED_MEDIA_PIPELINE_MONITOR_H_
+
+#include <atomic>
+#include <functional>
+
+#include "src/debug/thread.h"
+#include "src/media/pipeline_manager.h"
+#include "src/media/types.h"
+#include "src/util/clock.h"
+
+namespace shaka {
+namespace media {
+
+/**
+ * This manages a thread that monitors the media pipeline and updates the state
+ * based on the currently buffered content.  This also handles transitioning to
+ * ended.
+ */
+class PipelineMonitor {
+ public:
+  PipelineMonitor(std::function<BufferedRanges()> get_buffered,
+                  std::function<BufferedRanges()> get_decoded,
+                  std::function<void(MediaReadyState)> ready_state_changed,
+                  const util::Clock* clock, PipelineManager* pipeline);
+  ~PipelineMonitor();
+
+  /** Stops the background thread and joins it. */
+  void Stop();
+
+ private:
+  void ThreadMain();
+
+  void ChangeReadyState(MediaReadyState new_state);
+
+  const std::function<BufferedRanges()> get_buffered_;
+  const std::function<BufferedRanges()> get_decoded_;
+  const std::function<void(MediaReadyState)> ready_state_changed_;
+  const util::Clock* const clock_;
+  PipelineManager* const pipeline_;
+  std::atomic<bool> shutdown_;
+  MediaReadyState ready_state_;
+
+  Thread thread_;
+};
+
+}  // namespace media
+}  // namespace shaka
+
+#endif  // SHAKA_EMBEDDED_MEDIA_PIPELINE_MONITOR_H_

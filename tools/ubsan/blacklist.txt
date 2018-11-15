@@ -1,0 +1,8 @@
+#############################################################################
+# UBSan blacklist.
+
+# We don't control V8 and it gives too many false positives.
+src:*/v8/*
+
+# We don't control SDL and it causes segfaults if enabled.
+src:*/sdl2/*

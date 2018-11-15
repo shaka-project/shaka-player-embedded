@@ -1,0 +1,6 @@
+#############################################################################
+# TSan blacklist.
+
+# Ignore errors in V8.
+fun:*ThreadData*Initialize*
+fun:*v8*internal*ThreadEntry*

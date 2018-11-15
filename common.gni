@@ -1,0 +1,116 @@
+# Copyright 2017 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+if (is_ios) {
+  import("//build/config/ios/ios_sdk.gni")
+  import("//build/config/ios/rules.gni")
+}
+import("//build/config/sysroot.gni")
+
+declare_args() {
+  # Whether to include SDL utilities in the library.
+  sdl_utils = !is_ios
+  # Whether to enable support for hardware decoders.
+  enable_hardware_decode = true
+}
+
+declare_args() {
+  # Whether to force hardware acceleration for decoding.
+  force_hardware_decode = enable_hardware_decode && is_ios && !use_ios_simulator
+}
+
+
+# Defines a target that is either a shared library or an iOS framework.  This
+# can be treated the same as a normal shared library.  If this is iOS, this
+# target will need to be added to a bundle_data() target so the framework is
+# copied to the device.
+#
+# This takes the same arguments as a shared_library().
+template("framework_library") {
+  if (is_ios) {
+    ios_framework_bundle("${target_name}_framework") {
+      forward_variables_from(invoker, "*")
+
+      # ios_framework_bundle() requires passing in public_headers and sources.
+      # If they are not set, just give a dummy value.
+      if (!defined(public_headers) || public_headers == []) {
+        public_headers = [ "//shaka/include/shaka/player.h" ]
+      }
+      if (!defined(sources) || sources == []) {
+        sources = public_headers
+      }
+    }
+
+    # Create a group so dependencies don't need to add the +link.
+    group(target_name) {
+      public_deps = [ ":${target_name}_framework+link" ]
+    }
+  } else {
+    shared_library(target_name) {
+      forward_variables_from(invoker, "*", [ "info_plist" ])
+
+      # We need to set the install_name of the library so the executable can
+      # find the dynamic library.  When building in component mode, this is done
+      # for us.
+      if (is_mac && !is_component_build) {
+        if (!defined(ldflags)) {
+          ldflags = []
+        }
+        # TODO: See //build/toolchain/mac/BUILD.gn, specifically the
+        # tool("solink").  This may not work in the general case.  Maybe push
+        # something upstream?
+        ldflags += [ "-Wl,-install_name,@loader_path/lib${output_name}.dylib"]
+      }
+    }
+  }
+}
+
+# Generates a new file with a git patch applied to it.
+#
+# Fields:
+# - input: The path to the source file to patch.
+# - patch: The path to the patch to apply.
+# - output: The path to where to put the generate file (should start with
+#     $root_gen_dir).
+# - directory: (optional) The directory that is the base of the patch.  If not
+#     given, will use the current directory.
+template("patch") {
+  action(target_name) {
+    assert(defined(invoker.input), "Must provide 'input' field")
+    assert(defined(invoker.patch), "Must provide 'patch' field")
+    assert(defined(invoker.output), "Must provide 'output' field")
+
+    forward_variables_from(invoker, "*",
+                           [ "input", "patch", "output", "directory" ])
+
+    inputs = [
+      invoker.input,
+      invoker.patch,
+    ]
+    outputs = [ invoker.output ]
+
+    if (defined(invoker.directory)) {
+      _directory = invoker.directory
+    } else {
+      _directory = "."
+    }
+
+    args = [
+      "--patch", rebase_path(invoker.patch, root_build_dir),
+      "--dir", rebase_path(_directory, root_build_dir),
+      "--output", rebase_path(invoker.output, root_build_dir),
+    ]
+    script = "//shaka/tools/patch.py"
+  }
+}

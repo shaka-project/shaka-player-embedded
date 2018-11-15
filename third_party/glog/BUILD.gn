@@ -1,0 +1,77 @@
+# Copyright 2016 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//common.gni")
+
+config("internal_config") {
+  cflags = [
+    "-Wno-deprecated-declarations",
+    "-Wno-header-hygiene",
+  ]
+}
+
+config("external_config") {
+  include_dirs = [
+    "src/src",
+    "$root_gen_dir/glog/src",
+  ]
+
+  defines = [
+    "HAVE_LIB_GFLAGS",
+  ]
+}
+
+patch("ios_sim") {
+  # Fix runtime error on an iOS simulator.
+  # TODO: Remove once merged upstream: https://github.com/google/glog/pull/350
+  visibility = [ ":*" ]
+
+  directory = "src"
+  input = "src/src/utilities.cc"
+  output = "$root_gen_dir/glog/utilities.cc"
+  patch = "ios_sim.patch"
+}
+
+
+component("glog") {
+  sources = [
+    "src/src/raw_logging.cc",
+    "src/src/demangle.cc",
+    "src/src/vlog_is_on.cc",
+    "src/src/symbolize.cc",
+    "src/src/logging.cc",
+    "src/src/signalhandler.cc",
+  ]
+  sources += get_target_outputs(":ios_sim")
+
+  if (is_win) {
+    sources += [
+      "src/src/windows/port.cc",
+    ]
+  }
+
+  deps = [
+    ":ios_sim",
+    "//third_party/gflags:gflags",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+  configs += [ "//build/config/gcc:symbol_visibility_default" ]
+
+  configs += [ ":internal_config" ]
+  public_configs = [ ":external_config" ]
+}

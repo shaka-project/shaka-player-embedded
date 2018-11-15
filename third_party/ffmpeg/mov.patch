@@ -1,0 +1,16 @@
+diff --git a/libavformat/mov.c b/libavformat/mov.c
+index 522ce60c2d..289bad1e2a 100644
+--- a/libavformat/mov.c
++++ b/libavformat/mov.c
+@@ -1153,9 +1153,8 @@ static int mov_read_moov(MOVContext *c, AVIOContext *pb, MOVAtom atom)
+     int ret;
+ 
+     if (c->found_moov) {
+-        av_log(c->fc, AV_LOG_WARNING, "Found duplicated MOOV Atom. Skipped it\n");
+-        avio_skip(pb, atom.size);
+-        return 0;
++        av_log(c->fc, AV_LOG_INFO, "Found duplicated MOOV Atom. Stopping.\n");
++        return -123456;
+     }
+ 
+     if ((ret = mov_read_default(c, pb, atom)) < 0)

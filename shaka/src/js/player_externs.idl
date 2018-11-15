@@ -1,0 +1,57 @@
+// Copyright 2018 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * Contains the times of a range of buffered content.
+ * @ingroup externs
+ */
+dictionary BufferedRange {
+  /** The start time of the range, in seconds. */
+  double start;
+
+  /** The end time of the range, in seconds. */
+  double end;
+};
+
+/**
+ * Contains information about the current buffered ranges.
+ * @ingroup externs
+ */
+dictionary BufferedInfo {
+  /** The combined audio/video buffered ranges, reported by |video.buffered|. */
+  sequence<BufferedRange> total;
+
+  /** The buffered ranges for audio content. */
+  sequence<BufferedRange> audio;
+
+  /** The buffered ranges for video content. */
+  sequence<BufferedRange> video;
+
+  /** The buffered ranges for text content. */
+  sequence<BufferedRange> text;
+};
+
+/**
+ * A pair of language and role.
+ * @ingroup externs
+ */
+dictionary LanguageRole {
+  /** The language code for the stream. */
+  DOMString language;
+
+  /**
+   * The role name for the stream. If the stream has no role, |role| will be ''.
+   */
+  DOMString role;
+};

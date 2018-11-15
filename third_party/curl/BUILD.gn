@@ -1,0 +1,235 @@
+# Copyright 2016 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+config("internal_config") {
+  visibility = [ ":*" ]
+
+  include_dirs = [
+    "src/lib",
+  ]
+
+  defines = [
+    "HAVE_CONFIG_H",
+    "BUILDING_LIBCURL",
+  ]
+
+  if (current_cpu == "x86" || current_cpu == "arm") {
+    defines += [
+      "SIZEOF_TIME_T=4",
+    ]
+  } else {
+    assert(current_cpu == "x64" || current_cpu == "arm64",
+           "Unsupported CPU type")
+    defines += [
+      "SIZEOF_TIME_T=8",
+    ]
+  }
+
+  cflags = [
+    "-Wno-unguarded-availability",
+    "-Wno-varargs",
+    "-Wno-deprecated-declarations",
+  ]
+
+  # TODO: Remove CURL_CA_BUNDLE, store the CA bundle with the binary, and
+  # determine at runtime.
+  if (is_linux) {
+    curl_ca_bundle = exec_script(
+        "//third_party/curl/config/linux/find_curl_ca_bundle.py", [],
+        "trim string")
+    defines += ["CURL_CA_BUNDLE=\"" + curl_ca_bundle + "\""]
+    include_dirs += ["config/linux"]
+  } else if (is_mac) {
+    curl_ca_bundle = exec_script(
+        "//third_party/curl/config/mac/find_curl_ca_bundle.py", [],
+        "trim string")
+    defines += ["CURL_CA_BUNDLE=\"" + curl_ca_bundle + "\""]
+    include_dirs += ["config/mac"]
+  } else if (is_ios) {
+    # TODO: Implement for iOS (probably store file in data dir).
+    include_dirs += ["config/mac"]
+  } else {
+    assert(false, "Not implemented for this platform")
+  }
+}
+
+config("external_config") {
+  visibility = [ ":*" ]
+
+  include_dirs = [
+    "src/include",
+    "config/curl",
+  ]
+
+  if (!is_component_build) {
+    defines = [
+      "CURL_STATICLIB",
+    ]
+  }
+}
+
+component("libcurl") {
+  sources = [
+    "src/lib/vauth/vauth.c",
+    "src/lib/vauth/cleartext.c",
+    "src/lib/vauth/cram.c",
+    "src/lib/vauth/digest.c",
+    "src/lib/vauth/digest_sspi.c",
+    "src/lib/vauth/krb5_gssapi.c",
+    "src/lib/vauth/krb5_sspi.c",
+    "src/lib/vauth/ntlm.c",
+    "src/lib/vauth/ntlm_sspi.c",
+    "src/lib/vauth/oauth2.c",
+    "src/lib/vauth/spnego_gssapi.c",
+    "src/lib/vauth/spnego_sspi.c",
+    "src/lib/vtls/openssl.c",
+    "src/lib/vtls/gtls.c",
+    "src/lib/vtls/vtls.c",
+    "src/lib/vtls/nss.c",
+    "src/lib/vtls/polarssl.c",
+    "src/lib/vtls/polarssl_threadlock.c",
+    "src/lib/vtls/axtls.c",
+    "src/lib/vtls/cyassl.c",
+    "src/lib/vtls/schannel.c",
+    "src/lib/vtls/darwinssl.c",
+    "src/lib/vtls/gskit.c",
+    "src/lib/vtls/mbedtls.c",
+    "src/lib/file.c",
+    "src/lib/timeval.c",
+    "src/lib/base64.c",
+    "src/lib/hostip.c",
+    "src/lib/progress.c",
+    "src/lib/formdata.c",
+    "src/lib/cookie.c",
+    "src/lib/http.c",
+    "src/lib/sendf.c",
+    "src/lib/ftp.c",
+    "src/lib/url.c",
+    "src/lib/dict.c",
+    "src/lib/if2ip.c",
+    "src/lib/speedcheck.c",
+    "src/lib/ldap.c",
+    "src/lib/version.c",
+    "src/lib/getenv.c",
+    "src/lib/escape.c",
+    "src/lib/mprintf.c",
+    "src/lib/telnet.c",
+    "src/lib/netrc.c",
+    "src/lib/getinfo.c",
+    "src/lib/transfer.c",
+    "src/lib/strcase.c",
+    "src/lib/easy.c",
+    "src/lib/security.c",
+    "src/lib/curl_fnmatch.c",
+    "src/lib/fileinfo.c",
+    "src/lib/ftplistparser.c",
+    "src/lib/wildcard.c",
+    "src/lib/krb5.c",
+    "src/lib/memdebug.c",
+    "src/lib/http_chunks.c",
+    "src/lib/strtok.c",
+    "src/lib/connect.c",
+    "src/lib/llist.c",
+    "src/lib/hash.c",
+    "src/lib/multi.c",
+    "src/lib/content_encoding.c",
+    "src/lib/share.c",
+    "src/lib/http_digest.c",
+    "src/lib/md4.c",
+    "src/lib/md5.c",
+    "src/lib/http_negotiate.c",
+    "src/lib/inet_pton.c",
+    "src/lib/strtoofft.c",
+    "src/lib/strerror.c",
+    "src/lib/amigaos.c",
+    "src/lib/hostasyn.c",
+    "src/lib/hostip4.c",
+    "src/lib/hostip6.c",
+    "src/lib/hostsyn.c",
+    "src/lib/inet_ntop.c",
+    "src/lib/parsedate.c",
+    "src/lib/select.c",
+    "src/lib/tftp.c",
+    "src/lib/splay.c",
+    "src/lib/strdup.c",
+    "src/lib/socks.c",
+    "src/lib/ssh.c",
+    "src/lib/curl_addrinfo.c",
+    "src/lib/socks_gssapi.c",
+    "src/lib/socks_sspi.c",
+    "src/lib/curl_sspi.c",
+    "src/lib/slist.c",
+    "src/lib/nonblock.c",
+    "src/lib/curl_memrchr.c",
+    "src/lib/imap.c",
+    "src/lib/pop3.c",
+    "src/lib/smtp.c",
+    "src/lib/pingpong.c",
+    "src/lib/rtsp.c",
+    "src/lib/curl_threads.c",
+    "src/lib/warnless.c",
+    "src/lib/hmac.c",
+    "src/lib/curl_rtmp.c",
+    "src/lib/openldap.c",
+    "src/lib/curl_gethostname.c",
+    "src/lib/gopher.c",
+    "src/lib/idn_win32.c",
+    "src/lib/http_proxy.c",
+    "src/lib/non-ascii.c",
+    "src/lib/asyn-ares.c",
+    "src/lib/asyn-thread.c",
+    "src/lib/curl_gssapi.c",
+    "src/lib/http_ntlm.c",
+    "src/lib/curl_ntlm_wb.c",
+    "src/lib/curl_ntlm_core.c",
+    "src/lib/curl_sasl.c",
+    "src/lib/rand.c",
+    "src/lib/curl_multibyte.c",
+    "src/lib/hostcheck.c",
+    "src/lib/conncache.c",
+    "src/lib/pipeline.c",
+    "src/lib/dotdot.c",
+    "src/lib/x509asn1.c",
+    "src/lib/http2.c",
+    "src/lib/smb.c",
+    "src/lib/curl_endian.c",
+    "src/lib/curl_des.c",
+    "src/lib/system_win32.c",
+    "src/lib/mime.c",
+  ]
+
+  deps = [
+    "//third_party/zlib:zlib",
+  ]
+
+  if (is_mac || is_ios) {
+    libs = [
+      "CoreFoundation.framework",
+      "Security.framework",
+    ]
+  } else {
+    deps += [ "//third_party/boringssl:boringssl" ]
+  }
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  if (is_component_build) {
+    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+    configs += [ "//build/config/gcc:symbol_visibility_default" ]
+  }
+
+  configs += [ ":internal_config" ]
+  public_configs = [ ":external_config" ]
+}

@@ -1,0 +1,75 @@
+// Copyright 2018 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * Explicit initialization data, which override any initialization data in the
+ * content. The initDataType values and the formats that they correspond to are
+ * specified here: https://bit.ly/EmeInitTypes.
+ *
+ * @ingroup externs
+ */
+dictionary InitDataOverride {
+  // TODO: Expose initData.
+
+  /** A string to indicate what format initData is in. */
+  DOMString initDataType;
+
+  /** The key Id that corresponds to this initData. */
+  DOMString? keyId;
+};
+
+/**
+ * DRM configuration for a single key system.
+ *
+ * @ingroup externs
+ */
+dictionary DrmInfo {
+  /** The key system, e.g., "com.widevine.alpha". */
+  DOMString keySystem;
+
+  /** The license server URI. */
+  DOMString licenseServerUri;
+
+  /**
+   * True if the application requires the key system to support distinctive
+   * identifiers.
+   */
+  boolean distinctiveIdentifierRequired;
+
+  /**
+   * True if the application requires the key system to support persistent
+   * state, e.g., for persistent license storage.
+   */
+  boolean persistentStateRequired;
+
+  /** A key-system-specific string that specifies a required security level. */
+  DOMString audioRobustness;
+
+  /** A key-system-specific string that specifies a required security level. */
+  DOMString videoRobustness;
+
+  // TODO: Expose the serviceCertificate?
+
+  /**
+   * A list of initialization data which override any initialization data found
+   * in the content.
+   */
+  sequence<InitDataOverride> initData;
+
+  /**
+   * If not empty, contains the default key IDs for this key system, as
+   * lowercase hex strings.
+   */
+  sequence<DOMString> keyIds;
+};

@@ -1,0 +1,68 @@
+# Copyright 2017 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+CONFIG_NAME={{CONFIG_NAME}}
+SOURCE_ROOT={{SOURCE_ROOT}}
+TARGET_OS={{TARGET_OS}}
+
+
+ifeq ($(CONFIG_NAME),)
+	BIN_DIR='.'
+else
+	BIN_DIR='$(SOURCE_ROOT)/out/$(CONFIG_NAME)'
+endif
+
+
+.PHONY: all
+all: shaka-player
+
+.PHONY: install
+install:
+	@echo 'Installing is not supported yet'; exit 1
+
+.PHONY: clean
+clean:
+	@python '$(SOURCE_ROOT)/build.py' --config-name '$(CONFIG_NAME)' --clean
+
+.PHONY: distclean
+distclean: clean
+ifeq ($(CONFIG_NAME),)
+	rm -rf gen obj args.gn build.ninja build.ninja.d toolchain.ninja \
+	  shaka-player.compiled.js Makefile
+else
+	rm -rf '$(SOURCE_ROOT)/out/$(CONFIG_NAME)'
+	rm Makefile
+endif
+
+# TODO: These should be changed to work with iOS/Android targets.
+.PHONY: run
+run: shaka-player
+	'$(BIN_DIR)/demo' $(ARGS)
+
+.PHONY: check
+check:
+	@python '$(SOURCE_ROOT)/shaka/tools/presubmit.py' --config-name \
+		'$(CONFIG_NAME)' $(ARGS)
+
+.PHONY: test
+test: shaka-player
+	@python '$(SOURCE_ROOT)/test.py' --config-name '$(CONFIG_NAME)' $(ARGS)
+
+.PHONY: shaka-player
+shaka-player:
+	@python '$(SOURCE_ROOT)/build.py' --config-name '$(CONFIG_NAME)'
+
+.PHONY: docs
+docs: shaka-player
+	@python '$(SOURCE_ROOT)/gen_docs.py' --config-name '$(CONFIG_NAME)'

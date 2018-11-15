@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+  <!-- Shaka assets -->
+  <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd</string>
+    <key>title</key>
+    <string>Angel One (multicodec, multilingual)</string>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-demo-assets/angel-one-hls/hls.m3u8</string>
+    <key>title</key>
+    <string>Angel One (HLS, MP4, multilingual)</string>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-demo-assets/angel-one-clearkey/dash.mpd</string>
+    <key>title</key>
+    <string>Angel One (ClearKey server)</string>
+    <key>configuration</key>
+    <dict>
+      <key>drm.servers.org\.w3\.clearkey</key>
+      <string>https://cwip-shaka-proxy.appspot.com/clearkey?_u3wDe7erb7v8Lqt8A3QDQ=ABEiM0RVZneImaq7zN3u_w</string>
+    </dict>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-demo-assets/angel-one-clearkey/dash.mpd</string>
+    <key>title</key>
+    <string>Angel One (ClearKey config)</string>
+    <key>configuration</key>
+    <dict>
+      <key>drm.clearKeys.FEEDF00DEEDEADBEEFF0BAADF00DD00D</key>
+      <string>00112233445566778899AABBCCDDEEFF</string>
+    </dict>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-demo-assets/sintel/dash.mpd</string>
+    <key>title</key>
+    <string>Sintel 4k (multicodec)</string>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-demo-assets/sintel-mp4-only/dash.mpd</string>
+    <key>title</key>
+    <string>Sintel 4k (MP4 only)</string>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-demo-assets/heliocentrism/heliocentrism.mpd</string>
+    <key>title</key>
+    <string>Heliocentrism (multicodec, multiperiod)</string>
+  </dict>
+  <dict>
+    <key>license</key>
+    <string>// From: http://dig.ccmixter.org/files/JeffSpeed68/53327
+    // Licensed under Creative Commons BY-NC 3.0.
+    // Free for non-commercial use with attribution.
+    // http://creativecommons.org/licenses/by-nc/3.0/</string>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-demo-assets/dig-the-uke-clear/dash.mpd</string>
+    <key>title</key>
+    <string>&quot;Dig the Uke&quot; by Stefan Kartenberg (audio only, multicodec)</string>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-demo-assets/tos-ttml/dash.mpd</string>
+    <key>title</key>
+    <string>Tears of Steel (multicodec, TTML)</string>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-live-assets/player-source.mpd</string>
+    <key>title</key>
+    <string>Shaka Player History (multicodec, live, DASH)</string>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-live-assets/player-source.m3u8</string>
+    <key>title</key>
+    <string>Shaka Player History (live, HLS)</string>
+  </dict>
+  <!-- DASH-IF assets, from http://dashif.org/test-vectors/ -->
+  <dict>
+    <key>uri</key>
+    <string>https://dash.akamaized.net/dash264/TestCases/1c/qualcomm/2/MultiRate.mpd</string>
+    <key>title</key>
+    <string>Big Buck Bunny</string>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://vm2.dashif.org/livesim/utc_head/testpic_2s/Manifest.mpd</string>
+    <key>title</key>
+    <string>Live sim (2s segments)</string>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://vm2.dashif.org/livesim/utc_head/testpic_6s/Manifest.mpd</string>
+    <key>title</key>
+    <string>Live sim (6s segments)</string>
+  </dict>
+  <dict>
+    <key>uri</key>
+    <string>https://vm2.dashif.org/livesim/utc_head/periods_20/testpic_2s/Manifest.mpd</string>
+    <key>title</key>
+    <string>Live sim (multi-period)</string>
+  </dict>
+  <!-- Wowza assets, from http://www.dash-player.com/demo/streaming-server-and-encoder-support/ -->
+  <dict>
+    <key>uri</key>
+    <string>https://wowzaec2demo.streamlock.net/live/bigbuckbunny/manifest_mpm4sav_mvtime.mpd</string>
+    <key>title</key>
+    <string>Big Buck Bunny (Live)</string>
+  </dict>
+</array>
+</plist>

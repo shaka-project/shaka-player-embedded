@@ -1,0 +1,18 @@
+<doxygenlayout version="1.0">
+  <!-- Navigation index tabs for HTML output -->
+  <navindex>
+    <tab type="mainpage" visible="yes" title=""/>
+    <tab type="modules" visible="yes" title="Exported Types" intro=""/>
+    <tab type="usergroup" title="Tutorials">
+      <tab type="user" url="@ref md_shaka_docs_tutorial_setup" title="Basic Tutorial" />
+    </tab>
+    <tab type="pages" visible="yes" title="Internal Docs" intro=""/>
+    <tab type="classes" visible="yes" title="Internal Class List">
+      <tab type="classlist" visible="yes" title="" intro=""/>
+      <tab type="classindex" visible="$ALPHABETICAL_INDEX" title=""/>
+      <tab type="hierarchy" visible="yes" title="" intro=""/>
+      <tab type="classmembers" visible="yes" title="" intro=""/>
+    </tab>
+    <tab type="examples" visible="yes" title="" intro=""/>
+  </navindex>
+</doxygenlayout>

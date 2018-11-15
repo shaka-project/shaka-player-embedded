@@ -1,0 +1,39 @@
+diff --git a/libavformat/utils.c b/libavformat/utils.c
+index b0b5e164a6e..ca6856abdf7 100644
+--- a/libavformat/utils.c
++++ b/libavformat/utils.c
+@@ -1240,15 +1240,7 @@ static void compute_pkt_fields(AVFormatContext *s, AVStream *st,
+ 
+     if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && pkt->dts != AV_NOPTS_VALUE) {
+         if (pkt->dts == pkt->pts && st->last_dts_for_order_check != AV_NOPTS_VALUE) {
+-            if (st->last_dts_for_order_check <= pkt->dts) {
+-                st->dts_ordered++;
+-            } else {
+-                av_log(s, st->dts_misordered ? AV_LOG_DEBUG : AV_LOG_WARNING,
+-                       "DTS %"PRIi64" < %"PRIi64" out of order\n",
+-                       pkt->dts,
+-                       st->last_dts_for_order_check);
+-                st->dts_misordered++;
+-            }
++            st->dts_ordered++;
+             if (st->dts_ordered + st->dts_misordered > 250) {
+                 st->dts_ordered    >>= 1;
+                 st->dts_misordered >>= 1;
+@@ -5509,6 +5501,17 @@ uint8_t *av_stream_new_side_data(AVStream *st, enum AVPacketSideDataType type,
+     return data;
+ }
+ 
++void av_stream_remove_side_data(AVStream *st, enum AVPacketSideDataType type)
++{
++    for (int i = 0; i < st->nb_side_data; i++) {
++        if (st->side_data[i].type == type) {
++            av_freep(&st->side_data[i].data);
++            st->side_data[i] = st->side_data[st->nb_side_data - 1];
++            st->nb_side_data--;
++        }
++    }
++}
++
+ int ff_stream_add_bitstream_filter(AVStream *st, const char *name, const char *args)
+ {
+     int ret;

@@ -1,0 +1,28 @@
+diff --git a/libavformat/avformat.h b/libavformat/avformat.h
+index fdaffa5bf41..b51e50c5cd8 100644
+--- a/libavformat/avformat.h
++++ b/libavformat/avformat.h
+@@ -320,7 +320,7 @@
+ #include "libavutil/dict.h"
+ #include "libavutil/log.h"
+ 
+-#include "avio.h"
++#include "libavformat/avio.h"
+ #include "libavformat/version.h"
+ 
+ struct AVFormatContext;
+@@ -2167,6 +2167,14 @@ AVStream *avformat_new_stream(AVFormatContext *s, const AVCodec *c);
+ int av_stream_add_side_data(AVStream *st, enum AVPacketSideDataType type,
+                             uint8_t *data, size_t size);
+ 
++/**
++ * Remove the given side data type from the stream.
++ *
++ * @param st stream
++ * @param type side information type
++ */
++void av_stream_remove_side_data(AVStream *st, enum AVPacketSideDataType type);
++
+ /**
+  * Allocate new information from stream.
+  *
