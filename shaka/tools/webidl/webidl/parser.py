@@ -29,11 +29,18 @@ This parses WebIDL syntax:
 # pylint: disable=line-too-long
 
 import functools
+import sys
 
 from ply import lex
 from ply import yacc
 from webidl import lexer
 from webidl import types
+
+
+if sys.version_info[0] == 2:
+  _number_types = (float, int, long)
+else:
+  _number_types = (float, int)
 
 
 class IdlSyntaxError(SyntaxError):
@@ -190,11 +197,17 @@ class IdlParser(object):
 
   @_rule
   def p_DictionaryMemberRest(self, p):
-    r"""DictionaryMemberRest : Type IDENTIFIER ';'"""
-    # TODO: Add support for 'required' attributes and default values.
+    r"""DictionaryMemberRest : REQUIRED TypeWithExtendedAttributes IDENTIFIER Default ';'
+                             | Type IDENTIFIER Default ';'"""
     debug = self._get_debug(p, 1)
-    return types.Attribute(
-        name=p[2], type=p[1], doc=None, debug=debug, docDebug=None)
+    if len(p) > 5:
+      return types.Attribute(
+          name=p[3], type=p[2], default=p[4], is_required=True, doc=None,
+          debug=debug, docDebug=None)
+    else:
+      return types.Attribute(
+          name=p[2], type=p[1], default=p[3], is_required=False, doc=None,
+          debug=debug, docDebug=None)
 
   # Types ----------------------------------------------------------------------
   @_rule
@@ -294,6 +307,53 @@ class IdlParser(object):
   def p_ExtendedAttributeList(self, p):
     r"""ExtendedAttributeList :"""
     # TODO: Add support for extended attributes.
+
+  # Constants ------------------------------------------------------------------
+  @_rule
+  def p_Default(self, p):
+    r"""Default : '=' DefaultValue
+                | Empty"""
+    if len(p) > 2:
+      return p[2]
+    else:
+      return None
+
+  @_rule
+  def p_DefaultValue(self, p):
+    r"""DefaultValue : ConstValue
+                     | STRING_LITERAL
+                     | '[' ']'"""
+    if len(p) == 2:
+      # STRING_LITERAL values are converted by the lexer; ConstValue also
+      # returns the converted value.
+      return p[1]
+    else:
+      return []
+
+  @_rule
+  def p_ConstValue(self, p):
+    r"""ConstValue : TRUE
+                   | FALSE
+                   | FLOAT_LITERAL
+                   | NAN
+                   | INFINITY
+                   | '-' INFINITY
+                   | INTEGER_LITERAL
+                   | NULL"""
+    if len(p) == 3:
+      return float('-inf')
+    elif isinstance(p[1], _number_types):
+      # FLOAT_LITERAL and INTEGER_LITERAL values are converted by the lexer.
+      return p[1]
+    else:
+      map_ = {
+          'true': True,
+          'false': False,
+          'NaN': float('nan'),
+          'Infinity': float('inf'),
+          'null': types.IdlNull,
+      }
+      return map_[p[1]]
 
   # Helpers functions ----------------------------------------------------------
   def _add_error(self, message, line, offset):

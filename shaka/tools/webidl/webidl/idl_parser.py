@@ -83,7 +83,8 @@ class IdlParser(object):
       t = self.read_type()
       attr_name = self._reader.expect(IdlTokenType.IDENTIFIER).value
       attributes.append(types.Attribute(
-          name=attr_name, type=t, doc=attr_doc, debug=None, docDebug=None))
+          name=attr_name, type=t, default=None, is_required=False, doc=attr_doc,
+          debug=None, docDebug=None))
       self._reader.expect(IdlTokenType.SEMI_COLON)
 
     self._reader.expect(IdlTokenType.END_INTERFACE)

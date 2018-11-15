@@ -15,6 +15,7 @@
 
 """Defines tests for the lexer."""
 
+import math
 import unittest
 
 from webidl import lexer
@@ -56,6 +57,55 @@ class IdlLexerTest(unittest.TestCase):
     self.assertEqual(self.lexer.token().type, '<')
     self.assertEqual(self.lexer.token().type, '>')
     self.assertIs(self.lexer.token(), None)
+
+  def test_reads_numbers(self):
+    self.lexer.set_contents(
+        'file', '1234 0x777 0XabcDEF 3e5;7e-3 -999 -0x345 .123 0 0123 -0123')
+    def check_token(type_, value):
+      token = self.lexer.token()
+      self.assertEqual(token.type, type_)
+      self.assertEqual(token.value, value)
+
+    check_token('INTEGER_LITERAL', 1234)
+    check_token('INTEGER_LITERAL', 0x777)
+    check_token('INTEGER_LITERAL', 0xabcdef)
+    check_token('FLOAT_LITERAL', 3e5)
+    self.assertEqual(self.lexer.token().type, ';')
+    check_token('FLOAT_LITERAL', 7e-3)
+    check_token('INTEGER_LITERAL', -999)
+    check_token('INTEGER_LITERAL', -0x345)
+    check_token('FLOAT_LITERAL', .123)
+    check_token('INTEGER_LITERAL', 0)
+    check_token('INTEGER_LITERAL', 0o123)
+    check_token('INTEGER_LITERAL', -0o123)
+
+  def test_reads_strings(self):
+    self.lexer.set_contents('file', '"foobar" "baz" ""')
+    def check_token(value):
+      token = self.lexer.token()
+      self.assertEqual(token.type, 'STRING_LITERAL')
+      self.assertEqual(token.value, value)
+
+    check_token('foobar')
+    check_token('baz')
+    check_token('')
+
+    bad_code = ['"foo']
+    for s in bad_code:
+      self.lexer.set_contents('file', s)
+      with self.assertRaises(SyntaxError):
+        self.lexer.token()
+
+  def test_ignores_escapes_in_strings(self):
+    self.lexer.set_contents('file', r'"foo\nbar"')
+    token = self.lexer.token()
+    self.assertEqual(token.type, 'STRING_LITERAL')
+    self.assertEqual(token.value, r'foo\nbar')
+
+    self.lexer.set_contents('file', r'"foo\"')
+    token = self.lexer.token()
+    self.assertEqual(token.type, 'STRING_LITERAL')
+    self.assertEqual(token.value, 'foo\\')
 
   def test_reads_identifiers(self):
     self.lexer.set_contents(

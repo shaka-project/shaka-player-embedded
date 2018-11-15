@@ -87,7 +87,13 @@ class IdlLexer(object):
   _keywords = (
       'any',
       'dictionary',
+      'false',
+      'Infinity',
+      'NaN',
+      'null',
+      'required',
       'sequence',
+      'true',
       'void',
 
       'boolean',
@@ -109,6 +115,10 @@ class IdlLexer(object):
 
   literals = '.(){}[]<>,;=?-'
   tokens = (
+      'FLOAT_LITERAL',
+      'INTEGER_LITERAL',
+      'STRING_LITERAL',
+
       'DOCSTRING',
       'IDENTIFIER',
   ) + tuple(k.upper() for k in _keywords)
@@ -120,6 +130,28 @@ class IdlLexer(object):
     raise SyntaxError(msg, (self.file_name, t.lineno, col, line))
 
   t_ignore = ' \t'
+
+  @lex.TOKEN(r'-?(([0-9]+\.[0-9]*|[0-9]*\.[0-9]+)([Ee][+-]?[0-9]+)?|'
+             r'   [0-9]+[Ee][+-]?[0-9]+)')
+  def t_FLOAT_LITERAL(self, t):
+    t.value = float(t.value)
+    return t
+
+  @lex.TOKEN('-?([1-9][0-9]*|0[Xx][0-9A-Fa-f]+|0[0-7]*)')
+  def t_INTEGER_LITERAL(self, t):
+    if t.value.lower().startswith('0x') or t.value.lower().startswith('-0x'):
+      t.value = int(t.value, 16)
+    elif t.value.startswith('0') or t.value.startswith('-0'):
+      t.value = int(t.value, 8)
+    else:
+      t.value = int(t.value, 10)
+    return t
+
+  @lex.TOKEN(r'"[^"]*"')
+  def t_STRING_LITERAL(self, t):
+    t.value = t.value[1:-1]
+    self.lex.lineno += t.value.count('\n')
+    return t
 
   @lex.TOKEN(r'\n+')
   def t_newline(self, t):

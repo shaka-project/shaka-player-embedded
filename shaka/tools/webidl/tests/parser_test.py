@@ -15,14 +15,11 @@
 
 import unittest
 
+from . import test_common
 from webidl import parser
 
 
-class ParserTest(unittest.TestCase):
-
-  def __init__(self, *args, **kwargs):
-    super(ParserTest, self).__init__(*args, **kwargs)
-    self.parser = parser.IdlParser()
+class DictionaryTest(test_common.TestBase):
 
   def test_empty_file(self):
     results = self.parser.parse('', '')
@@ -58,6 +55,34 @@ class ParserTest(unittest.TestCase):
     self.assertEqual(results.types[0].docDebug.line,
                      '/** Foobar */ dictionary foo {};')
 
+  def test_members(self):
+    code = """
+      dictionary foo {
+        required double foo;
+        unsigned long bar;
+        DOMString baz = "foobar";
+      };"""
+    results = self.parser.parse('', code)
+    self.assertEqual(len(results.types), 1)
+    self.assertEqual(results.types[0].name, 'foo')
+    self.assertEqual(len(results.types[0].attributes), 3)
+
+    attrs = results.types[0].attributes
+    self.assertEqual(attrs[0].name, 'foo')
+    self.assertEqual(attrs[0].type.name, 'double')
+    self.assertIs(attrs[0].is_required, True)
+    self.assertIs(attrs[0].default, None)
+
+    self.assertEqual(attrs[1].name, 'bar')
+    self.assertEqual(attrs[1].type.name, 'unsigned long')
+    self.assertIs(attrs[1].is_required, False)
+    self.assertIs(attrs[1].default, None)
+
+    self.assertEqual(attrs[2].name, 'baz')
+    self.assertEqual(attrs[2].type.name, 'DOMString')
+    self.assertIs(attrs[2].is_required, False)
+    self.assertEqual(attrs[2].default, 'foobar')
+
   def test_handles_multiple_dictionary_errors(self):
     try:
       self.parser.parse('', 'dictionary foo { x };\ndictionary bar {y};')
@@ -82,7 +107,6 @@ class ParserTest(unittest.TestCase):
     for code in bad_code:
       with self.assertRaises(parser.IdlSyntaxError):
         self.parser.parse('', code)
-
 
 if __name__ == '__main__':
   unittest.main()

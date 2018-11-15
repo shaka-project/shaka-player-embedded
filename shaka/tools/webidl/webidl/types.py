@@ -130,12 +130,16 @@ class IdlType(collections.namedtuple(
 
 
 class Attribute(collections.namedtuple(
-    'Attribute', ('name', 'type', 'doc', 'debug', 'docDebug'))):
+    'Attribute', ('name', 'type', 'default', 'is_required', 'doc', 'debug',
+                  'docDebug'))):
   """Defines an attribute on a type.
 
   Properties:
     name: The string name of the attribute.
     type: An IdlType object defining the type of the attribute.
+    default: The default value of the attribute.  This can be a number, string,
+      boolean, empty list, an IdlNull object, or None (for no default).
+    is_required: Whether the attribute is required to be present.
     doc: The string comment describing the attribute.
     debug: A DebugInfo object describing where this dictionary starts.
     docDebug: A DebugInfo object describing where the docstring starts.  This

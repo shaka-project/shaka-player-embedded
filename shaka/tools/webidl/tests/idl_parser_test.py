@@ -101,25 +101,25 @@ class ParserTest(unittest.TestCase):
     self.assertEqual(len(attrs), 4)
     expected_attrs = [
         types.Attribute(
-            name='attr1', debug=None, docDebug=None,
-            doc='          /** Foobar */',
+            name='attr1', default=None, is_required=False, debug=None,
+            docDebug=None, doc='          /** Foobar */',
             type=types.IdlType(
                 name='double', nullable=False, element_type=None)),
         types.Attribute(
-            name='attr2', debug=None, docDebug=None,
-            doc=None,
+            name='attr2', default=None, is_required=False, debug=None,
+            docDebug=None, doc=None,
             type=types.IdlType(
                 name='double', nullable=True, element_type=None)),
         types.Attribute(
-            name='attr3', debug=None, docDebug=None,
-            doc=None,
+            name='attr3', default=None, is_required=False, debug=None,
+            docDebug=None, doc=None,
             type=types.IdlType(
                 name='sequence', nullable=False,
                 element_type=types.IdlType(name='double', nullable=False,
                                            element_type=None))),
         types.Attribute(
-            name='attr4', debug=None, docDebug=None,
-            doc=None,
+            name='attr4', default=None, is_required=False, debug=None,
+            docDebug=None, doc=None,
             type=types.IdlType(
                 name='sequence', nullable=True,
                 element_type=types.IdlType(name='double', nullable=True,
