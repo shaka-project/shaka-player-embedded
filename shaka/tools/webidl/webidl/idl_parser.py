@@ -87,7 +87,8 @@ class IdlParser(object):
 
     self._reader.expect(IdlTokenType.END_INTERFACE)
     self._reader.expect(IdlTokenType.SEMI_COLON)
-    return types.Dictionary(name=name, attributes=attributes, doc=dict_doc)
+    return types.Dictionary(name=name, attributes=attributes, doc=dict_doc,
+                            debug=None, docDebug=None)
 
   def read_type(self):
     """Reads an IDL type for an attribute or argument.

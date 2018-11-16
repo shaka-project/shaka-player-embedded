@@ -49,6 +49,14 @@ class ParserTest(unittest.TestCase):
     self.assertEqual(results.types[0].name, 'foo')
     self.assertEqual(results.types[0].doc, '/** Foobar */')
     self.assertEqual(len(results.types[0].attributes), 0)
+    self.assertEqual(results.types[0].debug.lineno, 1)
+    self.assertEqual(results.types[0].debug.col, 15)
+    self.assertEqual(results.types[0].debug.line,
+                     '/** Foobar */ dictionary foo {};')
+    self.assertEqual(results.types[0].docDebug.lineno, 1)
+    self.assertEqual(results.types[0].docDebug.col, 1)
+    self.assertEqual(results.types[0].docDebug.line,
+                     '/** Foobar */ dictionary foo {};')
 
   def test_handles_multiple_dictionary_errors(self):
     try:

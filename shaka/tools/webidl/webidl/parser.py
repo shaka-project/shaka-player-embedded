@@ -161,12 +161,16 @@ class IdlParser(object):
   def p_Dictionary(self, p):
     r"""Dictionary : MaybeDoc DICTIONARY IDENTIFIER '{' DictionaryMembers '}' ';'"""
     # TODO: Add support for inheritance.
-    return types.Dictionary(name=p[3], attributes=p[5], doc=p[1])
+    debug = self._get_debug(p, 2)
+    docDebug = self._get_debug(p, 1) if p[1] else None
+    return types.Dictionary(
+        name=p[3], attributes=p[5], doc=p[1], debug=debug, docDebug=docDebug)
 
   @_rule
   def p_Dictionary_error(self, p):
     r"""Dictionary : MaybeDoc DICTIONARY IDENTIFIER '{' error '}' ';'"""
-    return types.Dictionary(name=p[3], attributes=[], doc=p[1])
+    return types.Dictionary(
+        name=p[3], attributes=[], doc=p[1], debug=None, docDebug=None)
 
   @_rule
   def p_DictionaryMembers(self, _):
@@ -181,6 +185,12 @@ class IdlParser(object):
     col = self.lexer.get_col(offset)
     self.errors.append(SyntaxError(
         message, (self.lexer.file_name, line, col, line_text)))
+
+  def _get_debug(self, p, idx):
+    """Gets a DebugInfo for the given token."""
+    offset = p.lexpos(idx)
+    return types.DebugInfo(lineno=p.lineno(idx), col=self.lexer.get_col(offset),
+                           line=self.lexer.get_line(offset))
 
   def _token_to_str(self, t):
     """Gets a string representation of a token for errors."""

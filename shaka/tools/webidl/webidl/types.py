@@ -87,6 +87,19 @@ class Extension(object):
 IdlNull = object()  # pylint: disable=invalid-name
 
 
+class DebugInfo(collections.namedtuple('DebugInfo', ('lineno', 'col', 'line'))):
+  """Defines where in the IDL an element was defined.
+
+  Properties:
+    lineno: The 1-based line number where the element starts.
+    col: The 1-based column offset where the element starts.
+    line: The string line that the definition starts at.  This includes any text
+      before the definition itself.  This only includes the first line if the
+      element spans multiple.
+  """
+  __slots__ = ()
+
+
 class Argument(collections.namedtuple(
     'Argument', ('name', 'type', 'optional', 'is_variadic', 'default'))):
   """Defines an argument to a method.
@@ -129,13 +142,16 @@ class Attribute(collections.namedtuple(
 
 
 class Dictionary(collections.namedtuple(
-    'Dictionary', ('name', 'attributes', 'doc'))):
+    'Dictionary', ('name', 'attributes', 'doc', 'debug', 'docDebug'))):
   """Defines a dictionary definition.
 
   Properties:
     name: The string name of the dictionary.
     attributes: A list of Attribute objects for the attributes in the dict.
     doc: The string comment describing the type.
+    debug: A DebugInfo object describing where this dictionary starts.
+    docDebug: A DebugInfo object describing where the docstring starts.  This
+      is None if there is no docstring.
   """
   __slots__ = ()
 
