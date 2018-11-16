@@ -130,13 +130,16 @@ class IdlType(collections.namedtuple(
 
 
 class Attribute(collections.namedtuple(
-    'Attribute', ('name', 'type', 'doc'))):
+    'Attribute', ('name', 'type', 'doc', 'debug', 'docDebug'))):
   """Defines an attribute on a type.
 
   Properties:
     name: The string name of the attribute.
     type: An IdlType object defining the type of the attribute.
     doc: The string comment describing the attribute.
+    debug: A DebugInfo object describing where this dictionary starts.
+    docDebug: A DebugInfo object describing where the docstring starts.  This
+      is None if there is no docstring.
   """
   __slots__ = ()
 

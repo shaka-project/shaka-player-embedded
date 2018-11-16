@@ -85,7 +85,26 @@ class IdlLexer(object):
     return self.contents[prev+1:nxt]
 
   _keywords = (
+      'any',
       'dictionary',
+      'sequence',
+      'void',
+
+      'boolean',
+      'byte',
+      'double',
+      'float',
+      'long',
+      'short',
+      'octet',
+      'unrestricted',
+      'unsigned',
+
+      'ByteString',
+      'DOMString',
+      'FrozenArray',
+      'Promise',
+      'USVString',
   )
 
   literals = '.(){}[]<>,;=?-'

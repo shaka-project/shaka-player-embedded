@@ -173,10 +173,127 @@ class IdlParser(object):
         name=p[3], attributes=[], doc=p[1], debug=None, docDebug=None)
 
   @_rule
-  def p_DictionaryMembers(self, _):
-    r"""DictionaryMembers :"""
-    # TODO: Add support for dictionary members.
-    return []
+  def p_DictionaryMembers(self, p):
+    r"""DictionaryMembers : DictionaryMember DictionaryMembers
+                          | Empty"""
+    if len(p) == 3:
+      return [p[1]] + p[2]
+    else:
+      return []
+
+  @_rule
+  def p_DictionaryMember(self, p):
+    r"""DictionaryMember : MaybeDoc ExtendedAttributeList DictionaryMemberRest"""
+    # TODO: Add support for extended attributes.
+    docDebug = self._get_debug(p, 1) if p[1] else None
+    return p[3]._replace(doc=p[1], docDebug=docDebug)
+
+  @_rule
+  def p_DictionaryMemberRest(self, p):
+    r"""DictionaryMemberRest : Type IDENTIFIER ';'"""
+    # TODO: Add support for 'required' attributes and default values.
+    debug = self._get_debug(p, 1)
+    return types.Attribute(
+        name=p[2], type=p[1], doc=None, debug=debug, docDebug=None)
+
+  # Types ----------------------------------------------------------------------
+  @_rule
+  def p_TypeWithExtendedAttributes(self, p):
+    r"""TypeWithExtendedAttributes : ExtendedAttributeList Type"""
+    # TODO: Add extended attribute support.
+    return p[2]
+
+  @_rule
+  def p_Type(self, p):
+    r"""Type : SingleType
+             | UnionType Null"""
+    if len(p) == 2:
+      return p[1]
+    else:
+      return p[1]._replace(nullable=p[2])
+
+  @_rule
+  def p_SingleType(self, p):
+    r"""SingleType : NonAnyType
+                   | ANY"""
+    if p[1] != 'any':
+      return p[1]
+    else:
+      return types.IdlType(name='any', nullable=False, element_type=None)
+
+  @_rule
+  def p_UnionType(self, p):
+    r"""UnionType : '(' ')'"""
+    # TODO: Add union type support.
+    raise SyntaxError('Union types not supported')
+
+  @_rule
+  def p_NonAnyType(self, p):
+    r"""NonAnyType : PrimitiveType Null
+                   | StringType Null
+                   | IDENTIFIER Null
+                   | PROMISE '<' ReturnType '>'
+                   | SEQUENCE '<' TypeWithExtendedAttributes '>' Null
+                   | FROZENARRAY '<' TypeWithExtendedAttributes '>' Null"""
+    # TODO: Add support for record<string, T>.
+    # Unlike the official grammar definition, this doesn't include entries like
+    # "Object Null"; these will be handled by the generic "IDENTIFIER Null".
+    if len(p) == 3:
+      if isinstance(p[1], types.IdlType):
+        return p[1]._replace(nullable=p[2])
+      else:
+        return types.IdlType(name=p[1], nullable=p[2], element_type=None)
+    elif len(p) == 5:
+      return types.IdlType(name='Promise', nullable=False, element_type=p[3])
+    else:
+      assert len(p) == 6
+      return types.IdlType(name=p[1], nullable=p[5], element_type=p[3])
+
+  @_rule
+  def p_ReturnType(self, p):
+    r"""ReturnType : Type
+                   | VOID"""
+    if p[1] != 'void':
+      return p[1]
+    else:
+      return types.IdlType(name='void', nullable=False, element_type=None)
+
+  @_rule
+  def p_PrimitiveType(self, p):
+    r"""PrimitiveType : UNSIGNED LONG LONG
+                      | UNSIGNED LONG
+                      | UNSIGNED SHORT
+                      | LONG LONG
+                      | LONG
+                      | SHORT
+                      | UNRESTRICTED FLOAT
+                      | UNRESTRICTED DOUBLE
+                      | FLOAT
+                      | DOUBLE
+                      | BOOLEAN
+                      | BYTE
+                      | OCTET"""
+    return types.IdlType(
+        name=' '.join(p[1:]), nullable=False, element_type=None)
+
+  @_rule
+  def p_StringType(self, p):
+    r"""StringType : BYTESTRING
+                   | DOMSTRING
+                   | USVSTRING"""
+    return types.IdlType(name=p[1], nullable=False, element_type=None)
+
+  @_rule
+  def p_Null(self, p):
+    r"""Null : '?'
+             | Empty"""
+    return p[1] == '?'
+
+  # Extended attributes --------------------------------------------------------
+  @_rule
+  def p_ExtendedAttributeList(self, p):
+    r"""ExtendedAttributeList :"""
+    # TODO: Add support for extended attributes.
 
   # Helpers functions ----------------------------------------------------------
   def _add_error(self, message, line, offset):

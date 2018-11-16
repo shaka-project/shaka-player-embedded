@@ -65,9 +65,9 @@ class ParserTest(unittest.TestCase):
     except parser.IdlSyntaxError as e:
       self.assertEqual(2, len(e.inner_errors))
       self.assertEqual(1, e.inner_errors[0].lineno)
-      self.assertEqual(18, e.inner_errors[0].offset)
+      self.assertEqual(20, e.inner_errors[0].offset)
       self.assertEqual(2, e.inner_errors[1].lineno)
-      self.assertEqual(17, e.inner_errors[1].offset)
+      self.assertEqual(18, e.inner_errors[1].offset)
 
   def test_dictionary_syntax_error(self):
     bad_code = [
@@ -80,7 +80,7 @@ class ParserTest(unittest.TestCase):
     ]
 
     for code in bad_code:
-      with self.assertRaises(SyntaxError):
+      with self.assertRaises(parser.IdlSyntaxError):
         self.parser.parse('', code)
 
 
