@@ -1,0 +1,4 @@
+var searchData=
+[
+  ['type',['type',['../structshaka_1_1impl_1_1get__type__at_3_01I_00_01T_00_01Choices_8_8_8_01_4.html#a5b08eb780eca74fb678deebc2fcd956e',1,'shaka::impl::get_type_at&lt; I, T, Choices... &gt;::type()'],['../structshaka_1_1impl_1_1get__type__at_3_010_00_01T_00_01Choices_8_8_8_01_4.html#a2e62f1d3ae9fc256bbcd3c7969a49720',1,'shaka::impl::get_type_at&lt; 0, T, Choices... &gt;::type()'],['../structshaka_1_1variant__alternative_3_01I_00_01variant_3_01Choices_8_8_8_01_4_01_4.html#a471618642429a19b866d1d440a24eeef',1,'shaka::variant_alternative&lt; I, variant&lt; Choices... &gt; &gt;::type()'],['../structshaka_1_1impl_1_1get__create__type.html#abefd4d6ce55434434e1ac6f69819320f',1,'shaka::impl::get_create_type::type()'],['../structshaka_1_1impl_1_1get__create__type_3_01This_00_01decltype_07void_07_6This_1_1Create_08_08_4.html#a6c14eb57a87d52c94b2c0d1726d10a45',1,'shaka::impl::get_create_type&lt; This, decltype(void(&amp;This::Create))&gt;::type()']]]
+];
