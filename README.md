@@ -8,7 +8,11 @@ features, behavior, and API as your Shaka-based web apps.
 In addition to the C++ API, we provide a high-level wrapper for iOS called
 ShakaPlayerView which can be used from either Objective-C or Swift.
 
+See our [documentation][] and [iOS tutorial][].
+
 [Shaka Player]: https://www.github.com/google/shaka-player
+[documentation]: https://google.github.io/shaka-player-embedded/
+[iOS tutorial]: https://google.github.io/shaka-player-embedded/md_shaka_docs_tutorial_setup.html
 
 
 ## Platform support
