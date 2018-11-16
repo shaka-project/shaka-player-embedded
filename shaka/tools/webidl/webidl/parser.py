@@ -28,6 +28,8 @@ This parses WebIDL syntax:
 # pylint: disable=invalid-name
 # pylint: disable=line-too-long
 
+from __future__ import print_function
+
 import functools
 import sys
 
@@ -41,6 +43,67 @@ if sys.version_info[0] == 2:
   _number_types = (float, int, long)
 else:
   _number_types = (float, int)
+
+
+# Don't use an enum here so an app can use string literals if they want.
+class Features(object):
+  """Defines possible features."""
+  # Dictionaries can appear; this is assumed if any dictionary-* features are
+  # present.
+  DICTIONARY = 'dictionary'
+  # Dictionary members can be marked as 'required'.
+  DICTIONARY_REQUIRED = 'dictionary-required'
+  # Dictionary members can have a default value given.
+  DICTIONARY_DEFAULT = 'dictionary-default'
+
+
+class Options(object):
+  """Defines options for what is allowed in the code.
+
+  This is used to indicate what features are allowed to be included in the IDL
+  code.  This allows specifying what features are supported by your code
+  instead of checking for invalid fields/types after parsing is done.  This also
+  will raise a SyntaxError at the unsupported locations to make debugging
+  easier.
+
+  If the Options object is given, then only those features are supported. For
+  example, this indicates that dictionaries are supported with default field
+  values:
+
+    Options('dictionary-default')
+    Options(Features.DICTIONARY_DEFAULT)
+  """
+
+  # If any of the features given have a prefix of item[0], it results in the
+  # feature item[1] being added.
+  _ASSUMED_PREFIXES = [
+      ('dictionary-', 'dictionary'),
+  ]
+
+  def __init__(self, *args):
+    possible_features = Options._all_features()
+    missing = set(args) - possible_features
+    if missing:
+      raise ValueError('Unknown feature(s) given: ' + ','.join(missing))
+
+    self.features = set(args)
+    for prefix, feature in Options._ASSUMED_PREFIXES:
+      if any(item.startswith(prefix) for item in self.features):
+        self.features.add(feature)
+
+  @classmethod
+  def all(cls):
+    return cls(*Options._all_features())
+
+  @staticmethod
+  def _all_features():
+    return {v for k, v in Features.__dict__.items() if k[0] != '_'}
+
+  def has_feature(self, feature):
+    """Returns whether the given feature is supported."""
+    if feature not in Options._all_features():
+      raise ValueError('Unknown feature given: ' + feature)
+    return feature in self.features
 
 
 class IdlSyntaxError(SyntaxError):
@@ -91,8 +154,9 @@ class IdlParser(object):
   CamelCase.
   """
 
-  def __init__(self, lexer_=None):
+  def __init__(self, lexer_=None, options=None):
     self.errors = []
+    self.options = options or Options.all()
     self.lexer = lexer_ or lexer.IdlLexer()
     self.tokens = self.lexer.tokens
     self.yacc = yacc.yacc(
@@ -168,6 +232,7 @@ class IdlParser(object):
   def p_Dictionary(self, p):
     r"""Dictionary : MaybeDoc DICTIONARY IDENTIFIER '{' DictionaryMembers '}' ';'"""
     # TODO: Add support for inheritance.
+    self._check_options(p, 2, Features.DICTIONARY)
     debug = self._get_debug(p, 2)
     docDebug = self._get_debug(p, 1) if p[1] else None
     return types.Dictionary(
@@ -176,6 +241,7 @@ class IdlParser(object):
   @_rule
   def p_Dictionary_error(self, p):
     r"""Dictionary : MaybeDoc DICTIONARY IDENTIFIER '{' error '}' ';'"""
+    self._check_options(p, 2, Features.DICTIONARY)
     return types.Dictionary(
         name=p[3], attributes=[], doc=p[1], debug=None, docDebug=None)
 
@@ -201,10 +267,17 @@ class IdlParser(object):
                              | Type IDENTIFIER Default ';'"""
     debug = self._get_debug(p, 1)
     if len(p) > 5:
+      self._check_options(p, 1, Features.DICTIONARY_REQUIRED)
+      if p[4] is not None:
+        self._check_options(p, 4, Features.DICTIONARY_DEFAULT)
+
       return types.Attribute(
           name=p[3], type=p[2], default=p[4], is_required=True, doc=None,
           debug=debug, docDebug=None)
     else:
+      if p[3] is not None:
+        self._check_options(p, 3, Features.DICTIONARY_DEFAULT)
+
       return types.Attribute(
           name=p[2], type=p[1], default=p[3], is_required=False, doc=None,
           debug=debug, docDebug=None)
@@ -363,6 +436,13 @@ class IdlParser(object):
     self.errors.append(SyntaxError(
         message, (self.lexer.file_name, line, col, line_text)))
 
+  def _check_options(self, p, idx, feature):
+    """Checks that the given feature is allowed, and adds an error otherwise."""
+    if self.options.has_feature(feature):
+      return
+    self._add_error('Feature "%s" is not allowed by options' % feature,
+                    p.lineno(idx), p.lexpos(idx))
+
   def _get_debug(self, p, idx):
     """Gets a DebugInfo for the given token."""
     offset = p.lexpos(idx)
@@ -380,7 +460,7 @@ class IdlParser(object):
       return t.value
 
 
-def ParseFile(name, contents):
+def ParseFile(name, contents, options=None):
   """Parses the given IDL file."""
-  parser = IdlParser()
+  parser = IdlParser(options=options)
   return parser.parse(name, contents)
