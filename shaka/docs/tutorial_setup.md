@@ -108,7 +108,7 @@ build the framework with Bitcode.
 
 ### If you are using Swift...
 
-Go to 'ViewControoler.swift', and replaces its contents with the following code:
+Go to 'ViewController.swift', and replace its contents with the following code:
 
 ```swift
 import UIKit
