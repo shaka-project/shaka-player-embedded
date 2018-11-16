@@ -28,15 +28,15 @@ typedef void (^ProgressAndBufferedSliderActiveChangedBlock)(BOOL);
 @property ProgressAndBufferedSliderActiveChangedBlock activeChangedBlock;
 
 /** The main (progress) value of the control. */
-@property (readonly) CGFloat value;
+@property (readonly) double value;
 
 /** Sets the start and duration of the presentation. */
-- (void)setStart:(CGFloat)start andDuration:(CGFloat)duration;
+- (void)setStart:(double)start andDuration:(double)duration;
 
 /** Sets the state of the sub-sliders as appropriate, based on the video's state. */
-- (void)setProgress:(CGFloat)progress
-      bufferedStart:(CGFloat)bufferedStart
-     andBufferedEnd:(CGFloat)bufferedEnd;
+- (void)setProgress:(double)progress
+      bufferedStart:(double)bufferedStart
+     andBufferedEnd:(double)bufferedEnd;
 
 /** Synchronizes the sub-sliders to the state of the nub. Meant to be used while seeking. */
 - (void)synchronize;

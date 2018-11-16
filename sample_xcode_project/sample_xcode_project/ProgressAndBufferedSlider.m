@@ -24,6 +24,7 @@
 @property UISlider *bufferedEndSlider;
 @property UILabel *timeLabel;
 @property BOOL shortDurationLivestream;
+@property double minimumValue;
 
 @end
 
@@ -36,10 +37,11 @@
   return self;
 }
 
-- (void)setStart:(CGFloat)start andDuration:(CGFloat)duration {
+- (void)setStart:(double)start andDuration:(double)duration {
   NSArray <UISlider *> *sliders = @[self.progressSliderNub, self.bufferedStartSlider,
                                     self.bufferedEndSlider];
   self.shortDurationLivestream = duration < 1 && _isLive;
+  self.minimumValue = self.shortDurationLivestream ? 0 : start;
 
   // If the duration is too low to seek, just disable interaction with the slider.
   self.progressSliderNub.userInteractionEnabled = !self.shortDurationLivestream;
@@ -48,10 +50,8 @@
     if (self.shortDurationLivestream) {
       // Give the slider a very short duration; otherwise, it will just show the value.
       slider.maximumValue = 1;
-      slider.minimumValue = 0;
     } else {
-      slider.maximumValue = duration + start;
-      slider.minimumValue = start;
+      slider.maximumValue = duration;
     }
 
     // Don't register taps until the duration has been set; otherwise, it might seek to a bad
@@ -64,19 +64,19 @@
   }
 }
 
-- (void)setProgress:(CGFloat)progress
-      bufferedStart:(CGFloat)bufferedStart
-     andBufferedEnd:(CGFloat)bufferedEnd {
+- (void)setProgress:(double)progress
+      bufferedStart:(double)bufferedStart
+     andBufferedEnd:(double)bufferedEnd {
   if (self.shortDurationLivestream) {
     self.progressSliderNub.value = 1;
     self.bufferedStartSlider.value = 0;
     self.bufferedEndSlider.value = 1;
     [self setTimeLabelWithProgress:1 ifSeeking:NO];
   } else {
-    self.progressSliderNub.value = progress;
-    self.bufferedStartSlider.value = bufferedStart;
-    self.bufferedEndSlider.value = bufferedEnd;
-    [self setTimeLabelWithProgress:progress ifSeeking:NO];
+    self.progressSliderNub.value = progress - self.minimumValue;
+    self.bufferedStartSlider.value = bufferedStart - self.minimumValue;
+    self.bufferedEndSlider.value = bufferedEnd - self.minimumValue;
+    [self setTimeLabelWithProgress:(progress - self.minimumValue) ifSeeking:NO];
   }
 }
 
@@ -124,8 +124,8 @@
   }
 }
 
-- (CGFloat)value {
-  return self.progressSliderNub.value;
+- (double)value {
+  return self.progressSliderNub.value + self.minimumValue;
 }
 
 - (void)setup {
@@ -142,7 +142,6 @@
   backer.minimumTrackTintColor = [UIColor lightGrayColor];
   backer.maximumTrackTintColor = [UIColor lightGrayColor];
   [backer setThumbImage:clearImage forState:UIControlStateNormal];
-  backer.minimumValue = 0;
   backer.maximumValue = 1;
   backer.userInteractionEnabled = NO;
   backer.value = 0;
@@ -153,7 +152,6 @@
   [self.bufferedStartSlider setMinimumTrackImage:clearImage forState:UIControlStateNormal];
   self.bufferedStartSlider.maximumTrackTintColor = [UIColor whiteColor];
   [self.bufferedStartSlider setThumbImage:clearImage forState:UIControlStateNormal];
-  self.bufferedStartSlider.minimumValue = 0;
   self.bufferedStartSlider.maximumValue = 1;
   self.bufferedStartSlider.userInteractionEnabled = NO;
   self.bufferedStartSlider.value = 0;
@@ -164,7 +162,6 @@
   [self.bufferedEndSlider setMinimumTrackImage:clearImage forState:UIControlStateNormal];
   self.bufferedEndSlider.maximumTrackTintColor = [UIColor darkGrayColor];
   [self.bufferedEndSlider setThumbImage:clearImage forState:UIControlStateNormal];
-  self.bufferedEndSlider.minimumValue = 0;
   self.bufferedEndSlider.maximumValue = 1;
   self.bufferedEndSlider.userInteractionEnabled = NO;
   [self addSubview:self.bufferedEndSlider];
@@ -174,7 +171,6 @@
   self.progressSliderNub = [[UISlider alloc] init];
   [self.progressSliderNub setMinimumTrackImage:clearImage forState:UIControlStateNormal];
   [self.progressSliderNub setMaximumTrackImage:clearImage forState:UIControlStateNormal];
-  self.progressSliderNub.minimumValue = 0;
   self.progressSliderNub.maximumValue = 1;
   self.progressSliderNub.continuous = NO;  // If seeking was continuous, it'd waste bandwidth.
   self.progressSliderNub.value = 0;
@@ -263,8 +259,7 @@
 
   CGPoint point = [sender locationInView:self.progressSliderNub];
   CGFloat percent = point.x / self.progressSliderNub.bounds.size.width;
-  CGFloat duration = self.progressSliderNub.maximumValue - self.progressSliderNub.minimumValue;
-  self.progressSliderNub.value = (duration * percent) + self.progressSliderNub.minimumValue;
+  self.progressSliderNub.value = self.progressSliderNub.maximumValue * percent;
 
   self.active = NO;
   [self sendActionsForControlEvents:UIControlEventValueChanged];
