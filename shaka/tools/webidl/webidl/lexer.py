@@ -27,6 +27,9 @@ from __future__ import print_function
 from ply import lex
 
 
+__all__ = ['IdlLexer']
+
+
 class IdlLexer(object):
   """A PLY lexer that reads WebIDL syntax.
 

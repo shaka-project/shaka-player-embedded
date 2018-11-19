@@ -25,8 +25,11 @@ import os
 import re
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'webidl'))
+TOOLS_DIR = os.path.join(os.path.dirname(__file__), '..')
+ROOT_DIR = os.path.join(TOOLS_DIR, '..', '..')
+sys.path.append(TOOLS_DIR)
+sys.path.append(os.path.join(ROOT_DIR, 'third_party', 'ply', 'src'))
+sys.path.append(os.path.join(TOOLS_DIR, 'webidl'))
 import embed_utils
 import webidl
 
@@ -85,13 +88,13 @@ def _GetObjcName(attr):
   return attr.name
 
 
-def _FormatDoc(doc, indent):
+def _FormatDoc(obj, indent):
   """Formats a docstring for printing."""
   # Find how much the first part is indented.
-  prefix = doc.split('/', 1)[0]
-  lines = doc.split('\n')
+  prefix = ' ' * (obj.docDebug.col - 1)
+  lines = obj.doc.split('\n')
   # Then remove that much from each next line so we preserve relative indenting.
-  for i in range(len(lines)):
+  for i in range(1, len(lines)):
     assert lines[i].startswith(prefix)
     lines[i] = (' ' * indent) + lines[i][len(prefix):]
   return '\n'.join(lines).lstrip()
@@ -211,7 +214,7 @@ def _GeneratePublicHeader(results, f, name):
 
     for t in results.types:
       if t.doc:
-        writer.Write(_FormatDoc(t.doc, indent=0))
+        writer.Write(_FormatDoc(t, indent=0))
       with writer.Block('class SHAKA_EXPORT %s final' % t.name, semicolon=True):
         writer.Write('public:', offset=-1)
         writer.Write('%s();', t.name)
@@ -226,7 +229,7 @@ def _GeneratePublicHeader(results, f, name):
 
         for attr in t.attributes:
           if attr.doc:
-            writer.Write(_FormatDoc(attr.doc, indent=2))
+            writer.Write(_FormatDoc(attr, indent=2))
           writer.Write('%s %s() const;',
                        _MapCppType(attr.type, other_types, is_public=True),
                        _GetPublicFieldName(attr))
@@ -306,14 +309,14 @@ def _GenerateObjcHeader(results, f, name):
   writer.Write()
   for t in results.types:
     if t.doc:
-      writer.Write(_FormatDoc(t.doc, indent=0))
+      writer.Write(_FormatDoc(t, indent=0))
     writer.Write('SHAKA_EXPORT')
     writer.Write('@interface Shaka%s : NSObject', t.name)
     writer.Write()
 
     for attr in t.attributes:
       if attr.doc:
-        writer.Write(_FormatDoc(attr.doc, indent=0))
+        writer.Write(_FormatDoc(attr, indent=0))
       writer.Write('@property (atomic, readonly) %s %s;',
                    _MapObjcType(attr.type, other_types), _GetObjcName(attr))
       writer.Write()
@@ -409,7 +412,9 @@ def main(args):
 
   ns = parser.parse_args(args)
   with open(ns.input, 'r') as f:
-    results = webidl.IdlParser().parse_file(ns.input, f.read())
+    # Only allow dictionaries without required fields or defaults.
+    opts = webidl.Options('dictionary')
+    results = webidl.ParseFile(ns.input, f.read(), options=opts)
 
   if not os.path.exists(ns.internal):
     os.makedirs(ns.internal)

@@ -368,8 +368,9 @@ action_foreach("gen_exposed_idl") {
   ]
 
   inputs = [
-    "shaka/tools/webidl/webidl/idl_parser.py",
-    "shaka/tools/webidl/webidl/idl_tokenizer.py",
+    "shaka/tools/webidl/webidl/__init__.py",
+    "shaka/tools/webidl/webidl/parser.py",
+    "shaka/tools/webidl/webidl/lexer.py",
   ]
   outputs = [
     "$_public_dir/{{source_name_part}}.h",

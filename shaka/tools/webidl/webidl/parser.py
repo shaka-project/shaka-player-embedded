@@ -39,6 +39,11 @@ from webidl import lexer
 from webidl import types
 
 
+__all__ = [
+    'Features', 'Options', 'IdlSyntaxError', 'IdlParser', 'ParseFile',
+]
+
+
 if sys.version_info[0] == 2:
   _number_types = (float, int, long)
 else:
