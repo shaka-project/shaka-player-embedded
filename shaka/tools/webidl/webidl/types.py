@@ -101,7 +101,8 @@ class DebugInfo(collections.namedtuple('DebugInfo', ('lineno', 'col', 'line'))):
 
 
 class Argument(collections.namedtuple(
-    'Argument', ('name', 'type', 'optional', 'is_variadic', 'default'))):
+    'Argument', ('name', 'type', 'optional', 'is_variadic', 'default',
+                 'extensions'))):
   """Defines an argument to a method.
 
   Properties:
@@ -112,12 +113,13 @@ class Argument(collections.namedtuple(
       the last argument in the list.
     default: The default value of the argument.  This can be a number, string,
       boolean, empty list, IdlNull, or None (for no default).
+    extensions: An array of extension objects attached to this argument.
   """
   __slots__ = ()
 
 
 class IdlType(collections.namedtuple(
-    'IdlType', ('name', 'nullable', 'element_type'))):
+    'IdlType', ('name', 'nullable', 'element_type', 'extensions'))):
   """Defines a type of an attribute or argument.
 
   Properties:
@@ -126,13 +128,14 @@ class IdlType(collections.namedtuple(
     element_type: If present, represents the inner types of a templated type.
       For types like "sequence" this is an IdlType for the element type;
       for the "record" type, this is a tuple of (key, value) of IdlType objects.
+    extensions: An array of extension objects attached to this type.
   """
   __slots__ = ()
 
 
 class Attribute(collections.namedtuple(
-    'Attribute', ('name', 'type', 'default', 'is_required', 'doc', 'debug',
-                  'docDebug'))):
+    'Attribute', ('name', 'type', 'default', 'is_required', 'extensions', 'doc',
+                  'debug', 'docDebug'))):
   """Defines an attribute on a type.
 
   Properties:
@@ -141,6 +144,7 @@ class Attribute(collections.namedtuple(
     default: The default value of the attribute.  This can be a number, string,
       boolean, empty list, an IdlNull object, or None (for no default).
     is_required: Whether the attribute is required to be present.
+    extensions: An array of extension objects attached to this attribute.
     doc: The string comment describing the attribute.
     debug: A DebugInfo object describing where this dictionary starts.
     docDebug: A DebugInfo object describing where the docstring starts.  This

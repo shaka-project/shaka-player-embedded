@@ -254,6 +254,7 @@ class IdlParser(object):
     r"""Dictionary : MaybeDoc ExtendedAttributeList DICTIONARY IDENTIFIER '{' DictionaryMembers '}' ';'"""
     # TODO: Add support for inheritance.
     self._check_options(p, 3, Features.DICTIONARY)
+    self._check_extensions(p[2], [types.ExtensionLocation.DEFINITION])
     debug = self._get_debug(p, 3)
     docDebug = self._get_debug(p, 1) if p[1] else None
     return types.Dictionary(
@@ -264,6 +265,7 @@ class IdlParser(object):
   def p_Dictionary_error(self, p):
     r"""Dictionary : MaybeDoc ExtendedAttributeList DICTIONARY IDENTIFIER '{' error '}' ';'"""
     self._check_options(p, 3, Features.DICTIONARY)
+    self._check_extensions(p[2], [types.ExtensionLocation.DEFINITION])
     return types.Dictionary(
         name=p[4], attributes=[], doc=p[1], debug=None, docDebug=None,
         extensions=[ext[0] for ext in p[2]])
@@ -279,38 +281,42 @@ class IdlParser(object):
 
   @_rule
   def p_DictionaryMember(self, p):
-    r"""DictionaryMember : MaybeDoc ExtendedAttributeList DictionaryMemberRest"""
-    # TODO: Add support for extended attributes.
+    r"""DictionaryMember : MaybeDoc DictionaryMemberRest"""
     docDebug = self._get_debug(p, 1) if p[1] else None
-    return p[3]._replace(doc=p[1], docDebug=docDebug)
+    return p[2]._replace(doc=p[1], docDebug=docDebug)
 
   @_rule
   def p_DictionaryMemberRest(self, p):
-    r"""DictionaryMemberRest : REQUIRED TypeWithExtendedAttributes IDENTIFIER Default ';'
-                             | Type IDENTIFIER Default ';'"""
-    debug = self._get_debug(p, 1)
-    if len(p) > 5:
-      self._check_options(p, 1, Features.DICTIONARY_REQUIRED)
+    r"""DictionaryMemberRest : ExtendedAttributeList REQUIRED TypeWithExtendedAttributes IDENTIFIER Default ';'
+                             | ExtendedAttributeList Type IDENTIFIER Default ';'"""
+    debug = self._get_debug(p, 2)
+    if len(p) > 6:
+      self._check_options(p, 2, Features.DICTIONARY_REQUIRED)
+      self._check_extensions(p[1], [types.ExtensionLocation.DICTIONARY_MEMBER])
+      if p[5] is not None:
+        self._check_options(p, 5, Features.DICTIONARY_DEFAULT)
+
+      return types.Attribute(
+          name=p[4], type=p[3], default=p[5], is_required=True, doc=None,
+          debug=debug, docDebug=None, extensions=[ext[0] for ext in p[1]])
+    else:
+      self._check_extensions(p[1], [types.ExtensionLocation.DICTIONARY_MEMBER,
+                                    types.ExtensionLocation.TYPE])
       if p[4] is not None:
         self._check_options(p, 4, Features.DICTIONARY_DEFAULT)
 
+      mem_exts, type_exts = self._split_type_extensions(p[1])
       return types.Attribute(
-          name=p[3], type=p[2], default=p[4], is_required=True, doc=None,
-          debug=debug, docDebug=None)
-    else:
-      if p[3] is not None:
-        self._check_options(p, 3, Features.DICTIONARY_DEFAULT)
-
-      return types.Attribute(
-          name=p[2], type=p[1], default=p[3], is_required=False, doc=None,
-          debug=debug, docDebug=None)
+          name=p[3], type=p[2]._replace(extensions=type_exts), default=p[4],
+          is_required=False, doc=None, debug=debug, docDebug=None,
+          extensions=mem_exts)
 
   # Types ----------------------------------------------------------------------
   @_rule
   def p_TypeWithExtendedAttributes(self, p):
     r"""TypeWithExtendedAttributes : ExtendedAttributeList Type"""
-    # TODO: Add extended attribute support.
-    return p[2]
+    self._check_extensions(p[1], [types.ExtensionLocation.TYPE])
+    return p[2]._replace(extensions=[ext[0] for ext in p[1]])
 
   @_rule
   def p_Type(self, p):
@@ -328,7 +334,8 @@ class IdlParser(object):
     if p[1] != 'any':
       return p[1]
     else:
-      return types.IdlType(name='any', nullable=False, element_type=None)
+      return types.IdlType(
+          name='any', nullable=False, element_type=None, extensions=[])
 
   @_rule
   def p_UnionType(self, p):
@@ -352,14 +359,18 @@ class IdlParser(object):
       if isinstance(p[1], types.IdlType):
         return p[1]._replace(nullable=p[2])
       else:
-        return types.IdlType(name=p[1], nullable=p[2], element_type=None)
+        return types.IdlType(
+            name=p[1], nullable=p[2], element_type=None, extensions=[])
     elif len(p) == 5:
-      return types.IdlType(name='Promise', nullable=False, element_type=p[3])
+      return types.IdlType(
+          name='Promise', nullable=False, element_type=p[3], extensions=[])
     elif len(p) == 6:
-      return types.IdlType(name=p[1], nullable=p[5], element_type=p[3])
+      return types.IdlType(
+          name=p[1], nullable=p[5], element_type=p[3], extensions=[])
     else:
       assert len(p) == 8
-      return types.IdlType(name=p[1], nullable=p[7], element_type=(p[3], p[5]))
+      return types.IdlType(
+          name=p[1], nullable=p[7], element_type=(p[3], p[5]), extensions=[])
 
   @_rule
   def p_ReturnType(self, p):
@@ -368,7 +379,8 @@ class IdlParser(object):
     if p[1] != 'void':
       return p[1]
     else:
-      return types.IdlType(name='void', nullable=False, element_type=None)
+      return types.IdlType(
+          name='void', nullable=False, element_type=None, extensions=[])
 
   @_rule
   def p_PrimitiveType(self, p):
@@ -386,14 +398,15 @@ class IdlParser(object):
                       | BYTE
                       | OCTET"""
     return types.IdlType(
-        name=' '.join(p[1:]), nullable=False, element_type=None)
+        name=' '.join(p[1:]), nullable=False, element_type=None, extensions=[])
 
   @_rule
   def p_StringType(self, p):
     r"""StringType : BYTESTRING
                    | DOMSTRING
                    | USVSTRING"""
-    return types.IdlType(name=p[1], nullable=False, element_type=None)
+    return types.IdlType(
+        name=p[1], nullable=False, element_type=None, extensions=[])
 
   @_rule
   def p_Null(self, p):
@@ -436,13 +449,19 @@ class IdlParser(object):
   def p_Argument(self, p):
     r"""Argument : ExtendedAttributeList OPTIONAL TypeWithExtendedAttributes ArgumentName Default
                  | ExtendedAttributeList Type Ellipsis ArgumentName"""
-    # TODO: Add extended attribute support.
     if len(p) > 5:
+      self._check_extensions(p[1], [types.ExtensionLocation.ARGUMENT])
       return types.Argument(
-          name=p[4], type=p[3], optional=True, is_variadic=False, default=p[5])
+          name=p[4], type=p[3], optional=True, is_variadic=False, default=p[5],
+          extensions=[ext[0] for ext in p[1]])
     else:
+      self._check_extensions(
+          p[1],
+          [types.ExtensionLocation.ARGUMENT, types.ExtensionLocation.TYPE])
+      arg_exts, type_exts = self._split_type_extensions(p[1])
       return types.Argument(
-          name=p[4], type=p[2], optional=False, is_variadic=p[3], default=None)
+          name=p[4], type=p[2]._replace(extensions=type_exts), optional=False,
+          is_variadic=p[3], default=None, extensions=arg_exts)
 
   @_rule
   def p_Ellipsis(self, p):
@@ -584,6 +603,17 @@ class IdlParser(object):
         continue
       self._add_error(
           '[%s] is not valid in this context' % ext.name, line, offset)
+
+  def _split_type_extensions(self, extensions):
+    """Returns two lists for non-Type extensions and Type extensions."""
+    non_type = []
+    type_ = []
+    for ext, _, _ in extensions:
+      if types.ExtensionLocation.TYPE in ext.locations:
+        type_.append(ext)
+      else:
+        non_type.append(ext)
+    return non_type, type_
 
   # Constants ------------------------------------------------------------------
   @_rule

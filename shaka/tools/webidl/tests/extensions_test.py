@@ -29,6 +29,12 @@ class ExtensionsTest(test_common.TestBase):
     self.assertEqual(results.types[0].name, 'Foo')
     return results.types[0].extensions
 
+  def _parse_dict_field(self, code):
+    results = self.parser.parse('', 'dictionary Foo { %s; };' % code)
+    self.assertEqual(len(results.types), 1)
+    self.assertEqual(len(results.types[0].attributes), 1)
+    return results.types[0].attributes[0]
+
   def test_no_args_extension(self):
     extensions = self._parse_definition_extensions('[NoArgs]')
     self.assertEqual(len(extensions), 1)
@@ -102,6 +108,74 @@ class ExtensionsTest(test_common.TestBase):
     self.assertIsInstance(extensions[2], test_common.IdentExtension)
     self.assertEqual(extensions[2].arg, 'Foo')
 
+  def test_argument_extensions(self):
+    extensions = self._parse_definition_extensions(
+        '[ArgList([NonType] long foo)]')
+    self.assertEqual(len(extensions), 1)
+    self.assertIsInstance(extensions[0], test_common.ArgListExtension)
+    self.assertEqual(len(extensions[0].args), 1)
+    self.assertEqual(len(extensions[0].args[0].extensions), 1)
+    self.assertIsInstance(extensions[0].args[0].extensions[0],
+                          test_common.NonTypeExtension)
+
+  def test_argument_type_extensions(self):
+    # Because [NoArgs] is a TYPE extension, it should appear on the type and not
+    # the argument.
+    extensions = self._parse_definition_extensions(
+        '[ArgList([NoArgs] long foo)]')
+    self.assertEqual(len(extensions), 1)
+    self.assertIsInstance(extensions[0], test_common.ArgListExtension)
+    self.assertEqual(len(extensions[0].args), 1)
+    self.assertEqual(len(extensions[0].args[0].extensions), 0)
+    self.assertEqual(len(extensions[0].args[0].type.extensions), 1)
+    self.assertIsInstance(extensions[0].args[0].type.extensions[0],
+                          test_common.NoArgsExtension)
+
+  def test_argument_optional_extensions(self):
+    # Even though [NoArgs] is a TYPE extension, it should still appear on the
+    # argument because of the "optional".
+    extensions = self._parse_definition_extensions(
+        '[ArgList([NoArgs] optional long foo)]')
+    self.assertEqual(len(extensions), 1)
+    self.assertIsInstance(extensions[0], test_common.ArgListExtension)
+    self.assertEqual(len(extensions[0].args), 1)
+    self.assertEqual(len(extensions[0].args[0].extensions), 1)
+    self.assertIsInstance(extensions[0].args[0].extensions[0],
+                          test_common.NoArgsExtension)
+
+  def test_argument_optional_both_extensions(self):
+    extensions = self._parse_definition_extensions(
+        '[ArgList([NoArgs] optional [Ident=Foo] long foo)]')
+    self.assertEqual(len(extensions), 1)
+    self.assertIsInstance(extensions[0], test_common.ArgListExtension)
+    self.assertEqual(len(extensions[0].args), 1)
+    self.assertEqual(len(extensions[0].args[0].extensions), 1)
+    self.assertIsInstance(extensions[0].args[0].extensions[0],
+                          test_common.NoArgsExtension)
+    self.assertEqual(len(extensions[0].args[0].type.extensions), 1)
+    self.assertIsInstance(extensions[0].args[0].type.extensions[0],
+                          test_common.IdentExtension)
+
+  def test_dict_field_extensions(self):
+    field = self._parse_dict_field('[NonType] long foo')
+    self.assertEqual(len(field.extensions), 1)
+    self.assertIsInstance(field.extensions[0], test_common.NonTypeExtension)
+    self.assertEqual(len(field.type.extensions), 0)
+
+  def test_dict_field_type_extensions(self):
+    field = self._parse_dict_field('[NonType, Type] long foo')
+    self.assertEqual(len(field.extensions), 1)
+    self.assertIsInstance(field.extensions[0], test_common.NonTypeExtension)
+    self.assertEqual(len(field.type.extensions), 1)
+    self.assertIsInstance(field.type.extensions[0], test_common.TypeExtension)
+
+  def test_dict_field_required_both_extensions(self):
+    field = self._parse_dict_field('[NoArgs] required [Ident=Foo] long foo')
+    self.assertEqual(len(field.extensions), 1)
+    self.assertIsInstance(field.extensions[0], test_common.NoArgsExtension)
+    self.assertEqual(len(field.type.extensions), 1)
+    self.assertIsInstance(field.type.extensions[0], test_common.IdentExtension)
+
   def test_extensions_reports_multiple_errors(self):
     try:
       self._parse_definition_extensions('[NoArgs=Foo, Bar]')
@@ -132,6 +206,20 @@ class ExtensionsTest(test_common.TestBase):
       self.assertIsInstance(e.inner_errors[0], parser.ExtensionError)
       self.assertIsInstance(e.inner_errors[0].inner, RuntimeError)
       self.assertEqual('My error', str(e.inner_errors[0].inner))
+
+  def test_extensions_checks_location(self):
+    bad_code = [
+        '[Type] dictionary Foo {};',
+        '[ArgList(optional [NonType] long foo)] dictionary Foo {};',
+        '[ArgList([Type] optional long foo)] dictionary Foo {};',
+        '[Member] dictionary Foo {};',
+        'dictionary Foo { [Type] required long foo; };',
+        'dictionary Foo { required [NonType] long foo; };',
+        'dictionary Foo { [Definition] long foo; };',
+    ]
+    for code in bad_code:
+      with self.assertRaises(parser.IdlSyntaxError):
+        self.parser.parse('', code)
 
   def test_extensions_syntax_error(self):
     bad_code = [

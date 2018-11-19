@@ -54,9 +54,40 @@ class IdentListExtension(types.Extension):
   locations = list(types.ExtensionLocation)
 
 
+class TypeExtension(types.Extension):
+  name = 'Type'
+  kinds = [types.ExtensionKind.NO_ARGS]
+  locations = [types.ExtensionLocation.TYPE]
+
+
+class NonTypeExtension(types.Extension):
+  name = 'NonType'
+  kinds = [types.ExtensionKind.NO_ARGS]
+  # Allow this everywhere except TYPE.
+  locations = set(types.ExtensionLocation) - {types.ExtensionLocation.TYPE}
+
+
+class DefinitionExtension(types.Extension):
+  name = 'Definition'
+  kinds = [types.ExtensionKind.NO_ARGS]
+  locations = [types.ExtensionLocation.DEFINITION]
+
+
+class MemberExtension(types.Extension):
+  name = 'Member'
+  kinds = [types.ExtensionKind.NO_ARGS]
+  locations = [
+      types.ExtensionLocation.MEMBER,
+      types.ExtensionLocation.MIXIN_MEMBER,
+      types.ExtensionLocation.NAMESPACE_MEMBER,
+      types.ExtensionLocation.DICTIONARY_MEMBER,
+  ]
+
+
 ALL_EXTENSIONS = [
     NoArgsExtension, ArgListExtension, NamedArgListExtension, IdentExtension,
-    IdentListExtension,
+    IdentListExtension, TypeExtension, NonTypeExtension, DefinitionExtension,
+    MemberExtension,
 ]
 
 
