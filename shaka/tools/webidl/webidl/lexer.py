@@ -136,7 +136,7 @@ class IdlLexer(object):
       'USVString',
   )
 
-  literals = '.(){}[]<>,;=?-'
+  literals = '.(){}[]<>,;:=?-'
   tokens = (
       'FLOAT_LITERAL',
       'INTEGER_LITERAL',

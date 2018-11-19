@@ -58,6 +58,10 @@ class Features(object):
   # Dictionaries can appear; this is assumed if any dictionary-* features are
   # present.
   DICTIONARY = 'dictionary'
+  # Dictionaries can inherit from another type.
+  DICTIONARY_INHERIT = 'dictionary-inherit'
+  # Dictionaries can be defined 'partial'.
+  DICTIONARY_PARTIAL = 'dictionary-partial'
   # Dictionary members can be marked as 'required'.
   DICTIONARY_REQUIRED = 'dictionary-required'
   # Dictionary members can have a default value given.
@@ -203,10 +207,14 @@ class IdlParser(object):
   start = 'Definitions'
   @_rule
   def p_Definitions(self, p):
-    r"""Definitions : Definition Definitions
+    r"""Definitions : MaybeDoc ExtendedAttributeList Definition Definitions
                     | Empty"""
     if len(p) > 2:
-      return [p[1]] + p[2]
+      self._check_extensions(p[2], [types.ExtensionLocation.DEFINITION])
+      cur = p[3]._replace(extensions=[ext[0] for ext in p[2]])
+      if p[1]:
+        cur = cur._replace(doc=p[1], docDebug=self._get_debug(p, 1))
+      return [cur] + p[4]
     else:
       return []
 
@@ -220,6 +228,15 @@ class IdlParser(object):
     r"""MaybeDoc : DOCSTRING
                  | Empty"""
     return p[1]
+
+  @_rule
+  def p_Inheritance(self, p):
+    r"""Inheritance : ':' IDENTIFIER
+                    | Empty"""
+    if len(p) > 2:
+      return p[2]
+    else:
+      return None
 
   def p_error(self, t):
     """Called when an error occurs."""
@@ -245,30 +262,44 @@ class IdlParser(object):
   # Top-level rules ------------------------------------------------------------
   @_rule
   def p_Definition(self, p):
-    r"""Definition : Dictionary"""
+    r"""Definition : Dictionary
+                   | PartialDictionary"""
     # TODO: Add remaining definition types (e.g. 'interface', 'mixin', etc.)
     return p[1]
 
+  # Dictionaries ---------------------------------------------------------------
   @_rule
   def p_Dictionary(self, p):
-    r"""Dictionary : MaybeDoc ExtendedAttributeList DICTIONARY IDENTIFIER '{' DictionaryMembers '}' ';'"""
-    # TODO: Add support for inheritance.
-    self._check_options(p, 3, Features.DICTIONARY)
-    self._check_extensions(p[2], [types.ExtensionLocation.DEFINITION])
-    debug = self._get_debug(p, 3)
-    docDebug = self._get_debug(p, 1) if p[1] else None
-    return types.Dictionary(
-        name=p[4], attributes=p[6], doc=p[1], debug=debug, docDebug=docDebug,
-        extensions=[e[0] for e in p[2]])
+    r"""Dictionary : DICTIONARY IDENTIFIER Inheritance '{' DictionaryMembers '}' ';'"""
+    return self._dictionary_common(p, p[2], p[5], p[3], False)
 
   @_rule
   def p_Dictionary_error(self, p):
-    r"""Dictionary : MaybeDoc ExtendedAttributeList DICTIONARY IDENTIFIER '{' error '}' ';'"""
-    self._check_options(p, 3, Features.DICTIONARY)
-    self._check_extensions(p[2], [types.ExtensionLocation.DEFINITION])
+    r"""Dictionary : DICTIONARY IDENTIFIER Inheritance '{' error '}' ';'"""
+    return self._dictionary_common(p, p[2], [], p[3], False)
+
+  @_rule
+  def p_PartialDictionary(self, p):
+    r"""PartialDictionary : PARTIAL DICTIONARY IDENTIFIER '{' DictionaryMembers '}' ';'"""
+    return self._dictionary_common(p, p[3], p[5], None, True)
+
+  @_rule
+  def p_PartialDictionary_error(self, p):
+    r"""PartialDictionary : PARTIAL DICTIONARY IDENTIFIER '{' error '}' ';'"""
+    return self._dictionary_common(p, p[3], [], None, True)
+
+  def _dictionary_common(self, p, name, members, base, is_partial):
+    """Contains common code between the Dictionary rules."""
+    self._check_options(p, 1, Features.DICTIONARY)
+    if is_partial:
+      self._check_options(p, 1, Features.DICTIONARY_PARTIAL)
+    if base:
+      self._check_options(p, 3, Features.DICTIONARY_INHERIT)
+
+    debug = self._get_debug(p, 1)
     return types.Dictionary(
-        name=p[4], attributes=[], doc=p[1], debug=None, docDebug=None,
-        extensions=[ext[0] for ext in p[2]])
+        name=name, attributes=members, base=base, is_partial=is_partial,
+        doc=None, debug=debug, docDebug=None, extensions=[])
 
   @_rule
   def p_DictionaryMembers(self, p):

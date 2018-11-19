@@ -154,13 +154,15 @@ class Attribute(collections.namedtuple(
 
 
 class Dictionary(collections.namedtuple(
-    'Dictionary', ('name', 'attributes', 'extensions', 'doc', 'debug',
-                   'docDebug'))):
+    'Dictionary', ('name', 'attributes', 'base', 'is_partial', 'extensions',
+                   'doc', 'debug', 'docDebug'))):
   """Defines a dictionary definition.
 
   Properties:
     name: The string name of the dictionary.
     attributes: A list of Attribute objects for the attributes in the dict.
+    base: A string base class name, or None for no base.
+    is_partial: Whether this is a partial dictionary definition.
     extensions: A list of extension objects on this dictionary.
     doc: The string comment describing the type.
     debug: A DebugInfo object describing where this dictionary starts.
