@@ -89,14 +89,33 @@ class IdlLexer(object):
 
   _keywords = (
       'any',
+      'attribute',
+      'callback',
+      'const',
+      'deleter',
       'dictionary',
+      'enum',
       'false',
+      'getter',
+      'includes',
       'Infinity',
+      'inherit',
+      'interface',
+      'iterable',
+      'maplike',
+      'namespace',
       'NaN',
       'null',
+      'optional',
+      'partial',
       'required',
       'sequence',
+      'setlike',
+      'setter',
+      'static',
+      'stringifier',
       'true',
+      'typedef',
       'void',
 
       'boolean',
@@ -123,6 +142,7 @@ class IdlLexer(object):
       'INTEGER_LITERAL',
       'STRING_LITERAL',
 
+      'ELLIPSIS',
       'DOCSTRING',
       'IDENTIFIER',
   ) + tuple(k.upper() for k in _keywords)
@@ -134,6 +154,7 @@ class IdlLexer(object):
     raise SyntaxError(msg, (self.file_name, t.lineno, col, line))
 
   t_ignore = ' \t'
+  t_ELLIPSIS = r'\.\.\.'
 
   @lex.TOKEN(r'-?(([0-9]+\.[0-9]*|[0-9]*\.[0-9]+)([Ee][+-]?[0-9]+)?|'
              r'   [0-9]+[Ee][+-]?[0-9]+)')

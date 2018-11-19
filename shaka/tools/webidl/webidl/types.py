@@ -62,7 +62,6 @@ class ExtensionKind(enum.Enum):
   IDENT = 'Ident'
   # - 'args': A list of strings for the identifiers given.
   # For example: [Exposed=(Window,Worker)]
-  # Note this allows using [Exposed=Window] for a single item.
   IDENT_LIST = 'IdentList'
 
 
@@ -71,11 +70,12 @@ class Extension(object):
 
   Derived classes are expected to define the following type fields:
   - name: A string name of the extension.
-  - kind: An ExtensionKind for the kind of extension.
+  - kinds: A list of ExtensionKind for the allowed kinds of extension.
   - locations: A list of ExtensionLocation for where the extension can be.
 
   The constructor will be called with name-value pairs based on the kind of
-  extension this is.
+  extension this is.  If multiple kinds are allowed, the constructor is called
+  with arguments based on the kind in the IDL file.
   """
 
   def __init__(self, **kwargs):
@@ -150,12 +150,14 @@ class Attribute(collections.namedtuple(
 
 
 class Dictionary(collections.namedtuple(
-    'Dictionary', ('name', 'attributes', 'doc', 'debug', 'docDebug'))):
+    'Dictionary', ('name', 'attributes', 'extensions', 'doc', 'debug',
+                   'docDebug'))):
   """Defines a dictionary definition.
 
   Properties:
     name: The string name of the dictionary.
     attributes: A list of Attribute objects for the attributes in the dict.
+    extensions: A list of extension objects on this dictionary.
     doc: The string comment describing the type.
     debug: A DebugInfo object describing where this dictionary starts.
     docDebug: A DebugInfo object describing where the docstring starts.  This

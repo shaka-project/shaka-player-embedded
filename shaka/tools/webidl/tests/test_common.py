@@ -16,10 +16,52 @@
 import unittest
 
 from webidl import parser
+from webidl import types
+
+
+class NoArgsExtension(types.Extension):
+  name = 'NoArgs'
+  kinds = [types.ExtensionKind.NO_ARGS]
+  # Allow this everywhere.
+  locations = list(types.ExtensionLocation)
+
+
+class ArgListExtension(types.Extension):
+  name = 'ArgList'
+  kinds = [types.ExtensionKind.ARG_LIST]
+  # Allow this everywhere.
+  locations = list(types.ExtensionLocation)
+
+
+class NamedArgListExtension(types.Extension):
+  name = 'NamedArgList'
+  kinds = [types.ExtensionKind.NAMED_ARG_LIST]
+  # Allow this everywhere.
+  locations = list(types.ExtensionLocation)
+
+
+class IdentExtension(types.Extension):
+  name = 'Ident'
+  kinds = [types.ExtensionKind.IDENT]
+  # Allow this everywhere.
+  locations = list(types.ExtensionLocation)
+
+
+class IdentListExtension(types.Extension):
+  name = 'IdentList'
+  kinds = [types.ExtensionKind.IDENT_LIST]
+  # Allow this everywhere.
+  locations = list(types.ExtensionLocation)
+
+
+ALL_EXTENSIONS = [
+    NoArgsExtension, ArgListExtension, NamedArgListExtension, IdentExtension,
+    IdentListExtension,
+]
 
 
 class TestBase(unittest.TestCase):
 
   def __init__(self, *args, **kwargs):
     super(TestBase, self).__init__(*args, **kwargs)
-    self.parser = parser.IdlParser()
+    self.parser = parser.IdlParser(extensions=ALL_EXTENSIONS)

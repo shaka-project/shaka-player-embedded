@@ -21,6 +21,7 @@ This parses WebIDL syntax:
 """
 
 # pylint: disable=g-doc-args
+# pylint: disable=g-doc-exception
 # pylint: disable=g-doc-return-or-yield
 # pylint: disable=g-docstring-missing-newline
 # pylint: disable=g-no-space-after-docstring-summary
@@ -40,7 +41,8 @@ from webidl import types
 
 
 __all__ = [
-    'Features', 'Options', 'IdlSyntaxError', 'IdlParser', 'ParseFile',
+    'Features', 'Options', 'IdlSyntaxError', 'ExtensionError', 'IdlParser',
+    'ParseFile',
 ]
 
 
@@ -120,6 +122,14 @@ class IdlSyntaxError(SyntaxError):
     self.inner_errors = errors
 
 
+class ExtensionError(SyntaxError):
+  """Defines an error when creating an extension object."""
+
+  def __init__(self, error, data):
+    super(ExtensionError, self).__init__(str(error), data)
+    self.inner = error
+
+
 def _rule(func):
   """A decorator for defining rules."""
   assert func.__doc__
@@ -159,10 +169,16 @@ class IdlParser(object):
   CamelCase.
   """
 
-  def __init__(self, lexer_=None, options=None):
+  def __init__(self, lexer_=None, options=None, extensions=None):
+    if extensions:
+      temp = [(ext.name, kind) for ext in extensions for kind in ext.kinds]
+      if len(set(temp)) != len(temp):
+        raise RuntimeError('Multiple extensions with same name and kind')
+
     self.errors = []
     self.options = options or Options.all()
     self.lexer = lexer_ or lexer.IdlLexer()
+    self.extensions = extensions or []
     self.tokens = self.lexer.tokens
     self.yacc = yacc.yacc(
         module=self, tabmodule=None, optimize=0, debug=0, write_tables=0)
@@ -235,20 +251,22 @@ class IdlParser(object):
 
   @_rule
   def p_Dictionary(self, p):
-    r"""Dictionary : MaybeDoc DICTIONARY IDENTIFIER '{' DictionaryMembers '}' ';'"""
+    r"""Dictionary : MaybeDoc ExtendedAttributeList DICTIONARY IDENTIFIER '{' DictionaryMembers '}' ';'"""
     # TODO: Add support for inheritance.
-    self._check_options(p, 2, Features.DICTIONARY)
-    debug = self._get_debug(p, 2)
+    self._check_options(p, 3, Features.DICTIONARY)
+    debug = self._get_debug(p, 3)
     docDebug = self._get_debug(p, 1) if p[1] else None
     return types.Dictionary(
-        name=p[3], attributes=p[5], doc=p[1], debug=debug, docDebug=docDebug)
+        name=p[4], attributes=p[6], doc=p[1], debug=debug, docDebug=docDebug,
+        extensions=[e[0] for e in p[2]])
 
   @_rule
   def p_Dictionary_error(self, p):
-    r"""Dictionary : MaybeDoc DICTIONARY IDENTIFIER '{' error '}' ';'"""
-    self._check_options(p, 2, Features.DICTIONARY)
+    r"""Dictionary : MaybeDoc ExtendedAttributeList DICTIONARY IDENTIFIER '{' error '}' ';'"""
+    self._check_options(p, 3, Features.DICTIONARY)
     return types.Dictionary(
-        name=p[3], attributes=[], doc=p[1], debug=None, docDebug=None)
+        name=p[4], attributes=[], doc=p[1], debug=None, docDebug=None,
+        extensions=[ext[0] for ext in p[2]])
 
   @_rule
   def p_DictionaryMembers(self, p):
@@ -383,11 +401,189 @@ class IdlParser(object):
              | Empty"""
     return p[1] == '?'
 
+  # Argument list --------------------------------------------------------------
+  @_rule
+  def p_ArgumentList(self, p):
+    r"""ArgumentList : Argument Arguments
+                     | Empty"""
+    if len(p) > 2:
+      if p[1].optional and p[2] and not p[2][0].optional:
+        self._add_error(
+            'Optional arguments must be last', p.lineno(2), p.lineno(2))
+      elif p[1].is_variadic and p[2]:
+        self._add_error(
+            'Variadic argument must be last', p.lineno(2), p.lineno(2))
+      return [p[1]] + p[2]
+    else:
+      return []
+
+  @_rule
+  def p_Arguments(self, p):
+    r"""Arguments : ',' Argument Arguments
+                  | Empty"""
+    if len(p) == 4:
+      if p[2].optional and p[3] and not p[3][0].optional:
+        self._add_error(
+            'Optional arguments must be last', p.lineno(3), p.lineno(3))
+      elif p[2].is_variadic and p[3]:
+        self._add_error(
+            'Variadic argument must be last', p.lineno(3), p.lineno(3))
+      return [p[2]] + p[3]
+    else:
+      return []
+
+  @_rule
+  def p_Argument(self, p):
+    r"""Argument : ExtendedAttributeList OPTIONAL TypeWithExtendedAttributes ArgumentName Default
+                 | ExtendedAttributeList Type Ellipsis ArgumentName"""
+    # TODO: Add extended attribute support.
+    if len(p) > 5:
+      return types.Argument(
+          name=p[4], type=p[3], optional=True, is_variadic=False, default=p[5])
+    else:
+      return types.Argument(
+          name=p[4], type=p[2], optional=False, is_variadic=p[3], default=None)
+
+  @_rule
+  def p_Ellipsis(self, p):
+    r"""Ellipsis : ELLIPSIS
+                 | Empty"""
+    return p[1] == '...'
+
+  @_rule
+  def p_ArgumentName(self, p):
+    r"""ArgumentName : IDENTIFIER
+                     | ATTRIBUTE
+                     | CALLBACK
+                     | CONST
+                     | DELETER
+                     | DICTIONARY
+                     | ENUM
+                     | GETTER
+                     | INCLUDES
+                     | INHERIT
+                     | INTERFACE
+                     | ITERABLE
+                     | MAPLIKE
+                     | NAMESPACE
+                     | PARTIAL
+                     | REQUIRED
+                     | SETLIKE
+                     | SETTER
+                     | STATIC
+                     | STRINGIFIER
+                     | TYPEDEF
+                     | UNRESTRICTED"""
+    return p[1]
+
   # Extended attributes --------------------------------------------------------
+  # Unlike the other rules, the ExtendedAttribute* rules don't return the AST
+  # value itself; instead they return a tuple of (extension, line, offset).
+  # This allows the caller to give the correct position for each invalid
+  # extension.  ExtendedAttributeList and ExtendedAttributes return a list of
+  # tuples.
   @_rule
   def p_ExtendedAttributeList(self, p):
-    r"""ExtendedAttributeList :"""
-    # TODO: Add support for extended attributes.
+    r"""ExtendedAttributeList : '[' ExtendedAttribute ExtendedAttributes ']'
+                              | Empty"""
+    if len(p) > 2:
+      return [p[2]] + p[3]
+    else:
+      return []
+
+  @_rule
+  def p_ExtendedAttributeList_error(self, p):
+    r"""ExtendedAttributeList : '[' error ']'"""
+    return []
+
+  @_rule
+  def p_ExtendedAttributes(self, p):
+    r"""ExtendedAttributes : ',' ExtendedAttribute ExtendedAttributes
+                           | Empty"""
+    if len(p) > 2:
+      return [p[2]] + p[3]
+    else:
+      return []
+
+  @_rule
+  def p_ExtendedAttribute(self, p):
+    r"""ExtendedAttribute : IDENTIFIER
+                          | IDENTIFIER '=' IDENTIFIER
+                          | IDENTIFIER '(' ArgumentList ')'
+                          | IDENTIFIER '=' '(' IdentifierList ')'
+                          | IDENTIFIER '=' IDENTIFIER '(' ArgumentList ')'"""
+    if len(p) == 2:
+      kind = types.ExtensionKind.NO_ARGS
+      args = {}
+    elif len(p) == 4:
+      kind = types.ExtensionKind.IDENT
+      args = {'arg': p[3]}
+    elif len(p) == 5:
+      kind = types.ExtensionKind.ARG_LIST
+      args = {'args': p[3]}
+    elif len(p) == 6:
+      kind = types.ExtensionKind.IDENT_LIST
+      args = {'args': p[4]}
+    else:
+      assert len(p) == 7
+      kind = types.ExtensionKind.NAMED_ARG_LIST
+      args = {'argName': p[3], 'args': p[5]}
+
+    # Find an extension with the correct name and kind.  If there isn't one with
+    # the correct kind, find one with the correct name to give a better error
+    # message.
+    extension = None
+    for cur in self.extensions:
+      if cur.name == p[1]:
+        if (extension is None or
+            (kind not in extension.kind and kind in cur.kind)):
+          extension = cur
+
+    if not extension or kind not in extension.kinds:
+      if not extension:
+        message = 'Unknown extension [%s]' % p[1]
+      elif len(extension.kinds) == 1:
+        names = {
+            types.ExtensionKind.NO_ARGS: 'no arguments',
+            types.ExtensionKind.ARG_LIST: 'an argument list',
+            types.ExtensionKind.NAMED_ARG_LIST: 'a named argument list',
+            types.ExtensionKind.IDENT: 'an identifier',
+            types.ExtensionKind.IDENT_LIST: 'an identifier list',
+        }
+        message = '[%s] should have %s but was given %s' % (
+            p[1], names[extension.kinds[0]], names[kind])
+      else:
+        message = '[%s] is not in an allowed form' % p[1]
+      self._add_error(message, p.lineno(1), p.lexpos(1))
+      return (None, p.lineno(1), p.lexpos(1))
+
+    try:
+      return (extension(**args), p.lineno(1), p.lexpos(1))
+    except Exception as e:  # pylint: disable=broad-except
+      self._add_error(e, p.lineno(1), p.lexpos(1), except_type=ExtensionError)
+      return (None, p.lineno(1), p.lexpos(1))
+
+  @_rule
+  def p_IdentifierList(self, p):
+    r"""IdentifierList : IDENTIFIER Identifiers"""
+    return [p[1]] + p[2]
+
+  @_rule
+  def p_Identifiers(self, p):
+    r"""Identifiers : ',' IDENTIFIER Identifiers
+                    | Empty"""
+    if len(p) > 2:
+      return [p[2]] + p[3]
+    else:
+      return []
+
+  def _check_extensions(self, extensions, locations):
+    """Checks the given extensions are valid, and adds errors otherwise."""
+    for ext, line, offset in extensions:
+      if not ext or any(l in ext.locations for l in locations):
+        continue
+      self._add_error(
+          '[%s] is not valid in this context' % ext.name, line, offset)
 
   # Constants ------------------------------------------------------------------
   @_rule
@@ -437,11 +633,11 @@ class IdlParser(object):
       return map_[p[1]]
 
   # Helpers functions ----------------------------------------------------------
-  def _add_error(self, message, line, offset):
+  def _add_error(self, message, line, offset, except_type=SyntaxError):
     """Adds a new error to the error list."""
     line_text = self.lexer.get_line(offset)
     col = self.lexer.get_col(offset)
-    self.errors.append(SyntaxError(
+    self.errors.append(except_type(
         message, (self.lexer.file_name, line, col, line_text)))
 
   def _check_options(self, p, idx, feature):
@@ -468,7 +664,7 @@ class IdlParser(object):
       return t.value
 
 
-def ParseFile(name, contents, options=None):
+def ParseFile(name, contents, options=None, extensions=None):
   """Parses the given IDL file."""
-  parser = IdlParser(options=options)
+  parser = IdlParser(options=options, extensions=extensions)
   return parser.parse(name, contents)
