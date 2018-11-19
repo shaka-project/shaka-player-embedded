@@ -66,6 +66,8 @@ class Element : public ContainerNode {
   void RemoveAttribute(const std::string& attr);
   void RemoveAttributeNS(const std::string& ns, const std::string& attr);
 
+  std::vector<RefPtr<Attr>> attributes() const;
+
  private:
   using attr_iter = std::vector<Member<Attr>>::iterator;
   using const_attr_iter = std::vector<Member<Attr>>::const_iterator;

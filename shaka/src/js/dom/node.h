@@ -104,6 +104,8 @@ class Node : public events::EventTarget {
 
   RefPtr<Node> AppendChild(RefPtr<Node> new_child);
 
+  RefPtr<Node> RemoveChild(RefPtr<Node> to_remove);
+
   // Internal only methods.
   bool is_document() const {
     return node_type_ == DOCUMENT_NODE;

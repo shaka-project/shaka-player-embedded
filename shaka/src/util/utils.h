@@ -91,6 +91,13 @@ template <typename T>
 bool contains(const std::unordered_set<T>& set, const T& elem) {
   return set.count(elem) != 0;
 }
+template <typename List, typename Elem>
+void RemoveElement(List* list, Elem&& elem) {
+  // std::remove modifies a list to put the desired element at the end.
+  // The call to erase() then removes the element.
+  list->erase(std::remove(list->begin(), list->end(), std::forward<Elem>(elem)),
+              list->end());
+}
 
 }  // namespace util
 }  // namespace shaka

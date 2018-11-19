@@ -148,6 +148,10 @@ Element::attr_iter Element::FindAttributeNS(const std::string& ns,
   return it;
 }
 
+std::vector<RefPtr<Attr>> Element::attributes() const {
+  return std::vector<RefPtr<Attr>>(attributes_.begin(), attributes_.end());
+}
+
 ElementFactory::ElementFactory() {
   AddReadOnlyProperty("namespaceURI", &Element::namespace_uri);
   AddReadOnlyProperty("prefix", &Element::namespace_prefix);
@@ -166,11 +170,12 @@ ElementFactory::ElementFactory() {
   AddMemberFunction("removeAttribute", &Element::RemoveAttribute);
   AddMemberFunction("removeAttributeNS", &Element::RemoveAttributeNS);
 
+  AddGenericProperty("attributes", &Element::attributes);
+
   NotImplemented("className");
   NotImplemented("classList");
   NotImplemented("slot");
 
-  NotImplemented("attributes");
   NotImplemented("getAttributeNames");
 
   NotImplemented("getAttributeNode");

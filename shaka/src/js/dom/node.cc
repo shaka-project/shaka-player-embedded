@@ -65,13 +65,23 @@ RefPtr<Node> Node::last_child() const {
 }
 
 RefPtr<Node> Node::AppendChild(RefPtr<Node> new_child) {
-  DCHECK(is_element() || node_type_ == DOCUMENT_NODE);
-  DCHECK(new_child);
-  DCHECK(!new_child->parent_node());
+  CHECK(is_element() || node_type_ == DOCUMENT_NODE);
+  CHECK(new_child);
+  CHECK(!new_child->parent_node());
 
   new_child->parent_ = this;
   children_.emplace_back(new_child);
   return new_child;
+}
+
+RefPtr<Node> Node::RemoveChild(RefPtr<Node> to_remove) {
+  CHECK(is_element() || node_type_ == DOCUMENT_NODE);
+  CHECK(to_remove);
+  CHECK_EQ(to_remove->parent_node(), this);
+
+  to_remove->parent_ = nullptr;
+  util::RemoveElement(&children_, to_remove);
+  return to_remove;
 }
 
 
@@ -110,8 +120,8 @@ NodeFactory::NodeFactory() {
   AddGenericProperty("nodeValue", &Node::NodeValue);
   AddGenericProperty("textContent", &Node::TextContent);
 
-  // Needed for testing, should not be used.
   AddMemberFunction("appendChild", &Node::AppendChild);
+  AddMemberFunction("removeChild", &Node::RemoveChild);
 
   NotImplemented("parentElement");
   NotImplemented("previousSibling");
@@ -124,7 +134,6 @@ NodeFactory::NodeFactory() {
 
   NotImplemented("insertBefore");
   NotImplemented("replaceChild");
-  NotImplemented("removeChild");
 
   NotImplemented("isConnected");
   NotImplemented("baseURI");

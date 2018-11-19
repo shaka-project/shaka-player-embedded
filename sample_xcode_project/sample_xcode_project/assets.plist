@@ -56,6 +56,12 @@
     <string>Heliocentrism (multicodec, multiperiod)</string>
   </dict>
   <dict>
+    <key>uri</key>
+    <string>https://storage.googleapis.com/shaka-demo-assets/heliocentrism-xlink/heliocentrism.mpd</string>
+    <key>title</key>
+    <string>Heliocentrism (multicodec, multiperiod, xlink)</string>
+  </dict>
+  <dict>
     <key>license</key>
     <string>// From: http://dig.ccmixter.org/files/JeffSpeed68/53327
     // Licensed under Creative Commons BY-NC 3.0.
