@@ -53,8 +53,7 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
 @implementation PlayerViewController
 
 + (NSString *)getShakaPlayerVersion {
-  ShakaPlayerView *player = [[ShakaPlayerView alloc] init];
-  return player.playerVersion;
+  return [[NSString alloc] initWithUTF8String:GetShakaEmbeddedVersion()];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

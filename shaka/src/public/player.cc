@@ -14,6 +14,7 @@
 
 #include "shaka/player.h"
 
+#include "shaka/version.h"
 #include "src/core/js_manager_impl.h"
 #include "src/debug/thread_event.h"
 #include "src/js/manifest.h"
@@ -28,6 +29,11 @@
 #include "src/mapping/js_wrappers.h"
 #include "src/mapping/struct.h"
 #include "src/util/utils.h"
+
+// Declared in version.h by generated code in //shaka/tools/version.py.
+SHAKA_EXPORT extern "C" const char* GetShakaEmbeddedVersion() {
+  return SHAKA_VERSION_STR;
+}
 
 namespace shaka {
 

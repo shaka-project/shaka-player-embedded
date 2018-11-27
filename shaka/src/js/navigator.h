@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "shaka/version.h"
 #include "src/mapping/backing_object.h"
 #include "src/mapping/backing_object_factory.h"
 #include "src/mapping/promise.h"
@@ -30,8 +31,7 @@
 #define PRODUCT         "Gecko"
 #define PRODUCT_SUB     "20030107"
 #define VENDOR          "Shaka-Player-Embedded"
-// TODO: Incorporate versioning into build process.
-#define VENDOR_SUB      "v0.0.1"
+#define VENDOR_SUB      SHAKA_VERSION_STR
 #define USER_AGENT \
   APP_CODE_NAME "/" APP_VERSION " (" PLATFORM ") " VENDOR "/" VENDOR_SUB
 

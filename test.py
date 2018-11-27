@@ -31,6 +31,11 @@ import utils
 
 def _RunTests(build_dir, no_colors):
   """Runs the tests in the given build dir."""
+  tools_path = os.path.join(ROOT_DIR, 'shaka', 'tools')
+  if subprocess.call([sys.executable, '-m', 'unittest', 'discover',
+                      '-s', tools_path, '-p', '*_test.py']) != 0:
+    return 1
+
   webidl_path = os.path.join(ROOT_DIR, 'shaka', 'tools', 'webidl')
   if subprocess.call([sys.executable, '-m', 'unittest', 'discover',
                       '-s', webidl_path, '-p', '*_test.py']) != 0:

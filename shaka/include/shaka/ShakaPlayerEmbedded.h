@@ -15,6 +15,7 @@
 // Include language-agnostic headers.
 #include "config_names.h"
 #include "shaka_config.h"
+#include "version.h"
 
 // Include Objective-C headers if we are compiling Objective-C or Objective-C++.
 #if defined(__OBJC__)

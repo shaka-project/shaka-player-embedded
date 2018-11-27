@@ -336,6 +336,18 @@ action("gen_config_h") {
   }
 }
 
+action("gen_version_h") {
+  visibility = [ ":*" ]
+
+  outputs = [ "$root_gen_dir/shaka/version.h" ]
+  script = "//shaka/tools/version.py"
+
+  args = [
+    "--output",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+}
+
 action_foreach("gen_exposed_idl") {
   _internal_dir = "{{source_gen_dir}}"
   _public_dir = "$root_gen_dir/shaka"
@@ -621,6 +633,7 @@ source_set("internal_sources") {
   deps = [
     ":eme_plugins",
     ":gen_config_h",
+    ":gen_version_h",
     ":gen_exposed_idl",
     "//third_party/curl:libcurl",
     "//third_party/ffmpeg:ffmpeg_libs",
@@ -758,6 +771,7 @@ if (is_mac || is_ios) {
     visibility = [ ":*" ]
     public_deps = [
       ":gen_config_h",
+      ":gen_version_h",
       ":gen_exposed_idl",
     ]
     sources = [
@@ -788,6 +802,7 @@ if (is_mac || is_ios) {
       "shaka/include/shaka/ShakaPlayerView.h",
     ]
     sources += get_target_outputs(":gen_config_h")
+    sources += get_target_outputs(":gen_version_h")
     if (sdl_utils) {
       sources += [
         "shaka/include/shaka/sdl_frame_drawer.h",
