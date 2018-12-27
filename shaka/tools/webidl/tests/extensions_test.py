@@ -32,8 +32,8 @@ class ExtensionsTest(test_common.TestBase):
   def _parse_dict_field(self, code):
     results = self.parser.parse('', 'dictionary Foo { %s; };' % code)
     self.assertEqual(len(results.types), 1)
-    self.assertEqual(len(results.types[0].attributes), 1)
-    return results.types[0].attributes[0]
+    self.assertEqual(len(results.types[0].members), 1)
+    return results.types[0].members[0]
 
   def test_no_args_extension(self):
     extensions = self._parse_definition_extensions('[NoArgs]')

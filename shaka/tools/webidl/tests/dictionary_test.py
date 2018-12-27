@@ -17,7 +17,6 @@ import unittest
 
 from . import test_common
 from webidl import parser
-from webidl import types
 
 
 class DictionaryTest(test_common.TestBase):
@@ -28,10 +27,11 @@ class DictionaryTest(test_common.TestBase):
     self.assertEqual(len(results.types), 1)
 
     self.assertEqual(results.types[0].name, 'foo')
+    self.assertEqual(results.types[0].kind, 'dictionary')
     self.assertEqual(results.types[0].base, None)
     self.assertIs(results.types[0].is_partial, False)
     self.assertEqual(results.types[0].doc, '/** Foobar */')
-    self.assertEqual(len(results.types[0].attributes), 0)
+    self.assertEqual(len(results.types[0].members), 0)
     self.assertEqual(results.types[0].debug.lineno, 1)
     self.assertEqual(results.types[0].debug.col, 15)
     self.assertEqual(results.types[0].debug.line,
@@ -47,7 +47,7 @@ class DictionaryTest(test_common.TestBase):
     self.assertEqual(results.types[0].name, 'Foo')
     self.assertEqual(results.types[0].base, 'Bar')
     self.assertIs(results.types[0].is_partial, False)
-    self.assertEqual(len(results.types[0].attributes), 0)
+    self.assertEqual(len(results.types[0].members), 0)
 
   def test_partial(self):
     results = self.parser.parse('', 'partial dictionary Foo {};')
@@ -55,7 +55,7 @@ class DictionaryTest(test_common.TestBase):
     self.assertEqual(results.types[0].name, 'Foo')
     self.assertIs(results.types[0].base, None)
     self.assertIs(results.types[0].is_partial, True)
-    self.assertEqual(len(results.types[0].attributes), 0)
+    self.assertEqual(len(results.types[0].members), 0)
 
   def test_members(self):
     code = """
@@ -67,9 +67,9 @@ class DictionaryTest(test_common.TestBase):
     results = self.parser.parse('', code)
     self.assertEqual(len(results.types), 1)
     self.assertEqual(results.types[0].name, 'foo')
-    self.assertEqual(len(results.types[0].attributes), 3)
+    self.assertEqual(len(results.types[0].members), 3)
 
-    attrs = results.types[0].attributes
+    attrs = results.types[0].members
     self.assertEqual(attrs[0].name, 'foo')
     self.assertEqual(attrs[0].type.name, 'double')
     self.assertIs(attrs[0].is_required, True)

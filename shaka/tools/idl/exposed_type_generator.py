@@ -143,7 +143,7 @@ def _GenerateJsHeader(results, f, name, public_header):
           writer.Write('DECLARE_STRUCT_SPECIAL_METHODS_MOVE_ONLY(%s);', t.name)
           writer.Write()
 
-          for attr in t.attributes:
+          for attr in t.members:
             writer.Write('ADD_DICT_FIELD(%s, %s);',
                          attr.name,
                          _MapCppType(attr.type, other_types, is_public=False))
@@ -217,7 +217,7 @@ def _GeneratePublicHeader(results, f, name):
         writer.Write('%s& operator=(%s&&);', t.name, t.name)
         writer.Write()
 
-        for attr in t.attributes:
+        for attr in t.members:
           if attr.doc:
             writer.Write(_FormatDoc(attr, indent=2))
           writer.Write(
@@ -251,7 +251,7 @@ def _GeneratePublicSource(results, f, public_header, internal_header):
     for t in results.types:
       with writer.Block('class %s::Impl' % t.name, semicolon=True):
         writer.Write('public:', offset=-1)
-        for attr in t.attributes:
+        for attr in t.members:
           writer.Write('const %s %s{};' %
                        (_MapCppType(attr.type, other_types, is_public=True),
                         attr.name))
@@ -259,7 +259,7 @@ def _GeneratePublicSource(results, f, public_header, internal_header):
 
         writer.Write('Impl() {}')
         writer.Write('Impl(js::%s&& internal)', t.name)
-        for i, attr in enumerate(t.attributes):
+        for i, attr in enumerate(t.members):
           if attr.type.name in {'sequence', 'record'}:
             inner = ('std::make_move_iterator(internal.%s.begin()), ' +
                      'std::make_move_iterator(internal.%s.end())') % (
@@ -270,7 +270,7 @@ def _GeneratePublicSource(results, f, public_header, internal_header):
                        ':' if i == 0 else ' ',
                        attr.name,
                        inner,
-                       ' {}' if i == len(t.attributes) - 1 else ',')
+                       ' {}' if i == len(t.members) - 1 else ',')
       writer.Write()
 
       writer.Write('%s::%s() : impl_(new Impl) {}', t.name, t.name)
@@ -286,7 +286,7 @@ def _GeneratePublicSource(results, f, public_header, internal_header):
       writer.Write('%s& %s::operator=(%s&&) = default;', t.name, t.name, t.name)
       writer.Write()
 
-      for attr in t.attributes:
+      for attr in t.members:
         with writer.Block(
             '%s %s::%s() const' %
             (_MapCppType(attr.type, other_types, is_public=True, is_ref=True),
@@ -297,7 +297,7 @@ def _GeneratePublicSource(results, f, public_header, internal_header):
 
       with writer.Block('js::%s %s::GetInternal() const' % (t.name, t.name)):
         writer.Write('js::%s ret;', t.name)
-        for i, attr in enumerate(t.attributes):
+        for i, attr in enumerate(t.members):
           if (attr.type.name == 'sequence' and
               attr.type.element_type.name in other_types):
             with writer.Block('for (const auto& item : impl_->%s)' %
@@ -339,7 +339,7 @@ def _GenerateObjcHeader(results, f, name):
     writer.Write('@interface Shaka%s : NSObject', t.name)
     writer.Write()
 
-    for attr in t.attributes:
+    for attr in t.members:
       if attr.doc:
         writer.Write(_FormatDoc(attr, indent=0))
       writer.Write('@property (atomic, readonly) %s %s;',
@@ -376,7 +376,7 @@ def _GenerateObjcSource(results, f, header, objc_internal_header):
       writer.Write('return self->value;')
     writer.Write()
 
-    for attr in t.attributes:
+    for attr in t.members:
       with writer.Block('- (%s)%s' %
                         (_MapObjcType(attr.type, other_types),
                          _GetObjcName(attr))):

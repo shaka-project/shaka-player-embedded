@@ -27,9 +27,9 @@ class DefaultsTest(test_common.TestBase):
     """Returns the parsed default."""
     results = self.parser.parse('', 'dictionary F {long x = %s;};' % code)
     self.assertEqual(1, len(results.types))
-    self.assertEqual(1, len(results.types[0].attributes))
-    self.assertEqual('x', results.types[0].attributes[0].name)
-    return results.types[0].attributes[0].default
+    self.assertEqual(1, len(results.types[0].members))
+    self.assertEqual('x', results.types[0].members[0].name)
+    return results.types[0].members[0].default
 
   def test_numbers(self):
     self.assertEqual(self._parse_default('0'), 0)

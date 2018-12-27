@@ -133,34 +133,38 @@ class IdlType(collections.namedtuple(
   __slots__ = ()
 
 
-class Attribute(collections.namedtuple(
-    'Attribute', ('name', 'type', 'default', 'is_required', 'extensions', 'doc',
-                  'debug', 'docDebug'))):
-  """Defines an attribute on a type.
+class DictMember(collections.namedtuple(
+    'DictMember', ('name', 'type', 'default', 'is_required', 'extensions',
+                   'doc', 'debug', 'docDebug'))):
+  """Defines a member of a Dictionary.
 
   Properties:
-    name: The string name of the attribute.
-    type: An IdlType object defining the type of the attribute.
-    default: The default value of the attribute.  This can be a number, string,
-      boolean, empty list, an IdlNull object, or None (for no default).
-    is_required: Whether the attribute is required to be present.
-    extensions: An array of extension objects attached to this attribute.
-    doc: The string comment describing the attribute.
-    debug: A DebugInfo object describing where this dictionary starts.
+    name: The string name of the member.
+    type: An IdlType object defining the type of the member.
+    default: The default value of the member.  This can be a number, string,
+      boolean, empty list, IdlNull, or None (for no default).
+    is_required: Whether the member is required to be present.
+    extensions: An array of extension objects attached to this member.
+    doc: The string comment describing the member.
+    debug: A DebugInfo object describing where this member starts.
     docDebug: A DebugInfo object describing where the docstring starts.  This
       is None if there is no docstring.
   """
   __slots__ = ()
 
 
-class Dictionary(collections.namedtuple(
-    'Dictionary', ('name', 'attributes', 'base', 'is_partial', 'extensions',
-                   'doc', 'debug', 'docDebug'))):
-  """Defines a dictionary definition.
+class Definition(collections.namedtuple(
+    'Definition', ('name', 'kind', 'members', 'base', 'is_partial',
+                   'extensions', 'doc', 'debug', 'docDebug'))):
+  """Defines a type definition (e.g. an 'interface').
 
   Properties:
-    name: The string name of the dictionary.
-    attributes: A list of Attribute objects for the attributes in the dict.
+    name: The string name of the type.
+    kind: The kind of definition this is; will be one of: 'dictionary',
+      'interface', or 'mixin'.
+    members: A list of objects for the members in the type.  These will be
+      different types based on what kind of member and the |kind|.  For example,
+      this could be a Constant or a DictMember.
     base: A string base class name, or None for no base.
     is_partial: Whether this is a partial dictionary definition.
     extensions: A list of extension objects on this dictionary.
@@ -176,6 +180,6 @@ class Results(collections.namedtuple('Results', ('types',))):
   """Defines the results of parsing an IDL file.
 
   Properties:
-    types: A list of types the file defines.  Will always be a Dictionary type.
+    types: A list of Definition objects the file defines.
   """
   __slots__ = ()

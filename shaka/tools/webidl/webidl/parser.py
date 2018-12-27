@@ -297,9 +297,10 @@ class IdlParser(object):
       self._check_options(p, 3, Features.DICTIONARY_INHERIT)
 
     debug = self._get_debug(p, 1)
-    return types.Dictionary(
-        name=name, attributes=members, base=base, is_partial=is_partial,
-        doc=None, debug=debug, docDebug=None, extensions=[])
+    return types.Definition(
+        name=name, kind='dictionary', members=members, base=base,
+        is_partial=is_partial, doc=None, debug=debug, docDebug=None,
+        extensions=[])
 
   @_rule
   def p_DictionaryMembers(self, p):
@@ -327,7 +328,7 @@ class IdlParser(object):
       if p[5] is not None:
         self._check_options(p, 5, Features.DICTIONARY_DEFAULT)
 
-      return types.Attribute(
+      return types.DictMember(
           name=p[4], type=p[3], default=p[5], is_required=True, doc=None,
           debug=debug, docDebug=None, extensions=[ext[0] for ext in p[1]])
     else:
@@ -337,7 +338,7 @@ class IdlParser(object):
         self._check_options(p, 4, Features.DICTIONARY_DEFAULT)
 
       mem_exts, type_exts = self._split_type_extensions(p[1])
-      return types.Attribute(
+      return types.DictMember(
           name=p[3], type=p[2]._replace(extensions=type_exts), default=p[4],
           is_required=False, doc=None, debug=debug, docDebug=None,
           extensions=mem_exts)

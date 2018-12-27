@@ -25,9 +25,9 @@ class TypesTest(test_common.TestBase):
     """Returns the parsed type."""
     results = self.parser.parse('', 'dictionary F {%s foo;};' % code)
     self.assertEqual(1, len(results.types))
-    self.assertEqual(1, len(results.types[0].attributes))
-    self.assertEqual('foo', results.types[0].attributes[0].name)
-    return results.types[0].attributes[0].type
+    self.assertEqual(1, len(results.types[0].members))
+    self.assertEqual('foo', results.types[0].members[0].name)
+    return results.types[0].members[0].type
 
   def test_simple_types(self):
     types = [
