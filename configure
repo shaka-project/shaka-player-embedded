@@ -675,6 +675,10 @@ def _CreateArgParser():
       '--force-hardware-decode', dest='force_hardware_decode',
       action='store_const', const=True,
       help='Require hardware accelerated or OS-provided decoding.')
+  media_parser.add_argument(
+      '--no-force-hardware-decode', dest='force_hardware_decode',
+      action='store_const', const=False,
+      help="Don't force hardware-decoding on iOS.")
 
   sanitizer = parser.add_argument_group('Sanitizers')
   sanitizer.add_argument(
