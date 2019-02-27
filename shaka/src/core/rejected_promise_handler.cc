@@ -71,8 +71,8 @@ RejectedPromiseHandler::PromiseInfo::~PromiseInfo() {}
 
 RejectedPromiseHandler::PromiseInfo::PromiseInfo(PromiseInfo&&) = default;
 
-RejectedPromiseHandler::PromiseInfo& RejectedPromiseHandler::PromiseInfo::
-operator=(PromiseInfo&&) = default;
+RejectedPromiseHandler::PromiseInfo&
+RejectedPromiseHandler::PromiseInfo::operator=(PromiseInfo&&) = default;
 
 void RejectedPromiseHandler::Trace(memory::HeapTracer* tracer) const {
   for (auto& info : promises_) {
