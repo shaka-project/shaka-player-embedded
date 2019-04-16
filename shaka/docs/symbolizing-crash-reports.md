@@ -32,11 +32,19 @@ the following commands to get it:
 
 ```sh
 # On Mac (or iOS with dynamic library):
-dwarfdump -u <library.so>>
+dwarfdump -u <library.so>
 # On iOS:
 dwarfdump -u <library.framework/library>
 # On Linux:
 readelf -n <library.so> | grep "Build ID"
+```
+
+Windows doesn't have an exact build ID.  Instead just give the file version.
+This can be retrieved by right-clicking on the file and selecting "Details".
+Or in a PowerShell window, run:
+
+```sh
+(Get-Command ./library.dll).FileVersionInfo.FileVersion
 ```
 
 ### Load address
@@ -54,6 +62,10 @@ If you have a debugger open in Xcode, select
 `Debug > Debug Workflow > Shared Libraries...`. Then give us the address for our
 shared library.
 
+If you have a debugger open in Visual Studio, open the "Modules" tab (if not
+open, select `Debug > Windows > Modules`).  Then give us the "Address" for our
+library.
+
 If you have a crash log from an iOS device, there is a section for
 `Binary Images:` that lists the shared libraries.  We need the one that matches
 the build ID you got before.  To get logs for an attached device, open Xcode
@@ -65,6 +77,9 @@ and give us the address for our library.  It will probably be near the top.
 
 If you have a core dump for Linux, open it in `gdb` and enter `info share`
 and give us the address for our library.  It will probably be near the top.
+
+If you have a core/minidump for Windows, open it in `cdb` or `windbg` and enter
+`lm` and give us the start address for our library.
 
 
 Symbolizing the stack trace
@@ -91,6 +106,39 @@ from the number.
 addr2line -Cf -j .text -e <library.so.debug> <OFFSET1> <OFFSET2> ...
 ```
 
+For Windows, you'll need the [Windows debugger tools][1] (not Visual Studio).
+This usually comes with the Windows SDK or the Windows Driver Kit.  You then
+need to run `dbh.exe`, an interactive symbol viewer/searcher:
+
+[1]: https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/
+
+```
+$ dbh.exe -v library.pdb
+
+> base <LOAD_ADDRESS>
+> addr <ADDR1>
+   name : my_symbol
+   addr :   <ADDR1>
+   size : 0
+  flags : 400000
+   type : 0
+modbase :   7ff123456789
+  value :        0
+    reg : 0
+  scope : SymTagNull (0)
+    tag : SymTagPublicSymbol (a)
+  index : 12ab
+
+> laddr <ADDR1>
+  file : C:\users\build\src\foo.cpp
+  line : 123
+  addr : <ADDR1>
+   key : 000000000000000
+```
+
+Note that `laddr` might not work for third-party static libraries if the line
+info isn't available; but the `addr` command should always work.
+
 
 Symbolizing crash dumps
 -----------------------
@@ -111,3 +159,11 @@ normal.
 
 For OSX core dumps, load the core dump (`lldb -c core`).  Then add our dSYM
 file (`add-dsym library.dylib.dSYM`).
+
+### Windows
+
+For Windows core/mini dumps, you can add the path to the folder containing the
+.pdb on the command-line.  For example: `cdb -z core.dmp -y symbol_folder` or
+`windbg -z core.dmp -y symbol_folder`.  If you have an existing session and
+don't have symbols, the run `.sympath+ symbol_folder` and `.reload`.  Be sure
+to give the folder name and that the .pdb file hasn't been renamed.
