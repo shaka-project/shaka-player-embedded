@@ -244,6 +244,36 @@ group("player") {
 
 # -----------------------------------------------------------------------------
 # Generate EME Plugin
+if (is_debug) {
+  _config_name = "Debug"
+} else {
+  _config_name = "Release"
+}
+_eme_plugin_info = exec_script(
+    "//shaka/tools/eme_plugin_build_info.py",
+    [ "--config", _config_name, "--arch", target_cpu, "--os", target_os ] +
+        rebase_path(eme_implementations, root_build_dir),
+    "scope", eme_implementations)
+
+config("eme_plugin_config") {
+  ldflags = _eme_plugin_info.ldflags
+}
+
+if (_eme_plugin_info.copy_files != []) {
+  if (is_ios) {
+    bundle_data("eme_plugin_files") {
+      sources = _eme_plugin_info.copy_files
+      outputs = [ "{{bundle_root_dir}}/Frameworks/{{source_file_part}}" ]
+    }
+  } else {
+    copy("eme_plugin_files") {
+      sources = _eme_plugin_info.copy_files
+      outputs = [ "$root_out_dir/{{source_file_part}}" ]
+    }
+  }
+} else {
+  group("eme_plugin_files") {}
+}
 
 action("gen_eme_plugins") {
   visibility = [ ":*" ]
@@ -295,17 +325,6 @@ source_set("eme_plugins") {
     deps += [ "//third_party/boringssl:boringssl" ]
   }
 
-  if (is_debug) {
-    _config_name = "Debug"
-  } else {
-    _config_name = "Release"
-  }
-  _eme_plugin_info = exec_script(
-      "//shaka/tools/eme_plugin_build_info.py",
-      [ "--config", _config_name, "--arch", target_cpu, "--os", target_os ] +
-          rebase_path(eme_implementations, root_build_dir),
-      "scope", eme_implementations)
-
   sources = get_target_outputs(":gen_eme_plugins")
   sources += _eme_plugin_info.sources
 
@@ -316,6 +335,7 @@ source_set("eme_plugins") {
 
   configs += [ ":internal_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
+  all_dependent_configs = [ ":eme_plugin_config" ]
 }
 
 # -----------------------------------------------------------------------------
@@ -850,6 +870,7 @@ if (is_mac || is_ios) {
     if (is_ios) {
       # TODO: Add support for Mac builds.
       deps += [
+        ":eme_plugin_files",
         ":license_bundle",
         ":scripts_bundle",
         "//third_party/ffmpeg:ffmpeg_libs_framework+bundle",
@@ -868,6 +889,9 @@ if (is_mac || is_ios) {
     # Mark this symbol as undefined so we don't get linker errors when building
     # the framework.  The app will need to define this.
     ldflags = [ "-Wl,-U,_SDL_main" ]
+    if (is_ios) {
+      ldflags += [ "-rpath", "@loader_path/Frameworks" ]
+    }
 
     public_configs = [ ":external_config" ]
   }
@@ -1021,6 +1045,7 @@ if (is_ios) {
   executable("demo") {
     sources = [ "shaka/demo/main.cc" ]
     deps = [
+      ":eme_plugin_files",
       ":player_static",
       "//third_party/gflags:gflags",
     ]
@@ -1134,6 +1159,7 @@ test("tests") {
   }
 
   deps = [
+    ":eme_plugin_files",
     ":gen_js_tests",
     ":internal_sources",
     "//testing/gmock:gmock",

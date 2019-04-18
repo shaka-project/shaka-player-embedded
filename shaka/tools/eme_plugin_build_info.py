@@ -43,18 +43,32 @@ def _PrintBuildInfo(plugins, config):
   libs = []
   sources = []
   include_dirs = []
+  ldflags = []
+  copy_files = []
 
+  def Expand(path, base):
+    return os.path.normpath(os.path.join(base, path % config))
   def Update(lst, path, base):
     # Append to the list if it doesn't already exist.  This supports the path
     # being a format string to create dynamic paths.
-    path = os.path.normpath(os.path.join(base, path % config))
+    path = Expand(path, base)
     if path not in lst:
       lst.append(path)
 
   for plugin in plugins:
     base = os.path.abspath(os.path.dirname(plugin['path']))
     for lib in plugin.get('libraries', []):
-      Update(libs, lib, base)
+      path = Expand(lib, base)
+      if lib.endswith('.framework'):
+        ldflags += [
+            '-F' + os.path.dirname(path),
+            '-framework', os.path.basename(path).replace('.framework', ''),
+        ]
+        copy_files.append(path)
+      else:
+        if os.path.splitext(lib)[1] in {'.dll', '.dylib', '.so'}:
+          copy_files.append(path)
+        Update(libs, lib, base)
 
     for impl in plugin['implementations']:
       for src in impl.get('sources', []):
@@ -62,9 +76,14 @@ def _PrintBuildInfo(plugins, config):
       for d in impl.get('include_dirs', []):
         Update(include_dirs, d, base)
 
-  print('libs = [' + ','.join('"%s"' % l for l in libs) + ']')
-  print('sources = [' + ','.join('"%s"' % l for l in sources) + ']')
-  print('include_dirs = [' + ','.join('"%s"' % l for l in include_dirs) + ']')
+  def PrintList(name, lst):
+    body = ','.join('"%s"' % l for l in lst)
+    print('%s = [ %s ]' % (name, body))
+  PrintList('libs', libs)
+  PrintList('sources', sources)
+  PrintList('include_dirs', include_dirs)
+  PrintList('ldflags', ldflags)
+  PrintList('copy_files', copy_files)
 
 
 def main(args):

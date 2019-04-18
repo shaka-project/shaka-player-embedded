@@ -27,11 +27,11 @@ of your ImplementationFactory and register it with the
 [ImplementationRegistry](@ref shaka::eme::ImplementationRegistry). This factory
 instance must live for the duration of the app.
 
-Second, you can compile your code into a separate static library.  Then you use
-the plugin definition below to register with our build system.  When you build
-Shaka Player Embedded, our build system will include your library and include
-the plugin into the Embedded library.  The implementation(s) will be
-automatically registered during library startup.
+Second, you can compile your code into a separate library.  Then you use the
+plugin definition below to register with our build system.  When you build Shaka
+Player Embedded, our build system will include your library and include the
+plugin into the Embedded library.  The implementation(s) will be automatically
+registered during library startup.
 
 
 ## Plugin Definition
@@ -42,9 +42,9 @@ have to use the library like normal.  This also allows you to keep the library
 and the plugin together and avoid versioning problems.
 
 To define a plugin, you write a JSON file that describes your plugin.  It should
-contain one or more static libraries that will be built into the library.  Then
-you indicate the headers where the implementations are found and we will
-generate code to register those types.
+contain one or more libraries that will be built into the library.  Then you
+indicate the headers where the implementations are found and we will generate
+code to register those types.
 
 To register your JSON file, pass the `--eme-impl` flag to `./configure`.  You
 can pass this multiple times for multiple implementations:
@@ -115,12 +115,20 @@ can pass this multiple times for multiple implementations:
 }
 ```
 
+### Dynamic libraries
+
+It is suggested to use a static library to make building easier.  But you can
+use a dynamic library or a framework instead.  For iOS builds, the library
+or framework will be copied into the compiled framework; for non-iOS builds,
+you are responsible for copying the dynamic library to the install directory
+so the library loader can find it at runtime.
+
 #### Factory requirements
 
 Each implementation factory defined by the plugin must publicly implement the
 ImplementationFactory type and must have an empty constructor.  The factory will
-be allocated using a global static variable.  Since the code is being linked
-statically, the type doesn't need to be exported.
+be allocated using `new`.  For static libraries, the type doesn't need to be
+exported.
 
 #### Paths
 
