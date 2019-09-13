@@ -531,6 +531,8 @@ source_set("internal_sources") {
     "shaka/src/js/idb/open_db_request.h",
     "shaka/src/js/idb/request.cc",
     "shaka/src/js/idb/request.h",
+    "shaka/src/js/idb/sqlite.cc",
+    "shaka/src/js/idb/sqlite.h",
     "shaka/src/js/idb/transaction.cc",
     "shaka/src/js/idb/transaction.h",
     "shaka/src/js/js_error.cc",
@@ -694,7 +696,7 @@ source_set("internal_sources") {
     "//third_party/libxml:libxml",
     "//third_party/zlib:zlib",
   ]
-  libs = []
+  libs = ["sqlite3"]
 
   public_deps = [
     "//third_party/glog:glog",
@@ -1163,6 +1165,7 @@ test("tests") {
     "shaka/test/src/core/ref_ptr_unittest.cc",
     "shaka/test/src/debug/integration.cc",
     "shaka/test/src/eme/clearkey_implementation_unittest.cc",
+    "shaka/test/src/js/idb/sqlite_unittest.cc",
     "shaka/test/src/media/frame_buffer_unittest.cc",
     "shaka/test/src/media/locked_frame_list_unittest.cc",
     "shaka/test/src/media/media_processor_integration.cc",

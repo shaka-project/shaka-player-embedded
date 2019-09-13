@@ -59,6 +59,7 @@ DEFAULT_SETTINGS = {
 PLATFORM_SPECIFIC_SETTINGS = {
     'darwin': {
         'enable_dsyms': True,
+        'mac_deployment_target': '10.10.0',
     },
 }
 V8_SETTINGS = {
