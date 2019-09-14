@@ -67,7 +67,10 @@ RefPtr<Node> Node::last_child() const {
 RefPtr<Node> Node::AppendChild(RefPtr<Node> new_child) {
   CHECK(is_element() || node_type_ == DOCUMENT_NODE);
   CHECK(new_child);
-  CHECK(!new_child->parent_node());
+
+  if (new_child->parent_node()) {
+    new_child->parent_node()->RemoveChild(new_child);
+  }
 
   new_child->parent_ = this;
   children_.emplace_back(new_child);
