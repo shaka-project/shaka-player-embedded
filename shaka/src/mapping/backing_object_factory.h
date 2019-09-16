@@ -65,8 +65,8 @@ class IndexerHandlerImpl : public IndexerHandler {
       : type_name_(type_name), get_(get), set_(set) {}
 
   ReturnVal<JsValue> GetIndex(Handle<JsObject> that, size_t index) override {
-    RefPtr<T> obj;
-    if (!obj.TryConvert(that)) {
+    RefPtr<This> obj;
+    if (!FromJsValue(that, &obj)) {
       ThrowError</* ReturnPromise */ false>::IllegalInvocation(
           nullptr, "indexer", type_name_);
       return JsUndefined();
@@ -80,8 +80,8 @@ class IndexerHandlerImpl : public IndexerHandler {
 
   void SetIndex(Handle<JsObject> that, size_t index,
                 Handle<JsValue> given) override {
-    RefPtr<T> obj;
-    if (!obj.TryConvert(that)) {
+    RefPtr<This> obj;
+    if (!FromJsValue(that, &obj)) {
       ThrowError</* ReturnPromise */ false>::IllegalInvocation(
           nullptr, "indexer", type_name_);
       return;
