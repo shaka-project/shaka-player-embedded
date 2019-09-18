@@ -25,7 +25,10 @@ namespace shaka {
 namespace js {
 namespace idb {
 
-IDBRequest::IDBRequest() {
+IDBRequest::IDBRequest(
+    optional<variant<Member<IDBObjectStore>, Member<IDBCursor>>> source,
+    RefPtr<IDBTransaction> transaction)
+    : source(source), transaction(transaction) {
   AddListenerField(EventType::Success, &on_success);
   AddListenerField(EventType::Error, &on_error);
 }
@@ -42,19 +45,58 @@ void IDBRequest::Trace(memory::HeapTracer* tracer) const {
   tracer->Trace(&transaction);
 }
 
-void IDBRequest::OnAbort() {}
+void IDBRequest::OnAbort() {
+  CompleteError(JsError::DOMException(AbortError));
+}
 
 ExceptionOr<Any> IDBRequest::Result() const {
-  return JsError::DOMException(NotSupportedError);
+  if (ready_state != IDBRequestReadyState::DONE)
+    return JsError::DOMException(InvalidStateError);
+  return result_;
 }
 
 ExceptionOr<Any> IDBRequest::Error() const {
-  return JsError::DOMException(NotSupportedError);
+  if (ready_state != IDBRequestReadyState::DONE)
+    return JsError::DOMException(InvalidStateError);
+  return error_;
 }
 
-void IDBRequest::CompleteSuccess(Any /* result */) {}
+void IDBRequest::CompleteSuccess(Any result) {
+  ready_state = IDBRequestReadyState::DONE;
+  result_ = result;
 
-void IDBRequest::CompleteError(JsError /* error */) {}
+  RefPtr<events::Event> event(new events::Event(EventType::Success));
+  bool did_throw;
+  DispatchEventInternal(event, &did_throw);
+  if (did_throw)
+    transaction->Abort();
+}
+
+void IDBRequest::CompleteError(JsError error) {
+  ready_state = IDBRequestReadyState::DONE;
+  error_.TryConvert(error.error());
+  RaiseEvent<events::Event>(EventType::Error);
+}
+
+void IDBRequest::CompleteError(DatabaseStatus status) {
+  switch (status) {
+    case DatabaseStatus::NotFound:
+      CompleteError(JsError::DOMException(NotFoundError));
+      break;
+    case DatabaseStatus::AlreadyExists:
+      CompleteError(JsError::DOMException(DataError));
+      break;
+    case DatabaseStatus::Busy:
+      CompleteError(JsError::DOMException(QuotaExceededError));
+      break;
+    case DatabaseStatus::BadVersionNumber:
+      CompleteError(JsError::DOMException(VersionError));
+      break;
+    default:
+      CompleteError(JsError::DOMException(UnknownError));
+      break;
+  }
+}
 
 
 IDBRequestFactory::IDBRequestFactory() {

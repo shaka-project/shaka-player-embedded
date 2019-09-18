@@ -1,4 +1,4 @@
-// Copyright 2016 Google LLC
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,47 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SHAKA_EMBEDDED_JS_IDB_OPEN_DB_REQUEST_H_
-#define SHAKA_EMBEDDED_JS_IDB_OPEN_DB_REQUEST_H_
+#ifndef SHAKA_EMBEDDED_JS_IDB_DELETE_DB_REQUEST_H_
+#define SHAKA_EMBEDDED_JS_IDB_DELETE_DB_REQUEST_H_
 
 #include <string>
 
-#include "shaka/optional.h"
-#include "src/js/events/event_target.h"
 #include "src/js/idb/request.h"
-#include "src/mapping/backing_object_factory.h"
 
 namespace shaka {
 namespace js {
 namespace idb {
 
-class SqliteTransaction;
-
-class IDBOpenDBRequest : public IDBRequest {
-  DECLARE_TYPE_INFO(IDBOpenDBRequest);
-
+class IDBDeleteDBRequest : public IDBRequest {
  public:
-  IDBOpenDBRequest(const std::string& name, optional<int64_t> version);
+  explicit IDBDeleteDBRequest(const std::string& name);
 
   void DoOperation(const std::string& db_path);
 
   void PerformOperation(SqliteTransaction* transaction) override;
 
-  Listener on_upgrade_needed;
-
  private:
   const std::string name_;
-  const optional<int64_t> version_;
-};
-
-class IDBOpenDBRequestFactory
-    : public BackingObjectFactory<IDBOpenDBRequest, IDBRequest> {
- public:
-  IDBOpenDBRequestFactory();
 };
 
 }  // namespace idb
 }  // namespace js
 }  // namespace shaka
 
-#endif  // SHAKA_EMBEDDED_JS_IDB_OPEN_DB_REQUEST_H_
+#endif  // SHAKA_EMBEDDED_JS_IDB_DELETE_DB_REQUEST_H_

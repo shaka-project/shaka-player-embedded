@@ -20,6 +20,7 @@
 #include "src/core/member.h"
 #include "src/core/ref_ptr.h"
 #include "src/js/events/event_target.h"
+#include "src/js/idb/sqlite.h"
 #include "src/js/js_error.h"
 #include "src/mapping/any.h"
 #include "src/mapping/backing_object_factory.h"
@@ -37,7 +38,6 @@ namespace idb {
 class IDBCursor;
 class IDBObjectStore;
 class IDBTransaction;
-class SqliteTransaction;
 
 enum class IDBRequestReadyState {
   PENDING,
@@ -48,7 +48,9 @@ class IDBRequest : public events::EventTarget {
   DECLARE_TYPE_INFO(IDBRequest);
 
  public:
-  IDBRequest();
+  IDBRequest(
+      optional<variant<Member<IDBObjectStore>, Member<IDBCursor>>> source,
+      RefPtr<IDBTransaction> transaction);
 
   void Trace(memory::HeapTracer* tracer) const override;
 
@@ -86,6 +88,7 @@ class IDBRequest : public events::EventTarget {
    * invokes the error callback.
    */
   void CompleteError(JsError error);
+  void CompleteError(DatabaseStatus status);
 
   Any result_;
   Any error_;

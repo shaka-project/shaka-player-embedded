@@ -38,7 +38,8 @@ class IDBFactory : public events::EventTarget {
   IDBFactory();
 
   RefPtr<IDBOpenDBRequest> Open(const std::string& name,
-                                optional<uint32_t> version);
+                                optional<uint64_t> version);
+  RefPtr<IDBOpenDBRequest> OpenTestDb();
   RefPtr<IDBRequest> DeleteDatabase(const std::string& name);
 
   ExceptionOr<Any> CloneForTesting(Any value);

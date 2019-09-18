@@ -84,9 +84,7 @@ ExceptionOr<void> StoreObject(proto::ValueType kind, Handle<JsObject> object,
       return JsError::Rethrow(except);
 
     child->set_key(property);
-    auto parent_except = StoreValue(value, child->mutable_value(), memory);
-    if (holds_alternative<JsError>(parent_except))
-      return parent_except;
+    RETURN_IF_ERROR(StoreValue(value, child->mutable_value(), memory));
   }
   return {};
 }

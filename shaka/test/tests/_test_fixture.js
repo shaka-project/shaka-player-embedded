@@ -19,6 +19,14 @@
  */
 var curTestName = '';
 
+/**
+ * @private {!Array.<!Array.<function()>>}
+ * Defines a stack of beforeEach methods.  Each element contains the beforeEach
+ * methods for that nested testGroup.
+ */
+var curBeforeEach = [[]];
+var curAfterEach = [[]];
+
 
 /**
  * This is defined by the environment to mark an expectation failure for the
@@ -111,6 +119,26 @@ function expectEq(actual, expected) {
   const stack = getCodeLocation_();
   fail_('      Expected: ' + actual + '\n' +
         'To be equal to: ' + expected, stack.file, stack.line);
+}
+
+
+/**
+ * Expects that the given value is not equal to the given expected value.  This
+ * does value comparisons and compares objects recursively.
+ *
+ * @param {*} actual The actual value to test.
+ * @param {*} expected The expected value we don't want.
+ */
+function expectNotEq(actual, expected) {
+  if (!jasmine.matchersUtil.equals(actual, expected)) {
+    return;
+  }
+
+  const stack = getCodeLocation_();
+  fail_(
+      '          Expected: ' + actual + '\n' +
+          'To not be equal to: ' + expected,
+      stack.file, stack.line);
 }
 
 
@@ -272,14 +300,23 @@ function expectToHaveBeenCalledWith(spy) {
  * Expects that the given function to throw an exception.
  *
  * @param {function()} callback The function that should throw.
+ * @param {string=} name The name of the expected exception.
  */
-function expectToThrow(callback) {
+function expectToThrow(callback, name) {
+  const stack = getCodeLocation_();
   try {
     callback();
-
-    const stack = getCodeLocation_();
     fail_('Expected function to throw', stack.file, stack.line);
-  } catch (e) {}
+  } catch (e) {
+    if (name) {
+      if (e.name != name) {
+        fail_(
+            'Expected function to throw: ' + name + '\n' +
+                '           But got instead: ' + e.name,
+            stack.file, stack.line);
+      }
+    }
+  }
 }
 
 
@@ -309,9 +346,24 @@ function testGroup(name, callback) {
   } else {
     curTestName = name
   }
+  curBeforeEach.push([]);
+  curAfterEach.push([]);
 
   callback();
+
   curTestName = old;
+  curBeforeEach.pop();
+  curAfterEach.pop();
+}
+
+/** Adds a beforeEach callback.  This is called before each test is run. */
+function beforeEach(callback) {
+  curBeforeEach[curBeforeEach.length - 1].push(callback);
+}
+
+/** Adds a afterEach callback.  This is called after each test is run. */
+function afterEach(callback) {
+  curAfterEach[curAfterEach.length - 1].push(callback);
 }
 
 
@@ -325,7 +377,24 @@ function test(name, callback) {
   if (curTestName) {
     name = curTestName + '.' + name;
   }
-  test_(name, callback);
+
+  const join = (arr) => arr.reduce((all, part) => all.concat(part), []);
+  const beforeEach = join(curBeforeEach);
+  const afterEach = join(curAfterEach);
+  const wrapped = async () => {
+    for (const cb of beforeEach) {
+      await cb();
+    }
+
+    try {
+      await callback();
+    } finally {
+      for (const cb of afterEach) {
+        await cb();
+      }
+    }
+  };
+  test_(name, wrapped);
 }
 
 
@@ -336,3 +405,12 @@ function test(name, callback) {
  * @param {function()} callback The function that defines the test.
  */
 function xtest(name, callback) {}
+
+
+/**
+ * Defines a disabled test group.
+ *
+ * @param {string} name The name of the test.
+ * @param {function()} callback The function that defines the test.
+ */
+function xtestGroup(name, callback) {}

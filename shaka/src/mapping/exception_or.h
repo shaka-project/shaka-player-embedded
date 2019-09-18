@@ -15,10 +15,19 @@
 #ifndef SHAKA_EMBEDDED_MAPPING_EXCEPTION_OR_H_
 #define SHAKA_EMBEDDED_MAPPING_EXCEPTION_OR_H_
 
+#include <utility>
+
 #include "shaka/variant.h"
 #include "src/js/js_error.h"
 
 namespace shaka {
+
+#define RETURN_IF_ERROR(code)                 \
+  do {                                        \
+    ExceptionOr<void> except = (code);        \
+    if (holds_alternative<JsError>(except))   \
+      return get<JsError>(std::move(except)); \
+  } while (false)
 
 /**
  * Contains either an exception or a return value.

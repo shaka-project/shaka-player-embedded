@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_JS_IDB_DATABASE_H_
 #define SHAKA_EMBEDDED_JS_IDB_DATABASE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,6 +25,7 @@
 #include "src/core/ref_ptr.h"
 #include "src/js/dom/dom_string_list.h"
 #include "src/js/events/event_target.h"
+#include "src/js/idb/sqlite.h"
 #include "src/js/idb/transaction.h"
 #include "src/mapping/backing_object_factory.h"
 #include "src/mapping/exception_or.h"
@@ -48,13 +50,19 @@ class IDBDatabase : public events::EventTarget {
   DECLARE_TYPE_INFO(IDBDatabase);
 
  public:
-  IDBDatabase();
+  IDBDatabase(std::shared_ptr<SqliteConnection> connection,
+              const std::string& name, int64_t version,
+              const std::vector<std::string>& store_names);
 
   void Trace(memory::HeapTracer* tracer) const override;
 
   Listener on_abort;
   Listener on_error;
   Listener on_version_change;
+
+  bool is_closed() const {
+    return close_pending_;
+  }
 
   const std::string db_name;  // JavaScript "name"
   Member<dom::DOMStringList> object_store_names;
@@ -68,6 +76,15 @@ class IDBDatabase : public events::EventTarget {
       variant<std::string, std::vector<std::string>> store_names,
       optional<IDBTransactionMode> mode);
   void Close();
+
+  void VersionChangeTransaction(RefPtr<IDBTransaction> trans) {
+    version_change_trans_ = trans;
+  }
+
+ private:
+  Member<IDBTransaction> version_change_trans_;
+  std::shared_ptr<SqliteConnection> connection_;
+  bool close_pending_ = false;
 };
 
 class IDBDatabaseFactory

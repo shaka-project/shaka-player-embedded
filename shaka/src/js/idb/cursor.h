@@ -30,6 +30,7 @@ namespace idb {
 
 class IDBObjectStore;
 class IDBRequest;
+class IDBIterateCursorRequest;
 
 enum class IDBCursorDirection {
   NEXT,
@@ -47,7 +48,7 @@ class IDBCursor : public BackingObject {
   void Trace(memory::HeapTracer* tracer) const override;
 
   const Member<IDBObjectStore> source;
-  Member<IDBRequest> request;
+  Member<IDBIterateCursorRequest> request;
   const IDBCursorDirection direction;
   // This is the key of the current record (aka position).  We only iterate on
   // object stores, so this is also the "effective key" and the primaryKey

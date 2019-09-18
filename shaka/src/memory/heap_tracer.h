@@ -17,6 +17,7 @@
 
 #include <glog/logging.h>
 
+#include <list>
 #include <string>
 #include <type_traits>
 #include <unordered_set>
@@ -105,6 +106,12 @@ class HeapTracer {
 
   template <typename T>
   void Trace(const std::vector<T>* array) {
+    for (const T& item : *array) {
+      Trace(&item);
+    }
+  }
+  template <typename T>
+  void Trace(const std::list<T>* array) {
     for (const T& item : *array) {
       Trace(&item);
     }

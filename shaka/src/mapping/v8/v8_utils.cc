@@ -57,9 +57,10 @@ void OnUncaughtException(const v8::Local<v8::Value>& exception,
 
   v8::Isolate* isolate = GetIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::StackTrace> stack =
-      v8::Exception::CreateMessage(isolate, exception)->GetStackTrace();
-  PrintStackTrace(stack);
+  v8::Local<v8::StackTrace> stack = v8::Exception::GetStackTrace(exception);
+  if (!stack.IsEmpty()) {
+    PrintStackTrace(stack);
+  }
 }
 
 }  // namespace shaka

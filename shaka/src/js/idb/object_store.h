@@ -38,7 +38,7 @@ class IDBObjectStore : public BackingObject {
   DECLARE_TYPE_INFO(IDBObjectStore);
 
  public:
-  IDBObjectStore();
+  IDBObjectStore(RefPtr<IDBTransaction> transaction, const std::string& name);
 
   void Trace(memory::HeapTracer* tracer) const override;
 
@@ -56,6 +56,9 @@ class IDBObjectStore : public BackingObject {
 
   ExceptionOr<RefPtr<IDBRequest>> AddOrPut(Any value, optional<IdbKeyType> key,
                                            bool no_overwrite);
+
+ private:
+  ExceptionOr<void> CheckState(bool need_write) const;
 };
 
 class IDBObjectStoreFactory : public BackingObjectFactory<IDBObjectStore> {
