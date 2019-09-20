@@ -21,11 +21,6 @@
 
 #include "shaka/eme/implementation_registry.h"
 #include "src/core/js_manager_impl.h"
-#include "src/mapping/js_engine.h"
-#include "src/mapping/js_wrappers.h"
-#include "src/mapping/register_member.h"
-#include "src/media/media_processor.h"
-
 #include "src/js/base_64.h"
 #include "src/js/console.h"
 #include "src/js/debug.h"
@@ -60,6 +55,10 @@
 #include "src/js/url.h"
 #include "src/js/vtt_cue.h"
 #include "src/js/xml_http_request.h"
+#include "src/mapping/js_engine.h"
+#include "src/mapping/js_wrappers.h"
+#include "src/mapping/register_member.h"
+#include "src/media/media_processor.h"
 
 namespace shaka {
 

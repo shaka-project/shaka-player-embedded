@@ -15,11 +15,11 @@
 #include "src/util/file_system.h"
 
 #include <dirent.h>
+#include <glog/logging.h>
 #include <libgen.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <glog/logging.h>
 
 namespace shaka {
 namespace util {

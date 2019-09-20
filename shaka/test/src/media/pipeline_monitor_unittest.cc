@@ -14,10 +14,9 @@
 
 #include "src/media/pipeline_monitor.h"
 
-#include <math.h>
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <math.h>
 
 #include "src/media/pipeline_manager.h"
 #include "src/util/clock.h"

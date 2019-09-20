@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "shaka/optional.h"
+
 #include "src/util/macros.h"
 
 namespace shaka {

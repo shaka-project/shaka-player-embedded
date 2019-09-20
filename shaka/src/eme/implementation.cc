@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "shaka/eme/implementation.h"
+
 #include "shaka/eme/implementation_factory.h"
 #include "shaka/eme/implementation_helper.h"
 

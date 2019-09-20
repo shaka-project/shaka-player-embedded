@@ -14,9 +14,8 @@
 
 #include "src/media/frame_buffer.h"
 
-#include <math.h>
-
 #include <gtest/gtest.h>
+#include <math.h>
 
 namespace shaka {
 namespace media {
