@@ -35,6 +35,13 @@ ReturnVal<JsValue> CreateError(const std::string& message,
 }
 #endif
 
+void FillStack(RefPtr<dom::DOMException> except) {
+  std::string stack = JsError::GetJsStack();
+  if (!stack.empty())
+    stack.insert(0, "\n");
+  except->stack = except->error_name + ": " + except->message + stack;
+}
+
 }  // namespace
 
 std::string JsError::GetJsStack() {
@@ -43,7 +50,12 @@ std::string JsError::GetJsStack() {
   v8::Local<v8::Value> except = v8::Exception::Error(empty);
   CHECK(!except.IsEmpty());
   DCHECK(except->IsObject());
-  return ConvertToString(GetMemberRaw(except.As<v8::Object>(), "stack"));
+
+  const std::string ret =
+      ConvertToString(GetMemberRaw(except.As<v8::Object>(), "stack"));
+  // Strip off the first line since it'll have "Error".
+  const auto pos = ret.find('\n');
+  return ret.substr(pos == std::string::npos ? ret.size() : pos + 1);
 #elif defined(USING_JSC)
   // TODO: Get the call stack.
   return "";
@@ -90,6 +102,10 @@ JsError JsError::Error(const std::string& message) {
 #endif
 }
 
+JsError JsError::Rethrow(Handle<JsValue> error) {
+  return JsError(error);
+}
+
 #ifdef USING_V8
 JsError JsError::Rethrow(const v8::TryCatch& trycatch) {
   return JsError(trycatch.Exception());
@@ -101,13 +117,13 @@ JsError JsError::DOMException(ExceptionCode code) {
   // to it.  We are running on the event thread, so a GC run cannot happen yet.
   // We will throw the wrapper which will keep the object alive.
   RefPtr<dom::DOMException> except = new dom::DOMException(code);
-  except->stack = GetJsStack();
+  FillStack(except);
   return JsError(except->JsThis());
 }
 
 JsError JsError::DOMException(ExceptionCode code, const std::string& message) {
   RefPtr<dom::DOMException> except = new dom::DOMException(code, message);
-  except->stack = GetJsStack();
+  FillStack(except);
   return JsError(except->JsThis());
 }
 

@@ -37,6 +37,8 @@ class JsError {
   static JsError SyntaxError(const std::string& message);
   static JsError Error(const std::string& message);
 
+  static JsError Rethrow(Handle<JsValue> error);
+
 #ifdef USING_V8
   static JsError Rethrow(const v8::TryCatch& trycatch);
 #endif
