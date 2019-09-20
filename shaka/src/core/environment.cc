@@ -43,6 +43,7 @@
 #include "src/js/events/media_encrypted_event.h"
 #include "src/js/events/media_key_message_event.h"
 #include "src/js/events/progress_event.h"
+#include "src/js/events/version_change_event.h"
 #include "src/js/idb/cursor.h"
 #include "src/js/idb/database.h"
 #include "src/js/idb/idb_factory.h"
@@ -112,6 +113,7 @@ struct Environment::Impl {
   js::XMLHttpRequestFactory xml_http_request;
 
   js::events::EventFactory event;
+  js::events::IDBVersionChangeEventFactory version_change_event;
   js::events::ProgressEventFactory progress_event;
   js::events::MediaEncryptedEventFactory media_encrypted_event;
   js::events::MediaKeyMessageEventFactory media_key_message_event;
@@ -215,6 +217,7 @@ ADD_GET_FACTORY(js::mse::HTMLVideoElement, video_element);
 
 ADD_GET_FACTORY(js::events::EventTarget, event_target);
 ADD_GET_FACTORY(js::events::Event, event);
+ADD_GET_FACTORY(js::events::IDBVersionChangeEvent, version_change_event);
 ADD_GET_FACTORY(js::events::ProgressEvent, progress_event);
 ADD_GET_FACTORY(js::events::MediaEncryptedEvent, media_encrypted_event);
 ADD_GET_FACTORY(js::events::MediaKeyMessageEvent, media_key_message_event);

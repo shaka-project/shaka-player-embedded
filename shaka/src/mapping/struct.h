@@ -37,6 +37,24 @@ namespace shaka {
   Type member = CreateFieldConverter(name, &THIS_TYPE::member)
 #define ADD_DICT_FIELD(type, member) ADD_NAMED_DICT_FIELD(type, member, #member)
 
+#define DECLARE_STRUCT_SPECIAL_METHODS(Type) \
+  static std::string name() {                \
+    return #Type;                            \
+  }                                          \
+  Type();                                    \
+  Type(const Type&);                         \
+  Type(Type&&);                              \
+  ~Type() override;                          \
+  Type& operator=(const Type&);              \
+  Type& operator=(Type&&)
+#define DEFINE_STRUCT_SPECIAL_METHODS(Type)     \
+  Type::Type() {}                               \
+  Type::Type(const Type&) = default;            \
+  Type::Type(Type&&) = default;                 \
+  Type::~Type() {}                              \
+  Type& Type::operator=(const Type&) = default; \
+  Type& Type::operator=(Type&&) = default
+
 class Struct;
 
 namespace impl {
