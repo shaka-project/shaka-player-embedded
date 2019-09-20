@@ -56,8 +56,10 @@ class optional {
   optional(nullopt_t) : has_value_(false) {}
   // Avoid errors when returning |nullptr| instead of |nullopt|.
   optional(std::nullptr_t) = delete;
-  template <class U = T, class = typename std::enable_if<
-                             std::is_constructible<T, U&&>::value>::type>
+  template <class U = T,
+            class = typename std::enable_if<
+                std::is_constructible<T, U&&>::value &&
+                !is_optional<typename std::decay<U>::type>::value>::type>
   optional(U&& value) : value_(std::forward<U>(value)), has_value_(true) {}
 
   optional(const optional& other) : has_value_(other.has_value_) {

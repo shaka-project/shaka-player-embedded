@@ -291,9 +291,8 @@ class variant {
     union_.template emplace<0>();
   }
 
-  template <typename U,
-            typename = typename std::enable_if<!impl::is_variant<
-                typename std::remove_reference<U>::type>::value>::type>
+  template <typename U, typename = typename std::enable_if<!impl::is_variant<
+                            typename std::decay<U>::type>::value>::type>
   variant(U&& value) {
     constexpr const size_t I = impl::get_construct_index<U, Types...>::index;
     union_.template emplace<I>(std::forward<U>(value));
@@ -363,6 +362,8 @@ class variant {
   friend const T& get(const variant<Choices...>&);
   template <typename T, typename... Choices>
   friend T& get(variant<Choices...>&);
+  template <typename T, typename... Choices>
+  friend T&& get(variant<Choices...>&&);
 
   template <size_t I, typename... Choices>
   friend typename std::add_const<
@@ -391,6 +392,12 @@ class variant {
   variant_alternative_t<I, variant>& get() {
     assert(I == index_);
     return union_.template get<I>();
+  }
+
+  template <size_t I>
+  variant_alternative_t<I, variant>&& get() && {
+    assert(I == index_);
+    return std::move(union_.template get<I>());
   }
 
   impl::union_<Types...> union_;
@@ -440,6 +447,12 @@ template <typename T, typename... Choices>
 T& get(variant<Choices...>& variant) {
   constexpr const size_t I = impl::get_type_index<T, Choices...>::index;
   return variant.template get<I>();
+}
+
+template <typename T, typename... Choices>
+T&& get(variant<Choices...>&& variant) {
+  constexpr const size_t I = impl::get_type_index<T, Choices...>::index;
+  return std::move(variant.template get<I>());
 }
 
 
