@@ -437,6 +437,8 @@ source_set("internal_sources") {
     "shaka/src/core/environment.h",
     "shaka/src/core/js_manager_impl.cc",
     "shaka/src/core/js_manager_impl.h",
+    "shaka/src/core/js_object_wrapper.cc",
+    "shaka/src/core/js_object_wrapper.h",
     "shaka/src/core/member.h",
     "shaka/src/core/network_thread.cc",
     "shaka/src/core/network_thread.h",

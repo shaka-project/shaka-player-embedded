@@ -135,17 +135,20 @@ class PendingTask : public PendingTaskBase {
 template <typename Func>
 class PlainCallbackTaskImpl : public memory::Traceable {
  public:
+  using func_type = typename std::decay<Func>::type;
+  using return_type = decltype(std::declval<func_type>()());
+
   explicit PlainCallbackTaskImpl(Func&& callback)
       : callback_(std::forward<Func>(callback)) {}
 
   void Trace(memory::HeapTracer*) const override {}
 
-  typename std::result_of<Func()>::type operator()() {
+  return_type operator()() {
     return callback_();
   }
 
  private:
-  typename std::decay<Func>::type callback_;
+  func_type callback_;
 };
 
 template <typename This, typename Member>
