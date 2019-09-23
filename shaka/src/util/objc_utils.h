@@ -23,9 +23,14 @@
 
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
+#include "shaka/async_results.h"
+#include "shaka/error_objc.h"
 #include "shaka/optional.h"
+#include "shaka/variant.h"
+#include "src/public/error_objc+Internal.h"
 
 namespace shaka {
 namespace util {
@@ -89,6 +94,66 @@ struct ObjcConverter<std::vector<T>> {
     return ret;
   }
 };
+
+
+template <typename... Args>
+void DispatchObjcEvent(__weak id weak_client, SEL selector, Args... args) {
+  // See https://stackoverflow.com/a/20058585
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSObject *client = weak_client;
+    if (client && [client respondsToSelector:selector]) {
+      IMP imp = [client methodForSelector:selector];
+      auto func = reinterpret_cast<void (*)(id, SEL, Args...)>(imp);
+      func(client, selector, args...);
+    }
+  });
+}
+
+namespace impl {
+
+template <typename Ret>
+struct BlockInvoker {
+  template <typename Func>
+  static void Invoke(const AsyncResults<Ret>& future, Func block) {
+    using T = decltype(ObjcConverter<Ret>::ToObjc(std::declval<Ret>()));
+    if (future.has_error())
+      block(T(), [[ShakaPlayerError alloc] initWithError:future.error()]);
+    else
+      block(ObjcConverter<Ret>::ToObjc(future.results()), nil);
+  }
+};
+template <>
+struct BlockInvoker<void> {
+  template <typename Func>
+  static void Invoke(const AsyncResults<void>& future, Func block) {
+    if (future.has_error())
+      block([[ShakaPlayerError alloc] initWithError:future.error()]);
+    else
+      block(nil);
+  }
+};
+
+}  // namespace impl
+
+template <typename This, typename Ret, typename Func>
+void CallBlockForFuture(This that, AsyncResults<Ret> future, Func block) {
+  __block AsyncResults<Ret> local_future = std::move(future);
+  dispatch_async(
+      dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
+      ^{
+        // Wait on a background thread; then, once we have a value, call the
+        // block on the main thread.
+        local_future.wait();
+        dispatch_async(dispatch_get_main_queue(), ^{
+          // Keep a reference to "this" so the Objective-C object remains alive
+          // until the callback is done.
+          This other = that;
+          (void)other;
+
+          impl::BlockInvoker<Ret>::Invoke(local_future, block);
+        });
+      });
+}
 
 }  // namespace util
 }  // namespace shaka

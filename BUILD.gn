@@ -386,6 +386,7 @@ action_foreach("gen_exposed_idl") {
 
   sources = [
     "shaka/src/js/manifest.idl",
+    "shaka/src/js/offline_externs.idl",
     "shaka/src/js/player_externs.idl",
     "shaka/src/js/stats.idl",
     "shaka/src/js/track.idl",
@@ -647,6 +648,7 @@ source_set("internal_sources") {
     "shaka/src/public/optional.cc",
     "shaka/src/public/player.cc",
     "shaka/src/public/shaka_utils.cc",
+    "shaka/src/public/storage.cc",
     "shaka/src/public/text_track_public.cc",
     "shaka/src/public/video.cc",
     "shaka/src/public/vtt_cue_public.cc",
@@ -686,7 +688,10 @@ source_set("internal_sources") {
     sources += [ "shaka/src/public/sdl_frame_drawer.cc" ]
   }
   if (is_ios) {
-    sources += [ "shaka/src/public/ShakaPlayerView.mm" ]
+    sources += [
+      "shaka/src/public/ShakaPlayerStorage.mm",
+      "shaka/src/public/ShakaPlayerView.mm",
+    ]
   }
 
   deps = [
@@ -838,6 +843,7 @@ if (is_mac || is_ios) {
     sources = [
       # C++ headers
       "$root_gen_dir/shaka/manifest.h",
+      "$root_gen_dir/shaka/offline_externs.h",
       "$root_gen_dir/shaka/player_externs.h",
       "$root_gen_dir/shaka/track.h",
       "$root_gen_dir/shaka/stats.h",
@@ -849,6 +855,7 @@ if (is_mac || is_ios) {
       "shaka/include/shaka/macros.h",
       "shaka/include/shaka/optional.h",
       "shaka/include/shaka/player.h",
+      "shaka/include/shaka/storage.h",
       "shaka/include/shaka/text_track.h",
       "shaka/include/shaka/utils.h",
       "shaka/include/shaka/variant.h",
@@ -857,10 +864,12 @@ if (is_mac || is_ios) {
 
       # Objective-C headers
       "$root_gen_dir/shaka/manifest_objc.h",
+      "$root_gen_dir/shaka/offline_externs_objc.h",
       "$root_gen_dir/shaka/player_externs_objc.h",
       "$root_gen_dir/shaka/track_objc.h",
       "$root_gen_dir/shaka/stats_objc.h",
       "shaka/include/shaka/error_objc.h",
+      "shaka/include/shaka/ShakaPlayerStorage.h",
       "shaka/include/shaka/ShakaPlayerView.h",
     ]
     sources += get_target_outputs(":gen_config_h")

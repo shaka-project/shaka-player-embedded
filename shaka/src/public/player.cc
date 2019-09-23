@@ -396,4 +396,8 @@ AsyncResults<void> Player::SetTextTrackVisibility(bool visibility) {
   return impl_->CallMethod<void>("setTextTrackVisibility", visibility);
 }
 
+void* Player::GetRawJsValue() {
+  return impl_->GetRawJsValue();
+}
+
 }  // namespace shaka

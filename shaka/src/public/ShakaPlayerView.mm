@@ -30,6 +30,7 @@ extern "C" {
 #include "src/js/player_externs+Internal.h"
 #include "src/js/stats+Internal.h"
 #include "src/js/track+Internal.h"
+#include "src/public/ShakaPlayerView+Internal.h"
 #include "src/public/error_objc+Internal.h"
 #include "src/util/macros.h"
 #include "src/util/objc_utils.h"
@@ -49,32 +50,32 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 
   void OnError(const shaka::Error &error) override {
     ShakaPlayerError *objc_error = [[ShakaPlayerError alloc] initWithError:error];
-    DispatchEvent(@selector(onPlayerError:), objc_error);
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerError:), objc_error);
   }
 
   void OnBuffering(bool is_buffering) override {
-    DispatchEvent(@selector(onPlayerBufferingChange:), is_buffering);
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerBufferingChange:), is_buffering);
   }
 
   void OnPlaying() override {
-    DispatchEvent(@selector(onPlayerPlayingEvent));
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerPlayingEvent));
   }
 
   void OnPause() override {
-    DispatchEvent(@selector(onPlayerPauseEvent));
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerPauseEvent));
   }
 
   void OnEnded() override {
-    DispatchEvent(@selector(onPlayerEndedEvent));
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerEndedEvent));
   }
 
 
   void OnSeeking() override {
-    DispatchEvent(@selector(onPlayerSeekingEvent));
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekingEvent));
   }
 
   void OnSeeked() override {
-    DispatchEvent(@selector(onPlayerSeekedEvent));
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekedEvent));
   }
 
 
@@ -83,23 +84,23 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
   }
 
  private:
-  template <typename... Args>
-  void DispatchEvent(SEL selector, Args... args) {
-    // See https://stackoverflow.com/a/20058585
-    dispatch_async(dispatch_get_main_queue(), ^{
-      NSObject *client = _client;
-      if (client && [client respondsToSelector:selector]) {
-        IMP imp = [client methodForSelector:selector];
-        auto func = reinterpret_cast<void (*)(id, SEL, Args...)>(imp);
-        func(client, selector, args...);
-      }
-    });
-  }
-
   __weak id<ShakaPlayerClient> _client;
 };
 
 }  // namespace
+
+std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
+  std::shared_ptr<shaka::JsManager> ret = gJsEngine.lock();
+  if (!ret) {
+    shaka::JsManager::StartupOptions options;
+    options.static_data_dir = "Frameworks/ShakaPlayerEmbedded.framework";
+    options.dynamic_data_dir = std::string(getenv("HOME")) + "/Library";
+    options.is_static_relative_to_bundle = true;
+    ret.reset(new shaka::JsManager(options));
+    gJsEngine = ret;
+  }
+  return ret;
+}
 
 @interface ShakaPlayerView () {
   NativeClient _client;
@@ -170,15 +171,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
   }
 
   // Create JS objects.
-  _engine = gJsEngine.lock();
-  if (!_engine) {
-    shaka::JsManager::StartupOptions options;
-    options.static_data_dir = "Frameworks/ShakaPlayerEmbedded.framework";
-    options.dynamic_data_dir = std::string(getenv("HOME")) + "/Library";
-    options.is_static_relative_to_bundle = true;
-    _engine.reset(new shaka::JsManager(options));
-    gJsEngine = _engine;
-  }
+  _engine = ShakaGetGlobalEngine();
   _video = new shaka::Video(_engine.get());
   _player = new shaka::Player(_engine.get());
 
@@ -581,23 +574,12 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 
 - (void)load:(NSString *)uri withStartTime:(double)startTime andBlock:(ShakaPlayerAsyncBlock)block {
   [self checkInitialized];
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    @synchronized(self) {
-      auto loadResults = self->_player->Load(uri.UTF8String, startTime);
-      if (loadResults.has_error()) {
-        ShakaPlayerError *error = [[ShakaPlayerError alloc] initWithError:loadResults.error()];
-        dispatch_async(dispatch_get_main_queue(), ^{
-          block(error);
-        });
-      } else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-          @synchronized(self) {
-            [self postLoadOperations];
-          }
-          block(nil);
-        });
-      }
+  auto loadResults = self->_player->Load(uri.UTF8String, startTime);
+  shaka::util::CallBlockForFuture(self, std::move(loadResults), ^(ShakaPlayerError *error) {
+    if (!error) {
+      [self postLoadOperations];
     }
+    block(error);
   });
 }
 
@@ -636,24 +618,11 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
   // Stop the render loop before acquiring the mutex, to avoid deadlocks.
   [_renderLoopTimer invalidate];
 
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    @synchronized(self) {
-      self->_imageLayer.contents = nil;
-      for (CALayer *layer in [self->_textLayer.sublayers copy])
-        [layer removeFromSuperlayer];
-      const auto unloadResults = self->_player->Unload();
-      if (unloadResults.has_error()) {
-        ShakaPlayerError *error = [[ShakaPlayerError alloc] initWithError:unloadResults.error()];
-        dispatch_async(dispatch_get_main_queue(), ^{
-          block(error);
-        });
-      } else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-          block(nil);
-        });
-      }
-    }
-  });
+  self->_imageLayer.contents = nil;
+  for (CALayer *layer in [self->_textLayer.sublayers copy])
+    [layer removeFromSuperlayer];
+  auto unloadResults = self->_player->Unload();
+  shaka::util::CallBlockForFuture(self, std::move(unloadResults), block);
 }
 
 - (void)configure:(const NSString *)namePath withBool:(BOOL)value {
@@ -785,6 +754,11 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 - (void)destroy {
   if (_player)
     _player->Destroy();
+}
+
+// MARK: +Internal
+- (shaka::Player *)playerInstance {
+  return _player;
 }
 
 @end

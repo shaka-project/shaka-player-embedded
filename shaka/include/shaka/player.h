@@ -343,6 +343,9 @@ class SHAKA_EXPORT Player final {
   //@}
 
  private:
+  friend class Storage;
+  void* GetRawJsValue();
+
   class Impl;
   std::unique_ptr<Impl> impl_;
 };

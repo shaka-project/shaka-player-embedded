@@ -19,9 +19,11 @@
 
 // Include Objective-C headers if we are compiling Objective-C or Objective-C++.
 #if defined(__OBJC__)
+#  import "ShakaPlayerStorage.h"
 #  import "ShakaPlayerView.h"
 #  import "error_objc.h"
 #  import "manifest_objc.h"
+#  import "offline_externs_objc.h"
 #  import "player_externs_objc.h"
 #  import "stats_objc.h"
 #  import "track_objc.h"
@@ -34,12 +36,14 @@
 #  include "frame.h"
 #  include "js_manager.h"
 #  include "manifest.h"
+#  include "offline_externs.h"
 #  include "player.h"
 #  include "player_externs.h"
-#  include "stats.h"
 #  ifdef SHAKA_SDL_UTILS
 #    include "sdl_frame_drawer.h"
 #  endif
+#  include "stats.h"
+#  include "storage.h"
 #  include "text_track.h"
 #  include "track.h"
 #  include "utils.h"
