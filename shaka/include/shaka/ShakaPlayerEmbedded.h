@@ -20,6 +20,7 @@
 // Include Objective-C headers if we are compiling Objective-C or Objective-C++.
 #if defined(__OBJC__)
 #  import "ShakaPlayerView.h"
+#  import "error_objc.h"
 #  import "manifest_objc.h"
 #  import "player_externs_objc.h"
 #  import "stats_objc.h"

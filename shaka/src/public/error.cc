@@ -20,22 +20,17 @@ namespace shaka {
 
 class Error::Impl {};
 
-Error::Error(ErrorType type, const std::string& message)
-    : message(message), type(type), category(0), code(0), severity(0) {}
+Error::Error(const std::string& message)
+    : message(message), severity(0), category(0), code(0) {}
 
-Error::Error(int category, int code, int severity, const std::string& message)
-    : message(message),
-      type(ErrorType::ShakaError),
-      category(category),
-      code(code),
-      severity(severity) {}
+Error::Error(int severity, int category, int code, const std::string& message)
+    : message(message), severity(severity), category(category), code(code) {}
 
 Error::Error(const Error& other)
     : message(other.message),
-      type(other.type),
+      severity(other.severity),
       category(other.category),
-      code(other.code),
-      severity(other.severity) {}
+      code(other.code) {}
 
 Error::Error(Error&&) = default;
 
@@ -43,10 +38,9 @@ Error::~Error() {}
 
 Error& Error::operator=(const Error& other) {
   message = other.message;
-  type = other.type;
+  severity = other.severity;
   category = other.category;
   code = other.code;
-  severity = other.severity;
 
   return *this;
 }

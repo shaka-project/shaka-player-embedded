@@ -30,51 +30,53 @@ extern "C" {
 #include "src/js/player_externs+Internal.h"
 #include "src/js/stats+Internal.h"
 #include "src/js/track+Internal.h"
+#include "src/public/error_objc+Internal.h"
 #include "src/util/macros.h"
 #include "src/util/objc_utils.h"
 
 #define ShakaRenderLoopDelay (1.0 / 60)
 
 
+namespace {
+
 BEGIN_ALLOW_COMPLEX_STATICS
 static std::weak_ptr<shaka::JsManager> gJsEngine;
 END_ALLOW_COMPLEX_STATICS
 
-class ShakaPlayerClient final : public shaka::Player::Client {
+class NativeClient final : public shaka::Player::Client {
  public:
-  ShakaPlayerClient() {}
-
-  void OnError(const shaka::Error &error, NSString *context) {
-    if (errorCallback) {
-      // Store a local version to avoid crashes due to use-after-free.
-      auto errorCallbackLocal = errorCallback;
-      NSString *errorMessage = [NSString stringWithCString:error.message.c_str()];
-      dispatch_async(dispatch_get_main_queue(), ^{
-        errorCallbackLocal(errorMessage, context);
-      });
-    }
-  }
+  NativeClient() {}
 
   void OnError(const shaka::Error &error) override {
-    OnError(error, @"Player error");
+    dispatch_async(dispatch_get_main_queue(), ^{
+      id<ShakaPlayerClient> client = _client;
+      if (client && [client respondsToSelector:@selector(onPlayerError:)]) {
+        [client onPlayerError:[[ShakaPlayerError alloc] initWithError:error]];
+      }
+    });
   }
 
   void OnBuffering(bool is_buffering) override {
-    if (bufferingCallback) {
-      // Store a local version to avoid crashes due to use-after-free.
-      auto bufferingCallbackLocal = bufferingCallback;
-      dispatch_async(dispatch_get_main_queue(), ^{
-        bufferingCallbackLocal(is_buffering);
-      });
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+      id<ShakaPlayerClient> client = _client;
+      if (client && [client respondsToSelector:@selector(onPlayerBufferingChange:)]) {
+        [client onPlayerBufferingChange:is_buffering];
+      }
+    });
   }
 
-  ShakaPlayerErrorCallback errorCallback;
-  ShakaPlayerBufferingCallback bufferingCallback;
+  void SetClient(id<ShakaPlayerClient> client) {
+    _client = client;
+  }
+
+ private:
+  __weak id<ShakaPlayerClient> _client;
 };
 
+}  // namespace
+
 @interface ShakaPlayerView () {
-  ShakaPlayerClient _client;
+  NativeClient _client;
   shaka::Video *_video;
   shaka::Player *_player;
   NSTimer *_renderLoopTimer;
@@ -106,9 +108,11 @@ class ShakaPlayerClient final : public shaka::Player::Client {
   return self;
 }
 
-- (instancetype)init {
+- (instancetype)initWithClient:(id<ShakaPlayerClient>)client {
   if ((self = [super init])) {
     // super.init calls self.initWithFrame, so this doesn't need to setup again.
+    if (![self setClient:client])
+      return nil;
   }
   return self;
 }
@@ -119,9 +123,6 @@ class ShakaPlayerClient final : public shaka::Player::Client {
 }
 
 - (BOOL)setup {
-  if (![self setupShaka])
-    return NO;
-
   // Set up the image layer.
   _imageLayer = [CALayer layer];
   [self.layer addSublayer:_imageLayer];
@@ -136,7 +137,12 @@ class ShakaPlayerClient final : public shaka::Player::Client {
   return YES;
 }
 
-- (BOOL)setupShaka {
+- (BOOL)setClient:(id<ShakaPlayerClient>)client {
+  _client.SetClient(client);
+  if (_engine) {
+    return YES;
+  }
+
   // Create JS objects.
   _engine = gJsEngine.lock();
   if (!_engine) {
@@ -157,7 +163,7 @@ class ShakaPlayerClient final : public shaka::Player::Client {
   // Set up player.
   const auto initResults = _player->Initialize(_video, &_client);
   if (initResults.has_error()) {
-    _client.OnError(initResults.error(), @"Error initializing player");
+    _client.OnError(initResults.error());
     return NO;
   }
   return YES;
@@ -179,8 +185,8 @@ class ShakaPlayerClient final : public shaka::Player::Client {
       // Create a shaka::Error object, so it can be dispatched via the Client.
       std::string message = "VTCreateCGImageFromCVPixelBuffer error status ";
       message += std::to_string(status);
-      shaka::Error err = shaka::Error(shaka::ErrorType::NonShakaError, message);
-      _client.OnError(err, @"Error transferring frame to CGImage");
+      shaka::Error err = shaka::Error(message);
+      _client.OnError(err);
       return nullptr;
     }
     return ret;
@@ -393,22 +399,6 @@ class ShakaPlayerClient final : public shaka::Player::Client {
   _video->SetMuted(muted);
 }
 
-- (ShakaPlayerErrorCallback)errorCallback {
-  return _client.errorCallback;
-}
-
-- (void)setBufferingCallback:(ShakaPlayerBufferingCallback)bufferingCallback {
-  _client.bufferingCallback = bufferingCallback;
-}
-
-- (ShakaPlayerBufferingCallback)bufferingCallback {
-  return _client.bufferingCallback;
-}
-
-- (void)setErrorCallback:(ShakaPlayerErrorCallback)errorCallback {
-  _client.errorCallback = errorCallback;
-}
-
 
 - (ShakaPlayerLogLevel)logLevel {
   const auto results = shaka::Player::GetLogLevel(_engine.get());
@@ -422,7 +412,7 @@ class ShakaPlayerClient final : public shaka::Player::Client {
   auto castedLogLevel = static_cast<shaka::Player::LogLevel>(logLevel);
   const auto results = shaka::Player::SetLogLevel(_engine.get(), castedLogLevel);
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error setting log level");
+    _client.OnError(results.error());
   }
 }
 
@@ -466,7 +456,7 @@ class ShakaPlayerClient final : public shaka::Player::Client {
 - (ShakaBufferedRange *)seekRange {
   auto results = _player->SeekRange();
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error getting seek range");
+    _client.OnError(results.error());
     return [[ShakaBufferedRange alloc] init];
   } else {
     return [[ShakaBufferedRange alloc] initWithCpp:results.results()];
@@ -476,7 +466,7 @@ class ShakaPlayerClient final : public shaka::Player::Client {
 - (ShakaBufferedInfo *)bufferedInfo {
   auto results = _player->GetBufferedInfo();
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error getting buffered range");
+    _client.OnError(results.error());
     return [[ShakaBufferedInfo alloc] init];
   } else {
     return [[ShakaBufferedInfo alloc] initWithCpp:results.results()];
@@ -487,7 +477,7 @@ class ShakaPlayerClient final : public shaka::Player::Client {
 - (ShakaStats *)getStats {
   auto results = _player->GetStats();
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error getting stats");
+    _client.OnError(results.error());
     return [[ShakaStats alloc] init];
   } else {
     return [[ShakaStats alloc] initWithCpp:results.results()];
@@ -519,7 +509,7 @@ class ShakaPlayerClient final : public shaka::Player::Client {
   @synchronized(self) {
     const auto loadResults = _player->Load(uri.UTF8String, startTime);
     if (loadResults.has_error()) {
-      _client.OnError(loadResults.error(), @"Error loading asset");
+      _client.OnError(loadResults.error());
     } else {
       [self postLoadOperations];
     }
@@ -531,21 +521,24 @@ class ShakaPlayerClient final : public shaka::Player::Client {
 }
 
 - (void)load:(NSString *)uri withStartTime:(double)startTime andBlock:(ShakaPlayerAsyncBlock)block {
-  @synchronized(self) {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-      const auto loadResults = self->_player->Load(uri.UTF8String, startTime);
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    @synchronized(self) {
+      auto loadResults = self->_player->Load(uri.UTF8String, startTime);
       if (loadResults.has_error()) {
-        self->_client.OnError(loadResults.error(), @"Error loading asset");
+        ShakaPlayerError *error = [[ShakaPlayerError alloc] initWithError:loadResults.error()];
+        dispatch_async(dispatch_get_main_queue(), ^{
+          block(error);
+        });
       } else {
         dispatch_async(dispatch_get_main_queue(), ^{
           @synchronized(self) {
             [self postLoadOperations];
           }
-          block();
+          block(nil);
         });
       }
-    });
-  }
+    }
+  });
 }
 
 - (void)postLoadOperations {
@@ -577,19 +570,28 @@ class ShakaPlayerClient final : public shaka::Player::Client {
   }
 }
 
-- (void)unload {
+- (void)unloadWithBlock:(ShakaPlayerAsyncBlock)block {
   // Stop the render loop before acquiring the mutex, to avoid deadlocks.
   [_renderLoopTimer invalidate];
 
-  @synchronized(self) {
-    _imageLayer.contents = nil;
-    for (CALayer *layer in [_textLayer.sublayers copy])
-      [layer removeFromSuperlayer];
-    const auto unloadResults = _player->Unload();
-    if (unloadResults.has_error()) {
-      _client.OnError(unloadResults.error(), @"Error unloading asset");
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    @synchronized(self) {
+      self->_imageLayer.contents = nil;
+      for (CALayer *layer in [self->_textLayer.sublayers copy])
+        [layer removeFromSuperlayer];
+      const auto unloadResults = self->_player->Unload();
+      if (unloadResults.has_error()) {
+        ShakaPlayerError *error = [[ShakaPlayerError alloc] initWithError:unloadResults.error()];
+        dispatch_async(dispatch_get_main_queue(), ^{
+          block(error);
+        });
+      } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+          block(nil);
+        });
+      }
     }
-  }
+  });
 }
 
 - (void)configure:(const NSString *)namePath withBool:(BOOL)value {
@@ -656,49 +658,49 @@ class ShakaPlayerClient final : public shaka::Player::Client {
 - (void)selectAudioLanguage:(NSString *)language withRole:(NSString *)role {
   auto results = _player->SelectAudioLanguage(language.UTF8String, role.UTF8String);
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error selecting audio language");
+    _client.OnError(results.error());
   }
 }
 
 - (void)selectAudioLanguage:(NSString *)language {
   auto results = _player->SelectAudioLanguage(language.UTF8String);
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error selecting audio language");
+    _client.OnError(results.error());
   }
 }
 
 - (void)selectTextLanguage:(NSString *)language withRole:(NSString *)role {
   auto results = _player->SelectTextLanguage(language.UTF8String, role.UTF8String);
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error selecting text language");
+    _client.OnError(results.error());
   }
 }
 
 - (void)selectTextLanguage:(NSString *)language {
   auto results = _player->SelectTextLanguage(language.UTF8String);
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error selecting text language");
+    _client.OnError(results.error());
   }
 }
 
 - (void)selectTextTrack:(const ShakaTrack *)track {
   auto results = _player->SelectTextTrack([track toCpp]);
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error selecting track");
+    _client.OnError(results.error());
   }
 }
 
 - (void)selectVariantTrack:(const ShakaTrack *)track {
   auto results = _player->SelectVariantTrack([track toCpp]);
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error selecting track");
+    _client.OnError(results.error());
   }
 }
 
 - (void)selectVariantTrack:(const ShakaTrack *)track withClearBuffer:(BOOL)clear {
   auto results = _player->SelectVariantTrack([track toCpp], clear);
   if (results.has_error()) {
-    _client.OnError(results.error(), @"Error selecting track");
+    _client.OnError(results.error());
   }
 }
 

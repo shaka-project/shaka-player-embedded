@@ -42,13 +42,13 @@ AsyncResults<void> JsManager::RunScript(const std::string& path) {
   // std::future<bool> that is returned into a
   // std::future<variant<monostate, Error>> that AsyncResults expects.
   // TODO: Find a better way to do this.
-  auto future = std::async(
-      std::launch ::deferred, [run_future]() -> variant<monostate, Error> {
-        if (run_future.get())
-          return monostate();
+  auto future = std::async(std::launch ::deferred,
+                           [run_future]() -> variant<monostate, Error> {
+                             if (run_future.get())
+                               return monostate();
 
-        return Error(ErrorType::NonShakaError, "Unknown script error");
-      });
+                             return Error("Unknown script error");
+                           });
 
   return future.share();
 }

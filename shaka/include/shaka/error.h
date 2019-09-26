@@ -24,31 +24,9 @@
 namespace shaka {
 
 /**
- * @ingroup player
- */
-enum class ErrorType : uint8_t {
-  /**
-   * A Shaka error was thrown.  See the |category| and |code| members for the
-   * more specific error type.
-   */
-  ShakaError,
-
-  /**
-   * The required JavaScript member was missing or of an incorrect type.  This
-   * can happen if the Shaka Player compiled script is incompatible with this
-   * library.
-   */
-  BadMember,
-  /**
-   * A JavaScript exception was thrown, but it wasn't a Shaka error object.  See
-   * the logs for more info.
-   */
-  NonShakaError,
-};
-
-/**
  * Represents a Player error.  This can be either a Shaka error or a more
- * generic JavaScript error.
+ * generic JavaScript error.  Shaka errors have the category/code/severity
+ * fields set; native errors just have the message.
  *
  * @see https://github.com/google/shaka-player/blob/master/lib/util/error.js
  * @ingroup player
@@ -56,9 +34,9 @@ enum class ErrorType : uint8_t {
 class SHAKA_EXPORT Error final {
  public:
   /** Creates an object with the given error category and code. */
-  Error(ErrorType type, const std::string& message);
+  Error(const std::string& message);
   /** Creates an object with the given error category and code. */
-  Error(int category, int code, int severity, const std::string& message);
+  Error(int severity, int category, int code, const std::string& message);
 
   Error(const Error&);
   Error(Error&&);
@@ -73,8 +51,11 @@ class SHAKA_EXPORT Error final {
 
   /** The error message. */
   std::string message;
-  /** The kind of error. */
-  ErrorType type;
+  /**
+   * The Shaka severity of the error, if this is a Shaka error.  This is the
+   * same as shaka.util.Error.Severity.
+   */
+  int severity;
   /**
    * The category of the error, if this is a Shaka error.  This is the same as
    * shaka.util.Error.Category.
@@ -85,13 +66,6 @@ class SHAKA_EXPORT Error final {
    * as shaka.util.Error.Code.
    */
   int code;
-  /**
-   * The Shaka severity of the error, if this is a Shaka error.  This is the
-   * same as shaka.util.Error.Severity.
-   *
-   * Only available in Shaka Player v2.1.0+.
-   */
-  int severity;
 
  private:
   class Impl;

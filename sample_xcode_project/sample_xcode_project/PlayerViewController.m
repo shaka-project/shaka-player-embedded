@@ -24,7 +24,7 @@
 
 typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } PlayPauseIcon;
 
-@interface PlayerViewController ()
+@interface PlayerViewController () <ShakaPlayerClient>
 
 @property UIView *controlsView;
 @property UIView *audioOnlyView;
@@ -76,9 +76,10 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
 
   [self.uiTimer invalidate];
 
-  [self.player unload];
-  [self.player removeFromSuperview];
-  self.player = nil;
+  [self.player unloadWithBlock:^(ShakaPlayerError* error) {
+    [self.player removeFromSuperview];
+    self.player = nil;
+  }];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -147,13 +148,17 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
       }
     }
   }
-  [self.player load:self.assetURI withStartTime:startTime andBlock:^{
-    if (autoplay) {
-      [self.player play];
-    }
-    if (self.player.isAudioOnly) {
-      self.audioOnlyView.hidden = NO;
-      self.player.backgroundColor = [UIColor whiteColor];
+  [self.player load:self.assetURI withStartTime:startTime andBlock:^(ShakaPlayerError *error){
+    if (error) {
+      [self.errorDisplayView applyError:[error message]];
+    } else {
+      if (autoplay) {
+        [self.player play];
+      }
+      if (self.player.isAudioOnly) {
+        self.audioOnlyView.hidden = NO;
+        self.player.backgroundColor = [UIColor whiteColor];
+      }
     }
   }];
 }
@@ -200,6 +205,20 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
   [self configureAndLoadAssetWithAutoplay:!self.wasPausedBeforeHalting
                              andStartTime:self.timeBeforeHalting];
   [self startUITimer];
+}
+
+#pragma mark - ShakaPlayerClient
+
+- (void)onPlayerError:(ShakaPlayerError *)error {
+  [self.errorDisplayView applyError:[error message]];
+}
+
+- (void)onPlayerBufferingChange:(BOOL)is_buffering {
+  if (is_buffering) {
+    [self.spinner startAnimating];
+  } else {
+    [self.spinner stopAnimating];
+  }
 }
 
 #pragma mark - updating
@@ -334,7 +353,7 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
 
 - (void)placePlayerIntoContainer {
   if (!self.player)
-    self.player = [[ShakaPlayerView alloc] init];
+    self.player = [[ShakaPlayerView alloc] initWithClient:self];
   self.player.backgroundColor = [UIColor blackColor];
   [self.playerContainer addSubview:self.player];
 
@@ -450,31 +469,6 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
                                    toItem:self.player];
 
   [self setupControls];
-  [self setupSpinner];
-  [self setupErrorReporting];
-}
-
-- (void)setupSpinner {
-  __weak PlayerViewController *weakSelf = self;
-  self.player.bufferingCallback = ^(BOOL buffering) {
-    if (buffering) {
-      [weakSelf.spinner startAnimating];
-    } else {
-      [weakSelf.spinner stopAnimating];
-    }
-  };
-}
-
-- (void)setupErrorReporting {
-  __weak PlayerViewController *weakSelf = self;
-  self.player.errorCallback = ^(NSString *errorMessage, NSString *errorContext) {
-    // Dispatch from the background queue this is called on to the main queue, so that UI operations
-    // can take place.
-    dispatch_async(dispatch_get_main_queue(), ^{
-      NSString *fullError = [NSString stringWithFormat:@"%@\n%@", errorContext, errorMessage];
-      [weakSelf.errorDisplayView applyError:fullError];
-    });
-  };
 }
 
 - (void)setupControls {

@@ -18,15 +18,14 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#include "error_objc.h"
 #include "macros.h"
 #include "manifest_objc.h"
 #include "player_externs_objc.h"
 #include "stats_objc.h"
 #include "track_objc.h"
 
-typedef void (^ShakaPlayerErrorCallback)(NSString *errorMessage, NSString *errorContext);
-typedef void (^ShakaPlayerBufferingCallback)(BOOL buffering);
-typedef void (^ShakaPlayerAsyncBlock)(void);
+typedef void (^ShakaPlayerAsyncBlock)(ShakaPlayerError *);
 
 typedef NS_ENUM(NSInteger, ShakaPlayerLogLevel) {
   // These have the same values as shaka.log.Level.
@@ -39,6 +38,29 @@ typedef NS_ENUM(NSInteger, ShakaPlayerLogLevel) {
   ShakaPlayerLogLevelV2 = 6
 };
 
+
+/**
+ * Defines an interface for Player events.
+ */
+SHAKA_EXPORT
+@protocol ShakaPlayerClient <NSObject>
+
+@optional
+
+/**
+ * Called when an asynchronous error occurs.  This is called on the main thread
+ * and is only called when there isn't a block callback to give the error to.
+ */
+- (void)onPlayerError:(ShakaPlayerError *)error;
+
+/**
+ * Called when the buffering state of the Player changes.
+ */
+- (void)onPlayerBufferingChange:(BOOL)is_buffering;
+
+@end
+
+
 /**
  * A view that encapsulates an instance of Shaka Player, handles rendering,
  * and exposes controls.
@@ -46,6 +68,32 @@ typedef NS_ENUM(NSInteger, ShakaPlayerLogLevel) {
  */
 SHAKA_EXPORT
 @interface ShakaPlayerView : UIView
+
+/**
+ * Creates a new *uninitialized* Player object.  You MUST call setClient before
+ * using this object.  Alternatively, use initWithClient instead.
+ */
+- (instancetype)initWithFrame:(CGRect)frame;
+
+/**
+ * Creates a new *uninitialized* Player object.  You MUST call setClient before
+ * using this object.  Alternatively, use initWithClient instead.
+ */
+- (instancetype)initWithCoder:(NSCoder *)aDecoder;
+
+/**
+ * Creates a new initialized Player object.  If there is an error, the client
+ * will be called synchronously to report the error and this returns nil.
+ */
+- (instancetype)initWithClient:(id<ShakaPlayerClient>)client;
+
+
+/**
+ * If initializing from nib or a storyboard, you MUST call this to set the
+ * client before calling other methods.
+ */
+- (BOOL)setClient:(id<ShakaPlayerClient>)client;
+
 
 /** Plays the video. */
 - (void)play;
@@ -76,18 +124,6 @@ SHAKA_EXPORT
 
 /** Whether the audio is currently muted. */
 @property(atomic) BOOL muted;
-
-/**
- * A callback that is called when the player errors.
- * Note that this might be called on a background thread.
- */
-@property(atomic) ShakaPlayerErrorCallback errorCallback;
-
-/**
- * A callback that is called when the player's buffering state changes.
- * This will always be called on the main queue.
- */
-@property(atomic) ShakaPlayerBufferingCallback bufferingCallback;
 
 
 /**
@@ -138,22 +174,6 @@ SHAKA_EXPORT
  */
 - (NSArray<ShakaTrack *> *)getVariantTracks;
 
-
-/**
- * Load the given manifest.
- *
- * @param uri The uri of the manifest to load.
- */
-- (void)load:(NSString *)uri;
-
-/**
- * Load the given manifest.
- *
- * @param uri The uri of the manifest to load.
- * @param startTime The time to start playing at, in seconds.
- */
-- (void)load:(NSString *)uri withStartTime:(double)startTime;
-
 /**
  * Load the given manifest asynchronously.
  *
@@ -174,9 +194,8 @@ withStartTime:(double)startTime
      andBlock:(ShakaPlayerAsyncBlock)block;
 
 /** Unload the current manifest and make the Player available for re-use. */
-- (void)unload;
+- (void)unloadWithBlock:(ShakaPlayerAsyncBlock)block;
 
-// TODO: async vesion of unload, using blocks
 
 /**
  * Applies a configuration.

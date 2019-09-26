@@ -73,8 +73,7 @@ struct Converter {
   static variant_type Convert(const std::string& name, Handle<JsValue> result) {
     Ret ret;
     if (!FromJsValue(result, &ret)) {
-      return Error(ErrorType::NonShakaError,
-                   "Invalid return value from " + name + "().");
+      return Error("Invalid return value from " + name + "().");
     }
 
     return ret;
@@ -95,7 +94,7 @@ struct Converter<void> {
 
 Error ConvertError(Handle<JsValue> except) {
   if (!IsObject(except))
-    return Error(ErrorType::NonShakaError, ConvertToString(except));
+    return Error(ConvertToString(except));
 
   LocalVar<JsObject> obj = UnsafeJsCast<JsObject>(except);
   LocalVar<JsValue> message_member = GetMemberRaw(obj, "message");
@@ -105,14 +104,14 @@ Error ConvertError(Handle<JsValue> except) {
   if (!IsNullOrUndefined(name_member)) {
     const std::string message =
         ConvertToString(name_member) + ": " + ConvertToString(message_member);
-    return Error(ErrorType::NonShakaError, message);
+    return Error(message);
   }
 
   LocalVar<JsValue> code = GetMemberRaw(obj, "code");
   LocalVar<JsValue> category = GetMemberRaw(obj, "category");
   if (GetValueType(code) != proto::ValueType::Number ||
       GetValueType(category) != proto::ValueType::Number) {
-    return Error(ErrorType::NonShakaError, ConvertToString(except));
+    return Error(ConvertToString(except));
   }
 
   LocalVar<JsValue> severity_val = GetMemberRaw(obj, "severity");
@@ -127,8 +126,8 @@ Error ConvertError(Handle<JsValue> except) {
   } else {
     message = ConvertToString(message_member);
   }
-  return Error(static_cast<int>(NumberFromValue(category)),
-               static_cast<int>(NumberFromValue(code)), severity, message);
+  return Error(severity, static_cast<int>(NumberFromValue(category)),
+               static_cast<int>(NumberFromValue(code)), message);
 }
 
 Converter<void>::variant_type CallMemberFunction(Handle<JsObject> that,
@@ -138,8 +137,7 @@ Converter<void>::variant_type CallMemberFunction(Handle<JsObject> that,
                                                  LocalVar<JsValue>* result) {
   LocalVar<JsValue> member = GetMemberRaw(that, name);
   if (GetValueType(member) != proto::ValueType::Function) {
-    return Error(ErrorType::BadMember,
-                 "The member '" + name + "' is not a function.");
+    return Error("The member '" + name + "' is not a function.");
   }
 
   LocalVar<JsValue> result_or_except;
@@ -161,8 +159,7 @@ Converter<void>::variant_type AttachEventListener(
     // events.  So manually look for the properties.
     LocalVar<JsValue> event_val = ToJsValue(event);
     if (!IsObject(event_val)) {
-      client->OnError(
-          Error(ErrorType::NonShakaError, ConvertToString(event_val)));
+      client->OnError(Error(ConvertToString(event_val)));
       return;
     }
 
@@ -208,8 +205,7 @@ class Player::Impl {
       if (GetValueType(player_ctor) != proto::ValueType::Function) {
         LOG(ERROR) << "Cannot get 'shaka.Player' object; is "
                       "shaka-player.compiled.js corrupted?";
-        return Error(ErrorType::BadMember,
-                     "The constructor 'shaka.Player' is not found.");
+        return Error("The constructor 'shaka.Player' is not found.");
       }
       LocalVar<JsFunction> player_ctor_func =
           UnsafeJsCast<JsFunction>(player_ctor);
@@ -346,8 +342,7 @@ class Player::Impl {
       if (FromJsValue(is_buffering, &is_buffering_bool)) {
         client->OnBuffering(is_buffering_bool);
       } else {
-        client->OnError(Error(ErrorType::NonShakaError,
-                              "Bad 'buffering' event from JavaScript Player"));
+        client->OnError(Error("Bad 'buffering' event from JavaScript Player"));
       }
     };
     ATTACH("buffering", on_buffering);
@@ -388,8 +383,7 @@ AsyncResults<void> Player::SetLogLevel(JsManager* engine, LogLevel level) {
     if (GetValueType(set_level) != proto::ValueType::Function) {
       LOG(ERROR) << "Cannot get 'shaka.log.setLevel' function; is "
                     "shaka-player.compiled.js a Release build?";
-      return Error(ErrorType::BadMember,
-                   "The function 'shaka.log.setLevel' is not found.");
+      return Error("The function 'shaka.log.setLevel' is not found.");
     }
     LocalVar<JsFunction> set_level_func = UnsafeJsCast<JsFunction>(set_level);
 
@@ -419,8 +413,7 @@ AsyncResults<Player::LogLevel> Player::GetLogLevel(JsManager* engine) {
     if (GetValueType(current_level) != proto::ValueType::Number) {
       LOG(ERROR) << "Cannot get 'shaka.log.currentLevel'; is "
                     "shaka-player.compiled.js a Release build?";
-      return Error(ErrorType::BadMember,
-                   "The variable 'shaka.log.currentLevel' is not found.");
+      return Error("The variable 'shaka.log.currentLevel' is not found.");
     }
     return static_cast<LogLevel>(NumberFromValue(current_level));
   };
@@ -439,8 +432,7 @@ AsyncResults<std::string> Player::GetPlayerVersion(JsManager* engine) {
         JsEngine::Instance()->global_handle(), {"shaka", "Player", "version"});
     std::string ret;
     if (!FromJsValue(version, &ret)) {
-      return Error(ErrorType::BadMember,
-                   "The variable 'shaka.Player.version' is not found.");
+      return Error("The variable 'shaka.Player.version' is not found.");
     }
     return ret;
   };

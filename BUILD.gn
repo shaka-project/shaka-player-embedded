@@ -631,6 +631,7 @@ source_set("internal_sources") {
     "shaka/src/public/eme_promise.cc",
     "shaka/src/public/eme_promise_impl.h",
     "shaka/src/public/error.cc",
+    "shaka/src/public/error_objc.mm",
     "shaka/src/public/frame.cc",
     "shaka/src/public/js_manager.cc",
     "shaka/src/public/optional.cc",
@@ -844,6 +845,7 @@ if (is_mac || is_ios) {
       "shaka/include/shaka/vtt_cue.h",
 
       # Objective-C headers
+      "shaka/include/shaka/error_objc.h",
       "$root_gen_dir/shaka/manifest_objc.h",
       "$root_gen_dir/shaka/player_externs_objc.h",
       "$root_gen_dir/shaka/track_objc.h",
