@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/util/crypto.h"
-
 #include <CommonCrypto/CommonDigest.h>
-
 #include <glog/logging.h>
+
+#include "src/util/crypto.h"
 
 namespace shaka {
 namespace util {

@@ -30,7 +30,9 @@ IDBRequest::IDBRequest() {
   AddListenerField(EventType::Error, &on_error);
 }
 
+// \cond Doxygen_Skip
 IDBRequest::~IDBRequest() {}
+// \endcond Doxygen_Skip
 
 void IDBRequest::Trace(memory::HeapTracer* tracer) const {
   events::EventTarget::Trace(tracer);

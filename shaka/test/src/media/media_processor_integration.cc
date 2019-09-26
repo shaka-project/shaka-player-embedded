@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/media/media_processor.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#include "src/media/media_processor.h"
 
 extern "C" {
 #include <libavutil/imgutils.h>

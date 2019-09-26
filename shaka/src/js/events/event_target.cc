@@ -159,8 +159,8 @@ void EventTarget::InvokeListeners(RefPtr<Event> event,
     if (it->type_ == event->type && it->callback_.has_value()) {
       ExceptionOr<void> except = it->callback_->CallWithThis(this, event);
       if (holds_alternative<JsError>(except)) {
-          OnUncaughtException(get<JsError>(except).error(),
-                              /* in_promise */ false);
+        OnUncaughtException(get<JsError>(except).error(),
+                            /* in_promise */ false);
         if (did_listeners_throw)
           *did_listeners_throw = true;
       }

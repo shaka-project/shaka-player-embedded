@@ -72,9 +72,9 @@ struct ExceptionInfo {
                    "version than the existing version.",
                    0),
 };
-static_assert(
-    sizeof(g_exception_map_) / sizeof(g_exception_map_[0]) == MaxExceptionCode,
-    "Not all exceptions appear in map");
+static_assert(sizeof(g_exception_map_) / sizeof(g_exception_map_[0]) ==
+                  MaxExceptionCode,
+              "Not all exceptions appear in map");
 #undef DEFINE_MAPPING
 
 const ExceptionInfo& GetInfo(ExceptionCode type) {

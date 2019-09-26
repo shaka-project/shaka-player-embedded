@@ -32,7 +32,6 @@
 #include <SDL2/SDL.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-
 #include <shaka/js_manager.h>
 #include <shaka/player.h>
 #include <shaka/sdl_frame_drawer.h>

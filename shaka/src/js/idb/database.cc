@@ -29,7 +29,9 @@ IDBDatabase::IDBDatabase() : db_name(""), version(0) {
   AddListenerField(EventType::VersionChange, &on_version_change);
 }
 
+// \cond Doxygen_Skip
 IDBDatabase::~IDBDatabase() {}
+// \endcond Doxygen_Skip
 
 void IDBDatabase::Trace(memory::HeapTracer* tracer) const {
   events::EventTarget::Trace(tracer);

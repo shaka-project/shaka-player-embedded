@@ -21,7 +21,9 @@ namespace dom {
 DOMStringList::DOMStringList() {}
 DOMStringList::DOMStringList(const std::vector<std::string>& copy)
     : std::vector<std::string>(copy) {}
+// \cond Doxygen_Skip
 DOMStringList::~DOMStringList() {}
+// \endcond Doxygen_Skip
 
 optional<std::string> DOMStringList::item(uint32_t index) const {
   if (index >= size())

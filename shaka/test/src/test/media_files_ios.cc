@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/test/media_files.h"
-
 #include <glog/logging.h>
 
+#include "src/test/media_files.h"
 #include "src/util/file_system.h"
 
 namespace shaka {

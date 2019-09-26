@@ -25,7 +25,9 @@ namespace idb {
 
 IDBCursor::IDBCursor(RefPtr<IDBObjectStore> source, IDBCursorDirection dir)
     : source(source), direction(dir) {}
+// \cond Doxygen_Skip
 IDBCursor::~IDBCursor() {}
+// \endcond Doxygen_Skip
 
 void IDBCursor::Trace(memory::HeapTracer* tracer) const {
   BackingObject::Trace(tracer);

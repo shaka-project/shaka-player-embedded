@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/util/file_system.h"
-
 #include <Shlwapi.h>
-
 #include <glog/logging.h>
+
+#include "src/util/file_system.h"
 
 namespace shaka {
 namespace util {

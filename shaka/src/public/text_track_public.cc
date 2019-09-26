@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "shaka/text_track.h"
-
 #include "src/js/mse/text_track.h"
 #include "src/js/vtt_cue.h"
 #include "src/util/js_wrapper.h"

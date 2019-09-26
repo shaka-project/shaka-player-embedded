@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/util/decryptor.h"
-
 #include <glog/logging.h>
 #include <openssl/conf.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
+
+#include "src/util/decryptor.h"
 
 namespace shaka {
 namespace util {

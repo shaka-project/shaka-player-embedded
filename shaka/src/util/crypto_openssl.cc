@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/util/crypto.h"
-
 #include <glog/logging.h>
 #include <openssl/evp.h>
+
+#include "src/util/crypto.h"
 
 #define HASH_ALGORITHM EVP_md5()
 

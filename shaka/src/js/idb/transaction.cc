@@ -30,7 +30,9 @@ IDBTransaction::IDBTransaction()
   AddListenerField(EventType::Error, &on_error);
 }
 
+// \cond Doxygen_Skip
 IDBTransaction::~IDBTransaction() {}
+// \endcond Doxygen_Skip
 
 void IDBTransaction::Trace(memory::HeapTracer* tracer) const {
   events::EventTarget::Trace(tracer);

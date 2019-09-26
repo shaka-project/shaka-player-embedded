@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/util/file_system.h"
-
 #include <dirent.h>
 #include <glog/logging.h>
 #include <libgen.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include "src/util/file_system.h"
 
 
 namespace shaka {

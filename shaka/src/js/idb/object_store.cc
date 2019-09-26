@@ -23,7 +23,9 @@ namespace js {
 namespace idb {
 
 IDBObjectStore::IDBObjectStore() {}
+// \cond Doxygen_Skip
 IDBObjectStore::~IDBObjectStore() {}
+// \endcond Doxygen_Skip
 
 void IDBObjectStore::Trace(memory::HeapTracer* tracer) const {
   BackingObject::Trace(tracer);

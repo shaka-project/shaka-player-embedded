@@ -24,7 +24,9 @@ IDBOpenDBRequest::IDBOpenDBRequest() {
   AddListenerField(EventType::UpgradeNeeded, &on_upgrade_needed);
 }
 
+// \cond Doxygen_Skip
 IDBOpenDBRequest::~IDBOpenDBRequest() {}
+// \endcond Doxygen_Skip
 
 void IDBOpenDBRequest::DoOperation(const std::string& /* db_path */) {}
 

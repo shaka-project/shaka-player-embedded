@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shaka/vtt_cue.h"
-
 #include <cmath>
+
+#include "shaka/vtt_cue.h"
 
 namespace shaka {
 

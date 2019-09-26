@@ -22,7 +22,9 @@ namespace js {
 namespace idb {
 
 IDBFactory::IDBFactory() {}
+// \cond Doxygen_Skip
 IDBFactory::~IDBFactory() {}
+// \endcond Doxygen_Skip
 
 RefPtr<IDBOpenDBRequest> IDBFactory::Open(const std::string& /* name */,
                                           optional<uint32_t> /* version */) {
