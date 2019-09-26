@@ -43,33 +43,59 @@ BEGIN_ALLOW_COMPLEX_STATICS
 static std::weak_ptr<shaka::JsManager> gJsEngine;
 END_ALLOW_COMPLEX_STATICS
 
-class NativeClient final : public shaka::Player::Client {
+class NativeClient final : public shaka::Player::Client, public shaka::Video::Client {
  public:
   NativeClient() {}
 
   void OnError(const shaka::Error &error) override {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      id<ShakaPlayerClient> client = _client;
-      if (client && [client respondsToSelector:@selector(onPlayerError:)]) {
-        [client onPlayerError:[[ShakaPlayerError alloc] initWithError:error]];
-      }
-    });
+    ShakaPlayerError *objc_error = [[ShakaPlayerError alloc] initWithError:error];
+    DispatchEvent(@selector(onPlayerError:), objc_error);
   }
 
   void OnBuffering(bool is_buffering) override {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      id<ShakaPlayerClient> client = _client;
-      if (client && [client respondsToSelector:@selector(onPlayerBufferingChange:)]) {
-        [client onPlayerBufferingChange:is_buffering];
-      }
-    });
+    DispatchEvent(@selector(onPlayerBufferingChange:), is_buffering);
   }
+
+  void OnPlaying() override {
+    DispatchEvent(@selector(onPlayerPlayingEvent));
+  }
+
+  void OnPause() override {
+    DispatchEvent(@selector(onPlayerPauseEvent));
+  }
+
+  void OnEnded() override {
+    DispatchEvent(@selector(onPlayerEndedEvent));
+  }
+
+
+  void OnSeeking() override {
+    DispatchEvent(@selector(onPlayerSeekingEvent));
+  }
+
+  void OnSeeked() override {
+    DispatchEvent(@selector(onPlayerSeekedEvent));
+  }
+
 
   void SetClient(id<ShakaPlayerClient> client) {
     _client = client;
   }
 
  private:
+  template <typename... Args>
+  void DispatchEvent(SEL selector, Args... args) {
+    // See https://stackoverflow.com/a/20058585
+    dispatch_async(dispatch_get_main_queue(), ^{
+      NSObject *client = _client;
+      if (client && [client respondsToSelector:selector]) {
+        IMP imp = [client methodForSelector:selector];
+        auto func = reinterpret_cast<void (*)(id, SEL, Args...)>(imp);
+        func(client, selector, args...);
+      }
+    });
+  }
+
   __weak id<ShakaPlayerClient> _client;
 };
 
@@ -158,7 +184,7 @@ class NativeClient final : public shaka::Player::Client {
 
   // Set up video.
   _remakeTextLayer = NO;
-  _video->Initialize();
+  _video->Initialize(&_client);
 
   // Set up player.
   const auto initResults = _player->Initialize(_video, &_client);

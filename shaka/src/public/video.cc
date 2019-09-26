@@ -16,6 +16,7 @@
 
 #include "src/core/js_manager_impl.h"
 #include "src/js/dom/document.h"
+#include "src/js/events/event_names.h"
 #include "src/js/mse/media_source.h"
 #include "src/js/mse/video_element.h"
 #include "src/util/js_wrapper.h"
@@ -23,6 +24,26 @@
 namespace shaka {
 
 using JSVideo = js::mse::HTMLVideoElement;
+
+
+Video::Client::Client() {}
+Video::Client::Client(const Client&) = default;
+Video::Client::Client(Client&&) = default;
+Video::Client::~Client() {}
+
+Video::Client& Video::Client::operator=(const Client&) = default;
+Video::Client& Video::Client::operator=(Client&&) = default;
+
+void Video::Client::OnPlaying() {}
+
+void Video::Client::OnPause() {}
+
+void Video::Client::OnEnded() {}
+
+void Video::Client::OnSeeking() {}
+
+void Video::Client::OnSeeked() {}
+
 
 class Video::Impl : public util::JSWrapper<JSVideo> {};
 
@@ -36,13 +57,26 @@ Video::~Video() {}
 
 Video& Video::operator=(Video&&) = default;
 
-void Video::Initialize() {
+void Video::Initialize(Client* client) {
   // This can be called immediately after the JsManager constructor.  Since the
   // Environment might not be setup yet, run this in an internal task so we know
   // it is ready.
-  const auto callback = [this]() {
+  const auto callback = [this, client]() {
     impl_->inner =
         new js::mse::HTMLVideoElement(js::dom::Document::GetGlobalDocument());
+
+    if (client) {
+      impl_->inner->SetCppEventListener(js::EventType::Playing,
+                                        std::bind(&Client::OnPlaying, client));
+      impl_->inner->SetCppEventListener(js::EventType::Pause,
+                                        std::bind(&Client::OnPause, client));
+      impl_->inner->SetCppEventListener(js::EventType::Ended,
+                                        std::bind(&Client::OnEnded, client));
+      impl_->inner->SetCppEventListener(js::EventType::Seeking,
+                                        std::bind(&Client::OnSeeking, client));
+      impl_->inner->SetCppEventListener(js::EventType::Seeked,
+                                        std::bind(&Client::OnSeeked, client));
+    }
   };
   JsManagerImpl::Instance()
       ->MainThread()

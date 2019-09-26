@@ -45,6 +45,49 @@ class HTMLVideoElement;
 class SHAKA_EXPORT Video final {
  public:
   /**
+   * Defines an interface for listening for Video events.  These callbacks are
+   * invoked on a background thread by the Video object.
+   */
+  class Client {
+   public:
+    Client();
+    Client(const Client&);
+    Client(Client&&);
+    virtual ~Client();
+
+    Client& operator=(const Client&);
+    Client& operator=(Client&&);
+
+    /**
+     * Called when the video starts playing after startup or a call to Pause().
+     */
+    virtual void OnPlaying();
+
+    /**
+     * Called when the video gets paused due to a call to Pause().
+     */
+    virtual void OnPause();
+
+    /**
+     * Called when the video plays to the end of the content.
+     */
+    virtual void OnEnded();
+
+
+    /**
+     * Called when the video starts seeking.  This may be called multiple times
+     * in a row due to Shaka Player repositioning the playhead.
+     */
+    virtual void OnSeeking();
+
+    /**
+     * Called when the video completes seeking.  This happens once content is
+     * available and the playhead can move forward.
+     */
+    virtual void OnSeeked();
+  };
+
+  /**
    * Creates a new Video instance.
    * @param engine The JavaScript engine to use.
    */
@@ -60,14 +103,15 @@ class SHAKA_EXPORT Video final {
   /**
    * Initializes the video element.  This must be called once before any other
    * methods are called and before passing to Player.Initialize.
+   *
+   * @param client The client object that listens to events.
    */
-  void Initialize();
+  void Initialize(Client* client = nullptr);
 
   /**
-   * Draws the current video frame onto a hardware texture and returns it.  This
+   * Draws the current video frame onto a texture and returns it.  This
    * can be called on any thread, but cannot be called at the same time on
-   * multiple threads.  This will create a texture using the renderer given in
-   * the constructor.  The texture will be the same size of the video to avoid
+   * multiple threads.  The texture will be the same size of the video to avoid
    * resizing.  Resizing and adding black bars is the job of the app.
    *
    * @param delay [OUT] Optional, if given, will hold the delay (in seconds)

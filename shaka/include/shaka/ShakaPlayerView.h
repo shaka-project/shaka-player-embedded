@@ -58,6 +58,35 @@ SHAKA_EXPORT
  */
 - (void)onPlayerBufferingChange:(BOOL)is_buffering;
 
+
+/**
+ * Called when the video starts playing after startup or a call to Pause().
+ */
+- (void)onPlayerPlayingEvent;
+
+/**
+ * Called when the video gets paused due to a call to Pause().
+ */
+- (void)onPlayerPauseEvent;
+
+/**
+ * Called when the video plays to the end of the content.
+ */
+- (void)onPlayerEndedEvent;
+
+
+/**
+ * Called when the video starts seeking.  This may be called multiple times
+ * in a row due to Shaka Player repositioning the playhead.
+ */
+- (void)onPlayerSeekingEvent;
+
+/**
+ * Called when the video completes seeking.  This happens once content is
+ * available and the playhead can move forward.
+ */
+- (void)onPlayerSeekedEvent;
+
 @end
 
 
