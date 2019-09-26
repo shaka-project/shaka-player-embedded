@@ -26,6 +26,19 @@ namespace {
 constexpr const size_t kMaxTextures = 8;
 
 struct TextureInfo {
+  TextureInfo(SDL_Texture* texture, uint32_t pixel_format, int width,
+              int height)
+      : texture(texture),
+        pixel_format(pixel_format),
+        width(width),
+        height(height) {}
+
+  ~TextureInfo() {
+    SDL_DestroyTexture(texture);
+  }
+
+  NON_COPYABLE_OR_MOVABLE_TYPE(TextureInfo);
+
   SDL_Texture* texture;
   uint32_t pixel_format;
   int width;
@@ -70,14 +83,12 @@ PixelFormat PublicPixelFormatFromSdl(Uint32 format) {
 class SdlFrameDrawer::Impl {
  public:
   Impl() : renderer_(nullptr) {}
-  ~Impl() {
-    Clear();
-  }
+  ~Impl() {}
 
   NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
   void SetRenderer(SDL_Renderer* renderer) {
-    Clear();
+    textures_.clear();
     texture_formats_.clear();
     renderer_ = renderer;
 
@@ -201,25 +212,18 @@ class SdlFrameDrawer::Impl {
       }
     }
 
-    if (!textures_.empty() && textures_.size() >= kMaxTextures) {
-      SDL_DestroyTexture(textures_.front().texture);
+    while (!textures_.empty() && textures_.size() >= kMaxTextures) {
       textures_.erase(textures_.begin());
-      DCHECK_LT(textures_.size(), kMaxTextures);
     }
 
     SDL_Texture* texture = SDL_CreateTexture(
         renderer_, pixel_format, SDL_TEXTUREACCESS_STREAMING, width, height);
     if (texture)
-      textures_.push_back({texture, pixel_format, width, height});
+      textures_.emplace_back(texture, pixel_format, width, height);
     else
       LOG(ERROR) << "Error creating texture: " << SDL_GetError();
 
     return texture;
-  }
-
-  void Clear() {
-    for (auto& info : textures_)
-      SDL_DestroyTexture(info.texture);
   }
 
   std::list<TextureInfo> textures_;
