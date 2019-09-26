@@ -109,10 +109,9 @@ bool ByteBuffer::TryConvert(Handle<JsValue> value) {
         JSObjectGetArrayBufferBytesPtr(cx, object, nullptr));
     size_ = JSObjectGetArrayBufferByteLength(cx, object, nullptr);
   } else {
-    ptr_ =
-        reinterpret_cast<uint8_t*>(
-            JSObjectGetTypedArrayBytesPtr(cx, object, nullptr)) +
-        JSObjectGetTypedArrayByteOffset(cx, object, nullptr);
+    ptr_ = reinterpret_cast<uint8_t*>(
+               JSObjectGetTypedArrayBytesPtr(cx, object, nullptr)) +
+           JSObjectGetTypedArrayByteOffset(cx, object, nullptr);
     size_ = JSObjectGetTypedArrayByteLength(cx, object, nullptr);
   }
   buffer_ = object;

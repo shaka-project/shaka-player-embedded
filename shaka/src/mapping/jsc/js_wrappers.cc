@@ -118,8 +118,8 @@ ReturnVal<JsValue> GetMemberRaw(Handle<JsObject> object,
                                 const std::string& name,
                                 LocalVar<JsValue>* exception) {
   JSValueRef raw_except = nullptr;
-  auto* ret = JSObjectGetProperty(GetContext(), object,
-                                  JsStringFromUtf8(name), &raw_except);
+  auto* ret = JSObjectGetProperty(GetContext(), object, JsStringFromUtf8(name),
+                                  &raw_except);
   if (exception) {
     *exception = raw_except;
   }
@@ -403,8 +403,8 @@ double NumberFromValue(Handle<JsValue> value) {
 bool BooleanFromValue(Handle<JsValue> value) {
   JSContextRef cx = GetContext();
   if (IsInstanceOfStandardType(value, "Boolean")) {
-    LocalVar<JsValue> func = GetMemberRaw(
-        UnsafeJsCast<JsObject>(value), "valueOf");
+    LocalVar<JsValue> func =
+        GetMemberRaw(UnsafeJsCast<JsObject>(value), "valueOf");
     CHECK(GetValueType(func) == proto::ValueType::Function);
     LocalVar<JsValue> except;
     CHECK(InvokeMethod(UnsafeJsCast<JsFunction>(func),
