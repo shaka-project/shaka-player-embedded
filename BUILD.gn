@@ -801,6 +801,7 @@ if (is_mac || is_ios) {
     sources = [
       "shaka/include/shaka/eme/configuration.h",
       "shaka/include/shaka/eme/data.h",
+      "shaka/include/shaka/eme/eme_promise.h",
       "shaka/include/shaka/eme/implementation.h",
       "shaka/include/shaka/eme/implementation_factory.h",
       "shaka/include/shaka/eme/implementation_helper.h",
@@ -845,11 +846,11 @@ if (is_mac || is_ios) {
       "shaka/include/shaka/vtt_cue.h",
 
       # Objective-C headers
-      "shaka/include/shaka/error_objc.h",
       "$root_gen_dir/shaka/manifest_objc.h",
       "$root_gen_dir/shaka/player_externs_objc.h",
       "$root_gen_dir/shaka/track_objc.h",
       "$root_gen_dir/shaka/stats_objc.h",
+      "shaka/include/shaka/error_objc.h",
       "shaka/include/shaka/ShakaPlayerView.h",
     ]
     sources += get_target_outputs(":gen_config_h")
