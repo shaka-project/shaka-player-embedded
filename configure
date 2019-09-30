@@ -491,6 +491,8 @@ def _RunGflagsConfigure(src_dir, dest_dir, cpu, target_os, sysroot, _):
       '-DCMAKE_C_FLAGS=' + flags,
       '-DCMAKE_CXX_FLAGS=' + flags,
       '-DCMAKE_SYSROOT=' + sysroot,
+      '-DCMAKE_OSX_SYSROOT=' + sysroot,
+      '-DCMAKE_OSX_DEVELOPMENT_TARGET=""',
   ]
   return _SilentRun('cmake', src_dir, *extra_flags, cwd=dest_dir)
 
