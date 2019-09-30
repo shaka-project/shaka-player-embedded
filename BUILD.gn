@@ -298,6 +298,8 @@ source_set("eme_plugins") {
   # TODO: Combine these dependencies with the "internal_sources" target.
   deps = [
     ":gen_eme_plugins",
+    # Because plugins can use internal headers, it requires the protobuf.
+    ":indexeddb-proto",
     "//third_party/curl:libcurl",
     "//third_party/ffmpeg:ffmpeg_libs",
     "//third_party/glog:glog",
