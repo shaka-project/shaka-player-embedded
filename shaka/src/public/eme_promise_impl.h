@@ -22,6 +22,7 @@
 
 #include "src/core/ref_ptr.h"
 #include "src/mapping/promise.h"
+#include "src/util/macros.h"
 
 namespace shaka {
 namespace eme {
@@ -29,12 +30,9 @@ namespace eme {
 class EmePromise::Impl {
  public:
   Impl(const Promise& promise, bool has_value);
-  Impl(const Impl& other) = delete;
-  Impl(Impl&& other) = delete;
   virtual ~Impl();
 
-  Impl& operator=(const Impl& other) = delete;
-  Impl& operator=(Impl&& other) = delete;
+  NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
   virtual void Resolve();
   virtual void ResolveWith(bool value);
@@ -46,7 +44,7 @@ class EmePromise::Impl {
  private:
   RefPtr<Promise> promise_;
   std::atomic<bool> is_pending_;
-  bool has_value_;
+  const bool has_value_;
 };
 
 }  // namespace eme
