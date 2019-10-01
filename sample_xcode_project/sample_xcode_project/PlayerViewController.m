@@ -62,9 +62,11 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
   // Enable sleep again, so that it can go to sleep while selecting assets.
   [UIApplication sharedApplication].idleTimerDisabled = NO;
 
-  // Un-listen to VoiceOver notifications.
-  NSNotificationName voiceOverNotification = UIAccessibilityVoiceOverStatusDidChangeNotification;
-  [[NSNotificationCenter defaultCenter] removeObserver:self name:voiceOverNotification object:nil];
+  if (@available(iOS 11, *)) {
+    // Un-listen to VoiceOver notifications.
+    NSNotificationName voiceOverNotification = UIAccessibilityVoiceOverStatusDidChangeNotification;
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:voiceOverNotification object:nil];
+  }
 
   // Un-listen to enter foreground/background notifications.
   [[NSNotificationCenter defaultCenter] removeObserver:self
@@ -88,12 +90,14 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
   // Don't go to sleep while watching a video.
   [UIApplication sharedApplication].idleTimerDisabled = YES;
 
-  // Listen to VoiceOver notifications.
-  NSNotificationName voiceOverNotification = UIAccessibilityVoiceOverStatusDidChangeNotification;
-  [[NSNotificationCenter defaultCenter] addObserver:self
-                                           selector:@selector(voiceOverStatusChanged)
-                                               name:voiceOverNotification
-                                             object:nil];
+  if (@available(iOS 11, *)) {
+    // Listen to VoiceOver notifications.
+    NSNotificationName voiceOverNotification = UIAccessibilityVoiceOverStatusDidChangeNotification;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(voiceOverStatusChanged)
+                                                 name:voiceOverNotification
+                                               object:nil];
+  }
 
   // Listen to enter foreground/background notifications.
   [[NSNotificationCenter defaultCenter] addObserver:self
