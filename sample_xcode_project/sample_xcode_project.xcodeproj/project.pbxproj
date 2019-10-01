@@ -10,8 +10,8 @@
 		9447F75F2159466D0066274B /* ErrorDisplayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9447F75E2159466D0066274B /* ErrorDisplayView.m */; };
 		947D78DE216EA9F600B1DD2F /* LicenseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 947D78DD216EA9F600B1DD2F /* LicenseViewController.m */; };
 		947EFDBD216D48CE0034D7DD /* NSObject+ShakaLayoutHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 947EFDBC216D48CE0034D7DD /* NSObject+ShakaLayoutHelpers.m */; };
-		9486765E216C184400AEF3B6 /* ProgressAndBufferedSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 9486765D216C184400AEF3B6 /* ProgressAndBufferedSlider.m */; };
 		9486765B216C127E00AEF3B6 /* ConfigTableValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 9486765A216C127E00AEF3B6 /* ConfigTableValue.m */; };
+		9486765E216C184400AEF3B6 /* ProgressAndBufferedSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 9486765D216C184400AEF3B6 /* ProgressAndBufferedSlider.m */; };
 		948E9D8C2167C2CC003457B6 /* LicenseTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 948E9D8B2167C2CC003457B6 /* LicenseTableViewController.m */; };
 		948E9D912168167D003457B6 /* ConfigTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 948E9D902168167D003457B6 /* ConfigTableViewController.m */; };
 		94A0C4BF209A753F0019FF2A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 94A0C4BD209A753F0019FF2A /* Main.storyboard */; };
@@ -47,10 +47,10 @@
 		947D78DD216EA9F600B1DD2F /* LicenseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LicenseViewController.m; sourceTree = "<group>"; };
 		947EFDBB216D48CE0034D7DD /* NSObject+ShakaLayoutHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSObject+ShakaLayoutHelpers.h"; sourceTree = "<group>"; };
 		947EFDBC216D48CE0034D7DD /* NSObject+ShakaLayoutHelpers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSObject+ShakaLayoutHelpers.m"; sourceTree = "<group>"; };
-		9486765C216C184400AEF3B6 /* ProgressAndBufferedSlider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProgressAndBufferedSlider.h; sourceTree = "<group>"; };
-		9486765D216C184400AEF3B6 /* ProgressAndBufferedSlider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProgressAndBufferedSlider.m; sourceTree = "<group>"; };
 		94867659216C127E00AEF3B6 /* ConfigTableValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ConfigTableValue.h; sourceTree = "<group>"; };
 		9486765A216C127E00AEF3B6 /* ConfigTableValue.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ConfigTableValue.m; sourceTree = "<group>"; };
+		9486765C216C184400AEF3B6 /* ProgressAndBufferedSlider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProgressAndBufferedSlider.h; sourceTree = "<group>"; };
+		9486765D216C184400AEF3B6 /* ProgressAndBufferedSlider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProgressAndBufferedSlider.m; sourceTree = "<group>"; };
 		948E9D8A2167C2CC003457B6 /* LicenseTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LicenseTableViewController.h; sourceTree = "<group>"; };
 		948E9D8B2167C2CC003457B6 /* LicenseTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LicenseTableViewController.m; sourceTree = "<group>"; };
 		948E9D8F2168167C003457B6 /* ConfigTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ConfigTableViewController.h; sourceTree = "<group>"; };
@@ -145,6 +145,7 @@
 				94A0C4B1209A753F0019FF2A /* Frameworks */,
 				94A0C4B2209A753F0019FF2A /* Resources */,
 				94E98CCA20A4BA82008F4729 /* Embed Frameworks */,
+				5AC78F5D2343E5AE00249397 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -202,6 +203,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		5AC78F5D2343E5AE00249397 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "for f in $(find \"${CONFIGURATION_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}\" -name '*.framework'); do\n  codesign --verbose --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" \\\n      \"$f/$(basename \"${f%.framework}\")\"\ndone\n";
+			showEnvVarsInLog = 0;
+		};
 		94E98CC320A4BA16008F4729 /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
