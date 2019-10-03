@@ -195,6 +195,12 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
   return YES;
 }
 
+- (void)checkInitialized {
+  if (!_engine) {
+    [NSException raise:NSGenericException format:@"Must call setClient to initialize the object"];
+  }
+}
+
 // MARK: rendering
 
 - (CGImageRef)drawFrame {
@@ -370,63 +376,78 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 // MARK: controls
 
 - (void)play {
+  [self checkInitialized];
   _video->Play();
 }
 
 - (void)pause {
+  [self checkInitialized];
   _video->Pause();
 }
 
 - (BOOL)paused {
+  [self checkInitialized];
   return _video->Paused();
 }
 
 - (BOOL)ended {
+  [self checkInitialized];
   return _video->Ended();
 }
 
 - (BOOL)seeking {
+  [self checkInitialized];
   return _video->Seeking();
 }
 
 - (double)duration {
+  [self checkInitialized];
   return _video->Duration();
 }
 
 - (double)playbackRate {
+  [self checkInitialized];
   return _video->PlaybackRate();
 }
 
 - (void)setPlaybackRate:(double)rate {
+  [self checkInitialized];
   _video->SetPlaybackRate(rate);
 }
 
 - (double)currentTime {
+  [self checkInitialized];
   return _video->CurrentTime();
 }
 
 - (void)setCurrentTime:(double)time {
+  [self checkInitialized];
   _video->SetCurrentTime(time);
 }
 
 - (double)volume {
+  [self checkInitialized];
   return _video->Volume();
 }
 
 - (void)setVolume:(double)volume {
+  [self checkInitialized];
   _video->SetVolume(volume);
 }
 
 - (BOOL)muted {
+  [self checkInitialized];
   return _video->Muted();
 }
 
 - (void)setMuted:(BOOL)muted {
+  [self checkInitialized];
   _video->SetMuted(muted);
 }
 
 
 - (ShakaPlayerLogLevel)logLevel {
+  [self checkInitialized];
   const auto results = shaka::Player::GetLogLevel(_engine.get());
   if (results.has_error())
     return ShakaPlayerLogLevelNone;
@@ -435,6 +456,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)setLogLevel:(ShakaPlayerLogLevel)logLevel {
+  [self checkInitialized];
   auto castedLogLevel = static_cast<shaka::Player::LogLevel>(logLevel);
   const auto results = shaka::Player::SetLogLevel(_engine.get(), castedLogLevel);
   if (results.has_error()) {
@@ -443,6 +465,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (NSString *)playerVersion {
+  [self checkInitialized];
   const auto results = shaka::Player::GetPlayerVersion(_engine.get());
   if (results.has_error())
     return @"unknown version";
@@ -452,6 +475,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 
 
 - (BOOL)isAudioOnly {
+  [self checkInitialized];
   auto results = _player->IsAudioOnly();
   if (results.has_error())
     return false;
@@ -460,6 +484,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (BOOL)isLive {
+  [self checkInitialized];
   auto results = _player->IsLive();
   if (results.has_error())
     return false;
@@ -468,6 +493,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (BOOL)closedCaptions {
+  [self checkInitialized];
   auto results = _player->IsTextTrackVisible();
   if (results.has_error())
     return false;
@@ -476,10 +502,12 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)setClosedCaptions:(BOOL)closedCaptions {
+  [self checkInitialized];
   _player->SetTextTrackVisibility(closedCaptions);
 }
 
 - (ShakaBufferedRange *)seekRange {
+  [self checkInitialized];
   auto results = _player->SeekRange();
   if (results.has_error()) {
     _client.OnError(results.error());
@@ -490,6 +518,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (ShakaBufferedInfo *)bufferedInfo {
+  [self checkInitialized];
   auto results = _player->GetBufferedInfo();
   if (results.has_error()) {
     _client.OnError(results.error());
@@ -501,6 +530,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 
 
 - (ShakaStats *)getStats {
+  [self checkInitialized];
   auto results = _player->GetStats();
   if (results.has_error()) {
     _client.OnError(results.error());
@@ -511,6 +541,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (NSArray<ShakaTrack *> *)getTextTracks {
+  [self checkInitialized];
   auto results = _player->GetTextTracks();
   if (results.has_error())
     return [[NSArray<ShakaTrack *> alloc] init];
@@ -519,6 +550,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (NSArray<ShakaTrack *> *)getVariantTracks {
+  [self checkInitialized];
   auto results = _player->GetVariantTracks();
   if (results.has_error())
     return [[NSArray<ShakaTrack *> alloc] init];
@@ -533,6 +565,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 
 - (void)load:(NSString *)uri withStartTime:(double)startTime {
   @synchronized(self) {
+    [self checkInitialized];
     const auto loadResults = _player->Load(uri.UTF8String, startTime);
     if (loadResults.has_error()) {
       _client.OnError(loadResults.error());
@@ -547,6 +580,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)load:(NSString *)uri withStartTime:(double)startTime andBlock:(ShakaPlayerAsyncBlock)block {
+  [self checkInitialized];
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
     @synchronized(self) {
       auto loadResults = self->_player->Load(uri.UTF8String, startTime);
@@ -597,6 +631,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)unloadWithBlock:(ShakaPlayerAsyncBlock)block {
+  [self checkInitialized];
   // Stop the render loop before acquiring the mutex, to avoid deadlocks.
   [_renderLoopTimer invalidate];
 
@@ -621,22 +656,27 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)configure:(const NSString *)namePath withBool:(BOOL)value {
+  [self checkInitialized];
   _player->Configure(namePath.UTF8String, static_cast<bool>(value));
 }
 
 - (void)configure:(const NSString *)namePath withDouble:(double)value {
+  [self checkInitialized];
   _player->Configure(namePath.UTF8String, value);
 }
 
 - (void)configure:(const NSString *)namePath withString:(const NSString *)value {
+  [self checkInitialized];
   _player->Configure(namePath.UTF8String, value.UTF8String);
 }
 
 - (void)configureWithDefault:(const NSString *)namePath {
+  [self checkInitialized];
   _player->Configure(namePath.UTF8String, shaka::DefaultValue);
 }
 
 - (BOOL)getConfigurationBool:(const NSString *)namePath {
+  [self checkInitialized];
   auto results = _player->GetConfigurationBool(namePath.UTF8String);
   if (results.has_error()) {
     return NO;
@@ -646,6 +686,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (double)getConfigurationDouble:(const NSString *)namePath {
+  [self checkInitialized];
   auto results = _player->GetConfigurationDouble(namePath.UTF8String);
   if (results.has_error()) {
     return 0;
@@ -655,6 +696,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (NSString *)getConfigurationString:(const NSString *)namePath {
+  [self checkInitialized];
   auto results = _player->GetConfigurationString(namePath.UTF8String);
   if (results.has_error()) {
     return @"";
@@ -666,6 +708,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 
 
 - (NSArray<ShakaLanguageRole *> *)audioLanguagesAndRoles {
+  [self checkInitialized];
   auto results = _player->GetAudioLanguagesAndRoles();
   if (results.has_error())
     return [[NSArray<ShakaLanguageRole *> alloc] init];
@@ -674,6 +717,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (NSArray<ShakaLanguageRole *> *)textLanguagesAndRoles {
+  [self checkInitialized];
   auto results = _player->GetTextLanguagesAndRoles();
   if (results.has_error())
     return [[NSArray<ShakaLanguageRole *> alloc] init];
@@ -682,6 +726,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)selectAudioLanguage:(NSString *)language withRole:(NSString *)role {
+  [self checkInitialized];
   auto results = _player->SelectAudioLanguage(language.UTF8String, role.UTF8String);
   if (results.has_error()) {
     _client.OnError(results.error());
@@ -689,6 +734,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)selectAudioLanguage:(NSString *)language {
+  [self checkInitialized];
   auto results = _player->SelectAudioLanguage(language.UTF8String);
   if (results.has_error()) {
     _client.OnError(results.error());
@@ -696,6 +742,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)selectTextLanguage:(NSString *)language withRole:(NSString *)role {
+  [self checkInitialized];
   auto results = _player->SelectTextLanguage(language.UTF8String, role.UTF8String);
   if (results.has_error()) {
     _client.OnError(results.error());
@@ -703,6 +750,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)selectTextLanguage:(NSString *)language {
+  [self checkInitialized];
   auto results = _player->SelectTextLanguage(language.UTF8String);
   if (results.has_error()) {
     _client.OnError(results.error());
@@ -710,6 +758,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)selectTextTrack:(const ShakaTrack *)track {
+  [self checkInitialized];
   auto results = _player->SelectTextTrack([track toCpp]);
   if (results.has_error()) {
     _client.OnError(results.error());
@@ -717,6 +766,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)selectVariantTrack:(const ShakaTrack *)track {
+  [self checkInitialized];
   auto results = _player->SelectVariantTrack([track toCpp]);
   if (results.has_error()) {
     _client.OnError(results.error());
@@ -724,6 +774,7 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)selectVariantTrack:(const ShakaTrack *)track withClearBuffer:(BOOL)clear {
+  [self checkInitialized];
   auto results = _player->SelectVariantTrack([track toCpp], clear);
   if (results.has_error()) {
     _client.OnError(results.error());
@@ -731,7 +782,8 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
 }
 
 - (void)destroy {
-  _player->Destroy();
+  if (_player)
+    _player->Destroy();
 }
 
 @end

@@ -93,6 +93,14 @@ SHAKA_EXPORT
 /**
  * A view that encapsulates an instance of Shaka Player, handles rendering,
  * and exposes controls.
+ *
+ * When creating instance of this object, you need to set the client to
+ * initialize this object.  Using <code>init</code>, <code>initWithFrame</code>,
+ * or <code>initWithCoder</code> will not work by itself.  You need to either
+ * use <code>initWithClient</code> or call <code>setClient</code> before you use
+ * the object.  You can pass a <code>nil</code> client, but that means you can't
+ * tell what error happened.
+ *
  * @ingroup player
  */
 SHAKA_EXPORT
