@@ -79,6 +79,7 @@ class HTMLVideoElement : public dom::Element {
 
   media::VideoPlaybackQuality GetVideoPlaybackQuality() const;
   RefPtr<TimeRanges> Buffered() const;
+  RefPtr<TimeRanges> Seekable() const;
   std::string Source() const;
   ExceptionOr<void> SetSource(const std::string& src);
   double CurrentTime() const;

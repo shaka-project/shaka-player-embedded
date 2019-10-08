@@ -224,6 +224,13 @@ RefPtr<TimeRanges> HTMLVideoElement::Buffered() const {
       media::SourceType::Unknown));
 }
 
+RefPtr<TimeRanges> HTMLVideoElement::Seekable() const {
+  media::BufferedRanges ranges;
+  if (media_source_)
+    ranges.emplace_back(0, media_source_->GetDuration());
+  return new TimeRanges(ranges);
+}
+
 std::string HTMLVideoElement::Source() const {
   return media_source_ ? media_source_->url : "";
 }
@@ -367,6 +374,7 @@ HTMLVideoElementFactory::HTMLVideoElementFactory() {
   AddGenericProperty("seeking", &HTMLVideoElement::Seeking);
   AddGenericProperty("ended", &HTMLVideoElement::Ended);
   AddGenericProperty("buffered", &HTMLVideoElement::Buffered);
+  AddGenericProperty("seekable", &HTMLVideoElement::Seekable);
   AddGenericProperty("src", &HTMLVideoElement::Source,
                      &HTMLVideoElement::SetSource);
   AddGenericProperty("currentSrc", &HTMLVideoElement::Source);
@@ -391,7 +399,6 @@ HTMLVideoElementFactory::HTMLVideoElementFactory() {
   NotImplemented("getStartDate");
   NotImplemented("defaultPlaybackRate");
   NotImplemented("playable");
-  NotImplemented("seekable");
   NotImplemented("mediaGroup");
   NotImplemented("controller");
   NotImplemented("controls");
