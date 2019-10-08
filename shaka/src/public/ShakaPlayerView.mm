@@ -624,7 +624,8 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
       // To avoid changing layers on a background thread, do the actual cue
       // operations in the render loop.
       __strong ShakaPlayerView *strongSelf = weakSelf;
-      strongSelf->_remakeTextLayer = YES;
+      if (strongSelf)
+        strongSelf->_remakeTextLayer = YES;
     };
     textTracks[0].SetCueChangeEventListener(onCueChange);
   }
