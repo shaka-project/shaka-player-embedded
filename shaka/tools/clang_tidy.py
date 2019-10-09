@@ -103,49 +103,43 @@ DISABLED_CHECKS = [
 CHECKS = '*,-' + ',-'.join(DISABLED_CHECKS)
 
 
-def _GenerateDatabase(build_dir):
+def _GenerateDatabase():
   """Generates the compile_commands.json database file."""
   # Patch GetNinjaPath since we assume it is globally installed.
   compile_db.GetNinjaPath = lambda: 'ninja'
 
-  db = json.dumps(compile_db.GenerateWithNinja(build_dir))
+  db = json.dumps(compile_db.GenerateWithNinja('.'))
   db = (db.replace('-Wno-enum-compare-switch', '')
         .replace('-Wno-unused-lambda-capture', '')
         .replace('-Wno-ignored-pragma-optimize', '')
         .replace('-Wno-null-pointer-arithmetic', '')
         .replace('-Wno-return-std-move-in-c++11', ''))
-  with open(os.path.join(build_dir, 'compile_commands.json'), 'w') as f:
+  with open('compile_commands.json', 'w') as f:
     f.write(db)
 
 
-def RunClangTidy(build_dir, clang_tidy, fix):
+def RunClangTidy(clang_tidy, fix):
   """Runs clang-tidy for the given build directory."""
-  _GenerateDatabase(build_dir)
+  _GenerateDatabase()
 
   files = utils.GetSourceFiles(os.path.join(ROOT_DIR, 'shaka', 'src'))
-  files = [os.path.relpath(f, build_dir) for f in files]
+  files = [os.path.relpath(f, '.') for f in files]
   cmd = [clang_tidy, '-checks=' + CHECKS, '-warnings-as-errors=*', '-p', '.']
   if fix:
     cmd += ['-fix', '-fix-errors']
-  return subprocess.call(cmd + files, cwd=build_dir)
+  return subprocess.call(cmd + files)
 
 
 def main(args):
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument(
-      '--config-name', dest='config',
-      help='Do a special in-tree build with this configuration name.')
   parser.add_argument('--fix', action='store_true',
                       help='Automatically apply fixes to issues.')
   parser.add_argument('--clang-tidy', dest='clang_tidy',
                       help='The path to a clang-tidy executable to use.')
 
   parsed_args = parser.parse_args(args)
-  utils.CheckConfigName(parsed_args.config)
 
-  build_dir = utils.ConfigPath(parsed_args.config)
-  return RunClangTidy(build_dir, parsed_args.clang_tidy or 'clang-tidy',
-                      parsed_args.fix)
+  return RunClangTidy(parsed_args.clang_tidy or 'clang-tidy', parsed_args.fix)
 
 
 if __name__ == '__main__':

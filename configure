@@ -22,16 +22,11 @@ This doesn't use the make program to compile the project, this uses ninja.
 However, there is a Makefile that simply calls ./build.py for you.  You don't
 have to re-run ./configure if you edit BUILD.gn files.
 
-This doesn't support in-tree configures.  You have two options: (1) create
-another directory (or sub-directory) to do the configure in; or (2) use the
---config-name option.  --config-name will create a subdirectory in the source
-root called "out" to hold that configuration.  If --config-name is used, the
-Makefile will be generated in the working directory, but the generated files
-will be put in out/$CONFIG_NAME.  Multiple parallel configurations can exist, so
-you can have one for Debug and one for Release.
+This doesn't support in-tree configures.  You have to create another directory
+(or sub-directory) to do the configure in.
 
-You can use the generated Makefile or ./build.py to build.  If you used the
---config-name parameter, be sure to pass that to ./build.py also.
+You can use the generated Makefile or run ./build.py from the configured
+directory to build.
 """
 
 from __future__ import print_function
@@ -212,19 +207,18 @@ def _ConstructGnArgs(parsed_args):
   return gn_helpers.ToGNString(obj) + ' ' + parsed_args.gn_args_
 
 
-def GenGn(config_name, args, gen_ide=None):
+def GenGn(args, gen_ide=None):
   """Calls 'gn gen' with the given GN arguments."""
-  cmd = [utils.FindGn(), 'gen', '--root=' + ROOT_DIR, '--args=' + args,
-         utils.ConfigPath(config_name)]
+  cmd = [utils.FindGn(), 'gen', '--root=' + ROOT_DIR, '--args=' + args, '.']
   if gen_ide:
     cmd += ['--ide=' + gen_ide]
   return _SilentRun(*cmd)
 
 
-def RecoverGn(config_name):
+def RecoverGn():
   """Attempts to regenerate ninja files using an existing configuration."""
-  return subprocess.call([utils.FindGn(), '--root=' + ROOT_DIR, '-q', 'gen',
-                          utils.ConfigPath(config_name)])
+  return subprocess.call(
+      [utils.FindGn(), '--root=' + ROOT_DIR, '-q', 'gen', '.'])
 
 # }}}
 
@@ -562,14 +556,10 @@ def _RunLibxmlConfigure(src_dir, dest_dir, cpu, target_os, sysroot, _):
 
 def _RunThirdPartyConfigure(parsed_args):
   """Runs any third-party configure scripts that are needed."""
-  config_dir = utils.ConfigPath(parsed_args.config_name_)
-
-  cpu = (utils.GetGnArg(config_dir, 'target_cpu') or
-         utils.GetGnArg(config_dir, 'host_cpu'))
-  target_os = (utils.GetGnArg(config_dir, 'target_os') or
-               utils.GetGnArg(config_dir, 'host_os'))
-  gen_dir = utils.GetGnVar(config_dir, 'root_gen_dir')
-  sysroot = utils.GetGnVar(config_dir, 'sysroot')
+  cpu = utils.GetGnArg('target_cpu') or utils.GetGnArg('host_cpu')
+  target_os = utils.GetGnArg('target_os') or utils.GetGnArg('host_os')
+  gen_dir = utils.GetGnVar('root_gen_dir')
+  sysroot = utils.GetGnVar('sysroot')
 
   if not cpu or not target_os:
     logging.error('Error determining CPU or OS')
@@ -604,9 +594,6 @@ def _CreateArgParser():
   parser = argparse.ArgumentParser(
       description=__doc__, usage='%(prog)s [options]',
       formatter_class=argparse.RawDescriptionHelpFormatter)
-  parser.add_argument(
-      '--config-name', dest='config_name_', metavar='NAME',
-      help='Do a special in-tree build with this configuration name.')
   parser.add_argument(
       '--ide', choices=['eclipse', 'vs', 'vs2013', 'vs2015', 'vs2017', 'xcode',
                         'qtcreator', 'json'],
@@ -748,9 +735,8 @@ def _ParseArgs(args):
   if not parsed_args.enable_shared and not parsed_args.enabled_static:
     parser.error('Not configured to build something; use --enable-static or '
                  '--enable-shared.')
-  if (os.path.abspath(os.getcwd()) == os.path.abspath(ROOT_DIR) and
-      not parsed_args.config_name_):
-    parser.error('Either do an out-of-tree build or use --config-name.')
+  if os.path.abspath(os.getcwd()) == os.path.abspath(ROOT_DIR):
+    parser.error("In-tree builds aren't supported; create another directory")
 
   if parsed_args.sdl_utils is False and parsed_args.enable_demo and not is_ios:
     parser.error('Cannot disable SDL utils with the default demo; disable it '
@@ -818,11 +804,11 @@ def main(args):
     return 1
 
   if parsed_args.recover_:
-    return RecoverGn(parsed_args.config_name_)
+    return RecoverGn()
 
   # We need to generate GN files first so we can query things like target_os.
   gn_args = _ConstructGnArgs(parsed_args)
-  if GenGn(parsed_args.config_name_, gn_args, parsed_args.ide_) != 0:
+  if GenGn(gn_args, parsed_args.ide_) != 0:
     return 1
 
   if _RunThirdPartyConfigure(parsed_args) != 0:
@@ -832,7 +818,7 @@ def main(args):
   # configurations for extra third-party files.
   logging.error('Generating build files...')
   gn_args = _ConstructGnArgs(parsed_args)
-  if GenGn(parsed_args.config_name_, gn_args, parsed_args.ide_) != 0:
+  if GenGn(gn_args, parsed_args.ide_) != 0:
     return 1
 
   if parsed_args.makefile_:
@@ -840,7 +826,6 @@ def main(args):
       with open('Makefile', 'w') as out:
         out.write(f.read()
                   .replace('{{SOURCE_ROOT}}', ROOT_DIR)
-                  .replace('{{CONFIG_NAME}}', parsed_args.config_name_ or '')
                   .replace('{{TARGET_OS}}', parsed_args.target_os or ''))
 
   return 0

@@ -155,9 +155,7 @@ def _CheckClangTidy(parsed_args):
   if not exe:
     return 1 if parsed_args.force else 0
 
-  utils.CheckConfigName(parsed_args.config)
-  build_dir = utils.ConfigPath(parsed_args.config)
-  return clang_tidy.RunClangTidy(build_dir, exe, parsed_args.fix)
+  return clang_tidy.RunClangTidy(exe, parsed_args.fix)
 
 
 @_Check
@@ -191,9 +189,6 @@ def _CheckClangFormat(parsed_args):
 
 def main(args):
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument(
-      '--config-name', dest='config',
-      help='Do a special in-tree build with this configuration name.')
   parser.add_argument('--fix', action='store_true',
                       help='Automatically apply fixes to issues.')
   parser.add_argument('--clang-tidy',

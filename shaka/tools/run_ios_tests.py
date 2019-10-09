@@ -25,7 +25,7 @@ import subprocess
 import sys
 
 
-_APP_NAME = 'org.chromium.gtest.generic-unit-test'
+_APP_NAME = 'org.chromium.gtest.tests'
 _IOS_SIM_PREFIX = 'com.apple.CoreSimulator.SimRuntime.iOS-'
 _SIMULATOR_PATH = ('/Applications/Xcode.app/Contents/Developer/Applications/'
                    'Simulator.app/Contents/MacOS/Simulator')
@@ -42,11 +42,6 @@ def _TerminateProcess(proc):
   """A context manager that terminates the given process at the end."""
   yield proc
   proc.kill()
-
-
-def _ConfigPath(config):
-  """Returns the path to the given config name."""
-  return os.path.join(_ROOT_DIR, 'out', config) if config else '.'
 
 
 def _FindIosSimulator():
@@ -113,9 +108,9 @@ def _PollLog(log_path):
       print(line, file=sys.stderr)
 
 
-def RunTests(build_dir):
+def RunTests():
   """Installs the given app, runs the tests, and prints the logs."""
-  log_path = os.path.join(build_dir, 'ios_tests.log')
+  log_path = os.path.abspath('ios_tests.log')
   try:
     os.remove(log_path)
   except OSError:
@@ -125,18 +120,16 @@ def RunTests(build_dir):
     with _TerminateProcess(subprocess.Popen([_SIMULATOR_PATH], stdout=null,
                                             stderr=null)):
       uuid, is_booted = _FindIosSimulator()
-      _InstallApp(uuid, os.path.join(build_dir, 'tests.app'), is_booted)
+      _InstallApp(uuid, 'tests.app', is_booted)
       _StartTests(uuid, log_path)
       return _PollLog(log_path)
 
 
 def main(args):
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument('--config-name', dest='config',
-                      help='The name of the configuration to use.')
 
   ns = parser.parse_args(args)
-  return RunTests(_ConfigPath(ns.config))
+  return RunTests()
 
 
 if __name__ == '__main__':

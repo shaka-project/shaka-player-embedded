@@ -26,23 +26,24 @@ PATH=$(bash -l -c 'echo $PATH')
 # Determine configuration options and framework path.
 CONFIG_FLAGS="--ios --disable-demo --disable-tests"
 if [[ $EFFECTIVE_PLATFORM_NAME == "-iphoneos" ]]; then
-  CONFIG_NAME="sample_xcode_project_ios"
+  CONFIG_PATH="./out/sample_xcode_project_ios"
   CONFIG_FLAGS+=" --cpu arm64"
 else
-  CONFIG_NAME="sample_xcode_project_ios_sim"
+  CONFIG_PATH="./out/sample_xcode_project_ios_sim"
 fi
 if [[ $CONFIGURATION == "Release" ]]; then
-  CONFIG_NAME+="_release"
+  CONFIG_PATH+="_release"
   CONFIG_FLAGS+=" --release"
 fi
-echo "Using $CONFIG_NAME!"
+echo "Using $CONFIG_PATH!"
 
 # Create the framework.
-if [[ ! -d "./out/$CONFIG_NAME" ]]; then
-  ./configure --config-name "$CONFIG_NAME" $CONFIG_FLAGS
+if [[ ! -d "$CONFIG_PATH" ]]; then
+  mkdir -p "$CONFIG_PATH"
+  (cd "$CONFIG_PATH" && ../../configure $CONFIG_FLAGS)
 fi
-./build.py --config-name "$CONFIG_NAME"
+(cd "$CONFIG_PATH" && ../../build.py)
 
 # Copy the correct framework into that path.
 rm -rf ./sample_xcode_project/ShakaPlayerEmbedded.framework
-mv ./out/"$CONFIG_NAME"/ShakaPlayerEmbedded.framework ./sample_xcode_project/ShakaPlayerEmbedded.framework
+mv "$CONFIG_PATH"/ShakaPlayerEmbedded.framework ./sample_xcode_project/ShakaPlayerEmbedded.framework

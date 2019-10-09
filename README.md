@@ -90,21 +90,10 @@ download only those you need.
 
 You need to run `configure` to setup configuration settings.  You can pass
 --help to see some of the options you can use.  We don't support in-tree builds;
-you can either run `configure` in another directory or use the --config-name
-parameter.  If you use --config-name, it will create a directory in the source
-root to hold the data.
+you need to run `configure` in another directory.
 
 Once `configure` is done, you can build using `build.py`.  There is a Makefile
-that will run the script for you if you prefer.  If you used --config-name,
-you'll need to use that option in `build.py` (the Makefile will do this for
-you).
-
-```shell
-./configure --config-name Debug
-make
-```
-
-Or
+that will run the script for you if you prefer.
 
 ```shell
 mkdir foo

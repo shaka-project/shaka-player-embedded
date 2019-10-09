@@ -57,15 +57,10 @@ def GenerateDoxyfile(extra_path):
 
 def main(args):
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument(
-      '--config-name', dest='config',
-      help='Do a special in-tree build with this configuration name.')
 
-  ns = parser.parse_args(args)
-  utils.CheckConfigName(ns.config)
-  build_dir = utils.ConfigPath(ns.config)
+  parser.parse_args(args)
 
-  GenerateDoxyfile(os.path.join(build_dir, 'gen', 'shaka'))
+  GenerateDoxyfile(os.path.join(os.getcwd(), 'gen', 'shaka'))
   return GenDocs()
 
 

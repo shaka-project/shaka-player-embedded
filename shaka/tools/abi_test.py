@@ -50,25 +50,24 @@ def _IsGitDirty():
   return subprocess.call(['git', '-C', ROOT_DIR, 'diff', '--exit-code']) != 0
 
 
-def _DoBuild(config_name, parsed_args):
+def _DoBuild(build_dir, parsed_args):
   """Configures and builds the project."""
   logging.info('Creating release build at %s...',
                subprocess.check_output(
                    ['git', '-C', ROOT_DIR, 'rev-parse', 'HEAD'])[:6])
 
-  args = ['--config-name', config_name, '--release', '--no-makefile']
+  args = ['--release', '--no-makefile']
   if parsed_args.ccache:
     args += ['--ccache-if-possible']
-  if subprocess.call([os.path.join(ROOT_DIR, 'configure')] + args) != 0:
+  if subprocess.call([os.path.join(ROOT_DIR, 'configure')] + args,
+                     cwd=build_dir) != 0:
     return 1
-  return subprocess.call(
-      [os.path.join(ROOT_DIR, 'build.py'), '--config-name', config_name])
+  return subprocess.call([os.path.join(ROOT_DIR, 'build.py')], cwd=build_dir)
 
 
-def _GetSymbols(config_name):
+def _GetSymbols(build_dir):
   """Returns a set of public symbols from the library."""
-  lib_path = os.path.join(
-      ROOT_DIR, 'out', config_name, 'libshaka-player-embedded.so')
+  lib_path = os.path.join(build_dir, 'libshaka-player-embedded.so')
   log = subprocess.check_output(
       ['nm', '-Dg', '--defined-only', '--format=posix', lib_path])
 
@@ -82,19 +81,19 @@ def _GetSymbols(config_name):
   return symbols
 
 
-def RunAbiTest(config_name, parsed_args):
+def RunAbiTest(build_dir, parsed_args):
   """Runs the ABI tests."""
-  if _DoBuild(config_name, parsed_args) != 0:
+  if _DoBuild(build_dir, parsed_args) != 0:
     return 1
-  symbols = _GetSymbols(config_name)
+  symbols = _GetSymbols(build_dir)
 
   # Checkout the other reference and do another build.
   logging.info('Checking out %s to compare against...', parsed_args.ref)
   if subprocess.call(['git', '-C', ROOT_DIR, 'checkout', parsed_args.ref]) != 0:
     return 1
-  if _DoBuild(config_name, parsed_args) != 0:
+  if _DoBuild(build_dir, parsed_args) != 0:
     return 1
-  old_symbols = _GetSymbols(config_name)
+  old_symbols = _GetSymbols(build_dir)
 
   if not old_symbols.issubset(symbols):
     logging.error('Change breaks ABI compatibility.')
@@ -130,9 +129,9 @@ def main(args):
     return 1
 
   prev_ref = _GetCheckout()
-  temp_dir = tempfile.mkdtemp(dir=os.path.join(ROOT_DIR, 'out'))
+  temp_dir = tempfile.mkdtemp()
   try:
-    return RunAbiTest(os.path.basename(temp_dir), parsed_args)
+    return RunAbiTest(temp_dir, parsed_args)
   finally:
     shutil.rmtree(temp_dir, ignore_errors=True)
     logging.info('Restoring previous git checkout')

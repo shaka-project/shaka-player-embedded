@@ -12,16 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CONFIG_NAME={{CONFIG_NAME}}
 SOURCE_ROOT={{SOURCE_ROOT}}
 TARGET_OS={{TARGET_OS}}
-
-
-ifeq ($(CONFIG_NAME),)
-	BIN_DIR='.'
-else
-	BIN_DIR='$(SOURCE_ROOT)/out/$(CONFIG_NAME)'
-endif
 
 
 .PHONY: all
@@ -33,36 +25,30 @@ install:
 
 .PHONY: clean
 clean:
-	@python '$(SOURCE_ROOT)/build.py' --config-name '$(CONFIG_NAME)' --clean
+	@python '$(SOURCE_ROOT)/build.py' --clean
 
 .PHONY: distclean
 distclean: clean
-ifeq ($(CONFIG_NAME),)
 	rm -rf gen obj args.gn build.ninja build.ninja.d toolchain.ninja \
 	  shaka-player.compiled.js Makefile
-else
-	rm -rf '$(SOURCE_ROOT)/out/$(CONFIG_NAME)'
-	rm Makefile
-endif
 
 # TODO: These should be changed to work with iOS/Android targets.
 .PHONY: run
 run: shaka-player
-	'$(BIN_DIR)/demo' $(ARGS)
+	'./demo' $(ARGS)
 
 .PHONY: check
 check:
-	@python '$(SOURCE_ROOT)/shaka/tools/presubmit.py' --config-name \
-		'$(CONFIG_NAME)' $(ARGS)
+	@python '$(SOURCE_ROOT)/shaka/tools/presubmit.py' $(ARGS)
 
 .PHONY: test
 test: shaka-player
-	@python '$(SOURCE_ROOT)/test.py' --config-name '$(CONFIG_NAME)' $(ARGS)
+	@python '$(SOURCE_ROOT)/test.py' $(ARGS)
 
 .PHONY: shaka-player
 shaka-player:
-	@python '$(SOURCE_ROOT)/build.py' --config-name '$(CONFIG_NAME)'
+	@python '$(SOURCE_ROOT)/build.py'
 
 .PHONY: docs
 docs: shaka-player
-	@python '$(SOURCE_ROOT)/gen_docs.py' --config-name '$(CONFIG_NAME)'
+	@python '$(SOURCE_ROOT)/gen_docs.py'

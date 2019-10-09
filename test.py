@@ -29,7 +29,7 @@ import run_ios_tests
 import utils
 
 
-def _RunTests(build_dir, no_colors):
+def _RunTests(no_colors):
   """Runs the tests in the given build dir."""
   tools_path = os.path.join(ROOT_DIR, 'shaka', 'tools')
   if subprocess.call([sys.executable, '-m', 'unittest', 'discover',
@@ -45,30 +45,25 @@ def _RunTests(build_dir, no_colors):
                       '-s', webidl_path, '-p', '*_test.py'], env=env) != 0:
     return 1
 
-  target_os = (utils.GetGnArg(build_dir, 'target_os') or
-               utils.GetGnArg(build_dir, 'host_os'))
+  target_os = utils.GetGnArg('target_os') or utils.GetGnArg('host_os')
   if target_os == 'ios':
-    return run_ios_tests.RunTests(build_dir)
+    return run_ios_tests.RunTests()
   else:
     args = [
         '--media_directory', os.path.join(ROOT_DIR, 'shaka', 'test', 'media'),
     ]
     if no_colors:
       args += ['--no_colors']
-    return subprocess.call([os.path.join(build_dir, 'tests')] + args)
+    return subprocess.call(['./tests'] + args)
 
 
 def main(args):
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument(
-      '--config-name', dest='config',
-      help='Do a special in-tree build with this configuration name.')
   parser.add_argument('--no-colors', action='store_true',
                       help="Don't print colors in test output.")
 
   ns = parser.parse_args(args)
-  config_dir = utils.ConfigPath(ns.config)
-  return _RunTests(config_dir, ns.no_colors)
+  return _RunTests(ns.no_colors)
 
 
 if __name__ == '__main__':

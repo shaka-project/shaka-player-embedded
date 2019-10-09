@@ -29,7 +29,7 @@ sys.path.append(os.path.join(ROOT_DIR, 'shaka', 'tools'))
 import utils
 
 
-def CopyDataFiles(config_dir, dest, link=False):
+def CopyDataFiles(dest, link=False):
   """Copies the data files to the given destination."""
   def CopyFile(*path, **kwargs):
     abs_src = os.path.join(ROOT_DIR, *path)
@@ -43,26 +43,23 @@ def CopyDataFiles(config_dir, dest, link=False):
     else:
       shutil.copy(abs_src, abs_dest)
 
-  if utils.GetGnArg(config_dir, 'is_debug', is_string=False) == 'true':
+  if utils.GetGnArg('is_debug', is_string=False) == 'true':
     CopyFile('shaka', 'js', 'shaka-player.compiled.debug.js',
              name='shaka-player.compiled.js')
   else:
     CopyFile('shaka', 'js', 'shaka-player.compiled.js')
 
 
-def Build(build_dir, clean=False):
+def Build(clean=False):
   """Builds the library."""
   if clean:
-    return subprocess.call(['ninja', '-C', build_dir, '-t', 'clean'])
+    return subprocess.call(['ninja', '-t', 'clean'])
   else:
-    return subprocess.call(['ninja', '-C', build_dir, 'player'])
+    return subprocess.call(['ninja', 'player'])
 
 
 def main(args):
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument(
-      '--config-name', dest='config',
-      help='Do a special in-tree build with this configuration name.')
   parser.add_argument('--clean', dest='clean', action='store_true',
                       help='Delete all temporary object files for this config.')
   parser.add_argument('--data-dir', dest='data_dir',
@@ -71,22 +68,18 @@ def main(args):
                       help='Don\'t copy program data, create symlinks instead.')
 
   ns = parser.parse_args(args)
-  config_dir = utils.ConfigPath(ns.config)
-  if (not os.path.exists(os.path.join(config_dir, 'build.ninja')) and
-      os.path.exists(os.path.join(config_dir, 'args.gn'))):
+  if not os.path.exists('build.ninja') and os.path.exists('args.gn'):
     print('Ninja files missing, trying to recover them...', file=sys.stderr)
     configure = os.path.join(ROOT_DIR, 'configure')
-    if subprocess.call([configure, '--recover', '--config-name',
-                        ns.config]) != 0:
+    if subprocess.call([sys.executable or 'python', configure,
+                        '--recover']) != 0:
       return 1
 
-  utils.CheckConfigName(ns.config)
-
-  if Build(config_dir, ns.clean) != 0:
+  if Build(ns.clean) != 0:
     return 1
 
   if not ns.clean:
-    CopyDataFiles(config_dir, ns.data_dir or config_dir, ns.symlink)
+    CopyDataFiles(ns.data_dir or '.', ns.symlink)
 
   return 0
 

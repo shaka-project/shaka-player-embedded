@@ -64,20 +64,6 @@ def ConfigPath(config):
   return os.path.join(ROOT_DIR, 'out', config) if config else '.'
 
 
-def CheckConfigName(config_name):
-  """Checks that the given config name is valid, exists if invalid."""
-  path = ConfigPath(config_name)
-  if (not os.path.exists(os.path.join(path, 'args.gn')) or
-      not os.path.exists(os.path.join(path, 'build.ninja'))):
-    if config_name:
-      print('Unable to find configuration for --config-name %r' % config_name,
-            file=sys.stderr)
-    else:
-      print('Not configured, either run ./configure or pass --config-name',
-            file=sys.stderr)
-    sys.exit(1)
-
-
 def ExistsOnPath(cmd):
   """Returns whether the given executable exists on PATH."""
   paths = os.getenv('PATH').split(os.pathsep)
@@ -97,10 +83,10 @@ def FindGn():
     raise Exception('Unknown platform name ' + platform_name)
 
 
-def GetGnArg(config_dir, var_name, is_string=True):
+def GetGnArg(var_name, is_string=True):
   """Gets the value of a GN build argument."""
   val = subprocess.check_output([FindGn(), '--root=' + ROOT_DIR, 'args',
-                                 config_dir, '--list=' + var_name, '--short'])
+                                 '.', '--list=' + var_name, '--short'])
   # Examine the output line by line, since it might contain lines that are
   # warnings.
   for line in val.splitlines():
@@ -111,10 +97,10 @@ def GetGnArg(config_dir, var_name, is_string=True):
   return None
 
 
-def GetGnVar(config_dir, var_name):
+def GetGnVar(var_name):
   """Gets the value of a GN variable."""
   val = subprocess.check_output([FindGn(), '--root=' + ROOT_DIR, 'desc',
-                                 config_dir, '//:get_' + var_name,
+                                 '.', '//:get_' + var_name,
                                  'include_dirs']).strip()
 
   # Look for after the signal, "//value:/\n", to skip past any warnings.
