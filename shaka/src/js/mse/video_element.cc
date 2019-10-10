@@ -14,6 +14,8 @@
 
 #include "src/js/mse/video_element.h"
 
+#include <cmath>
+
 #include "src/core/js_manager_impl.h"
 #include "src/js/dom/document.h"
 #include "src/js/mse/media_source.h"
@@ -226,7 +228,7 @@ RefPtr<TimeRanges> HTMLVideoElement::Buffered() const {
 
 RefPtr<TimeRanges> HTMLVideoElement::Seekable() const {
   media::BufferedRanges ranges;
-  if (media_source_)
+  if (media_source_ && !std::isnan(media_source_->GetDuration()))
     ranges.emplace_back(0, media_source_->GetDuration());
   return new TimeRanges(ranges);
 }
@@ -391,7 +393,7 @@ HTMLVideoElementFactory::HTMLVideoElementFactory() {
   AddMemberFunction("addTextTrack", &HTMLVideoElement::AddTextTrack);
   AddMemberFunction("getVideoPlaybackQuality",
                     &HTMLVideoElement::GetVideoPlaybackQuality);
-  AddStaticFunction("canPlayType", &HTMLVideoElement::CanPlayType);
+  AddMemberFunction("canPlayType", &HTMLVideoElement::CanPlayType);
 
   NotImplemented("crossOrigin");
   NotImplemented("networkState");

@@ -69,7 +69,7 @@ class HTMLVideoElement : public dom::Element {
 
   // HTMLMediaElement members.
   void Load();
-  static CanPlayTypeEnum CanPlayType(const std::string& type);
+  CanPlayTypeEnum CanPlayType(const std::string& type);
 
   media::MediaReadyState ready_state;
   bool autoplay;

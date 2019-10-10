@@ -14,6 +14,8 @@
 
 #include "src/js/dom/container_node.h"
 
+#include <cctype>
+
 #include "src/js/dom/document.h"
 #include "src/js/dom/element.h"
 #include "src/js/js_error.h"
@@ -58,9 +60,24 @@ std::vector<RefPtr<Element>> ContainerNode::GetElementsByTagName(
   return ret;
 }
 
+ExceptionOr<RefPtr<Element>> ContainerNode::QuerySelector(
+    const std::string& query) const {
+  // This only supports an identifier (e.g. 'video').  This will search the
+  // recursive children for a node with that tag name.
+  for (char c : query) {
+    if (!std::isalnum(c)) {
+      return JsError::DOMException(NotSupportedError, "Unsupported query");
+    }
+  }
+
+  std::vector<RefPtr<Element>> elems = GetElementsByTagName(query);
+  return elems.empty() ? nullptr : elems[0];
+}
+
 
 ContainerNodeFactory::ContainerNodeFactory() {
   AddMemberFunction("getElementsByTagName", &Element::GetElementsByTagName);
+  AddMemberFunction("querySelector", &Element::QuerySelector);
 
   NotImplemented("children");
   NotImplemented("firstElementChild");
@@ -72,7 +89,6 @@ ContainerNodeFactory::ContainerNodeFactory() {
 
   NotImplemented("prepend");
   NotImplemented("append");
-  NotImplemented("querySelector");
   NotImplemented("querySelectorAll");
 }
 

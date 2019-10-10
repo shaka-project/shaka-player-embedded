@@ -20,6 +20,7 @@
 
 #include "src/core/member.h"
 #include "src/core/ref_ptr.h"
+#include "src/mapping/exception_or.h"
 #include "src/js/dom/node.h"
 
 namespace shaka {
@@ -42,6 +43,7 @@ class ContainerNode : public Node {
 
   std::vector<RefPtr<Element>> GetElementsByTagName(
       const std::string& name) const;
+  ExceptionOr<RefPtr<Element>> QuerySelector(const std::string& query) const;
 };
 
 class ContainerNodeFactory : public BackingObjectFactory<ContainerNode, Node> {
