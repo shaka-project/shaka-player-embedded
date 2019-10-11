@@ -153,10 +153,10 @@ struct VideoPlaybackQuality : Struct {
     return "VideoPlaybackQuality";
   }
 
-  ADD_DICT_FIELD(double, creationTime);
-  ADD_DICT_FIELD(uint64_t, totalVideoFrames);
-  ADD_DICT_FIELD(uint64_t, droppedVideoFrames);
-  ADD_DICT_FIELD(uint64_t, corruptedVideoFrames);
+  ADD_DICT_FIELD(creationTime, double);
+  ADD_DICT_FIELD(totalVideoFrames, uint64_t);
+  ADD_DICT_FIELD(droppedVideoFrames, uint64_t);
+  ADD_DICT_FIELD(corruptedVideoFrames, uint64_t);
 };
 
 struct BufferedRange {

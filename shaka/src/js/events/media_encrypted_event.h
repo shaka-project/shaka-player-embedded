@@ -33,8 +33,8 @@ namespace events {
 struct MediaEncryptedEventInit : Struct {
   static std::string name() { return "MediaEncryptedEventInit"; }
 
-  ADD_DICT_FIELD(eme::MediaKeyInitDataType, initDataType);
-  ADD_DICT_FIELD(ByteBuffer, initData);
+  ADD_DICT_FIELD(initDataType, eme::MediaKeyInitDataType);
+  ADD_DICT_FIELD(initData, ByteBuffer);
 };
 
 

@@ -42,8 +42,8 @@ struct IDBObjectStoreParameters : Struct {
     return "IDBObjectStoreParameters";
   }
 
-  ADD_DICT_FIELD(std::string, keyPath);
-  ADD_DICT_FIELD(bool, autoIncrement);
+  ADD_DICT_FIELD(keyPath, std::string);
+  ADD_DICT_FIELD(autoIncrement, bool);
 };
 
 class IDBDatabase : public events::EventTarget {

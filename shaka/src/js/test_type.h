@@ -40,9 +40,9 @@ struct TestTypeOptions : public Struct {
     return "TestTypeOptions";
   }
 
-  ADD_DICT_FIELD(std::string, string);
-  ADD_DICT_FIELD(bool, boolean);
-  ADD_DICT_FIELD(Any, any);
+  ADD_DICT_FIELD(string, std::string);
+  ADD_DICT_FIELD(boolean, bool);
+  ADD_DICT_FIELD(any, Any);
 };
 
 enum class TestNumberEnum {

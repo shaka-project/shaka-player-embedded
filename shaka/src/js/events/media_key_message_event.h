@@ -35,8 +35,8 @@ struct MediaKeyMessageEventInit : Struct {
     return "MediaKeyMessageEventInit";
   }
 
-  ADD_DICT_FIELD(eme::MediaKeyMessageType, messageType);
-  ADD_DICT_FIELD(ByteBuffer, message);
+  ADD_DICT_FIELD(messageType, eme::MediaKeyMessageType);
+  ADD_DICT_FIELD(message, ByteBuffer);
 };
 
 

@@ -30,8 +30,8 @@ namespace events {
 struct IDBVersionChangeEventInit : Struct {
   DECLARE_STRUCT_SPECIAL_METHODS(IDBVersionChangeEventInit);
 
-  ADD_DICT_FIELD(uint64_t, oldVersion);
-  ADD_DICT_FIELD(optional<uint64_t>, newVersion);
+  ADD_DICT_FIELD(oldVersion, uint64_t);
+  ADD_DICT_FIELD(newVersion, optional<uint64_t>);
 };
 
 /**

@@ -33,9 +33,10 @@ namespace shaka {
 // type name to the macro |&THIS_TYPE::member|.
 #define THIS_TYPE std::decay<decltype(*this)>::type
 
-#define ADD_NAMED_DICT_FIELD(Type, member, name) \
-  Type member = CreateFieldConverter(name, &THIS_TYPE::member)
-#define ADD_DICT_FIELD(type, member) ADD_NAMED_DICT_FIELD(type, member, #member)
+#define ADD_NAMED_DICT_FIELD(member, name, ...) \
+  __VA_ARGS__ member = CreateFieldConverter(name, &THIS_TYPE::member)
+#define ADD_DICT_FIELD(member, ...) \
+    ADD_NAMED_DICT_FIELD(member, #member, __VA_ARGS__)
 
 #define DECLARE_STRUCT_SPECIAL_METHODS(Type) \
   static std::string name() {                \

@@ -132,23 +132,13 @@ def _GenerateJsHeader(results, f, name, public_header):
     with writer.Namespace('js'):
       for t in results.types:
         with writer.Block('struct %s : Struct' % t.name, semicolon=True):
-          with writer.Block('static std::string name()'):
-            writer.Write('return "%s";', t.name)
-          writer.Write()
-
-          writer.Write('%s();', t.name)
-          writer.Write('%s(const %s&);', t.name, t.name)
-          writer.Write('%s(%s&&);', t.name, t.name)
-          writer.Write('~%s();', t.name)
-          writer.Write()
-          writer.Write('%s& operator=(const %s&);', t.name, t.name)
-          writer.Write('%s& operator=(%s&&);', t.name, t.name)
+          writer.Write('DECLARE_STRUCT_SPECIAL_METHODS(%s);', t.name)
           writer.Write()
 
           for attr in t.attributes:
             writer.Write('ADD_DICT_FIELD(%s, %s);',
-                         _MapCppType(attr.type, other_types, is_public=False),
-                         attr.name)
+                         attr.name,
+                         _MapCppType(attr.type, other_types, is_public=False))
         writer.Write()
     writer.Write()
 
@@ -179,16 +169,7 @@ def _GenerateJsSource(results, f, header):
   with writer.Namespace('shaka'):
     with writer.Namespace('js'):
       for t in results.types:
-        writer.Write('%s::%s() {}', t.name, t.name)
-        writer.Write('%s::%s(const %s&) = default;', t.name, t.name, t.name)
-        writer.Write('%s::%s(%s&&) = default;', t.name, t.name, t.name)
-        writer.Write('%s::~%s() {}', t.name, t.name)
-        writer.Write()
-        writer.Write('%s& %s::operator=(const %s&) = default;', t.name, t.name,
-                     t.name)
-        writer.Write('%s& %s::operator=(%s&&) = default;', t.name, t.name,
-                     t.name)
-        writer.Write()
+        writer.Write('DEFINE_STRUCT_SPECIAL_METHODS(%s);', t.name)
         writer.Write()
 
 

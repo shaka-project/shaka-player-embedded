@@ -35,8 +35,8 @@ struct MediaKeySystemMediaCapability : public Struct {
     return "MediaKeySystemMediaCapability";
   }
 
-  ADD_DICT_FIELD(std::string, contentType);
-  ADD_DICT_FIELD(std::string, robustness);
+  ADD_DICT_FIELD(contentType, std::string);
+  ADD_DICT_FIELD(robustness, std::string);
 };
 
 struct MediaKeySystemConfiguration : public Struct {
@@ -49,13 +49,13 @@ struct MediaKeySystemConfiguration : public Struct {
   MediaKeySystemConfiguration(MediaKeySystemConfiguration&&);
   ~MediaKeySystemConfiguration() override;
 
-  ADD_DICT_FIELD(std::string, label);
-  ADD_DICT_FIELD(std::vector<MediaKeyInitDataType>, initDataTypes);
-  ADD_DICT_FIELD(std::vector<MediaKeySystemMediaCapability>, audioCapabilities);
-  ADD_DICT_FIELD(std::vector<MediaKeySystemMediaCapability>, videoCapabilities);
-  ADD_DICT_FIELD(MediaKeysRequirement, distinctiveIdentifier);
-  ADD_DICT_FIELD(MediaKeysRequirement, persistentState);
-  ADD_DICT_FIELD(std::vector<MediaKeySessionType>, sessionTypes);
+  ADD_DICT_FIELD(label, std::string);
+  ADD_DICT_FIELD(initDataTypes, std::vector<MediaKeyInitDataType>);
+  ADD_DICT_FIELD(audioCapabilities, std::vector<MediaKeySystemMediaCapability>);
+  ADD_DICT_FIELD(videoCapabilities, std::vector<MediaKeySystemMediaCapability>);
+  ADD_DICT_FIELD(distinctiveIdentifier, MediaKeysRequirement);
+  ADD_DICT_FIELD(persistentState, MediaKeysRequirement);
+  ADD_DICT_FIELD(sessionTypes, std::vector<MediaKeySessionType>);
 };
 
 inline MediaKeySystemConfiguration::MediaKeySystemConfiguration() {}
