@@ -229,6 +229,34 @@ struct ConvertHelper<std::vector<T>, void> {
 
 template <typename Key, typename Value>
 struct ConvertHelper<std::unordered_map<Key, Value>, void> {
+  static bool FromJsValue(Handle<JsValue> source,
+                          std::unordered_map<Key, Value>* dest) {
+    static_assert(
+        std::is_same<typename std::decay<Key>::type, std::string>::value,
+        "Can only use std::string as a key for maps");
+    if (!IsObject(source))
+      return false;
+
+    LocalVar<JsObject> map(UnsafeJsCast<JsObject>(source));
+    if (IsBuiltInObject(map))
+      return false;
+
+    // Store the data in a temp array since this should not modify |*dest| on
+    // failure.
+    std::unordered_map<Key, Value> temp;
+    for (const auto& name : GetMemberNames(map)) {
+      LocalVar<JsValue> item(GetMemberRaw(map, name));
+
+      Value temp_field;
+      if (!ConvertHelper<Value>::FromJsValue(item, &temp_field))
+        return false;
+      temp.emplace(name, std::move(temp_field));
+    }
+
+    swap(temp, *dest);
+    return true;
+  }
+
   static ReturnVal<JsValue> ToJsValue(
       const std::unordered_map<Key, Value>& source) {
     LocalVar<JsMap> ret(CreateMap());

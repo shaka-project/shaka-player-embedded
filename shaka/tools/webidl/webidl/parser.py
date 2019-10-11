@@ -325,7 +325,8 @@ class IdlParser(object):
                    | IDENTIFIER Null
                    | PROMISE '<' ReturnType '>'
                    | SEQUENCE '<' TypeWithExtendedAttributes '>' Null
-                   | FROZENARRAY '<' TypeWithExtendedAttributes '>' Null"""
+                   | FROZENARRAY '<' TypeWithExtendedAttributes '>' Null
+                   | RECORD '<' StringType ',' TypeWithExtendedAttributes '>' Null"""
     # TODO: Add support for record<string, T>.
     # Unlike the official grammar definition, this doesn't include entries like
     # "Object Null"; these will be handled by the generic "IDENTIFIER Null".
@@ -336,9 +337,11 @@ class IdlParser(object):
         return types.IdlType(name=p[1], nullable=p[2], element_type=None)
     elif len(p) == 5:
       return types.IdlType(name='Promise', nullable=False, element_type=p[3])
-    else:
-      assert len(p) == 6
+    elif len(p) == 6:
       return types.IdlType(name=p[1], nullable=p[5], element_type=p[3])
+    else:
+      assert len(p) == 8
+      return types.IdlType(name=p[1], nullable=p[7], element_type=(p[3], p[5]))
 
   @_rule
   def p_ReturnType(self, p):

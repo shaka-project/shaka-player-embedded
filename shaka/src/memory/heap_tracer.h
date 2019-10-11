@@ -21,6 +21,7 @@
 #include <string>
 #include <type_traits>
 #include <unordered_set>
+#include <unordered_map>
 #include <vector>
 
 #include "shaka/optional.h"
@@ -114,6 +115,13 @@ class HeapTracer {
   void Trace(const std::list<T>* array) {
     for (const T& item : *array) {
       Trace(&item);
+    }
+  }
+  template <typename Key, typename Value>
+  void Trace(const std::unordered_map<Key, Value>* map) {
+    for (const auto& pair : *map) {
+      Trace(&pair.first);
+      Trace(&pair.second);
     }
   }
   template <typename T>

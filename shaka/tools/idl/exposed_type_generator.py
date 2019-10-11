@@ -36,8 +36,11 @@ import webidl
 
 def _MapCppType(t, other_types, is_public):
   """Returns a C++ type name for the given IDL type."""
-  if t.element_type:
-    assert t.name == 'sequence'
+  if t.name == 'record':
+    assert t.element_type[0].name in {'ByteString', 'DOMString', 'USVString'}
+    ret = 'std::unordered_map<std::string, %s>' % _MapCppType(
+        t.element_type[1], other_types, is_public)
+  elif t.name == 'sequence':
     ret = 'std::vector<%s>' % _MapCppType(
         t.element_type, other_types, is_public)
   elif t.name in other_types:
@@ -60,8 +63,11 @@ def _MapCppType(t, other_types, is_public):
 
 def _MapObjcType(t, other_types):
   """Returns an Objective-C type name for the given IDL type."""
-  if t.element_type:
-    assert t.name == 'sequence'
+  if t.name == 'record':
+    assert t.element_type[0].name in {'ByteString', 'DOMString', 'USVString'}
+    return 'NSDictionary<NSString*, %s>*' % _MapObjcType(
+        t.element_type[1], other_types)
+  elif t.name == 'sequence':
     return 'NSArray<%s>*' % _MapObjcType(t.element_type, other_types)
   elif t.name in other_types:
     return 'Shaka%s*' % t.name
@@ -182,6 +188,7 @@ def _GeneratePublicHeader(results, f, name):
   writer.Write()
   writer.Write('#include <memory>')
   writer.Write('#include <string>')
+  writer.Write('#include <unordered_map>')
   writer.Write('#include <vector>')
   writer.Write()
   writer.Write('#include "macros.h"')
@@ -261,7 +268,7 @@ def _GeneratePublicSource(results, f, public_header, internal_header):
         with writer.Block('%s %s::%s() const' %
                           (_MapCppType(attr.type, other_types, is_public=True),
                            t.name, _GetPublicFieldName(attr))):
-          if attr.type.name == 'sequence':
+          if attr.type.name in {'sequence', 'record'}:
             writer.Write(
                 'return {impl_->value.%s.begin(), impl_->value.%s.end()};',
                 attr.name, attr.name)

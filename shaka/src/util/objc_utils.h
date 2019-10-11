@@ -23,6 +23,7 @@
 
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -92,6 +93,28 @@ struct ObjcConverter<std::vector<T>> {
     for (size_t i = 0; i < value.size(); i++)
       [ret addObject:ObjcConverter<T>::ToObjc(value[i])];
     return ret;
+  }
+};
+
+template <typename T>
+struct ObjcConverter<std::unordered_map<std::string, T>> {
+  using dest_type = decltype(ObjcConverter<T>::ToObjc(std::declval<T>()));
+
+  static NSDictionary<NSString *, dest_type> *ToObjc(
+      const std::unordered_map<std::string, T> &map) {
+    std::vector<id> keys;
+    keys.reserve(map.size());
+    std::vector<id> values;
+    values.reserve(map.size());
+
+    for (const auto& pair : map) {
+      keys.emplace_back(ObjcConverter<std::string>::ToObjc(pair.first));
+      values.emplace_back(ObjcConverter<T>::ToObjc(pair.second));
+    }
+
+    return [NSDictionary dictionaryWithObjects:values.data()
+                                       forKeys:keys.data()
+                                         count:map.size()];
   }
 };
 

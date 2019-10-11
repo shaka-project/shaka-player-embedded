@@ -108,6 +108,7 @@ class IdlLexer(object):
       'octet',
       'unrestricted',
       'unsigned',
+      'record',
 
       'ByteString',
       'DOMString',

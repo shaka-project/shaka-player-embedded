@@ -123,8 +123,9 @@ class IdlType(collections.namedtuple(
   Properties:
     name: The string name of the type.
     nullable: Whether the type can be null.
-    element_type: If present, it is an IdlType that specifies the element type
-      for an array.  In this case, |name| is always "sequence".
+    element_type: If present, represents the inner types of a templated type.
+      For types like "sequence" this is an IdlType for the element type;
+      for the "record" type, this is a tuple of (key, value) of IdlType objects.
   """
   __slots__ = ()
 
