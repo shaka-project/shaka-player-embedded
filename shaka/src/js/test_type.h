@@ -36,9 +36,7 @@ namespace js {
 
 // A Struct type that is used by TestType.
 struct TestTypeOptions : public Struct {
-  static std::string name() {
-    return "TestTypeOptions";
-  }
+  DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE(TestTypeOptions);
 
   ADD_DICT_FIELD(string, std::string);
   ADD_DICT_FIELD(boolean, bool);

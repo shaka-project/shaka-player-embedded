@@ -31,7 +31,7 @@ namespace js {
 namespace events {
 
 struct MediaEncryptedEventInit : Struct {
-  static std::string name() { return "MediaEncryptedEventInit"; }
+  DECLARE_STRUCT_SPECIAL_METHODS_MOVE_ONLY(MediaEncryptedEventInit);
 
   ADD_DICT_FIELD(initDataType, eme::MediaKeyInitDataType);
   ADD_DICT_FIELD(initData, ByteBuffer);

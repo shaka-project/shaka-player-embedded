@@ -500,6 +500,7 @@ source_set("internal_sources") {
     "shaka/src/js/eme/media_key_session.h",
     "shaka/src/js/eme/media_key_system_access.cc",
     "shaka/src/js/eme/media_key_system_access.h",
+    "shaka/src/js/eme/media_key_system_configuration.cc",
     "shaka/src/js/eme/media_key_system_configuration.h",
     "shaka/src/js/eme/media_keys.cc",
     "shaka/src/js/eme/media_keys.h",

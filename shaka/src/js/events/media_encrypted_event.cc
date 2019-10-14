@@ -18,6 +18,8 @@ namespace shaka {
 namespace js {
 namespace events {
 
+DEFINE_STRUCT_SPECIAL_METHODS_MOVE_ONLY(MediaEncryptedEventInit);
+
 MediaEncryptedEvent::MediaEncryptedEvent(
     EventType event_type, eme::MediaKeyInitDataType init_data_type,
     ByteBuffer init_data)

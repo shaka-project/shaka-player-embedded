@@ -18,6 +18,8 @@ namespace shaka {
 namespace js {
 namespace events {
 
+DEFINE_STRUCT_SPECIAL_METHODS_MOVE_ONLY(MediaKeyMessageEventInit);
+
 MediaKeyMessageEvent::MediaKeyMessageEvent(
     EventType event_type, eme::MediaKeyMessageType message_type,
     ByteBuffer message)

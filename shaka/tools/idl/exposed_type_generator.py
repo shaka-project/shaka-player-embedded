@@ -34,7 +34,7 @@ import embed_utils
 import webidl
 
 
-def _MapCppType(t, other_types, is_public):
+def _MapCppType(t, other_types, is_public, is_ref=False):
   """Returns a C++ type name for the given IDL type."""
   if t.name == 'record':
     assert t.element_type[0].name in {'ByteString', 'DOMString', 'USVString'}
@@ -45,9 +45,9 @@ def _MapCppType(t, other_types, is_public):
         t.element_type, other_types, is_public)
   elif t.name in other_types:
     if is_public:
-      return 'shaka::' + t.name
+      ret = 'shaka::' + t.name
     else:
-      return 'shaka::js::' + t.name
+      ret = 'shaka::js::' + t.name
   else:
     type_map = {
         # IDL   ->  C++
@@ -58,7 +58,9 @@ def _MapCppType(t, other_types, is_public):
     assert t.name in type_map, 'Type %s not found' % t.name
     ret = type_map[t.name]
 
-  return 'shaka::optional<%s>' % ret if t.nullable else ret
+  ret = 'shaka::optional<%s>' % ret if t.nullable else ret
+  should_ref = not t.nullable and t.name not in {'boolean', 'double'}
+  return 'const %s&' % ret if is_ref and should_ref else ret
 
 
 def _MapObjcType(t, other_types):
@@ -138,7 +140,7 @@ def _GenerateJsHeader(results, f, name, public_header):
     with writer.Namespace('js'):
       for t in results.types:
         with writer.Block('struct %s : Struct' % t.name, semicolon=True):
-          writer.Write('DECLARE_STRUCT_SPECIAL_METHODS(%s);', t.name)
+          writer.Write('DECLARE_STRUCT_SPECIAL_METHODS_MOVE_ONLY(%s);', t.name)
           writer.Write()
 
           for attr in t.attributes:
@@ -159,7 +161,7 @@ def _GenerateJsHeader(results, f, name, public_header):
           with writer.Block('if (!ConvertHelper<shaka::js::%s>::FromJsValue('
                             'source, &temp))' % t.name):
             writer.Write('return false;')
-          writer.Write('*dest = shaka::%s(temp);', t.name)
+          writer.Write('*dest = shaka::%s(std::move(temp));', t.name)
           writer.Write('return true;')
       writer.Write()
 
@@ -175,7 +177,7 @@ def _GenerateJsSource(results, f, header):
   with writer.Namespace('shaka'):
     with writer.Namespace('js'):
       for t in results.types:
-        writer.Write('DEFINE_STRUCT_SPECIAL_METHODS(%s);', t.name)
+        writer.Write('DEFINE_STRUCT_SPECIAL_METHODS_MOVE_ONLY(%s);', t.name)
         writer.Write()
 
 
@@ -206,7 +208,7 @@ def _GeneratePublicHeader(results, f, name):
       with writer.Block('class SHAKA_EXPORT %s final' % t.name, semicolon=True):
         writer.Write('public:', offset=-1)
         writer.Write('%s();', t.name)
-        writer.Write('%s(const js::%s& internal);', t.name, t.name)
+        writer.Write('%s(js::%s&& internal);', t.name, t.name)
         writer.Write('%s(const %s&);', t.name, t.name)
         writer.Write('%s(%s&&);', t.name, t.name)
         writer.Write('~%s();', t.name)
@@ -218,16 +220,17 @@ def _GeneratePublicHeader(results, f, name):
         for attr in t.attributes:
           if attr.doc:
             writer.Write(_FormatDoc(attr, indent=2))
-          writer.Write('%s %s() const;',
-                       _MapCppType(attr.type, other_types, is_public=True),
-                       _GetPublicFieldName(attr))
+          writer.Write(
+              '%s %s() const;',
+              _MapCppType(attr.type, other_types, is_public=True, is_ref=True),
+              _GetPublicFieldName(attr))
         writer.Write()
 
+        writer.Write('/** INTERNAL USE ONLY: Get the internal representation '
+                     'of this object. */')
+        writer.Write('js::%s GetInternal() const;', t.name)
+        writer.Write()
         writer.Write('private:', offset=-1)
-        writer.Write('friend class Player;')
-        writer.Write()
-        writer.Write('const js::%s& GetInternal() const;', t.name)
-        writer.Write()
         writer.Write('class Impl;')
         writer.Write('std::shared_ptr<Impl> impl_;')
       writer.Write()
@@ -248,12 +251,31 @@ def _GeneratePublicSource(results, f, public_header, internal_header):
     for t in results.types:
       with writer.Block('class %s::Impl' % t.name, semicolon=True):
         writer.Write('public:', offset=-1)
-        writer.Write('const js::%s value;', t.name)
+        for attr in t.attributes:
+          writer.Write('const %s %s{};' %
+                       (_MapCppType(attr.type, other_types, is_public=True),
+                        attr.name))
+        writer.Write()
+
+        writer.Write('Impl() {}')
+        writer.Write('Impl(js::%s&& internal)', t.name)
+        for i, attr in enumerate(t.attributes):
+          if attr.type.name in {'sequence', 'record'}:
+            inner = ('std::make_move_iterator(internal.%s.begin()), ' +
+                     'std::make_move_iterator(internal.%s.end())') % (
+                      attr.name, attr.name)
+          else:
+            inner = 'std::move(internal.%s)' % attr.name
+          writer.Write('  %s %s(%s)%s',
+                       ':' if i == 0 else ' ',
+                       attr.name,
+                       inner,
+                       ' {}' if i == len(t.attributes) - 1 else ',')
       writer.Write()
 
       writer.Write('%s::%s() : impl_(new Impl) {}', t.name, t.name)
       writer.Write(
-          '%s::%s(const js::%s& internal) : impl_(new Impl{internal}) {}',
+          '%s::%s(js::%s&& internal) : impl_(new Impl{std::move(internal)}) {}',
           t.name, t.name, t.name)
       writer.Write('%s::%s(const %s&) = default;', t.name, t.name, t.name)
       writer.Write('%s::%s(%s&&) = default;', t.name, t.name, t.name)
@@ -265,21 +287,36 @@ def _GeneratePublicSource(results, f, public_header, internal_header):
       writer.Write()
 
       for attr in t.attributes:
-        with writer.Block('%s %s::%s() const' %
-                          (_MapCppType(attr.type, other_types, is_public=True),
-                           t.name, _GetPublicFieldName(attr))):
-          if attr.type.name in {'sequence', 'record'}:
-            writer.Write(
-                'return {impl_->value.%s.begin(), impl_->value.%s.end()};',
-                attr.name, attr.name)
-          else:
-            writer.Write('return impl_->value.%s;', attr.name)
+        with writer.Block(
+            '%s %s::%s() const' %
+            (_MapCppType(attr.type, other_types, is_public=True, is_ref=True),
+             t.name, _GetPublicFieldName(attr))):
+          writer.Write('return impl_->%s;', attr.name)
         writer.Write()
       writer.Write()
 
-      with writer.Block('const js::%s& %s::GetInternal() const' %
-                        (t.name, t.name)):
-        writer.Write('return impl_->value;')
+      with writer.Block('js::%s %s::GetInternal() const' % (t.name, t.name)):
+        writer.Write('js::%s ret;', t.name)
+        for i, attr in enumerate(t.attributes):
+          if (attr.type.name == 'sequence' and
+              attr.type.element_type.name in other_types):
+            with writer.Block('for (const auto& item : impl_->%s)' %
+                              attr.name):
+              writer.Write('ret.%s.emplace_back(item.GetInternal());',
+                           attr.name)
+          elif (attr.type.name == 'record' and
+                attr.type.element_type[1].name in other_types):
+            with writer.Block('for (const auto& item : impl_->%s)' %
+                              attr.name):
+              writer.Write(
+                  'ret.%s.emplace(item.first, item.second.GetInternal());',
+                  attr.name)
+          elif attr.type.name in other_types:
+            writer.Write('ret.%s = impl_->%s.GetInternal();', attr.name,
+                         attr.name)
+          else:
+            writer.Write('ret.%s = impl_->%s;', attr.name, attr.name)
+        writer.Write('return ret;')
       writer.Write()
       writer.Write()
 

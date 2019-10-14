@@ -28,7 +28,7 @@ namespace js {
 namespace events {
 
 struct IDBVersionChangeEventInit : Struct {
-  DECLARE_STRUCT_SPECIAL_METHODS(IDBVersionChangeEventInit);
+  DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE(IDBVersionChangeEventInit);
 
   ADD_DICT_FIELD(oldVersion, uint64_t);
   ADD_DICT_FIELD(newVersion, optional<uint64_t>);

@@ -149,9 +149,7 @@ enum MediaReadyState {
 
 
 struct VideoPlaybackQuality : Struct {
-  static std::string name() {
-    return "VideoPlaybackQuality";
-  }
+  DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE(VideoPlaybackQuality);
 
   ADD_DICT_FIELD(creationTime, double);
   ADD_DICT_FIELD(totalVideoFrames, uint64_t);

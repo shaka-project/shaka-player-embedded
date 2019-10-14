@@ -38,9 +38,7 @@ namespace idb {
 class IDBObjectStore;
 
 struct IDBObjectStoreParameters : Struct {
-  static std::string name() {
-    return "IDBObjectStoreParameters";
-  }
+  DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE(IDBObjectStoreParameters);
 
   ADD_DICT_FIELD(keyPath, std::string);
   ADD_DICT_FIELD(autoIncrement, bool);

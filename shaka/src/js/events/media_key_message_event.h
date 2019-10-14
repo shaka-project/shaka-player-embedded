@@ -31,9 +31,7 @@ namespace js {
 namespace events {
 
 struct MediaKeyMessageEventInit : Struct {
-  static std::string name() {
-    return "MediaKeyMessageEventInit";
-  }
+  DECLARE_STRUCT_SPECIAL_METHODS_MOVE_ONLY(MediaKeyMessageEventInit);
 
   ADD_DICT_FIELD(messageType, eme::MediaKeyMessageType);
   ADD_DICT_FIELD(message, ByteBuffer);

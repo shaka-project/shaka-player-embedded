@@ -47,6 +47,7 @@ class DoCommit : public memory::Traceable {
 
 }  // namespace
 
+DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE(IDBObjectStoreParameters);
 
 IDBDatabase::IDBDatabase(std::shared_ptr<SqliteConnection> connection,
                          const std::string& name, int64_t version,

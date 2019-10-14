@@ -31,23 +31,14 @@ namespace eme {
 using namespace shaka::eme;  // NOLINT
 
 struct MediaKeySystemMediaCapability : public Struct {
-  static std::string name() {
-    return "MediaKeySystemMediaCapability";
-  }
+  DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE(MediaKeySystemMediaCapability);
 
   ADD_DICT_FIELD(contentType, std::string);
   ADD_DICT_FIELD(robustness, std::string);
 };
 
 struct MediaKeySystemConfiguration : public Struct {
-  static std::string name() {
-    return "MediaKeySystemConfiguration";
-  }
-
-  MediaKeySystemConfiguration();
-  MediaKeySystemConfiguration(const MediaKeySystemConfiguration&);
-  MediaKeySystemConfiguration(MediaKeySystemConfiguration&&);
-  ~MediaKeySystemConfiguration() override;
+  DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE(MediaKeySystemConfiguration);
 
   ADD_DICT_FIELD(label, std::string);
   ADD_DICT_FIELD(initDataTypes, std::vector<MediaKeyInitDataType>);
@@ -57,13 +48,6 @@ struct MediaKeySystemConfiguration : public Struct {
   ADD_DICT_FIELD(persistentState, MediaKeysRequirement);
   ADD_DICT_FIELD(sessionTypes, std::vector<MediaKeySessionType>);
 };
-
-inline MediaKeySystemConfiguration::MediaKeySystemConfiguration() {}
-inline MediaKeySystemConfiguration::~MediaKeySystemConfiguration() {}
-inline MediaKeySystemConfiguration::MediaKeySystemConfiguration(
-    const MediaKeySystemConfiguration&) = default;
-inline MediaKeySystemConfiguration::MediaKeySystemConfiguration(
-    MediaKeySystemConfiguration&&) = default;
 
 }  // namespace eme
 }  // namespace js

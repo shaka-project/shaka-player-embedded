@@ -56,6 +56,8 @@ std::string GetExpectedString() {
 
 }  // namespace
 
+DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE(TestTypeOptions);
+
 TestType::TestType() : int_or_object(0) {}
 // \cond Doxygen_Skip
 TestType::~TestType() {}

@@ -19,6 +19,8 @@
 namespace shaka {
 namespace media {
 
+DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE(VideoPlaybackQuality);
+
 std::ostream& operator<<(std::ostream& os, const BufferedRange& range) {
   return os << util::StringPrintf("{ start: %.2f, end: %.2f }", range.start,
                                   range.end);

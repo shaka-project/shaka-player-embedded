@@ -18,7 +18,7 @@ namespace shaka {
 namespace js {
 namespace events {
 
-DEFINE_STRUCT_SPECIAL_METHODS(IDBVersionChangeEventInit);
+DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE(IDBVersionChangeEventInit);
 
 IDBVersionChangeEvent::IDBVersionChangeEvent(EventType event_type,
                                              uint64_t old_version,
