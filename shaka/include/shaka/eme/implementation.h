@@ -76,6 +76,11 @@ inline KeyStatusInfo::~KeyStatusInfo() {}
  * complete (error or success), one of the methods on it MUST be called.
  * It is ok to synchronously call those methods.
  *
+ * Most methods here are only called on the JS main thread; the exception is
+ * Decrypt, which can be called from any thread, including concurrently with
+ * other Decrypt calls.  It is highly suggested to avoid exclusive locks in
+ * Decrypt so we can get parallel decrypt operations.
+ *
  * @ingroup eme
  */
 class SHAKA_EXPORT Implementation {

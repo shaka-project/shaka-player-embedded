@@ -28,6 +28,8 @@ class ImplementationFactory;
  * Defines a registry for implementations of EME.  During system startup all
  * implementations should be registered with this type to make them available.
  *
+ * These methods are thread-safe.
+ *
  * @ingroup eme
  */
 class SHAKA_EXPORT ImplementationRegistry final {

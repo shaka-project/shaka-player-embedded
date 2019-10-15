@@ -40,6 +40,8 @@ namespace eme {
  * constructor or use std::move(), it will create an invalid Promise object.
  * You can't call any methods on an invalid object except for valid().
  *
+ * This type is not thread-safe.
+ *
  * @ingroup eme
  */
 class SHAKA_EXPORT EmePromise final {

@@ -32,6 +32,8 @@ class ImplementationHelper;
  * implementation supports.  This is implemented by an app and registered with
  * the ImplementationRegistry.
  *
+ * Methods on this type are only called on the JS main thread.
+ *
  * @ingroup eme
  */
 class SHAKA_EXPORT ImplementationFactory {

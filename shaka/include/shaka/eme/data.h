@@ -39,6 +39,8 @@ namespace eme {
  * Defines a wrapper around data passed into EME.  This type will keep the
  * backing data alive so long as this object is alive.
  *
+ * This type is not thread-safe.
+ *
  * @ingroup eme
  */
 class SHAKA_EXPORT Data final {
