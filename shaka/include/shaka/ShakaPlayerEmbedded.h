@@ -56,4 +56,17 @@
 #  include "eme/implementation_factory.h"
 #  include "eme/implementation_helper.h"
 #  include "eme/implementation_registry.h"
+
+#  include "media/decoder.h"
+#  include "media/default_media_player.h"
+#  include "media/demuxer.h"
+#  include "media/frames.h"
+#  include "media/media_capabilities.h"
+#  include "media/media_player.h"
+#  include "media/renderer.h"
+#  ifdef SHAKA_SDL_UTILS
+#    include "media/sdl_audio_renderer.h"
+#    include "media/sdl_video_renderer.h"
+#  endif
+#  include "media/streams.h"
 #endif

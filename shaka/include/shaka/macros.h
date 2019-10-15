@@ -31,4 +31,12 @@
 #  endif
 #endif
 
+#define SHAKA_DECLARE_STRUCT_SPECIAL_METHODS(Type) \
+  Type();                                          \
+  Type(const Type&);                               \
+  Type(Type&&);                                    \
+  ~Type();                                         \
+  Type& operator=(const Type&);                    \
+  Type& operator=(Type&&)
+
 #endif  // SHAKA_EMBEDDED_MACROS_H_

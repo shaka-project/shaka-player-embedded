@@ -606,8 +606,11 @@ source_set("internal_sources") {
     "shaka/src/media/audio_renderer.h",
     "shaka/src/media/base_frame.cc",
     "shaka/src/media/base_frame.h",
+    "shaka/src/media/decoder.cc",
     "shaka/src/media/decoder_thread.cc",
     "shaka/src/media/decoder_thread.h",
+    "shaka/src/media/default_media_player.cc",
+    "shaka/src/media/demuxer.cc",
     "shaka/src/media/demuxer_thread.cc",
     "shaka/src/media/demuxer_thread.h",
     "shaka/src/media/ffmpeg_decoded_frame.cc",
@@ -620,8 +623,11 @@ source_set("internal_sources") {
     "shaka/src/media/frame_converter.h",
     "shaka/src/media/frame_drawer.cc",
     "shaka/src/media/frame_drawer.h",
+    "shaka/src/media/frames.cc",
     "shaka/src/media/locked_frame_list.cc",
     "shaka/src/media/locked_frame_list.h",
+    "shaka/src/media/media_capabilities.cc",
+    "shaka/src/media/media_player.cc",
     "shaka/src/media/media_processor.cc",
     "shaka/src/media/media_processor.h",
     "shaka/src/media/media_utils.cc",
@@ -632,8 +638,11 @@ source_set("internal_sources") {
     "shaka/src/media/pipeline_monitor.h",
     "shaka/src/media/renderer.cc",
     "shaka/src/media/renderer.h",
+    "shaka/src/media/renderer_new.cc",
     "shaka/src/media/stream.cc",
     "shaka/src/media/stream.h",
+    "shaka/src/media/stream_info.cc",
+    "shaka/src/media/streams.cc",
     "shaka/src/media/types.cc",
     "shaka/src/media/types.h",
     "shaka/src/media/video_controller.cc",
@@ -691,7 +700,11 @@ source_set("internal_sources") {
     ]
   }
   if (sdl_utils) {
-    sources += [ "shaka/src/public/sdl_frame_drawer.cc" ]
+    sources += [
+      "shaka/src/media/sdl_audio_renderer.cc",
+      "shaka/src/media/sdl_video_renderer.cc",
+      "shaka/src/public/sdl_frame_drawer.cc",
+    ]
   }
   if (is_ios) {
     sources += [
@@ -859,6 +872,15 @@ if (is_mac || is_ios) {
       "shaka/include/shaka/frame.h",
       "shaka/include/shaka/js_manager.h",
       "shaka/include/shaka/macros.h",
+      "shaka/include/shaka/media/decoder.h",
+      "shaka/include/shaka/media/default_media_player.h",
+      "shaka/include/shaka/media/demuxer.h",
+      "shaka/include/shaka/media/frames.h",
+      "shaka/include/shaka/media/media_capabilities.h",
+      "shaka/include/shaka/media/media_player.h",
+      "shaka/include/shaka/media/renderer.h",
+      "shaka/include/shaka/media/stream_info.h",
+      "shaka/include/shaka/media/streams.h",
       "shaka/include/shaka/optional.h",
       "shaka/include/shaka/player.h",
       "shaka/include/shaka/storage.h",
@@ -882,6 +904,8 @@ if (is_mac || is_ios) {
     sources += get_target_outputs(":gen_version_h")
     if (sdl_utils) {
       sources += [
+        "shaka/include/shaka/media/sdl_audio_renderer.h",
+        "shaka/include/shaka/media/sdl_video_renderer.h",
         "shaka/include/shaka/sdl_frame_drawer.h",
       ]
     }
@@ -1195,6 +1219,7 @@ test("tests") {
     "shaka/test/src/memory/heap_tracer_unittest.cc",
     "shaka/test/src/memory/object_tracker_integration.cc",
     "shaka/test/src/memory/object_tracker_unittest.cc",
+    "shaka/test/src/public/shaka_utils_unittest.cc",
     "shaka/test/src/public/variant_unittest.cc",
     "shaka/test/src/util/buffer_reader_unittest.cc",
     "shaka/test/src/util/dynamic_buffer_unittest.cc",

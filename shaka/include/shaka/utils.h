@@ -18,6 +18,7 @@
 #include <string>
 
 #include "macros.h"
+#include "media/media_player.h"
 
 namespace shaka {
 
@@ -30,14 +31,42 @@ namespace shaka {
 
 
 /**
- * A simple struct representing a rectangle, with integer precision.
+ * A simple struct representing a rectangle, with integer precision.  Units are
+ * in pixels.
  */
 struct SHAKA_EXPORT ShakaRect {
   int x;
   int y;
   int w;
   int h;
+
+  bool operator==(const ShakaRect& other) const {
+    return x == other.x && y == other.y && w == other.w && h == other.h;
+  }
+  bool operator!=(const ShakaRect& other) const {
+    return !(*this == other);
+  }
 };
+
+
+/**
+ * Creates two rectangles that can be used as rendering destination to draw a
+ * video with the given fill mode.  If the video exceeds the bounds specified,
+ * this will use the @a src attribute to specify the region of the frame to
+ * draw; otherwise that stores the full bounds of the frame.  The @a dest field
+ * will contain the bounds to draw on the window.
+ *
+ * @param frame The bounds of the video.
+ * @param bounds The bounds to draw the frame within.
+ * @param mode The fill mode to fit to.
+ * @param src Where to put the source rectangle.  This represents the sub-region
+ *   of the frame to draw.
+ * @param dest Where to put the destination rectangle.  This represents the
+ *   region on the window to draw to.
+ */
+SHAKA_EXPORT void FitVideoToRegion(ShakaRect frame, ShakaRect bounds,
+                                   media::VideoFillMode mode, ShakaRect* src,
+                                   ShakaRect* dest);
 
 
 /**

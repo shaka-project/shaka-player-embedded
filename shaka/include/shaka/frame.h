@@ -34,7 +34,7 @@ class FrameDrawer;
  *
  * @ingroup player
  */
-enum class PixelFormat {
+enum class PixelFormat : uint8_t {
   Unknown,
 
   /**
