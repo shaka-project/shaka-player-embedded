@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/media/ffmpeg_encoded_frame.h"
+#include "src/media/ffmpeg/ffmpeg_encoded_frame.h"
 
 extern "C" {
 #include <libavutil/encryption_info.h>
@@ -30,6 +30,7 @@ extern "C" {
 
 namespace shaka {
 namespace media {
+namespace ffmpeg {
 
 namespace {
 
@@ -252,5 +253,6 @@ FFmpegEncodedFrame::FFmpegEncodedFrame(AVPacket* pkt, double pts, double dts,
   av_packet_move_ref(&packet_, pkt);
 }
 
+}  // namespace ffmpeg
 }  // namespace media
 }  // namespace shaka

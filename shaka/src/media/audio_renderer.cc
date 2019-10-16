@@ -23,7 +23,7 @@ extern "C" {
 #include <algorithm>
 #include <utility>
 
-#include "src/media/ffmpeg_decoded_frame.h"
+#include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
 #include "src/util/clock.h"
 #include "src/util/utils.h"
 
@@ -217,7 +217,8 @@ void AudioRenderer::ThreadMain() {
         continue;
       }
 
-      auto* frame = static_cast<const FFmpegDecodedFrame*>(base_frame.get());
+      auto* frame =
+          static_cast<const ffmpeg::FFmpegDecodedFrame*>(base_frame.get());
 
       if (!InitDevice(frame))
         return;
@@ -230,7 +231,7 @@ void AudioRenderer::ThreadMain() {
   }
 }
 
-bool AudioRenderer::InitDevice(const FFmpegDecodedFrame* frame) {
+bool AudioRenderer::InitDevice(const ffmpeg::FFmpegDecodedFrame* frame) {
   if (!SDL_WasInit(SDL_INIT_AUDIO)) {
     SDL_SetMainReady();
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
@@ -358,7 +359,8 @@ void AudioRenderer::AudioCallback(uint8_t* data, int size) {
     if (!base_frame)
       break;
 
-    auto* frame = static_cast<const FFmpegDecodedFrame*>(base_frame.get());
+    auto* frame =
+        static_cast<const ffmpeg::FFmpegDecodedFrame*>(base_frame.get());
 
     // If the source changed, we need to reset.  If the new frame has a lower
     // sample rate or channel count, we can just use swresample to change

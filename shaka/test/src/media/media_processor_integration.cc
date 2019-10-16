@@ -22,8 +22,8 @@ extern "C" {
 }
 
 #include "src/eme/clearkey_implementation.h"
-#include "src/media/ffmpeg_decoded_frame.h"
-#include "src/media/ffmpeg_encoded_frame.h"
+#include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
+#include "src/media/ffmpeg/ffmpeg_encoded_frame.h"
 #include "src/media/frame_converter.h"
 #include "src/media/media_utils.h"
 #include "src/test/media_files.h"
@@ -111,7 +111,8 @@ void DecodeFramesAndCheckHashes(MediaProcessor* processor,
     ASSERT_EQ(processor->DecodeFrame(0, frame, cdm, &decoded_frames),
               Status::Success);
     for (auto& decoded : decoded_frames) {
-      auto* cast_frame = static_cast<FFmpegDecodedFrame*>(decoded.get());
+      auto* cast_frame =
+          static_cast<ffmpeg::FFmpegDecodedFrame*>(decoded.get());
       const uint8_t* const* data = cast_frame->data.data();
       std::vector<int> linesize_vec{cast_frame->linesize.begin(),
                                     cast_frame->linesize.end()};
@@ -324,7 +325,7 @@ TEST_F(MediaProcessorIntegration, CanDecodeWithAdaptation) {
     if (status == Status::EndOfStream)
       break;
 
-    auto* ffmpeg_frame = static_cast<FFmpegEncodedFrame*>(frame.get());
+    auto* ffmpeg_frame = static_cast<ffmpeg::FFmpegEncodedFrame*>(frame.get());
     if (!saw_first_stream) {
       saw_first_stream = true;
       first_stream_id = ffmpeg_frame->stream_id();

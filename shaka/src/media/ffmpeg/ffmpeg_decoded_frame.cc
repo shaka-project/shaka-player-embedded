@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/media/ffmpeg_decoded_frame.h"
+#include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
 
 #include <glog/logging.h>
 
@@ -22,6 +22,7 @@ extern "C" {
 
 namespace shaka {
 namespace media {
+namespace ffmpeg {
 
 namespace {
 
@@ -167,5 +168,6 @@ size_t FFmpegDecodedFrame::EstimateSize() const {
   return size;
 }
 
+}  // namespace ffmpeg
 }  // namespace media
 }  // namespace shaka

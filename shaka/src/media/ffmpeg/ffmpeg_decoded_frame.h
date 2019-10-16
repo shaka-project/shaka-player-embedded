@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SHAKA_EMBEDDED_MEDIA_FFMPEG_DECODED_FRAME_H_
-#define SHAKA_EMBEDDED_MEDIA_FFMPEG_DECODED_FRAME_H_
+#ifndef SHAKA_EMBEDDED_MEDIA_FFMPEG_FFMPEG_DECODED_FRAME_H_
+#define SHAKA_EMBEDDED_MEDIA_FFMPEG_FFMPEG_DECODED_FRAME_H_
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -28,6 +28,7 @@ extern "C" {
 
 namespace shaka {
 namespace media {
+namespace ffmpeg {
 
 /** This defines a single decoded media frame. */
 class FFmpegDecodedFrame final : public DecodedFrame {
@@ -54,7 +55,8 @@ class FFmpegDecodedFrame final : public DecodedFrame {
   AVFrame* frame_;
 };
 
+}  // namespace ffmpeg
 }  // namespace media
 }  // namespace shaka
 
-#endif  // SHAKA_EMBEDDED_MEDIA_FFMPEG_DECODED_FRAME_H_
+#endif  // SHAKA_EMBEDDED_MEDIA_FFMPEG_FFMPEG_DECODED_FRAME_H_

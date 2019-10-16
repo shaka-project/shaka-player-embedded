@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SHAKA_EMBEDDED_MEDIA_FFMPEG_ENCODED_FRAME_H_
-#define SHAKA_EMBEDDED_MEDIA_FFMPEG_ENCODED_FRAME_H_
+#ifndef SHAKA_EMBEDDED_MEDIA_FFMPEG_FFMPEG_ENCODED_FRAME_H_
+#define SHAKA_EMBEDDED_MEDIA_FFMPEG_FFMPEG_ENCODED_FRAME_H_
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -23,6 +23,7 @@ extern "C" {
 
 namespace shaka {
 namespace media {
+namespace ffmpeg {
 
 /** This defines a single encoded media frame. */
 class FFmpegEncodedFrame final : public EncodedFrame {
@@ -54,7 +55,8 @@ class FFmpegEncodedFrame final : public EncodedFrame {
   const size_t stream_id_;
 };
 
+}  // namespace ffmpeg
 }  // namespace media
 }  // namespace shaka
 
-#endif  // SHAKA_EMBEDDED_MEDIA_FFMPEG_ENCODED_FRAME_H_
+#endif  // SHAKA_EMBEDDED_MEDIA_FFMPEG_FFMPEG_ENCODED_FRAME_H_

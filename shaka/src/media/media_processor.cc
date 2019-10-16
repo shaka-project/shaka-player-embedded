@@ -30,8 +30,8 @@ extern "C" {
 #include "src/core/js_manager_impl.h"
 #include "src/debug/mutex.h"
 #include "src/debug/thread_event.h"
-#include "src/media/ffmpeg_decoded_frame.h"
-#include "src/media/ffmpeg_encoded_frame.h"
+#include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
+#include "src/media/ffmpeg/ffmpeg_encoded_frame.h"
 #include "src/media/media_utils.h"
 #include "src/util/utils.h"
 
@@ -418,9 +418,9 @@ class MediaProcessor::Impl {
     VLOG(3) << "Read frame at dts=" << pkt.dts;
     DCHECK_EQ(pkt.stream_index, 0);
     DCHECK_EQ(demuxer_ctx_->nb_streams, 1u);
-    frame->reset(FFmpegEncodedFrame::MakeFrame(&pkt, demuxer_ctx_->streams[0],
-                                               codec_params_.size() - 1,
-                                               timestamp_offset_));
+    frame->reset(ffmpeg::FFmpegEncodedFrame::MakeFrame(
+        &pkt, demuxer_ctx_->streams[0], codec_params_.size() - 1,
+        timestamp_offset_));
     // No need to unref |pkt| since it was moved into the encoded frame.
     return *frame ? Status::Success : Status::OutOfMemory;
   }
@@ -528,7 +528,8 @@ class MediaProcessor::Impl {
     return Status::Success;
   }
 
-  Status ReadFromDecoder(size_t stream_id, const FFmpegEncodedFrame* frame,
+  Status ReadFromDecoder(size_t stream_id,
+                         const ffmpeg::FFmpegEncodedFrame* frame,
                          std::vector<std::shared_ptr<DecodedFrame>>* decoded) {
     while (true) {
       const int code = avcodec_receive_frame(decoder_ctx_, received_frame_);
@@ -548,7 +549,7 @@ class MediaProcessor::Impl {
       const double time = frame && timestamp == AV_NOPTS_VALUE
                               ? frame->pts
                               : timestamp * timescale + offset;
-      auto* new_frame = FFmpegDecodedFrame::CreateFrame(
+      auto* new_frame = ffmpeg::FFmpegDecodedFrame::CreateFrame(
           decoder_ctx_->codec_type == AVMEDIA_TYPE_VIDEO, received_frame_, time,
           frame ? frame->duration : 0);
       if (!new_frame) {
@@ -563,7 +564,8 @@ class MediaProcessor::Impl {
                      eme::Implementation* cdm,
                      std::vector<std::shared_ptr<DecodedFrame>>* decoded) {
     decoded->clear();
-    auto* frame = static_cast<const FFmpegEncodedFrame*>(base_frame.get());
+    auto* frame =
+        static_cast<const ffmpeg::FFmpegEncodedFrame*>(base_frame.get());
 
     if (!frame && !decoder_ctx_) {
       // If there isn't a decoder, there is nothing to flush.

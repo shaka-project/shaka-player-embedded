@@ -31,7 +31,9 @@ struct SwrContext;
 namespace shaka {
 namespace media {
 
+namespace ffmpeg {
 class FFmpegDecodedFrame;
+}  // namespace ffmpeg
 
 /**
  * Defines a renderer that draws audio frames to the audio device.
@@ -54,7 +56,7 @@ class AudioRenderer : public Renderer {
 
  private:
   void ThreadMain();
-  bool InitDevice(const FFmpegDecodedFrame* frame);
+  bool InitDevice(const ffmpeg::FFmpegDecodedFrame* frame);
 
   static void OnAudioCallback(void*, uint8_t*, int);
   void AudioCallback(uint8_t* data, int size);
