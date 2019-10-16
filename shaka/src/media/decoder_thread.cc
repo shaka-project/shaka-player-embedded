@@ -79,7 +79,7 @@ void DecoderThread::ThreadMain() {
     const double cur_time = get_time_();
     double last_time = last_frame_time_.load(std::memory_order_acquire);
 
-    std::shared_ptr<BaseFrame> frame;
+    std::shared_ptr<EncodedFrame> frame;
     if (std::isnan(last_time)) {
       processor_->ResetDecoder();
       frame = stream_->GetDemuxedFrames()->GetFrame(
@@ -106,10 +106,10 @@ void DecoderThread::ThreadMain() {
       }
     }
 
-    std::vector<std::unique_ptr<BaseFrame>> decoded;
+    std::vector<std::shared_ptr<DecodedFrame>> decoded;
     eme::Implementation* cdm = cdm_.load(std::memory_order_acquire);
     const Status decode_status =
-        processor_->DecodeFrame(cur_time, frame.get(), cdm, &decoded);
+        processor_->DecodeFrame(cur_time, frame, cdm, &decoded);
     if (decode_status == Status::KeyNotFound) {
       // If we don't have the required key, signal the <video> and wait.
       if (!raised_waiting_event_) {
@@ -127,8 +127,7 @@ void DecoderThread::ThreadMain() {
     raised_waiting_event_ = false;
     const double last_pts = decoded.empty() ? -1 : decoded.back()->pts;
     for (auto& decoded_frame : decoded) {
-      stream_->GetDecodedFrames()->AddFrame(
-          std::shared_ptr<BaseFrame>(decoded_frame.release()));
+      stream_->GetDecodedFrames()->AddFrame(decoded_frame);
     }
 
     if (frame) {

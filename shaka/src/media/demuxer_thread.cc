@@ -108,7 +108,7 @@ void DemuxerThread::ThreadMain() {
   on_load_meta_();
 
   while (!shutdown_) {
-    std::unique_ptr<BaseFrame> frame;
+    std::shared_ptr<EncodedFrame> frame;
     const Status status = processor_->ReadDemuxedFrame(&frame);
     if (status != Status::Success) {
       std::unique_lock<Mutex> lock(mutex_);
@@ -134,9 +134,7 @@ void DemuxerThread::ThreadMain() {
         }
       }
     }
-    // Transfer ownership from the unique_ptr to a shared_ptr.
-    stream_->GetDemuxedFrames()->AddFrame(
-        std::shared_ptr<BaseFrame>(frame.release()));
+    stream_->GetDemuxedFrames()->AddFrame(frame);
   }
 }
 

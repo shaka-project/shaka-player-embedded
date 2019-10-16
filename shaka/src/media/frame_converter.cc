@@ -56,7 +56,8 @@ FrameConverter::~FrameConverter() {
 #endif
 }
 
-bool FrameConverter::ConvertFrame(const AVFrame* frame, uint8_t* const** data,
+bool FrameConverter::ConvertFrame(const AVFrame* frame,
+                                  const uint8_t* const** data,
                                   const int** linesize,
                                   AVPixelFormat desired_pixel_format) {
   if (IsHardwarePixelFormat(static_cast<AVPixelFormat>(frame->format))) {

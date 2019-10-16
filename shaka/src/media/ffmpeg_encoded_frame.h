@@ -19,22 +19,13 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
-#include <memory>
-
 #include "shaka/media/frames.h"
-#include "src/media/types.h"
-#include "src/util/macros.h"
 
 namespace shaka {
-
-namespace eme {
-class Implementation;
-}  // namespace eme
-
 namespace media {
 
 /** This defines a single encoded media frame. */
-class FFmpegEncodedFrame final : public BaseFrame {
+class FFmpegEncodedFrame final : public EncodedFrame {
  public:
   ~FFmpegEncodedFrame() override;
 
@@ -42,37 +33,25 @@ class FFmpegEncodedFrame final : public BaseFrame {
                                        size_t stream_id,
                                        double timestamp_offset);
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(FFmpegEncodedFrame);
-
-  size_t EstimateSize() const override;
-
   const AVPacket* raw_packet() const {
     return &packet_;
   }
   size_t stream_id() const {
+    // TODO(modmaker): Change to use stream_info.
     return stream_id_;
   }
-  double timestamp_offset() const {
-    return timestamp_offset_;
-  }
 
-  /** @return Whether this frame is encrypted. */
-  bool is_encrypted() const;
-
-  /**
-   * Attempts to decrypt the frame into the given packet by the given CDM.  The
-   * given packet should already been initialized with a buffer large enough to
-   * hold the current frame.
-   */
-  Status Decrypt(eme::Implementation* cdm, AVPacket* dest_packet) const;
+  MediaStatus Decrypt(const eme::Implementation* cdm,
+                      uint8_t* data) const override;
+  size_t EstimateSize() const override;
 
  private:
-  FFmpegEncodedFrame(AVPacket* pkt, size_t stream_id, double offset, double pts,
-                     double dts, double duration, bool is_key_frame);
+  FFmpegEncodedFrame(AVPacket* pkt, double pts, double dts, double duration,
+                     bool is_key_frame, size_t stream_id,
+                     double timestamp_offset);
 
   AVPacket packet_;
   const size_t stream_id_;
-  const double timestamp_offset_;
 };
 
 }  // namespace media

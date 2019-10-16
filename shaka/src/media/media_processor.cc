@@ -382,7 +382,7 @@ class MediaProcessor::Impl {
     return reinit_status;
   }
 
-  Status ReadDemuxedFrame(std::unique_ptr<BaseFrame>* frame) {
+  Status ReadDemuxedFrame(std::shared_ptr<EncodedFrame>* frame) {
     AVPacket pkt;
     int ret = av_read_frame(demuxer_ctx_, &pkt);
     if (ret == AVERROR_SHAKA_RESET_DEMUXER) {
@@ -529,7 +529,7 @@ class MediaProcessor::Impl {
   }
 
   Status ReadFromDecoder(size_t stream_id, const FFmpegEncodedFrame* frame,
-                         std::vector<std::unique_ptr<BaseFrame>>* decoded) {
+                         std::vector<std::shared_ptr<DecodedFrame>>* decoded) {
     while (true) {
       const int code = avcodec_receive_frame(decoder_ctx_, received_frame_);
       if (code == AVERROR(EAGAIN) || code == AVERROR_EOF)
@@ -544,12 +544,13 @@ class MediaProcessor::Impl {
       const double timescale = av_q2d(time_scales_[stream_id]);
       const int64_t timestamp = received_frame_->best_effort_timestamp;
       const double offset =
-          frame ? frame->timestamp_offset() : prev_timestamp_offset_;
+          frame ? frame->timestamp_offset : prev_timestamp_offset_;
       const double time = frame && timestamp == AV_NOPTS_VALUE
                               ? frame->pts
                               : timestamp * timescale + offset;
       auto* new_frame = FFmpegDecodedFrame::CreateFrame(
-          received_frame_, time, frame ? frame->duration : 0);
+          decoder_ctx_->codec_type == AVMEDIA_TYPE_VIDEO, received_frame_, time,
+          frame ? frame->duration : 0);
       if (!new_frame) {
         return Status::OutOfMemory;
       }
@@ -557,11 +558,12 @@ class MediaProcessor::Impl {
     }
   }
 
-  Status DecodeFrame(double /* cur_time */, const BaseFrame* base_frame,
+  Status DecodeFrame(double /* cur_time */,
+                     std::shared_ptr<EncodedFrame> base_frame,
                      eme::Implementation* cdm,
-                     std::vector<std::unique_ptr<BaseFrame>>* decoded) {
+                     std::vector<std::shared_ptr<DecodedFrame>>* decoded) {
     decoded->clear();
-    auto* frame = static_cast<const FFmpegEncodedFrame*>(base_frame);
+    auto* frame = static_cast<const FFmpegEncodedFrame*>(base_frame.get());
 
     if (!frame && !decoder_ctx_) {
       // If there isn't a decoder, there is nothing to flush.
@@ -598,7 +600,7 @@ class MediaProcessor::Impl {
           return init_result;
       }
 
-      prev_timestamp_offset_ = frame->timestamp_offset();
+      prev_timestamp_offset_ = frame->timestamp_offset;
     }
 
 
@@ -607,7 +609,7 @@ class MediaProcessor::Impl {
     util::Finally free_decrypted_packet(
         std::bind(&av_packet_unref, &decrypted_packet));
     const AVPacket* frame_to_send = frame ? frame->raw_packet() : nullptr;
-    if (frame && frame->is_encrypted()) {
+    if (frame && frame->is_encrypted) {
       if (!cdm) {
         LOG(WARNING) << "No CDM given for encrypted frame";
         return Status::KeyNotFound;
@@ -623,9 +625,11 @@ class MediaProcessor::Impl {
         return Status::UnknownError;
       }
 
-      Status decrypt_status = frame->Decrypt(cdm, &decrypted_packet);
-      if (decrypt_status != Status::Success)
-        return decrypt_status;
+      MediaStatus decrypt_status = frame->Decrypt(cdm, decrypted_packet.data);
+      if (decrypt_status == MediaStatus::KeyNotFound)
+        return Status::KeyNotFound;
+      if (decrypt_status != MediaStatus::Success)
+        return Status::UnknownError;
       frame_to_send = &decrypted_packet;
     }
 
@@ -790,13 +794,14 @@ Status MediaProcessor::InitializeDemuxer(
   return impl_->InitializeDemuxer(std::move(on_read), std::move(on_reset_read));
 }
 
-Status MediaProcessor::ReadDemuxedFrame(std::unique_ptr<BaseFrame>* frame) {
+Status MediaProcessor::ReadDemuxedFrame(std::shared_ptr<EncodedFrame>* frame) {
   return impl_->ReadDemuxedFrame(frame);
 }
 
 Status MediaProcessor::DecodeFrame(
-    double cur_time, const BaseFrame* frame, eme::Implementation* cdm,
-    std::vector<std::unique_ptr<BaseFrame>>* decoded) {
+    double cur_time, std::shared_ptr<EncodedFrame> frame,
+    eme::Implementation* cdm,
+    std::vector<std::shared_ptr<DecodedFrame>>* decoded) {
   return impl_->DecodeFrame(cur_time, frame, cdm, decoded);
 }
 

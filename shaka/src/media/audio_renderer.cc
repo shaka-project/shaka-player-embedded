@@ -47,37 +47,38 @@ constexpr const double kMaxPlaybackRate = 4;
 constexpr const double kMaxDelay = 0.2;
 
 
-SDL_AudioFormat SDLFormatFromFFmpeg(AVSampleFormat format) {
+SDL_AudioFormat SDLFormatFromShaka(variant<PixelFormat, SampleFormat> format) {
   // Try to use the same format to avoid work by swresample.
-  switch (format) {
-    case AV_SAMPLE_FMT_U8:
-    case AV_SAMPLE_FMT_U8P:
+  switch (get<SampleFormat>(format)) {
+    case SampleFormat::PackedU8:
+    case SampleFormat::PlanarU8:
       return AUDIO_U8;
-    case AV_SAMPLE_FMT_S16:
-    case AV_SAMPLE_FMT_S16P:
+    case SampleFormat::PackedS16:
+    case SampleFormat::PlanarS16:
       return AUDIO_S16SYS;
-    case AV_SAMPLE_FMT_S32:
-    case AV_SAMPLE_FMT_S32P:
+    case SampleFormat::PackedS32:
+    case SampleFormat::PlanarS32:
       return AUDIO_S32SYS;
-    case AV_SAMPLE_FMT_FLT:
-    case AV_SAMPLE_FMT_FLTP:
+    case SampleFormat::PackedFloat:
+    case SampleFormat::PlanarFloat:
       return AUDIO_F32SYS;
 
-    case AV_SAMPLE_FMT_DBL:
-    case AV_SAMPLE_FMT_DBLP: {
+    case SampleFormat::PackedDouble:
+    case SampleFormat::PlanarDouble: {
       LOG_ONCE(WARNING) << "SDL doesn't support double-precision audio "
                         << "formats, converting to floats.";
       return AUDIO_F32SYS;
     }
-    case AV_SAMPLE_FMT_S64:
-    case AV_SAMPLE_FMT_S64P: {
+    case SampleFormat::PackedS64:
+    case SampleFormat::PlanarS64: {
       LOG_ONCE(WARNING) << "SDL doesn't support 64-bit audio "
                         << "formats, converting to 32-bit.";
       return AUDIO_S32SYS;
     }
 
     default:
-      LOG(DFATAL) << "Unknown audio sample format: " << format;
+      LOG(DFATAL) << "Unknown audio sample format: "
+                  << static_cast<int>(get<SampleFormat>(format));
       return AUDIO_S32SYS;
   }
 }
@@ -240,7 +241,7 @@ bool AudioRenderer::InitDevice(const FFmpegDecodedFrame* frame) {
 
   memset(&audio_spec_, 0, sizeof(audio_spec_));
   audio_spec_.freq = frame->raw_frame()->sample_rate;
-  audio_spec_.format = SDLFormatFromFFmpeg(frame->sample_format());
+  audio_spec_.format = SDLFormatFromShaka(frame->format);
   audio_spec_.channels = static_cast<Uint8>(frame->raw_frame()->channels);
   audio_spec_.samples = static_cast<Uint16>(frame->raw_frame()->nb_samples *
                                             frame->raw_frame()->channels);
@@ -261,13 +262,14 @@ bool AudioRenderer::InitDevice(const FFmpegDecodedFrame* frame) {
   if (av_sample_format == AV_SAMPLE_FMT_NONE)
     return false;
 
+  const auto format = static_cast<AVSampleFormat>(frame->raw_frame()->format);
   swr_ctx_ = swr_alloc_set_opts(
       swr_ctx_,
       GetChannelLayout(obtained_audio_spec_.channels),  // out_ch_layout
       av_sample_format,                                 // out_sample_fmt
       obtained_audio_spec_.freq,                        // out_sample_rate
       frame->raw_frame()->channel_layout,               // in_ch_layout
-      frame->sample_format(),                           // in_sample_fmt
+      format,                                           // in_sample_fmt
       frame->raw_frame()->sample_rate,                  // in_sample_rate
       0,                                                // log_offset,
       nullptr);                                         // log_ctx
@@ -364,7 +366,7 @@ void AudioRenderer::AudioCallback(uint8_t* data, int size) {
     // get the benefits.
     if (frame->raw_frame()->sample_rate > audio_spec_.freq ||
         frame->raw_frame()->channels > audio_spec_.channels ||
-        SDLFormatFromFFmpeg(frame->sample_format()) != audio_spec_.format) {
+        SDLFormatFromShaka(frame->format) != audio_spec_.format) {
       need_reset_ = true;
       on_reset_.SignalAll();
       break;
@@ -394,7 +396,7 @@ void AudioRenderer::AudioCallback(uint8_t* data, int size) {
 
     const int samples_read =
         swr_convert(swr_ctx_, &data, size_in_samples,
-                    const_cast<const uint8_t**>(frame->data()),  // NOLINT
+                    const_cast<const uint8_t**>(frame->data.data()),  // NOLINT
                     frame->raw_frame()->nb_samples);
     if (samples_read < 0)
       break;

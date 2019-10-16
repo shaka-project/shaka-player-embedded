@@ -18,9 +18,11 @@ extern "C" {
 #include <libavutil/encryption_info.h>
 }
 
+#include <glog/logging.h>
 #include <netinet/in.h>
 
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "shaka/eme/configuration.h"
@@ -50,6 +52,10 @@ void IncrementIv(uint32_t count, std::vector<uint8_t>* iv) {
   counter[1] = htonl(ntohl(counter[1]) + count);
 }
 
+bool IsEncrypted(AVPacket* packet) {
+  return av_packet_get_side_data(packet, AV_PKT_DATA_ENCRYPTION_INFO, nullptr);
+}
+
 }  // namespace
 
 // static
@@ -64,38 +70,26 @@ FFmpegEncodedFrame* FFmpegEncodedFrame::MakeFrame(AVPacket* pkt,
   const bool is_key_frame = pkt->flags & AV_PKT_FLAG_KEY;
 
   return new (std::nothrow) FFmpegEncodedFrame(
-      pkt, stream_id, timestamp_offset, pts, dts, duration, is_key_frame);
+      pkt, pts, dts, duration, is_key_frame, stream_id, timestamp_offset);
 }
 
 FFmpegEncodedFrame::~FFmpegEncodedFrame() {
   av_packet_unref(&packet_);
 }
 
-size_t FFmpegEncodedFrame::EstimateSize() const {
-  size_t size = sizeof(*this) + packet_.size;
-  for (int i = packet_.side_data_elems; i; i--)
-    size += packet_.side_data[i - 1].size;
-  return size;
-}
-
-bool FFmpegEncodedFrame::is_encrypted() const {
-  return av_packet_get_side_data(&packet_, AV_PKT_DATA_ENCRYPTION_INFO,
-                                 nullptr);
-}
-
-Status FFmpegEncodedFrame::Decrypt(eme::Implementation* cdm,
-                                   AVPacket* dest_packet) const {
-  DCHECK(cdm) << "Must pass a CDM";
-  DCHECK(dest_packet) << "Must pass a valid packet";
-  DCHECK_LE(packet_.size, dest_packet->size);
-  DCHECK(is_encrypted()) << "This frame isn't encrypted";
+MediaStatus FFmpegEncodedFrame::Decrypt(const eme::Implementation* cdm,
+                                        uint8_t* dest) const {
+  if (!is_encrypted)
+    return MediaStatus::Success;
+  if (!cdm)
+    return MediaStatus::FatalError;
 
   int side_data_size;
   uint8_t* side_data = av_packet_get_side_data(
       &packet_, AV_PKT_DATA_ENCRYPTION_INFO, &side_data_size);
   if (!side_data) {
     LOG(ERROR) << "Unable to get side data from packet.";
-    return Status::UnknownError;
+    return MediaStatus::FatalError;
   }
 
   std::unique_ptr<AVEncryptionInfo, void (*)(AVEncryptionInfo*)> enc_info(
@@ -103,7 +97,7 @@ Status FFmpegEncodedFrame::Decrypt(eme::Implementation* cdm,
       &av_encryption_info_free);
   if (!enc_info) {
     LOG(ERROR) << "Could not allocate new encryption info structure.";
-    return Status::OutOfMemory;
+    return MediaStatus::FatalError;
   }
 
   eme::EncryptionScheme scheme;
@@ -111,7 +105,7 @@ Status FFmpegEncodedFrame::Decrypt(eme::Implementation* cdm,
     case kCencScheme:
       if (enc_info->crypt_byte_block != 0 || enc_info->skip_byte_block != 0) {
         LOG(ERROR) << "Cannot specify encryption pattern with 'cenc' scheme.";
-        return Status::InvalidContainerData;
+        return MediaStatus::FatalError;
       }
       scheme = eme::EncryptionScheme::AesCtr;
       break;
@@ -121,7 +115,7 @@ Status FFmpegEncodedFrame::Decrypt(eme::Implementation* cdm,
     case kCbc1Scheme:
       if (enc_info->crypt_byte_block != 0 || enc_info->skip_byte_block != 0) {
         LOG(ERROR) << "Cannot specify encryption pattern with 'cbc1' scheme.";
-        return Status::InvalidContainerData;
+        return MediaStatus::FatalError;
       }
       scheme = eme::EncryptionScheme::AesCbc;
       break;
@@ -132,29 +126,26 @@ Status FFmpegEncodedFrame::Decrypt(eme::Implementation* cdm,
     default:
       LOG(ERROR) << "Scheme 0x" << std::hex << enc_info->scheme
                  << " is unsupported";
-      return Status::NotSupported;
+      return MediaStatus::FatalError;
   }
 
   if (enc_info->subsample_count == 0) {
-    const eme::DecryptStatus decrypt_status = cdm->Decrypt(
-        scheme,
-        eme::EncryptionPattern{enc_info->crypt_byte_block,
-                               enc_info->skip_byte_block},
-        0, enc_info->key_id, enc_info->key_id_size, enc_info->iv,
-        enc_info->iv_size, packet_.data, packet_.size, dest_packet->data);
+    const eme::DecryptStatus decrypt_status =
+        cdm->Decrypt(scheme,
+                     eme::EncryptionPattern{enc_info->crypt_byte_block,
+                                            enc_info->skip_byte_block},
+                     0, enc_info->key_id, enc_info->key_id_size, enc_info->iv,
+                     enc_info->iv_size, packet_.data, packet_.size, dest);
     switch (decrypt_status) {
       case eme::DecryptStatus::Success:
         break;
-      case eme::DecryptStatus::NotSupported:
-        return Status::NotSupported;
       case eme::DecryptStatus::KeyNotFound:
-        return Status::KeyNotFound;
+        return MediaStatus::KeyNotFound;
       default:
-        return Status::UnknownError;
+        return MediaStatus::FatalError;
     }
   } else {
     const uint8_t* src = packet_.data;
-    uint8_t* dest = dest_packet->data;
     size_t total_size = packet_.size;
     size_t block_offset = 0;
     std::vector<uint8_t> cur_iv(enc_info->iv, enc_info->iv + enc_info->iv_size);
@@ -166,7 +157,7 @@ Status FFmpegEncodedFrame::Decrypt(eme::Implementation* cdm,
       if (total_size < clear_bytes ||
           total_size - clear_bytes < protected_bytes) {
         LOG(ERROR) << "Invalid subsample size";
-        return Status::InvalidContainerData;
+        return MediaStatus::FatalError;
       }
 
       // Copy clear content first.
@@ -189,12 +180,10 @@ Status FFmpegEncodedFrame::Decrypt(eme::Implementation* cdm,
       switch (decrypt_status) {
         case eme::DecryptStatus::Success:
           break;
-        case eme::DecryptStatus::NotSupported:
-          return Status::NotSupported;
         case eme::DecryptStatus::KeyNotFound:
-          return Status::KeyNotFound;
+          return MediaStatus::KeyNotFound;
         default:
-          return Status::UnknownError;
+          return MediaStatus::FatalError;
       }
 
       if (enc_info->scheme == kCencScheme || enc_info->scheme == kCensScheme) {
@@ -225,7 +214,7 @@ Status FFmpegEncodedFrame::Decrypt(eme::Implementation* cdm,
             protected_bytes % kAesBlockSize != 0) {
           LOG(ERROR) << "'cbc1' requires subsamples to be a multiple of the "
                         "AES block size.";
-          return Status::InvalidContainerData;
+          return MediaStatus::FatalError;
         }
         const uint8_t* block_end = src + protected_bytes;
         cur_iv.assign(block_end - kAesBlockSize, block_end);
@@ -239,19 +228,27 @@ Status FFmpegEncodedFrame::Decrypt(eme::Implementation* cdm,
 
     if (total_size != 0) {
       LOG(ERROR) << "Extra remaining data after subsample handling";
-      return Status::InvalidContainerData;
+      return MediaStatus::FatalError;
     }
   }
 
-  return Status::Success;
+  return MediaStatus::Success;
 }
 
-FFmpegEncodedFrame::FFmpegEncodedFrame(AVPacket* pkt, size_t stream_id,
-                                       double offset, double pts, double dts,
-                                       double duration, bool is_key_frame)
-    : BaseFrame(pts, dts, duration, is_key_frame),
-      stream_id_(stream_id),
-      timestamp_offset_(offset) {
+size_t FFmpegEncodedFrame::EstimateSize() const {
+  size_t size = sizeof(*this) + packet_.size;
+  for (int i = packet_.side_data_elems; i; i--)
+    size += packet_.side_data[i - 1].size;
+  return size;
+}
+
+FFmpegEncodedFrame::FFmpegEncodedFrame(AVPacket* pkt, double pts, double dts,
+                                       double duration, bool is_key_frame,
+                                       size_t stream_id,
+                                       double timestamp_offset)
+    : EncodedFrame(pts, dts, duration, is_key_frame, nullptr, pkt->data,
+                   pkt->size, timestamp_offset, IsEncrypted(pkt)),
+      stream_id_(stream_id) {
   av_packet_move_ref(&packet_, pkt);
 }
 

@@ -125,8 +125,9 @@ bool Frame::ConvertTo(PixelFormat format) {
                         format);
   }
 
-  if (!impl_->converter.ConvertFrame(impl_->frame, &impl_->frame_data,
-                                     &impl_->frame_linesize, pix_fmt)) {
+  if (!impl_->converter.ConvertFrame(
+          impl_->frame, const_cast<const uint8_t* const**>(&impl_->frame_data),
+          &impl_->frame_linesize, pix_fmt)) {
     return false;
   }
 

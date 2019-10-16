@@ -52,7 +52,7 @@ class FrameConverter {
    * @param desired_pixel_format The pixel format to convert to.
    * @return True if the conversion was successful, false otherwise.
    */
-  bool ConvertFrame(const AVFrame* frame, uint8_t* const** data,
+  bool ConvertFrame(const AVFrame* frame, const uint8_t* const** data,
                     const int** linesize, AVPixelFormat desired_pixel_format);
 
  private:

@@ -35,9 +35,10 @@ class MockFrameDrawer : public FrameDrawer {
   MOCK_METHOD1(DrawFrame, Frame(const BaseFrame* frame));
 };
 
-std::shared_ptr<BaseFrame> MakeFrame(double start) {
-  BaseFrame* ret = new BaseFrame(start, start, 0.01, true);
-  return std::shared_ptr<BaseFrame>(ret);
+std::shared_ptr<DecodedFrame> MakeFrame(double start) {
+  auto* ret = new DecodedFrame(start, start, 0.01, PixelFormat::RGB24, 0, 0, 0,
+                               0, 0, {}, {});
+  return std::shared_ptr<DecodedFrame>(ret);
 }
 
 constexpr const double kMinDelay = 1.0 / 120;

@@ -58,23 +58,22 @@ class Stream {
     return demuxed_frames_.GetBufferedRanges();
   }
 
-  StreamNew<BaseFrame, true>* GetDemuxedFrames() {
+  ElementaryStream* GetDemuxedFrames() {
     return &demuxed_frames_;
   }
-  const StreamNew<BaseFrame, true>* GetDemuxedFrames() const {
+  const ElementaryStream* GetDemuxedFrames() const {
     return &demuxed_frames_;
   }
-  StreamNew<BaseFrame, false>* GetDecodedFrames() {
+  DecodedStream* GetDecodedFrames() {
     return &decoded_frames_;
   }
-  const StreamNew<BaseFrame, false>* GetDecodedFrames() const {
+  const DecodedStream* GetDecodedFrames() const {
     return &decoded_frames_;
   }
 
  private:
-  // TODO(modmaker): Use ElementaryStream/DecodedStream.
-  StreamNew<BaseFrame, true> demuxed_frames_;
-  StreamNew<BaseFrame, false> decoded_frames_;
+  ElementaryStream demuxed_frames_;
+  DecodedStream decoded_frames_;
 };
 
 }  // namespace media

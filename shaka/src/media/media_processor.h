@@ -105,7 +105,7 @@ class MediaProcessor {
    * @param frame [OUT] Will contain the next demuxed frame.  Not changed on
    *   errors
    */
-  virtual Status ReadDemuxedFrame(std::unique_ptr<BaseFrame>* frame);
+  virtual Status ReadDemuxedFrame(std::shared_ptr<EncodedFrame>* frame);
 
   /**
    * Adds the given frame to the decoder and decodes it into full frames.  This
@@ -124,9 +124,10 @@ class MediaProcessor {
    * @param decoded [OUT] Will contain the decoded frames.
    * @return The error code, or Success.
    */
-  virtual Status DecodeFrame(double cur_time, const BaseFrame* frame,
-                             eme::Implementation* cdm,
-                             std::vector<std::unique_ptr<BaseFrame>>* decoded);
+  virtual Status DecodeFrame(
+      double cur_time, std::shared_ptr<EncodedFrame> frame,
+      eme::Implementation* cdm,
+      std::vector<std::shared_ptr<DecodedFrame>>* decoded);
 
   /** Sets the offset, in seconds, to adjust timestamps in the demuxer. */
   virtual void SetTimestampOffset(double offset);

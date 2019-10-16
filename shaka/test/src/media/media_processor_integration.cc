@@ -102,25 +102,26 @@ void DecodeFramesAndCheckHashes(MediaProcessor* processor,
   std::string results;
   Status status = Status::Success;
   while (status != Status::EndOfStream) {
-    std::unique_ptr<BaseFrame> frame;
+    std::shared_ptr<EncodedFrame> frame;
     status = processor->ReadDemuxedFrame(&frame);
     if (status != Status::EndOfStream)
       ASSERT_EQ(status, Status::Success);
 
-    std::vector<std::unique_ptr<BaseFrame>> decoded_frames;
-    ASSERT_EQ(processor->DecodeFrame(0, frame.get(), cdm, &decoded_frames),
+    std::vector<std::shared_ptr<DecodedFrame>> decoded_frames;
+    ASSERT_EQ(processor->DecodeFrame(0, frame, cdm, &decoded_frames),
               Status::Success);
     for (auto& decoded : decoded_frames) {
       auto* cast_frame = static_cast<FFmpegDecodedFrame*>(decoded.get());
-      uint8_t* const* data = cast_frame->data();
-      const int* linesize = cast_frame->linesize();
-      if (cast_frame->pixel_format() != AV_PIX_FMT_ARGB) {
+      const uint8_t* const* data = cast_frame->data.data();
+      std::vector<int> linesize_vec{cast_frame->linesize.begin(),
+                                    cast_frame->linesize.end()};
+      const int* linesize = linesize_vec.data();
+      if (cast_frame->raw_frame()->format != AV_PIX_FMT_ARGB) {
         ASSERT_TRUE(converter.ConvertFrame(cast_frame->raw_frame(), &data,
                                            &linesize, AV_PIX_FMT_ARGB));
       }
 
-      results +=
-          GetFrameHash(data[0], linesize[0] * cast_frame->height()) + "\n";
+      results += GetFrameHash(data[0], linesize[0] * cast_frame->height) + "\n";
     }
   }
 
@@ -170,14 +171,14 @@ TEST_F(MediaProcessorIntegration, ReadsDemuxedFrames) {
             Status::Success);
 
   for (size_t i = 0; i < 120; i++) {
-    std::unique_ptr<BaseFrame> frame;
+    std::shared_ptr<EncodedFrame> frame;
     ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
     // Don't test the body of the frame, it will be tested by the decoding test
     // below.
     EXPECT_NEAR(frame->dts, i * 0.041666, 0.0001);
   }
 
-  std::unique_ptr<BaseFrame> frame;
+  std::shared_ptr<EncodedFrame> frame;
   ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::EndOfStream);
 }
 
@@ -196,20 +197,20 @@ TEST_F(MediaProcessorIntegration, HandlesMp4Adaptation) {
 
   // Low segment.
   for (size_t i = 0; i < 120; i++) {
-    std::unique_ptr<BaseFrame> frame;
+    std::shared_ptr<EncodedFrame> frame;
     ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
     EXPECT_NEAR(frame->dts, i * 0.041666, 0.0001);
   }
 
   // High segment.
   for (size_t i = 0; i < 120; i++) {
-    std::unique_ptr<BaseFrame> frame;
+    std::shared_ptr<EncodedFrame> frame;
     ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
     // The high segment also starts at 0.
     EXPECT_NEAR(frame->dts, i * 0.041666, 0.0001);
   }
 
-  std::unique_ptr<BaseFrame> frame;
+  std::shared_ptr<EncodedFrame> frame;
   ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::EndOfStream);
 }
 
@@ -226,7 +227,7 @@ TEST_F(MediaProcessorIntegration, AccountsForTimestampOffset) {
                                         &ExpectNoAdaptation),
             Status::Success);
 
-  std::unique_ptr<BaseFrame> frame;
+  std::shared_ptr<EncodedFrame> frame;
   ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
   EXPECT_NEAR(frame->dts, 20, 0.0001);
   EXPECT_NEAR(frame->pts, 20, 0.0001);
@@ -248,11 +249,10 @@ TEST_F(MediaProcessorIntegration, DemuxerReportsEncryptedFrames) {
             Status::Success);
 
   for (size_t i = 0; i < 120; i++) {
-    std::unique_ptr<BaseFrame> frame;
+    std::shared_ptr<EncodedFrame> frame;
     ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
-    auto* ffmpeg_frame = static_cast<FFmpegEncodedFrame*>(frame.get());
     // The first 96 frames are clear, until the second keyframe.
-    EXPECT_EQ(ffmpeg_frame->is_encrypted(), i >= 96);
+    EXPECT_EQ(frame->is_encrypted, i >= 96);
   }
 }
 
@@ -279,11 +279,11 @@ TEST_F(MediaProcessorIntegration, ReportsEncryptionInitInfo) {
             Status::Success);
 
   for (size_t i = 0; i < 120; i++) {
-    std::unique_ptr<BaseFrame> frame;
+    std::shared_ptr<EncodedFrame> frame;
     ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
   }
 
-  std::unique_ptr<BaseFrame> frame;
+  std::shared_ptr<EncodedFrame> frame;
   ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::EndOfStream);
 }
 
@@ -319,7 +319,7 @@ TEST_F(MediaProcessorIntegration, CanDecodeWithAdaptation) {
   bool saw_second_stream = false;
   size_t first_stream_id = -1;
   while (true) {
-    std::unique_ptr<BaseFrame> frame;
+    std::shared_ptr<EncodedFrame> frame;
     const Status status = processor.ReadDemuxedFrame(&frame);
     if (status == Status::EndOfStream)
       break;
@@ -333,9 +333,9 @@ TEST_F(MediaProcessorIntegration, CanDecodeWithAdaptation) {
         saw_second_stream = true;
     }
 
-    std::vector<std::unique_ptr<BaseFrame>> decoded_frames;
+    std::vector<std::shared_ptr<DecodedFrame>> decoded_frames;
     ASSERT_EQ(status, Status::Success);
-    ASSERT_EQ(processor.DecodeFrame(0, frame.get(), nullptr, &decoded_frames),
+    ASSERT_EQ(processor.DecodeFrame(0, frame, nullptr, &decoded_frames),
               Status::Success);
   }
 
