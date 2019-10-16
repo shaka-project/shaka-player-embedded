@@ -166,7 +166,7 @@ bool ParseMimeAndCheckSupported(const std::string& mime_type,
     return false;
   const long width = atol(params["width"].c_str());    // NOLINT
   const long height = atol(params["height"].c_str());  // NOLINT
-  if (!IsTypeSupported(*container, params["codecs"], width, height))
+  if (!IsTypeSupported(*container, params[kCodecMimeParam], width, height))
     return false;
 
   if (type == "video") {
@@ -178,7 +178,7 @@ bool ParseMimeAndCheckSupported(const std::string& mime_type,
     return false;
   }
 
-  *codec = params["codecs"];
+  *codec = params[kCodecMimeParam];
   return true;
 }
 

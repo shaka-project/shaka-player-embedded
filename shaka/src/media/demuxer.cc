@@ -18,6 +18,9 @@
 
 #include <atomic>
 
+#include "src/media/ffmpeg/ffmpeg_demuxer.h"
+#include "src/util/macros.h"
+
 namespace shaka {
 namespace media {
 
@@ -42,7 +45,13 @@ DemuxerFactory::DemuxerFactory() {}
 DemuxerFactory::~DemuxerFactory() {}
 
 const DemuxerFactory* DemuxerFactory::GetFactory() {
-  return demuxer_factory_.load(std::memory_order_relaxed);
+  const DemuxerFactory* ret = demuxer_factory_.load(std::memory_order_relaxed);
+  if (ret)
+    return ret;
+
+  static ffmpeg::FFmpegDemuxerFactory* factory =
+      new ffmpeg::FFmpegDemuxerFactory;
+  return factory;
 }
 
 void DemuxerFactory::SetFactory(const DemuxerFactory* func) {

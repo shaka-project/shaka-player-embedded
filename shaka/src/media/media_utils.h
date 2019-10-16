@@ -27,6 +27,9 @@
 namespace shaka {
 namespace media {
 
+/** The name of the MIME parameter that contains the codecs. */
+constexpr const char* kCodecMimeParam = "codecs";
+
 /**
  * Parses a MIME type string into the type, subtype, and parameters.
  * e.g.: "video/mp4; codecs=vp9"

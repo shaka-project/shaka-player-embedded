@@ -615,6 +615,8 @@ source_set("internal_sources") {
     "shaka/src/media/demuxer_thread.h",
     "shaka/src/media/ffmpeg/ffmpeg_decoded_frame.cc",
     "shaka/src/media/ffmpeg/ffmpeg_decoded_frame.h",
+    "shaka/src/media/ffmpeg/ffmpeg_demuxer.cc",
+    "shaka/src/media/ffmpeg/ffmpeg_demuxer.h",
     "shaka/src/media/ffmpeg/ffmpeg_encoded_frame.cc",
     "shaka/src/media/ffmpeg/ffmpeg_encoded_frame.h",
     "shaka/src/media/frame_converter.cc",
