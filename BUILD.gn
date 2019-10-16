@@ -604,8 +604,6 @@ source_set("internal_sources") {
     "shaka/src/mapping/weak_js_ptr.h",
     "shaka/src/media/audio_renderer.cc",
     "shaka/src/media/audio_renderer.h",
-    "shaka/src/media/base_frame.cc",
-    "shaka/src/media/base_frame.h",
     "shaka/src/media/decoder.cc",
     "shaka/src/media/decoder_thread.cc",
     "shaka/src/media/decoder_thread.h",

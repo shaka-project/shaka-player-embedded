@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "shaka/eme/configuration.h"
-#include "src/media/base_frame.h"
+#include "shaka/media/frames.h"
 #include "src/media/types.h"
 
 namespace shaka {

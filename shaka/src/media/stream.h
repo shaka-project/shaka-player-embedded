@@ -15,7 +15,7 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_STREAM_H_
 #define SHAKA_EMBEDDED_MEDIA_STREAM_H_
 
-#include "src/media/base_frame.h"
+#include "shaka/media/frames.h"
 #include "src/media/frame_buffer.h"
 #include "src/util/macros.h"
 

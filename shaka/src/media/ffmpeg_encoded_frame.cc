@@ -71,10 +71,6 @@ FFmpegEncodedFrame::~FFmpegEncodedFrame() {
   av_packet_unref(&packet_);
 }
 
-FrameType FFmpegEncodedFrame::frame_type() const {
-  return FrameType::FFmpegEncodedFrame;
-}
-
 size_t FFmpegEncodedFrame::EstimateSize() const {
   size_t size = sizeof(*this) + packet_.size;
   for (int i = packet_.side_data_elems; i; i--)

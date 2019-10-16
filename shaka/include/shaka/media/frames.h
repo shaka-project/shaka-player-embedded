@@ -111,19 +111,17 @@ SHAKA_EXPORT size_t GetPlaneCount(variant<PixelFormat, SampleFormat> format,
 /**
  * Defines common info between encoded and decoded frames.
  *
- * TODO(modmaker): Rename to BaseFrame once old type is removed.
- *
  * @ingroup media
  */
-class SHAKA_EXPORT BaseFrameNew {
+class SHAKA_EXPORT BaseFrame {
  public:
-  BaseFrameNew(double pts, double dts, double duration, bool is_key_frame);
-  BaseFrameNew(const BaseFrameNew&) = delete;
-  BaseFrameNew(BaseFrameNew&&) = delete;
-  virtual ~BaseFrameNew();
+  BaseFrame(double pts, double dts, double duration, bool is_key_frame);
+  BaseFrame(const BaseFrame&) = delete;
+  BaseFrame(BaseFrame&&) = delete;
+  virtual ~BaseFrame();
 
-  BaseFrameNew& operator=(const BaseFrameNew&) = delete;
-  BaseFrameNew& operator=(BaseFrameNew&&) = delete;
+  BaseFrame& operator=(const BaseFrame&) = delete;
+  BaseFrame& operator=(BaseFrame&&) = delete;
 
   /** The absolute presentation timestamp, in seconds. */
   const double pts;
@@ -159,7 +157,7 @@ class SHAKA_EXPORT BaseFrameNew {
  *
  * @ingroup media
  */
-class SHAKA_EXPORT EncodedFrame : public BaseFrameNew {
+class SHAKA_EXPORT EncodedFrame : public BaseFrame {
  public:
   EncodedFrame(double pts, double dts, double duration, bool is_key_frame,
                std::shared_ptr<const StreamInfo> stream, const uint8_t* data,
@@ -207,7 +205,7 @@ class SHAKA_EXPORT EncodedFrame : public BaseFrameNew {
  *
  * @ingroup media
  */
-class SHAKA_EXPORT DecodedFrame : public BaseFrameNew {
+class SHAKA_EXPORT DecodedFrame : public BaseFrame {
  public:
   DecodedFrame(double pts, double dts, double duration,
                variant<PixelFormat, SampleFormat> format, uint32_t width,

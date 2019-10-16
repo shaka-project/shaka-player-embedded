@@ -21,7 +21,7 @@ extern "C" {
 
 #include <memory>
 
-#include "src/media/base_frame.h"
+#include "shaka/media/frames.h"
 #include "src/media/types.h"
 #include "src/util/macros.h"
 
@@ -44,7 +44,6 @@ class FFmpegEncodedFrame final : public BaseFrame {
 
   NON_COPYABLE_OR_MOVABLE_TYPE(FFmpegEncodedFrame);
 
-  FrameType frame_type() const override;
   size_t EstimateSize() const override;
 
   const AVPacket* raw_packet() const {

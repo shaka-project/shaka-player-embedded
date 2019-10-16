@@ -38,12 +38,12 @@ void StreamBase::Remove(double start, double end) {}
 
 void StreamBase::Clear() {}
 
-std::shared_ptr<BaseFrameNew> StreamBase::GetFrameInternal(
+std::shared_ptr<BaseFrame> StreamBase::GetFrameInternal(
     double time, FrameLocation kind) const {
   return nullptr;
 }
 
-void StreamBase::AddFrameInternal(std::shared_ptr<BaseFrameNew> frame) {}
+void StreamBase::AddFrameInternal(std::shared_ptr<BaseFrame> frame) {}
 
 }  // namespace media
 }  // namespace shaka

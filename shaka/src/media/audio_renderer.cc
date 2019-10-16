@@ -215,7 +215,6 @@ void AudioRenderer::ThreadMain() {
         continue;
       }
 
-      CHECK(base_frame->frame_type() == FrameType::FFmpegDecodedFrame);
       auto* frame = static_cast<const FFmpegDecodedFrame*>(base_frame.get());
 
       if (!InitDevice(frame))
@@ -355,7 +354,6 @@ void AudioRenderer::AudioCallback(uint8_t* data, int size) {
     if (!base_frame)
       break;
 
-    CHECK(base_frame->frame_type() == FrameType::FFmpegDecodedFrame);
     auto* frame = static_cast<const FFmpegDecodedFrame*>(base_frame.get());
 
     // If the source changed, we need to reset.  If the new frame has a lower

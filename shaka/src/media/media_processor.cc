@@ -561,8 +561,6 @@ class MediaProcessor::Impl {
                      eme::Implementation* cdm,
                      std::vector<std::unique_ptr<BaseFrame>>* decoded) {
     decoded->clear();
-    DCHECK(!base_frame ||
-           base_frame->frame_type() == FrameType::FFmpegEncodedFrame);
     auto* frame = static_cast<const FFmpegEncodedFrame*>(base_frame);
 
     if (!frame && !decoder_ctx_) {

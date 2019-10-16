@@ -64,12 +64,11 @@ size_t GetPlaneCount(variant<PixelFormat, SampleFormat> format,
 }
 
 
-BaseFrameNew::BaseFrameNew(double pts, double dts, double duration,
-                           bool is_key_frame)
+BaseFrame::BaseFrame(double pts, double dts, double duration, bool is_key_frame)
     : pts(pts), dts(dts), duration(duration), is_key_frame(is_key_frame) {}
-BaseFrameNew::~BaseFrameNew() {}
+BaseFrame::~BaseFrame() {}
 
-size_t BaseFrameNew::EstimateSize() const {
+size_t BaseFrame::EstimateSize() const {
   return sizeof(*this);
 }
 
@@ -79,7 +78,7 @@ EncodedFrame::EncodedFrame(double pts, double dts, double duration,
                            std::shared_ptr<const StreamInfo> stream,
                            const uint8_t* data, size_t data_size,
                            double timestamp_offset, bool is_encrypted)
-    : BaseFrameNew(pts, dts, duration, is_key_frame),
+    : BaseFrame(pts, dts, duration, is_key_frame),
       stream_info(stream),
       data(data),
       data_size(data_size),
@@ -107,7 +106,7 @@ DecodedFrame::DecodedFrame(double pts, double dts, double duration,
                            size_t sample_count,
                            const std::vector<const uint8_t*>& data,
                            const std::vector<size_t>& linesize)
-    : BaseFrameNew(pts, dts, duration, true),
+    : BaseFrame(pts, dts, duration, true),
       width(width),
       height(height),
       channel_count(channel_count),

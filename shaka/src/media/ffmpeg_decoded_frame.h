@@ -22,7 +22,7 @@ extern "C" {
 
 #include <memory>
 
-#include "src/media/base_frame.h"
+#include "shaka/media/frames.h"
 #include "src/util/macros.h"
 
 namespace shaka {
@@ -38,7 +38,6 @@ class FFmpegDecodedFrame final : public BaseFrame {
 
   NON_COPYABLE_OR_MOVABLE_TYPE(FFmpegDecodedFrame);
 
-  FrameType frame_type() const override;
   size_t EstimateSize() const override;
 
   /** @return The width of the frame in pixels, if this is video. */

@@ -111,7 +111,6 @@ void DecodeFramesAndCheckHashes(MediaProcessor* processor,
     ASSERT_EQ(processor->DecodeFrame(0, frame.get(), cdm, &decoded_frames),
               Status::Success);
     for (auto& decoded : decoded_frames) {
-      ASSERT_EQ(decoded->frame_type(), FrameType::FFmpegDecodedFrame);
       auto* cast_frame = static_cast<FFmpegDecodedFrame*>(decoded.get());
       uint8_t* const* data = cast_frame->data();
       const int* linesize = cast_frame->linesize();
@@ -251,7 +250,6 @@ TEST_F(MediaProcessorIntegration, DemuxerReportsEncryptedFrames) {
   for (size_t i = 0; i < 120; i++) {
     std::unique_ptr<BaseFrame> frame;
     ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
-    ASSERT_EQ(frame->frame_type(), FrameType::FFmpegEncodedFrame);
     auto* ffmpeg_frame = static_cast<FFmpegEncodedFrame*>(frame.get());
     // The first 96 frames are clear, until the second keyframe.
     EXPECT_EQ(ffmpeg_frame->is_encrypted(), i >= 96);
@@ -326,7 +324,6 @@ TEST_F(MediaProcessorIntegration, CanDecodeWithAdaptation) {
     if (status == Status::EndOfStream)
       break;
 
-    ASSERT_EQ(frame->frame_type(), FrameType::FFmpegEncodedFrame);
     auto* ffmpeg_frame = static_cast<FFmpegEncodedFrame*>(frame.get());
     if (!saw_first_stream) {
       saw_first_stream = true;

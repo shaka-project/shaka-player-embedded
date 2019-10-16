@@ -19,9 +19,9 @@
 #include <thread>
 #include <unordered_set>
 
+#include "shaka/media/frames.h"
 #include "src/debug/mutex.h"
 #include "src/debug/thread_event.h"
-#include "src/media/base_frame.h"
 #include "src/util/macros.h"
 
 namespace shaka {

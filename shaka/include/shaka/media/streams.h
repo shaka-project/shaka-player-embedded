@@ -142,8 +142,8 @@ class SHAKA_EXPORT StreamBase {
    * @param kind How to search for the frame.
    * @return The located frame, or nullptr if not found.
    */
-  std::shared_ptr<BaseFrameNew> GetFrameInternal(double time,
-                                                 FrameLocation kind) const;
+  std::shared_ptr<BaseFrame> GetFrameInternal(double time,
+                                              FrameLocation kind) const;
 
   /**
    * Adds a new frame to the stream.  This won't check for compatible streams
@@ -155,7 +155,7 @@ class SHAKA_EXPORT StreamBase {
    * frame; otherwise this will insert based on the start time, even if they
    * overlap.
    */
-  void AddFrameInternal(std::shared_ptr<BaseFrameNew> frame);
+  void AddFrameInternal(std::shared_ptr<BaseFrame> frame);
 
  private:
   void AssertRangesSorted() const;

@@ -45,10 +45,6 @@ int* FFmpegDecodedFrame::linesize() const {
   return frame_->linesize;
 }
 
-FrameType FFmpegDecodedFrame::frame_type() const {
-  return FrameType::FFmpegDecodedFrame;
-}
-
 size_t FFmpegDecodedFrame::EstimateSize() const {
   size_t size = sizeof(*this) + sizeof(*frame_);
   for (int i = AV_NUM_DATA_POINTERS; i; i--) {

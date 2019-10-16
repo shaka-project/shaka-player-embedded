@@ -19,8 +19,8 @@
 #include <memory>
 #include <vector>
 
+#include "shaka/media/frames.h"
 #include "src/debug/mutex.h"
-#include "src/media/base_frame.h"
 #include "src/media/locked_frame_list.h"
 #include "src/media/media_utils.h"
 #include "src/util/macros.h"

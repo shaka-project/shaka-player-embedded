@@ -14,7 +14,7 @@
 
 #include "src/media/frame_drawer.h"
 
-#include "src/media/base_frame.h"
+#include "shaka/media/frames.h"
 #include "src/media/ffmpeg_decoded_frame.h"
 
 namespace shaka {
@@ -24,7 +24,6 @@ FrameDrawer::FrameDrawer() {}
 FrameDrawer::~FrameDrawer() {}
 
 Frame FrameDrawer::DrawFrame(const BaseFrame* frame) {
-  DCHECK(frame->frame_type() == FrameType::FFmpegDecodedFrame);
   auto* cast_frame = static_cast<const FFmpegDecodedFrame*>(frame);
   return Frame(cast_frame->raw_frame());
 }
