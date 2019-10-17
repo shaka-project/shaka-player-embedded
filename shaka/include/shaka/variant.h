@@ -18,6 +18,8 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include <cstdint>
+#include <limits>
 #include <type_traits>
 #include <utility>
 
@@ -32,6 +34,21 @@ template <typename... Choices>
 class variant;
 
 namespace impl {
+
+#define SHAKA_MAX(a, b) ((a) > (b) ? (a) : (b))
+
+template <typename... Types>
+struct get_max_size;
+template <>
+struct get_max_size<> : std::integral_constant<size_t, 0> {};
+template <typename T, typename... Rest>
+struct get_max_size<T, Rest...>
+    : std::integral_constant<size_t, SHAKA_MAX(sizeof(T),
+                                               get_max_size<Rest...>::value)> {
+};
+
+#undef SHAKA_MAX
+
 
 /** Contains a |type| member for the type at the given index in the pack. */
 template <size_t I, typename... Choices>
@@ -253,7 +270,7 @@ class union_<T> final {
  private:
   union {
     T value_;
-    void* dummy_;
+    uint8_t dummy_;
   };
 };
 
@@ -377,6 +394,20 @@ class variant {
   template <typename T, typename... Choices>
   friend T* get_if(variant<Choices...>&);
 
+  // This should be a C++ union, so the size should be the same as the largest
+  // type.
+  static_assert(sizeof(impl::union_<Types...>) ==
+                    impl::get_max_size<Types...>::value,
+                "Union too big");
+
+  // Use a smaller integer type to avoid taking up more space to store the
+  // index.  The index is only as large as the number of types.
+  using size_type = typename std::conditional<
+      sizeof...(Types) <= std::numeric_limits<uint8_t>::max(), uint8_t,
+      typename std::conditional<sizeof...(Types) <=
+                                    std::numeric_limits<uint16_t>::max(),
+                                uint16_t, size_t>::type>::type;
+
 
   bool equals(const variant& other) const {
     return index_ == other.index_ && union_.equals(other.union_, index_);
@@ -401,7 +432,7 @@ class variant {
   }
 
   impl::union_<Types...> union_;
-  size_t index_;
+  size_type index_;
 };
 
 
