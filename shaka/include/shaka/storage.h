@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 #include "async_results.h"
@@ -151,7 +152,7 @@ class SHAKA_EXPORT Storage final {
    * Removes the given stored content. This will also attempt to release the
    * licenses, if any.
    */
-  AsyncResults<void> Remove(const std::string content_uri);
+  AsyncResults<void> Remove(const std::string& content_uri);
 
   /**
    * Removes any EME sessions that were not successfully removed before. This
@@ -164,8 +165,15 @@ class SHAKA_EXPORT Storage final {
    * content cannot be stored on this platform, the Promise will be rejected
    * with error code 6001, REQUESTED_KEY_SYSTEM_CONFIG_UNAVAILABLE.
    */
-  // TODO: Support the appMetadata argument.
-  AsyncResults<StoredContent> Store(const std::string uri);
+  AsyncResults<StoredContent> Store(const std::string& uri);
+
+  /**
+   * Stores the given manifest.  This also stores the given data along side the
+   * media data so the app can store additional data.
+   */
+  AsyncResults<StoredContent> Store(
+      const std::string& uri,
+      const std::unordered_map<std::string, std::string>& app_metadata);
 
  private:
   class Impl;

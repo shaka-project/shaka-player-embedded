@@ -38,4 +38,7 @@ dictionary StoredContent {
    * is clear or the license never expires, this will equal Infinity.
    */
   double expiration;
+
+  /** The metadata passed to store. */
+  record<DOMString, DOMString> appMetadata;
 };

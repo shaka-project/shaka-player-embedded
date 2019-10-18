@@ -162,7 +162,7 @@ AsyncResults<std::vector<StoredContent>> Storage::List() {
   return impl_->CallMethod<std::vector<StoredContent>>("list");
 }
 
-AsyncResults<void> Storage::Remove(const std::string content_uri) {
+AsyncResults<void> Storage::Remove(const std::string& content_uri) {
   return impl_->CallMethod<void>("remove", content_uri);
 }
 
@@ -170,8 +170,14 @@ AsyncResults<bool> Storage::RemoveEmeSessions() {
   return impl_->CallMethod<bool>("removeEmeSessions");
 }
 
-AsyncResults<StoredContent> Storage::Store(const std::string uri) {
+AsyncResults<StoredContent> Storage::Store(const std::string& uri) {
   return impl_->CallMethod<StoredContent>("store", uri);
+}
+
+AsyncResults<StoredContent> Storage::Store(
+    const std::string& uri,
+    const std::unordered_map<std::string, std::string>& app_metadata) {
+  return impl_->CallMethod<StoredContent>("store", uri, app_metadata);
 }
 
 }  // namespace shaka

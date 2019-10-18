@@ -14,6 +14,8 @@
 
 #import "shaka/ShakaPlayerStorage.h"
 
+#include <unordered_map>
+
 #include "shaka/storage.h"
 #include "src/js/offline_externs+Internal.h"
 #include "src/js/offline_externs.h"
@@ -40,6 +42,16 @@ class NativeClient : public shaka::Storage::Client {
  private:
   __weak id<ShakaPlayerStorageClient> _client;
 };
+
+std::unordered_map<std::string, std::string> ToUnorderedMap(
+    NSDictionary<NSString *, NSString *> *dict) {
+  std::unordered_map<std::string, std::string> ret;
+  ret.reserve([dict count]);
+  for (NSString *key in dict) {
+    ret.emplace(key.UTF8String, dict[key].UTF8String);
+  }
+  return ret;
+}
 
 }  // namespace
 
@@ -119,6 +131,13 @@ class NativeClient : public shaka::Storage::Client {
 
 - (void)store:(NSString *)uri withBlock:(void (^)(ShakaStoredContent *, ShakaPlayerError *))block {
   auto results = _storage->Store(uri.UTF8String);
+  shaka::util::CallBlockForFuture(self, std::move(results), block);
+}
+
+- (void)store:(NSString *)uri
+    withAppMetadata:(NSDictionary<NSString *, NSString *> *)data
+           andBlock:(void (^)(ShakaStoredContent *, ShakaPlayerError *))block {
+  auto results = _storage->Store(uri.UTF8String, ToUnorderedMap(data));
   shaka::util::CallBlockForFuture(self, std::move(results), block);
 }
 

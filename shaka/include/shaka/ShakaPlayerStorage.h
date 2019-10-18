@@ -86,8 +86,15 @@ SHAKA_EXPORT
  * content cannot be stored on this platform, the Promise will be rejected
  * with error code 6001, REQUESTED_KEY_SYSTEM_CONFIG_UNAVAILABLE.
  */
-// TODO: Support the appMetadata argument.
 - (void) store:(NSString*)uri withBlock:(void (^)(ShakaStoredContent *, ShakaPlayerError *)) block;
+
+/**
+ * Stores the given manifest.  This also stores the given data along side the
+ * media data so the app can store additional data.
+ */
+- (void)store:(NSString *)uri
+    withAppMetadata:(NSDictionary<NSString *, NSString *> *)data
+           andBlock:(void (^)(ShakaStoredContent *, ShakaPlayerError *))block;
 
 
 /**
