@@ -57,12 +57,17 @@ class DynamicBuffer {
   void CopyDataTo(uint8_t* dest, size_t size) const;
 
  private:
+  friend class DynamicBufferTest;
+
+  static constexpr const size_t kMinBufferSize = 64 * 1024;
+
   struct SubBuffer {
-    SubBuffer(uint8_t* buffer, size_t size);
+    SubBuffer(uint8_t* buffer, size_t used, size_t capacity);
     ~SubBuffer();
 
     std::unique_ptr<uint8_t[]> buffer;
-    size_t size;
+    size_t used;
+    size_t capacity;
   };
 
   std::list<SubBuffer> buffers_;

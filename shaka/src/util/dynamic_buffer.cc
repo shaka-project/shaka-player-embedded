@@ -16,10 +16,13 @@
 
 #include <glog/logging.h>
 
+#include <algorithm>
 #include <cstring>
 
 namespace shaka {
 namespace util {
+
+const size_t DynamicBuffer::kMinBufferSize;
 
 DynamicBuffer::DynamicBuffer() {}
 DynamicBuffer::~DynamicBuffer() {}
@@ -30,14 +33,26 @@ DynamicBuffer& DynamicBuffer::operator=(DynamicBuffer&&) = default;
 size_t DynamicBuffer::Size() const {
   size_t size = 0;
   for (auto& buffer : buffers_)
-    size += buffer.size;
+    size += buffer.used;
   return size;
 }
 
 void DynamicBuffer::AppendCopy(const void* buffer, size_t size) {
-  auto* ptr = new uint8_t[size];
-  std::memcpy(ptr, buffer, size);
-  buffers_.emplace_back(ptr, size);
+  if (!buffers_.empty()) {
+    auto* info = &buffers_.back();
+    const size_t to_copy = std::min(info->capacity - info->used, size);
+    std::memcpy(info->buffer.get() + info->used, buffer, to_copy);
+    info->used += to_copy;
+    buffer = reinterpret_cast<const uint8_t*>(buffer) + to_copy;
+    size -= to_copy;
+  }
+
+  if (size > 0) {
+    const size_t capacity = std::max(kMinBufferSize, size);
+    auto* ptr = new uint8_t[capacity];
+    std::memcpy(ptr, buffer, size);
+    buffers_.emplace_back(ptr, size, capacity);
+  }
 }
 
 std::string DynamicBuffer::CreateString() const {
@@ -48,15 +63,16 @@ std::string DynamicBuffer::CreateString() const {
 
 void DynamicBuffer::CopyDataTo(uint8_t* dest, size_t size) const {
   for (auto& buffer : buffers_) {
-    CHECK_GE(size, buffer.size);
-    std::memcpy(dest, buffer.buffer.get(), buffer.size);
-    dest += buffer.size;
-    size -= buffer.size;
+    CHECK_GE(size, buffer.used);
+    std::memcpy(dest, buffer.buffer.get(), buffer.used);
+    dest += buffer.used;
+    size -= buffer.used;
   }
 }
 
-DynamicBuffer::SubBuffer::SubBuffer(uint8_t* buffer, size_t size)
-    : buffer(buffer), size(size) {}
+DynamicBuffer::SubBuffer::SubBuffer(uint8_t* buffer, size_t used,
+                                    size_t capacity)
+    : buffer(buffer), used(used), capacity(capacity) {}
 
 DynamicBuffer::SubBuffer::~SubBuffer() {}
 
