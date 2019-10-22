@@ -41,6 +41,7 @@ typedef NS_ENUM(NSInteger, ShakaPlayerLogLevel) {
 
 /**
  * Defines an interface for Player events.
+ * @ingroup player
  */
 SHAKA_EXPORT
 @protocol ShakaPlayerClient <NSObject>

@@ -114,18 +114,30 @@ Go to 'ViewController.swift', and replace its contents with the following code:
 import UIKit
 import ShakaPlayerEmbedded
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, ShakaPlayerClient {
+  func onPlayerError(_ error: ShakaPlayerError!) {
+    print("Got Shaka Player Error: \(error.message)")
+  }
+
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
 
     // Make a Shaka Player view.
-    let player = ShakaPlayerView()
+    guard let player = ShakaPlayerView(client: self) else {
+      print("Error creating player")
+      return
+    }
     player.frame = self.view.bounds
     self.view.addSubview(player)
 
     // Load and play an asset.
-    player.load("https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd")
-    player.play()
+    player.load("https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd") {
+      if let error = $0 {
+        print("Error loading manifest: \(error.message)")
+      } else {
+        player.play()
+      }
+    }
   }
 }
 ```
@@ -138,19 +150,33 @@ Go to 'ViewController.m', and replace its contents with the following code:
 #import "ViewController.h"
 #import <ShakaPlayerEmbedded/ShakaPlayerEmbedded.h>
 
+// \cond Doxygen_Skip
+@interface ViewController() <ShakaPlayerClient>
+@end
+// \endcond Doxygen_Skip
+
 @implementation ViewController
+
+- (void)onPlayerError:(ShakaPlayerError *)error {
+  NSLog(@"Got Shaka Player Error: %@", [error message]);
+}
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
   // Make a Shaka Player view.
-  ShakaPlayerView *player = [[ShakaPlayerView alloc] init];
+  ShakaPlayerView *player = [[ShakaPlayerView alloc] initWithClient:self];
   player.frame = self.view.bounds;
   [self.view addSubview:player];
 
   // Load and play an asset.
-  [player load:@"https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd"];
-  [player play];
+  [player load:@"https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd"
+     withBlock:^(ShakaPlayerError *error) {
+    if (error)
+      NSLog(@"Error loading manifest: %@", [error message]);
+    else
+      [player play];
+  }];
 }
 
 @end
