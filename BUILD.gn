@@ -372,6 +372,18 @@ action("gen_version_h") {
   ]
 }
 
+action("gen_info_plist") {
+  visibility = [ ":*" ]
+
+  outputs = [ "$root_gen_dir/shaka/Info.plist" ]
+  script = "//shaka/tools/gen_info_plist.py"
+
+  args = [
+    "--output",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+}
+
 action_foreach("gen_exposed_idl") {
   _internal_dir = "{{source_gen_dir}}"
   _public_dir = "$root_gen_dir/shaka"
@@ -928,8 +940,7 @@ if (is_mac || is_ios) {
       ]
     }
 
-    # Simply use the FFmpeg plist since there is nothing specific to it.
-    info_plist = "third_party/ffmpeg/Info.plist"
+    info_plist_target = ":gen_info_plist"
 
     # Apple API naming guidelines are to pick a two or three letter prefix for
     # the purpose of namespacing. That is not necessary for us, as every
@@ -1078,7 +1089,7 @@ if (is_ios) {
       # TODO: Fix warnings.
       configs -= [ "//build/config/compiler:chromium_code" ]
     } else {
-      info_plist = "Info.plist"
+      info_plist = "shaka/demo/Info.plist"
       sources = [ "shaka/demo/main.cc" ]
       deps = [
         ":player_static",

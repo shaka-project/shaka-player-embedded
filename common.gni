@@ -58,7 +58,7 @@ template("framework_library") {
     }
   } else {
     shared_library(target_name) {
-      forward_variables_from(invoker, "*", [ "info_plist" ])
+      forward_variables_from(invoker, "*", [ "info_plist_target" ])
 
       # We need to set the install_name of the library so the executable can
       # find the dynamic library.  When building in component mode, this is done

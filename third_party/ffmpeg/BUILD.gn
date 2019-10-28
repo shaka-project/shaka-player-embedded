@@ -79,12 +79,25 @@ config("set_install_name") {
   ]
 }
 
+action("gen_info_plist") {
+  visibility = [ ":*" ]
+
+  outputs = [ "$root_gen_dir/ffmpeg/Info.plist" ]
+  script = "//shaka/tools/gen_info_plist.py"
+
+  args = [
+    "--output",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+}
+
+
 
 # To comply with the LGPL license for ffmpeg code, we should only link against
 # it as a shared library.
 framework_library("ffmpeg_libs") {
   output_name = "FFmpeg"
-  info_plist = "Info.plist"
+  info_plist_target = ":gen_info_plist"
 
   deps = [
     ":libavcodec",

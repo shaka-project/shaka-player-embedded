@@ -32,16 +32,12 @@ _MAX_COMMITS = 2**12 - 1
 _MAX_BETA_VERSION = 2**3 - 1
 
 
-def _GetVersion():
+def GetVersionStr():
   """Returns the version string of the library."""
-  try:
-    cur_dir = os.path.dirname(__file__)
-    cmd = ['git', '-C', cur_dir, 'describe', '--tags', '--dirty']
-    with open(os.devnull, 'w') as null:
-      return subprocess.check_output(cmd, stderr=null).strip()
-  except subprocess.CalledProcessError:
-    # TODO: Remove once the first version is tagged.
-    return 'v0.1.0-beta'
+  cur_dir = os.path.dirname(__file__)
+  cmd = ['git', '-C', cur_dir, 'describe', '--tags', '--dirty']
+  with open(os.devnull, 'w') as null:
+    return subprocess.check_output(cmd, stderr=null).strip()
 
 
 def ParseVersion(version_str):
@@ -119,7 +115,7 @@ def ParseVersion(version_str):
 
 def _GenVersion(output):
   """Writes the version.h file to the given file object."""
-  version = _GetVersion()
+  version = GetVersionStr()
   major, minor, revision, tag = ParseVersion(version)
 
   assert major >= 0 and major <= _MAX_VERSION
