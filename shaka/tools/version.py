@@ -143,7 +143,7 @@ def _GenVersion(output):
   writer.Write('#endif  // __cplusplus')
 
   writer.Write('/** @return The runtime version of the library. */')
-  writer.Write('const char* GetShakaEmbeddedVersion();')
+  writer.Write('const char* GetShakaEmbeddedVersion(void);')
 
   writer.Write('#ifdef __cplusplus')
   writer.Write('}')
