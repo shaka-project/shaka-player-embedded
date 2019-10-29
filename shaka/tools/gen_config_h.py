@@ -20,13 +20,15 @@ import argparse
 import os
 import sys
 
+import embed_utils
+
 
 def _GenConfig(parsed_args, out):
-  print >>out, '// Copyright 2018 Google Inc.  All rights reserved.'
+  writer = embed_utils.CodeWriter(out)
   if parsed_args.sdl_utils:
-    print >>out, '#define SHAKA_SDL_UTILS 1'
+    writer.Write('#define SHAKA_SDL_UTILS 1')
   else:
-    print >>out, '#undef SHAKA_SDL_UTILS'
+    writer.Write('#undef SHAKA_SDL_UTILS')
 
 
 def main(argv):

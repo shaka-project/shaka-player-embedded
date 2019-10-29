@@ -348,7 +348,7 @@ source_set("eme_plugins") {
 action("gen_config_h") {
   visibility = [ ":*" ]
 
-  outputs = [ "$root_gen_dir/shaka_config.h" ]
+  outputs = [ "$root_gen_dir/shaka/shaka_config.h" ]
   script = "//shaka/tools/gen_config_h.py"
 
   args = [
