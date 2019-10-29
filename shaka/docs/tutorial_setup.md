@@ -65,7 +65,7 @@ cd myBuild
 ```
 
 This will result in a debug configuration; if you want a release build, add the
-'--release' argument.
+`--release` argument.
 
 Once you have made a configuration, you can run `make` to build the most recent
 configuration. Or, if you want to build a specific configuration, you can run
@@ -82,33 +82,34 @@ Now that you have a complete framework, it's time to put it to use.
 Make a new single-view project with XCode.
 
 Inside the folder you put Shaka Player Embedded, navigate to the folder that you
-made for your build, and find the file named 'ShakaPlayerEmbedded.framework'.
-Drag that file into your project. Be sure to check 'copy items if needed', and
-uncheck any 'Add to targets' boxes.
+made for your build, and find the files named `ShakaPlayerEmbedded.framework`
+and `ShakaPlayerEmbedded.FFmpeg.framework`.  Drag that file into your project.
+Be sure to check `copy items if needed`, and uncheck any `Add to targets` boxes.
 
 ![Adding the framework to the project](tutorial-add-file.png)
 
-Then, go to the project settings, and navigate to 'General'. Go to 'Embedded
-Binaries', and add 'ShakaPlayerEmbedded.framework' as an embedded binary.
+Then, go to the project settings, and navigate to `General`. Go to `Embedded
+Binaries`, and add `ShakaPlayerEmbedded.framework` and
+`ShakaPlayerEmbedded.FFmpeg.framework` as an embedded binaries.
 
 ![Embedding the framework, part 1](tutorial-embed-binaries-1.png)
 ![Embedding the framework, part 2](tutorial-embed-binaries-2.png)
 
-Next, navigate to 'Build Settings'. Search for the 'System Framework Search
-Paths' setting. Be sure to have 'All' checked, rather than 'Basic' or
-'Customized'. Add '\$(PROJECT_DIR)' to the setting. This is required to properly
+Next, navigate to `Build Settings`. Search for the `System Framework Search
+Paths` setting. Be sure to have `All` checked, rather than `Basic` or
+`Customized`. Add '\$(PROJECT_DIR)' to the setting. This is required to properly
 link the framework.
 
 ![Setting search paths](tutorial-search-paths.png)
 
-Then, search for 'Enable Bitcode', and set it to 'No'. At the moment, we do not
+Then, search for `Enable Bitcode`, and set it to `No`. At the moment, we do not
 build the framework with Bitcode.
 
 ![Disabling Bitcode](tutorial-disable-bitcode.png)
 
 ### If you are using Swift...
 
-Go to 'ViewController.swift', and replace its contents with the following code:
+Go to `ViewController.swift`, and replace its contents with the following code:
 
 ```swift
 import UIKit
@@ -144,7 +145,7 @@ class ViewController: UIViewController, ShakaPlayerClient {
 
 ### If you are using Objective-C...
 
-Go to 'ViewController.m', and replace its contents with the following code:
+Go to `ViewController.m`, and replace its contents with the following code:
 
 ```objective-c
 #import "ViewController.h"

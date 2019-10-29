@@ -262,16 +262,9 @@ config("eme_plugin_config") {
 }
 
 if (_eme_plugin_info.copy_files != []) {
-  if (is_ios) {
-    bundle_data("eme_plugin_files") {
-      sources = _eme_plugin_info.copy_files
-      outputs = [ "{{bundle_root_dir}}/Frameworks/{{source_file_part}}" ]
-    }
-  } else {
-    copy("eme_plugin_files") {
-      sources = _eme_plugin_info.copy_files
-      outputs = [ "$root_out_dir/{{source_file_part}}" ]
-    }
+  copy("eme_plugin_files") {
+    sources = _eme_plugin_info.copy_files
+    outputs = [ "$root_out_dir/{{source_file_part}}" ]
   }
 } else {
   group("eme_plugin_files") {}
@@ -936,7 +929,6 @@ if (is_mac || is_ios) {
         ":eme_plugin_files",
         ":license_bundle",
         ":scripts_bundle",
-        "//third_party/ffmpeg:ffmpeg_libs_framework+bundle",
       ]
     }
 
@@ -1078,6 +1070,7 @@ if (is_ios) {
         ":gen_player_shared",
         ":launch_storyboard",
         ":main_storyboard",
+        "//third_party/ffmpeg:ffmpeg_libs_framework+bundle",
       ]
       cflags = [ "-F." ]
       ldflags = [ "-F." ]

@@ -18,5 +18,5 @@ Makefile
 /third_party/binutils
 /third_party/llvm-build/
 
-/sample_xcode_project/ShakaPlayerEmbedded.framework/
+/sample_xcode_project/*.framework/
 /sample_xcode_project/sample_xcode_project.xcodeproj/xcuserdata/

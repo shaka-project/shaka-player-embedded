@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A4554A42368C9C700FB5099 /* ShakaPlayerEmbedded.FFmpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A4554A32368C9C600FB5099 /* ShakaPlayerEmbedded.FFmpeg.framework */; };
+		5A4554A52368C9C700FB5099 /* ShakaPlayerEmbedded.FFmpeg.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5A4554A32368C9C600FB5099 /* ShakaPlayerEmbedded.FFmpeg.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9447F75F2159466D0066274B /* ErrorDisplayView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9447F75E2159466D0066274B /* ErrorDisplayView.m */; };
 		947D78DE216EA9F600B1DD2F /* LicenseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 947D78DD216EA9F600B1DD2F /* LicenseViewController.m */; };
 		947EFDBD216D48CE0034D7DD /* NSObject+ShakaLayoutHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 947EFDBC216D48CE0034D7DD /* NSObject+ShakaLayoutHelpers.m */; };
@@ -33,6 +35,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				5A4554A52368C9C700FB5099 /* ShakaPlayerEmbedded.FFmpeg.framework in Embed Frameworks */,
 				94E3473520A652DD00816F9A /* ShakaPlayerEmbedded.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -41,6 +44,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5A4554A32368C9C600FB5099 /* ShakaPlayerEmbedded.FFmpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ShakaPlayerEmbedded.FFmpeg.framework; sourceTree = "<group>"; };
 		9447F75D2159466D0066274B /* ErrorDisplayView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ErrorDisplayView.h; sourceTree = "<group>"; };
 		9447F75E2159466D0066274B /* ErrorDisplayView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ErrorDisplayView.m; sourceTree = "<group>"; };
 		947D78DC216EA9F600B1DD2F /* LicenseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LicenseViewController.h; sourceTree = "<group>"; };
@@ -76,6 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A4554A42368C9C700FB5099 /* ShakaPlayerEmbedded.FFmpeg.framework in Frameworks */,
 				94E3473420A652DD00816F9A /* ShakaPlayerEmbedded.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -86,6 +91,7 @@
 		94A0C4AB209A753F0019FF2A = {
 			isa = PBXGroup;
 			children = (
+				5A4554A32368C9C600FB5099 /* ShakaPlayerEmbedded.FFmpeg.framework */,
 				94E3473320A652DD00816F9A /* ShakaPlayerEmbedded.framework */,
 				94A0C4B6209A753F0019FF2A /* sample_xcode_project */,
 				94A0C4B5209A753F0019FF2A /* Products */,

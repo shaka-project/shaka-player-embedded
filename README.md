@@ -102,6 +102,22 @@ cd foo
 make
 ```
 
+5. Copy the shared library
+
+Once it is built, you can use the resulting shared library.
+
+On iOS, there will be a `ShakaPlayerEmbedded.framework` folder that you use;
+there is also a `ShakaPlayerEmbedded.FFmpeg.framework` bundle that you need to
+include in your app, but you shouldn't use it directly since we don't maintain
+ABI for it.
+
+On other platforms, there is a `libshaka-player-embedded.dylib` or a
+`libshaka-player-embedded.so` file you can use.  Like iOS, there is a
+`libshaka-player-embedded.ffmpeg.*` file you need to include too.
+
+If you are using a custom `--eme-impl`, you need to copy the respective
+shared libraries too, if needed.
+
 
 ## Running the checks
 

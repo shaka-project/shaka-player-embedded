@@ -70,15 +70,6 @@ config("external_config") {
   }
 }
 
-config("set_install_name") {
-  ldflags = [
-    "-Xlinker",
-    "-install_name",
-    "-Xlinker",
-    "@loader_path/Frameworks/FFmpeg.framework/FFmpeg",
-  ]
-}
-
 action("gen_info_plist") {
   visibility = [ ":*" ]
 
@@ -96,7 +87,12 @@ action("gen_info_plist") {
 # To comply with the LGPL license for ffmpeg code, we should only link against
 # it as a shared library.
 framework_library("ffmpeg_libs") {
-  output_name = "FFmpeg"
+  if (is_ios) {
+    output_name = "ShakaPlayerEmbedded.FFmpeg"
+  } else {
+    output_name = "shaka-player-embedded.ffmpeg"
+  }
+
   info_plist_target = ":gen_info_plist"
 
   deps = [
@@ -134,10 +130,6 @@ template("ffmpeg_part") {
 
     configs += [ ":internal_config" ]
     public_configs = [ ":external_config" ]
-
-    if (is_ios) {
-      public_configs += [ ":set_install_name" ]
-    }
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
