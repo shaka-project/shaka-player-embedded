@@ -302,7 +302,6 @@ ExceptionOr<void> XMLHttpRequest::SetRequestHeader(const std::string& key,
 }
 
 void XMLHttpRequest::RaiseProgressEvents() {
-  std::unique_lock<Mutex> lock(mutex_);
   if (abort_pending_)
     return;
 
@@ -315,7 +314,11 @@ void XMLHttpRequest::RaiseProgressEvents() {
     RaiseEvent<events::Event>(EventType::ReadyStateChange);
   }
 
-  const double cur_size = CurrentDownloadSize(curl_);
+  double cur_size;
+  {
+    std::unique_lock<Mutex> lock(mutex_);
+    cur_size = CurrentDownloadSize(curl_);
+  }
   RaiseEvent<events::ProgressEvent>(EventType::Progress, estimated_size_ != 0,
                                     cur_size, estimated_size_);
 }
