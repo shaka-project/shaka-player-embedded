@@ -87,6 +87,11 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
   __weak id<ShakaPlayerClient> _client;
 };
 
+void FreeFrame(void *info, const void *data, size_t size) {
+  auto *frame = reinterpret_cast<shaka::Frame *>(info);
+  delete frame;
+}
+
 }  // namespace
 
 std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
@@ -198,12 +203,13 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 - (CGImageRef)drawFrame {
   double delay = ShakaRenderLoopDelay;
-  auto frame = _video->DrawFrame(&delay);
-  if (!frame.valid())
+  std::unique_ptr<shaka::Frame> frame(new shaka::Frame(_video->DrawFrame(&delay)));
+  if (!frame->valid())
     return nullptr;
-  if (frame.pixel_format() == shaka::PixelFormat::VIDEO_TOOLBOX) {
+  if (frame->pixel_format() == shaka::PixelFormat::VIDEO_TOOLBOX) {
     CGImage *ret = nullptr;
-    uint8_t *data = const_cast<uint8_t *>(frame.data()[3]);
+    uint8_t *data = const_cast<uint8_t *>(frame->data()[3]);
+    // This retains the buffer, so the Frame is free to be deleted.
     const long status =
         VTCreateCGImageFromCVPixelBuffer(reinterpret_cast<CVPixelBufferRef>(data), nullptr, &ret);
     if (status != 0) {
@@ -217,24 +223,24 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
     return ret;
   }
 
-  if (!frame.ConvertTo(shaka::PixelFormat::RGB24))
+  if (!frame->ConvertTo(shaka::PixelFormat::RGB24))
     return nullptr;
 
   // Get size.
   const int align = 16;
-  CFIndex size = av_image_get_buffer_size(AV_PIX_FMT_RGB24, frame.width(), frame.height(), align);
+  const uint32_t width = frame->width();
+  const uint32_t height = frame->height();
+  const size_t bytes_per_row = frame->linesize()[0];
+  CFIndex size = av_image_get_buffer_size(AV_PIX_FMT_RGB24, width, height, align);
 
   // TODO: Handle padding.
 
-  // Create a CFData object to wrap the raw frame data. This is a no-copy
-  // CFData, since this instance does not own the frame data.
-  CFDataRef data =
-      CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, frame.data()[0], size, kCFAllocatorNull);
-
   // Make a CGDataProvider object to distribute the data to the CGImage.
-  // This copies the data into the CGImage, so the CGImage becomes
-  // responsible for managing its lifecycle.
-  CGDataProviderRef provider = CGDataProviderCreateWithCFData(data);
+  // This takes ownership of the frame and calls the given callback when the
+  // CGImage is destroyed.
+  const uint8_t *data = frame->data()[0];
+  CGDataProviderRef provider =
+      CGDataProviderCreateWithData(frame.release(), data, size, &FreeFrame);
 
   // CGColorSpaceCreateDeviceRGB makes a device-specific colorSpace, so use a
   // standardized one instead.
@@ -243,11 +249,10 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   // Create a CGImage.
   const size_t bits_per_pixel = 24;
   const size_t bits_per_component = 8;
-  const size_t bytes_per_row = frame.linesize()[0];
   const bool should_interpolate = false;
-  CGImage *image = CGImageCreate(frame.width(), frame.height(), bits_per_component, bits_per_pixel,
-                                 bytes_per_row, color_space, kCGBitmapByteOrderDefault, provider,
-                                 nullptr, should_interpolate, kCGRenderingIntentDefault);
+  CGImage *image = CGImageCreate(width, height, bits_per_component, bits_per_pixel, bytes_per_row,
+                                 color_space, kCGBitmapByteOrderDefault, provider, nullptr,
+                                 should_interpolate, kCGRenderingIntentDefault);
 
   // Dispose of temporary data.
   CGColorSpaceRelease(color_space);
