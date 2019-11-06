@@ -134,7 +134,9 @@ void DemuxerThread::ThreadMain() {
         }
       }
     }
-    stream_->GetDemuxedFrames()->AppendFrame(std::move(frame));
+    // Transfer ownership from the unique_ptr to a shared_ptr.
+    stream_->GetDemuxedFrames()->AddFrame(
+        std::shared_ptr<BaseFrame>(frame.release()));
   }
 }
 

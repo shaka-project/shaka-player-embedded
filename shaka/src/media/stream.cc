@@ -19,16 +19,13 @@
 namespace shaka {
 namespace media {
 
-Stream::Stream()
-    : demuxed_frames_(/* order_by_dts */ true),
-      decoded_frames_(/* order_by_dts */ false) {}
-
+Stream::Stream() {}
 Stream::~Stream() {}
 
 double Stream::DecodedAheadOf(double time) const {
   for (auto& range : decoded_frames_.GetBufferedRanges()) {
     if (range.end > time) {
-      if (range.start < time + FrameBuffer::kMaxGapSize) {
+      if (range.start < time + StreamBase::kMaxGapSize) {
         return range.end - std::max(time, range.start);
       }
 

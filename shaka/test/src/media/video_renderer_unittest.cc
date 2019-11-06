@@ -35,9 +35,9 @@ class MockFrameDrawer : public FrameDrawer {
   MOCK_METHOD1(DrawFrame, Frame(const BaseFrame* frame));
 };
 
-std::unique_ptr<BaseFrame> MakeFrame(double start) {
+std::shared_ptr<BaseFrame> MakeFrame(double start) {
   BaseFrame* ret = new BaseFrame(start, start, 0.01, true);
-  return std::unique_ptr<BaseFrame>(ret);
+  return std::shared_ptr<BaseFrame>(ret);
 }
 
 constexpr const double kMinDelay = 1.0 / 120;
@@ -53,17 +53,18 @@ class VideoRendererTest : public testing::Test {
 
 TEST_F(VideoRendererTest, WorksWithNoNextFrame) {
   Stream stream;
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.00));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
 
   MockFunction<double()> get_time;
   auto* drawer = new MockFrameDrawer;
 
   {
-#define FRAME_AT(i) (stream.GetDecodedFrames()->GetFrameNear(i).get())
+#define FRAME_AT(i) \
+  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near).get())
     InSequence seq;
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0));
     EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
-#undef GET_FRAME
+#undef FRAME_AT
   }
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),
@@ -103,17 +104,18 @@ TEST_F(VideoRendererTest, WorksWithNoFrames) {
 
 TEST_F(VideoRendererTest, DrawsFrameInPast) {
   Stream stream;
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.00));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
 
   MockFunction<double()> get_time;
   auto* drawer = new MockFrameDrawer;
 
   {
-#define FRAME_AT(i) (stream.GetDecodedFrames()->GetFrameNear(i).get())
+#define FRAME_AT(i) \
+  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near).get())
     InSequence seq;
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(4));
     EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
-#undef GET_FRAME
+#undef FRAME_AT
   }
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),
@@ -131,23 +133,24 @@ TEST_F(VideoRendererTest, DrawsFrameInPast) {
 
 TEST_F(VideoRendererTest, WillDropFrames) {
   Stream stream;
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.00));
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.01));
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.02));
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.03));
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.04));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.01));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.02));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.03));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.04));
 
   MockFunction<double()> get_time;
   auto* drawer = new MockFrameDrawer;
 
   {
-#define FRAME_AT(i) (stream.GetDecodedFrames()->GetFrameNear(i).get())
+#define FRAME_AT(i) \
+  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near).get())
     InSequence seq;
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0));
     EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0.03));
     EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0.03))).Times(1);
-#undef GET_FRAME
+#undef FRAME_AT
   }
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),
@@ -173,24 +176,25 @@ TEST_F(VideoRendererTest, WillDropFrames) {
 
 TEST_F(VideoRendererTest, HandlesSeeks) {
   Stream stream;
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.00));
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.01));
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.02));
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.03));
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.04));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.01));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.02));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.03));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.04));
 
   MockFunction<double()> get_time;
   auto* drawer = new MockFrameDrawer;
 
   {
-#define FRAME_AT(i) (stream.GetDecodedFrames()->GetFrameNear(i).get())
+#define FRAME_AT(i) \
+  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near).get())
     InSequence seq;
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0));
     EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
     // Seek
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0.03));
     EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0.03))).Times(1);
-#undef GET_FRAME
+#undef FRAME_AT
   }
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),
@@ -219,15 +223,16 @@ TEST_F(VideoRendererTest, HandlesSeeks) {
 
 TEST_F(VideoRendererTest, TracksNewFrames) {
   Stream stream;
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.00));
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.02));
-  stream.GetDecodedFrames()->AppendFrame(MakeFrame(0.04));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.02));
+  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.04));
 
   MockFunction<double()> get_time;
   auto* drawer = new MockFrameDrawer;
 
   {
-#define FRAME_AT(i) (stream.GetDecodedFrames()->GetFrameNear(i).get())
+#define FRAME_AT(i) \
+  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near).get())
     InSequence seq;
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0));
     EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
@@ -241,7 +246,7 @@ TEST_F(VideoRendererTest, TracksNewFrames) {
     EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0.02))).Times(1);
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0.044));
     EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0.04))).Times(1);
-#undef GET_FRAME
+#undef FRAME_AT
   }
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),

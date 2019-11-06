@@ -15,8 +15,10 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_STREAM_H_
 #define SHAKA_EMBEDDED_MEDIA_STREAM_H_
 
+#include <vector>
+
 #include "shaka/media/frames.h"
-#include "src/media/frame_buffer.h"
+#include "shaka/media/streams.h"
 #include "src/util/macros.h"
 
 namespace shaka {
@@ -52,26 +54,27 @@ class Stream {
   double DecodedAheadOf(double time) const;
 
   /** @returns The buffered ranges for the Stream. */
-  BufferedRanges GetBufferedRanges() const {
+  std::vector<BufferedRange> GetBufferedRanges() const {
     return demuxed_frames_.GetBufferedRanges();
   }
 
-  FrameBuffer* GetDemuxedFrames() {
+  StreamNew<BaseFrame, true>* GetDemuxedFrames() {
     return &demuxed_frames_;
   }
-  const FrameBuffer* GetDemuxedFrames() const {
+  const StreamNew<BaseFrame, true>* GetDemuxedFrames() const {
     return &demuxed_frames_;
   }
-  FrameBuffer* GetDecodedFrames() {
+  StreamNew<BaseFrame, false>* GetDecodedFrames() {
     return &decoded_frames_;
   }
-  const FrameBuffer* GetDecodedFrames() const {
+  const StreamNew<BaseFrame, false>* GetDecodedFrames() const {
     return &decoded_frames_;
   }
 
  private:
-  FrameBuffer demuxed_frames_;
-  FrameBuffer decoded_frames_;
+  // TODO(modmaker): Use ElementaryStream/DecodedStream.
+  StreamNew<BaseFrame, true> demuxed_frames_;
+  StreamNew<BaseFrame, false> decoded_frames_;
 };
 
 }  // namespace media

@@ -16,7 +16,7 @@
 
 #include <utility>
 
-#include "src/media/frame_buffer.h"
+#include "shaka/media/streams.h"
 
 namespace shaka {
 namespace media {
@@ -31,7 +31,7 @@ constexpr const double kEpsilon = 0.1;
 bool IsBufferedUntil(const BufferedRanges& ranges, double start_time,
                      double end_time, double duration) {
   for (auto& range : ranges) {
-    if (range.start <= start_time + FrameBuffer::kMaxGapSize &&
+    if (range.start <= start_time + StreamBase::kMaxGapSize &&
         (range.end >= end_time || end_time + kEpsilon >= duration)) {
       return true;
     }

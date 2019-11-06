@@ -79,12 +79,14 @@ void DecoderThread::ThreadMain() {
     const double cur_time = get_time_();
     double last_time = last_frame_time_.load(std::memory_order_acquire);
 
-    LockedFrameList::Guard frame;
+    std::shared_ptr<BaseFrame> frame;
     if (std::isnan(last_time)) {
       processor_->ResetDecoder();
-      frame = stream_->GetDemuxedFrames()->GetKeyFrameBefore(cur_time);
+      frame = stream_->GetDemuxedFrames()->GetFrame(
+          cur_time, FrameLocation::KeyFrameBefore);
     } else {
-      frame = stream_->GetDemuxedFrames()->GetFrameAfter(last_time);
+      frame = stream_->GetDemuxedFrames()->GetFrame(last_time,
+                                                    FrameLocation::After);
     }
 
     if (stream_->DecodedAheadOf(cur_time) > kDecodeBufferSize) {
@@ -124,8 +126,10 @@ void DecoderThread::ThreadMain() {
 
     raised_waiting_event_ = false;
     const double last_pts = decoded.empty() ? -1 : decoded.back()->pts;
-    for (auto& decoded_frame : decoded)
-      stream_->GetDecodedFrames()->AppendFrame(std::move(decoded_frame));
+    for (auto& decoded_frame : decoded) {
+      stream_->GetDecodedFrames()->AddFrame(
+          std::shared_ptr<BaseFrame>(decoded_frame.release()));
+    }
 
     if (frame) {
       // Don't change the |last_frame_time_| if it was reset to NAN while this

@@ -32,7 +32,7 @@ namespace media {
 
 namespace {
 
-std::string FormatSize(const FrameBuffer* buffer) {
+std::string FormatSize(const StreamBase* buffer) {
   const char* kSuffixes[] = {"", " KB", " MB", " GB", " TB"};
   size_t size = buffer->EstimateSize();
   for (const char* suffix : kSuffixes) {
@@ -43,7 +43,7 @@ std::string FormatSize(const FrameBuffer* buffer) {
   LOG(FATAL) << "Size too large to print.";
 }
 
-std::string FormatBuffered(const FrameBuffer* buffer) {
+std::string FormatBuffered(const StreamBase* buffer) {
   std::string ret;
   for (auto& range : buffer->GetBufferedRanges()) {
     if (!ret.empty())

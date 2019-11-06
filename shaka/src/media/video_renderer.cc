@@ -15,6 +15,7 @@
 #include "src/media/video_renderer.h"
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 
 #include "src/media/stream.h"
@@ -57,9 +58,11 @@ Frame VideoRenderer::DrawFrame(int* dropped_frame_count, bool* is_new_frame,
   const double time = get_time_();
   // If we are seeking, use the previous frame so we display the same frame
   // while the seek is happening.
-  auto ideal_frame = is_seeking_ && prev_time_ >= 0
-                         ? stream_->GetDecodedFrames()->GetFrameNear(prev_time_)
-                         : stream_->GetDecodedFrames()->GetFrameNear(time);
+  auto ideal_frame =
+      is_seeking_ && prev_time_ >= 0
+          ? stream_->GetDecodedFrames()->GetFrame(prev_time_,
+                                                  FrameLocation::Near)
+          : stream_->GetDecodedFrames()->GetFrame(time, FrameLocation::Near);
   if (!ideal_frame)
     return Frame();
 
@@ -67,15 +70,15 @@ Frame VideoRenderer::DrawFrame(int* dropped_frame_count, bool* is_new_frame,
   // behind.  This makes playback smoother at the cost of being more complicated
   // and sacrificing AV sync.
 
-  auto next_frame =
-      stream_->GetDecodedFrames()->GetFrameAfter(ideal_frame->pts);
+  auto next_frame = stream_->GetDecodedFrames()->GetFrame(ideal_frame->pts,
+                                                          FrameLocation::After);
   const double total_delay = next_frame ? next_frame->pts - time : 0;
   *delay = std::max(std::min(total_delay, kMaxDelay), kMinDelay);
 
   *is_new_frame = prev_time_ != ideal_frame->pts;
   if (!is_seeking_) {
     if (prev_time_ >= 0) {
-      *dropped_frame_count = stream_->GetDecodedFrames()->FramesBetween(
+      *dropped_frame_count = stream_->GetDecodedFrames()->CountFramesBetween(
           prev_time_, ideal_frame->pts);
     }
     prev_time_ = ideal_frame->pts;

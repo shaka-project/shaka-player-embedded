@@ -208,7 +208,8 @@ void AudioRenderer::ThreadMain() {
       }
 
       cur_time_ = get_time_();
-      auto base_frame = stream_->GetDecodedFrames()->GetFrameAfter(cur_time_);
+      auto base_frame = stream_->GetDecodedFrames()->GetFrame(
+          cur_time_, FrameLocation::After);
       if (!base_frame) {
         util::Unlocker<Mutex> unlock(&lock);
         util::Clock::Instance.SleepSeconds(0.01);
@@ -350,7 +351,8 @@ void AudioRenderer::AudioCallback(uint8_t* data, int size) {
   data += initial_sample_count * sample_size;
 
   while (size_in_samples > 0) {
-    auto base_frame = stream_->GetDecodedFrames()->GetFrameAfter(cur_time_);
+    auto base_frame =
+        stream_->GetDecodedFrames()->GetFrame(cur_time_, FrameLocation::After);
     if (!base_frame)
       break;
 

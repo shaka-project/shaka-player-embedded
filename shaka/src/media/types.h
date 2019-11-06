@@ -20,6 +20,7 @@
 #include <string>
 #include <type_traits>
 
+#include "shaka/media/streams.h"
 #include "src/mapping/struct.h"
 #include "src/util/macros.h"
 
@@ -157,20 +158,6 @@ struct VideoPlaybackQuality : Struct {
   ADD_DICT_FIELD(corruptedVideoFrames, uint64_t);
 };
 
-struct BufferedRange {
-  BufferedRange() : start(0), end(0) {}
-  BufferedRange(double start, double end) : start(start), end(end) {}
-
-  bool operator==(const BufferedRange& other) const {
-    return start == other.start && end == other.end;
-  }
-  bool operator!=(const BufferedRange& other) const {
-    return !(*this == other);
-  }
-
-  double start;
-  double end;
-};
 using BufferedRanges = std::vector<BufferedRange>;
 
 std::ostream& operator<<(std::ostream& os, const BufferedRange& range);
