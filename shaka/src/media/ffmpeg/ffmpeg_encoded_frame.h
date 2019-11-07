@@ -19,6 +19,8 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
+#include <memory>
+
 #include "shaka/media/frames.h"
 
 namespace shaka {
@@ -30,17 +32,9 @@ class FFmpegEncodedFrame final : public EncodedFrame {
  public:
   ~FFmpegEncodedFrame() override;
 
-  static FFmpegEncodedFrame* MakeFrame(AVPacket* pkt, AVStream* stream,
-                                       size_t stream_id,
+  static FFmpegEncodedFrame* MakeFrame(AVPacket* pkt,
+                                       std::shared_ptr<const StreamInfo> info,
                                        double timestamp_offset);
-
-  const AVPacket* raw_packet() const {
-    return &packet_;
-  }
-  size_t stream_id() const {
-    // TODO(modmaker): Change to use stream_info.
-    return stream_id_;
-  }
 
   MediaStatus Decrypt(const eme::Implementation* cdm,
                       uint8_t* data) const override;
@@ -48,11 +42,10 @@ class FFmpegEncodedFrame final : public EncodedFrame {
 
  private:
   FFmpegEncodedFrame(AVPacket* pkt, double pts, double dts, double duration,
-                     bool is_key_frame, size_t stream_id,
+                     bool is_key_frame, std::shared_ptr<const StreamInfo> info,
                      double timestamp_offset);
 
   AVPacket packet_;
-  const size_t stream_id_;
 };
 
 }  // namespace ffmpeg

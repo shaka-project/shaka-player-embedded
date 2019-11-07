@@ -112,13 +112,14 @@ void HandleGenericFFmpegError(int code) {
   }
 }
 
-const AVCodec* FindCodec(AVCodecID codec_id) {
+const AVCodec* FindCodec(const std::string& codec_name) {
 #ifdef ENABLE_HARDWARE_DECODE
   const AVCodec* hybrid = nullptr;
   const AVCodec* external = nullptr;
   void* opaque = nullptr;
   while (const AVCodec* codec = av_codec_iterate(&opaque)) {
-    if (codec->id == codec_id && av_codec_is_decoder(codec)) {
+    if (avcodec_get_name(codec->id) == codec_name &&
+        av_codec_is_decoder(codec)) {
       if (codec->capabilities & AV_CODEC_CAP_HARDWARE)
         return codec;
 
@@ -137,7 +138,7 @@ const AVCodec* FindCodec(AVCodecID codec_id) {
   if (external)
     return external;
 #endif
-  return avcodec_find_decoder(codec_id);
+  return avcodec_find_decoder_by_name(codec_name.c_str());
 }
 
 /**
@@ -202,6 +203,7 @@ class MediaProcessor::Impl {
         on_encrypted_init_data_(std::move(on_encrypted_init_data)),
         container_(NormalizeContainer(container)),
         codec_(NormalizeCodec(codec)),
+        raw_codec_(codec),
         io_(nullptr),
         demuxer_ctx_(nullptr),
         decoder_ctx_(nullptr),
@@ -211,8 +213,7 @@ class MediaProcessor::Impl {
         hw_pix_fmt_(AV_PIX_FMT_NONE),
 #endif
         timestamp_offset_(0),
-        prev_timestamp_offset_(0),
-        decoder_stream_id_(0) {
+        prev_timestamp_offset_(0) {
   }
 
   ~Impl() {
@@ -227,8 +228,6 @@ class MediaProcessor::Impl {
     }
 
     // It is safe if these fields are nullptr.
-    for (AVCodecParameters*& params : codec_params_)
-      avcodec_parameters_free(&params);
     avcodec_free_context(&decoder_ctx_);
     avformat_close_input(&demuxer_ctx_);
     av_frame_free(&received_frame_);
@@ -268,19 +267,22 @@ class MediaProcessor::Impl {
     demuxer_ctx_ = new_ctx;
 
     AVStream* stream = demuxer_ctx_->streams[0];
-    auto* params = avcodec_parameters_alloc();
-    if (!params) {
-      return Status::OutOfMemory;
-    }
-    const int copy_code = avcodec_parameters_copy(params, stream->codecpar);
-    if (copy_code < 0) {
-      avcodec_parameters_free(&params);
-      HandleGenericFFmpegError(copy_code);
-      return Status::CannotOpenDemuxer;
-    }
-    codec_params_.push_back(params);
-    time_scales_.push_back(stream->time_base);
+    AVCodecParameters* params = stream->codecpar;
 
+    const char* codec_name = avcodec_get_name(params->codec_id);
+    if (codec_ != codec_name) {
+      LOG(ERROR) << "Mismatch between codec string and media.  Codec string: '"
+                 << codec_ << "', media codec: '" << codec_name << "' (0x"
+                 << std::hex << params->codec_id << ")";
+      return Status::DecoderMismatch;
+    }
+
+    // TODO(modmaker): Pass correct MIME.
+    demuxer_stream_info_.reset(new StreamInfo(
+        container_, raw_codec_, params->codec_type == AVMEDIA_TYPE_VIDEO,
+        {stream->time_base.num, stream->time_base.den},
+        std::vector<uint8_t>{params->extradata,
+                             params->extradata + params->extradata_size}));
     return Status::Success;
   }
 
@@ -419,25 +421,17 @@ class MediaProcessor::Impl {
     DCHECK_EQ(pkt.stream_index, 0);
     DCHECK_EQ(demuxer_ctx_->nb_streams, 1u);
     frame->reset(ffmpeg::FFmpegEncodedFrame::MakeFrame(
-        &pkt, demuxer_ctx_->streams[0], codec_params_.size() - 1,
-        timestamp_offset_));
+        &pkt, demuxer_stream_info_, timestamp_offset_));
     // No need to unref |pkt| since it was moved into the encoded frame.
     return *frame ? Status::Success : Status::OutOfMemory;
   }
 
-  Status InitializeDecoder(size_t stream_id, bool allow_hardware) {
-    const AVCodecParameters* params = codec_params_[stream_id];
-    const char* codec_name = avcodec_get_name(params->codec_id);
-    if (codec_ != codec_name) {
-      LOG(ERROR) << "Mismatch between codec string and media.  Codec string: '"
-                 << codec_ << "', media codec: '" << codec_name << "' (0x"
-                 << std::hex << params->codec_id << ")";
-      return Status::DecoderMismatch;
-    }
-
-    const AVCodec* decoder = allow_hardware
-                                 ? FindCodec(params->codec_id)
-                                 : avcodec_find_decoder(params->codec_id);
+  Status InitializeDecoder(std::shared_ptr<const StreamInfo> info,
+                           bool allow_hardware) {
+    const AVCodec* decoder =
+        allow_hardware
+            ? FindCodec(NormalizeCodec(info->codec))
+            : avcodec_find_decoder_by_name(NormalizeCodec(info->codec).c_str());
     CHECK(decoder) << "Should have checked support already";
 #ifdef ENABLE_HARDWARE_DECODE
     AVHWDeviceType hw_type = AV_HWDEVICE_TYPE_NONE;
@@ -476,18 +470,21 @@ class MediaProcessor::Impl {
       return Status::OutOfMemory;
     }
 
-    const int param_code = avcodec_parameters_to_context(decoder_ctx_, params);
-    if (param_code < 0) {
-      if (param_code == AVERROR(ENOMEM)) {
-        return Status::OutOfMemory;
-      }
-
-      HandleGenericFFmpegError(param_code);
-      return Status::DecoderFailedInit;
-    }
     decoder_ctx_->thread_count = 0;  // Default is 1; 0 means auto-detect.
     decoder_ctx_->opaque = this;
-    decoder_ctx_->pkt_timebase = time_scales_[stream_id];
+    decoder_ctx_->pkt_timebase = {.num = info->time_scale.numerator,
+                                  .den = info->time_scale.denominator};
+
+    if (!info->extra_data.empty()) {
+      av_freep(&decoder_ctx_->extradata);
+      decoder_ctx_->extradata = reinterpret_cast<uint8_t*>(
+          av_mallocz(info->extra_data.size() + AV_INPUT_BUFFER_PADDING_SIZE));
+      if (!decoder_ctx_->extradata)
+        return Status::OutOfMemory;
+      memcpy(decoder_ctx_->extradata, info->extra_data.data(),
+             info->extra_data.size());
+      decoder_ctx_->extradata_size = info->extra_data.size();
+    }
 
 #ifdef ENABLE_HARDWARE_DECODE
     // If using a hardware accelerator, initialize it now.
@@ -516,7 +513,7 @@ class MediaProcessor::Impl {
       if (allow_hardware) {
         LOG(WARNING) << "Failed to initialize hardware decoder, falling back "
                         "to software.";
-        return InitializeDecoder(stream_id, false);
+        return InitializeDecoder(info, false);
       }
 #endif
 
@@ -524,12 +521,12 @@ class MediaProcessor::Impl {
       return Status::DecoderFailedInit;
     }
 
-    decoder_stream_id_ = stream_id;
+    decoder_stream_info_ = info;
     return Status::Success;
   }
 
-  Status ReadFromDecoder(size_t stream_id,
-                         const ffmpeg::FFmpegEncodedFrame* frame,
+  Status ReadFromDecoder(std::shared_ptr<const StreamInfo> stream_info,
+                         std::shared_ptr<EncodedFrame> frame,
                          std::vector<std::shared_ptr<DecodedFrame>>* decoded) {
     while (true) {
       const int code = avcodec_receive_frame(decoder_ctx_, received_frame_);
@@ -542,7 +539,7 @@ class MediaProcessor::Impl {
         return Status::UnknownError;
       }
 
-      const double timescale = av_q2d(time_scales_[stream_id]);
+      const double timescale = stream_info->time_scale;
       const int64_t timestamp = received_frame_->best_effort_timestamp;
       const double offset =
           frame ? frame->timestamp_offset : prev_timestamp_offset_;
@@ -559,13 +556,10 @@ class MediaProcessor::Impl {
     }
   }
 
-  Status DecodeFrame(double /* cur_time */,
-                     std::shared_ptr<EncodedFrame> base_frame,
+  Status DecodeFrame(double /* cur_time */, std::shared_ptr<EncodedFrame> frame,
                      eme::Implementation* cdm,
                      std::vector<std::shared_ptr<DecodedFrame>>* decoded) {
     decoded->clear();
-    auto* frame =
-        static_cast<const ffmpeg::FFmpegEncodedFrame*>(base_frame.get());
 
     if (!frame && !decoder_ctx_) {
       // If there isn't a decoder, there is nothing to flush.
@@ -577,7 +571,7 @@ class MediaProcessor::Impl {
       signal_.GetValue();
       std::unique_lock<Mutex> lock(mutex_);
 
-      if (!decoder_ctx_ || frame->stream_id() != decoder_stream_id_) {
+      if (!decoder_ctx_ || frame->stream_info != decoder_stream_info_) {
         VLOG(1) << "Reconfiguring decoder";
         // Flush the old decoder to get any existing frames.
         if (decoder_ctx_) {
@@ -592,12 +586,12 @@ class MediaProcessor::Impl {
             return Status::UnknownError;
           }
           const Status read_result =
-              ReadFromDecoder(decoder_stream_id_, nullptr, decoded);
+              ReadFromDecoder(decoder_stream_info_, nullptr, decoded);
           if (read_result != Status::Success)
             return read_result;
         }
 
-        const Status init_result = InitializeDecoder(frame->stream_id(), true);
+        const Status init_result = InitializeDecoder(frame->stream_info, true);
         if (init_result != Status::Success)
           return init_result;
       }
@@ -607,19 +601,15 @@ class MediaProcessor::Impl {
 
 
     // If the encoded frame is encrypted, decrypt it first.
-    AVPacket decrypted_packet{};
-    util::Finally free_decrypted_packet(
-        std::bind(&av_packet_unref, &decrypted_packet));
-    const AVPacket* frame_to_send = frame ? frame->raw_packet() : nullptr;
+    AVPacket packet{};
+    util::Finally free_decrypted_packet(std::bind(&av_packet_unref, &packet));
     if (frame && frame->is_encrypted) {
       if (!cdm) {
         LOG(WARNING) << "No CDM given for encrypted frame";
         return Status::KeyNotFound;
       }
 
-      int code = av_new_packet(&decrypted_packet, frame->raw_packet()->size);
-      if (code == 0)
-        code = av_packet_copy_props(&decrypted_packet, frame->raw_packet());
+      int code = av_new_packet(&packet, frame->data_size);
       if (code == AVERROR(ENOMEM))
         return Status::OutOfMemory;
       if (code < 0) {
@@ -627,18 +617,23 @@ class MediaProcessor::Impl {
         return Status::UnknownError;
       }
 
-      MediaStatus decrypt_status = frame->Decrypt(cdm, decrypted_packet.data);
+      MediaStatus decrypt_status = frame->Decrypt(cdm, packet.data);
       if (decrypt_status == MediaStatus::KeyNotFound)
         return Status::KeyNotFound;
       if (decrypt_status != MediaStatus::Success)
         return Status::UnknownError;
-      frame_to_send = &decrypted_packet;
+    } else if (frame) {
+      const double timescale = frame->stream_info->time_scale;
+      packet.pts = static_cast<int64_t>(frame->pts / timescale);
+      packet.dts = static_cast<int64_t>(frame->dts / timescale);
+      packet.data = const_cast<uint8_t*>(frame->data);
+      packet.size = frame->data_size;
     }
 
     bool sent_frame = false;
     while (!sent_frame) {
       // If we get EAGAIN, we should read some frames and try to send again.
-      const int send_code = avcodec_send_packet(decoder_ctx_, frame_to_send);
+      const int send_code = avcodec_send_packet(decoder_ctx_, &packet);
       if (send_code == 0) {
         sent_frame = true;
       } else if (send_code == AVERROR_EOF) {
@@ -656,8 +651,8 @@ class MediaProcessor::Impl {
         return Status::UnknownError;
       }
 
-      const int stream_id = frame ? frame->stream_id() : decoder_stream_id_;
-      const Status read_result = ReadFromDecoder(stream_id, frame, decoded);
+      auto stream_info = frame ? frame->stream_info : decoder_stream_info_;
+      const Status read_result = ReadFromDecoder(stream_info, frame, decoded);
       if (read_result != Status::Success)
         return read_result;
     }
@@ -741,9 +736,9 @@ class MediaProcessor::Impl {
   std::function<void()> on_reset_read_;
   const std::string container_;
   const std::string codec_;
+  const std::string raw_codec_;
 
-  std::vector<AVCodecParameters*> codec_params_;
-  std::vector<AVRational> time_scales_;
+  std::shared_ptr<const StreamInfo> demuxer_stream_info_;
   AVIOContext* io_;
   AVFormatContext* demuxer_ctx_;
   AVCodecContext* decoder_ctx_;
@@ -754,8 +749,8 @@ class MediaProcessor::Impl {
 #endif
   double timestamp_offset_;
   double prev_timestamp_offset_;
-  // The stream ID the decoder is currently configured to use.
-  size_t decoder_stream_id_;
+  // The stream the decoder is currently configured to use.
+  std::shared_ptr<const StreamInfo> decoder_stream_info_;
 };
 
 MediaProcessor::MediaProcessor(

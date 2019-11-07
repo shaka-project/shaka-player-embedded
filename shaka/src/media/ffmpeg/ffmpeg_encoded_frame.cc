@@ -60,18 +60,17 @@ bool IsEncrypted(AVPacket* packet) {
 }  // namespace
 
 // static
-FFmpegEncodedFrame* FFmpegEncodedFrame::MakeFrame(AVPacket* pkt,
-                                                  AVStream* stream,
-                                                  size_t stream_id,
-                                                  double timestamp_offset) {
-  const double factor = av_q2d(stream->time_base);
+FFmpegEncodedFrame* FFmpegEncodedFrame::MakeFrame(
+    AVPacket* pkt, std::shared_ptr<const StreamInfo> info,
+    double timestamp_offset) {
+  const double factor = info->time_scale;
   const double pts = pkt->pts * factor + timestamp_offset;
   const double dts = pkt->dts * factor + timestamp_offset;
   const double duration = pkt->duration * factor;
   const bool is_key_frame = pkt->flags & AV_PKT_FLAG_KEY;
 
   return new (std::nothrow) FFmpegEncodedFrame(
-      pkt, pts, dts, duration, is_key_frame, stream_id, timestamp_offset);
+      pkt, pts, dts, duration, is_key_frame, info, timestamp_offset);
 }
 
 FFmpegEncodedFrame::~FFmpegEncodedFrame() {
@@ -245,11 +244,10 @@ size_t FFmpegEncodedFrame::EstimateSize() const {
 
 FFmpegEncodedFrame::FFmpegEncodedFrame(AVPacket* pkt, double pts, double dts,
                                        double duration, bool is_key_frame,
-                                       size_t stream_id,
+                                       std::shared_ptr<const StreamInfo> info,
                                        double timestamp_offset)
-    : EncodedFrame(pts, dts, duration, is_key_frame, nullptr, pkt->data,
-                   pkt->size, timestamp_offset, IsEncrypted(pkt)),
-      stream_id_(stream_id) {
+    : EncodedFrame(pts, dts, duration, is_key_frame, info, pkt->data, pkt->size,
+                   timestamp_offset, IsEncrypted(pkt)) {
   av_packet_move_ref(&packet_, pkt);
 }
 

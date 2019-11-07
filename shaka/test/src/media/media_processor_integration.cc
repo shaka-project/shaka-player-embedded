@@ -318,19 +318,19 @@ TEST_F(MediaProcessorIntegration, CanDecodeWithAdaptation) {
 
   bool saw_first_stream = false;
   bool saw_second_stream = false;
-  size_t first_stream_id = -1;
+  std::shared_ptr<const StreamInfo> first_stream_info;
   while (true) {
     std::shared_ptr<EncodedFrame> frame;
     const Status status = processor.ReadDemuxedFrame(&frame);
     if (status == Status::EndOfStream)
       break;
 
-    auto* ffmpeg_frame = static_cast<ffmpeg::FFmpegEncodedFrame*>(frame.get());
+    auto* encoded_frame = static_cast<EncodedFrame*>(frame.get());
     if (!saw_first_stream) {
       saw_first_stream = true;
-      first_stream_id = ffmpeg_frame->stream_id();
+      first_stream_info = encoded_frame->stream_info;
     } else {
-      if (ffmpeg_frame->stream_id() != first_stream_id)
+      if (encoded_frame->stream_info != first_stream_info)
         saw_second_stream = true;
     }
 
