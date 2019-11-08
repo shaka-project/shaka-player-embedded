@@ -48,31 +48,14 @@ namespace media {
  */
 class MediaProcessor {
  public:
-  MediaProcessor(
-      const std::string& container, const std::string& codec,
-      std::function<void(eme::MediaKeyInitDataType, const uint8_t*, size_t)>
-          on_encrypted_init_data);
+  explicit MediaProcessor(const std::string& codec);
   virtual ~MediaProcessor();
 
   NON_COPYABLE_OR_MOVABLE_TYPE(MediaProcessor);
 
   //@{
-  /**
-   * Gets the codec/container that this processor is using.  This should only be
-   * used for debugging and not presented to the user.  This may be altered
-   * (e.g. converted to FFmpeg expected format), so it may be different than
-   * what was originally requested.
-   */
-  std::string container() const;
   std::string codec() const;
   //@}
-
-  /**
-   * Gets the duration of the media as defined by the most recent initialization
-   * segment received.  This will return 0 if it is unknown or if we haven't
-   * received an init segment yet.
-   */
-  double duration() const;
 
   /**
    * Performs any global initialization that is required (e.g. registering
@@ -80,32 +63,6 @@ class MediaProcessor {
    * any media objects are created.
    */
   static void Initialize();
-
-
-  /**
-   * Initializes the demuxer.  This will block until the init segment is read
-   * and processed.  This method will call |on_read| to get the init segment.
-   * Then this will store |on_read| to be called later to read data.
-   *
-   * @param on_read A callback that will read from the source.
-   * @param on_reset_read A callback that will be called to reset the current
-   *   read position inside the current segment.  The caller should resend the
-   *   data for the current segment on the next read.
-   */
-  virtual Status InitializeDemuxer(
-      std::function<size_t(uint8_t*, size_t)> on_read,
-      std::function<void()> on_reset_read);
-
-  /**
-   * Reads the next demuxed (encoded) frame.  This blocks until the next frame
-   * is received, or EOF is reached.  This calls the |on_read| given to
-   * InitializeDemuxer to read data.  This can only be called after
-   * InitializeDemuxer returns.
-   *
-   * @param frame [OUT] Will contain the next demuxed frame.  Not changed on
-   *   errors
-   */
-  virtual Status ReadDemuxedFrame(std::shared_ptr<EncodedFrame>* frame);
 
   /**
    * Adds the given frame to the decoder and decodes it into full frames.  This
@@ -128,9 +85,6 @@ class MediaProcessor {
       double cur_time, std::shared_ptr<EncodedFrame> frame,
       eme::Implementation* cdm,
       std::vector<std::shared_ptr<DecodedFrame>>* decoded);
-
-  /** Sets the offset, in seconds, to adjust timestamps in the demuxer. */
-  virtual void SetTimestampOffset(double offset);
 
   /**
    * Called when seeking to reset the decoder.  This is different than

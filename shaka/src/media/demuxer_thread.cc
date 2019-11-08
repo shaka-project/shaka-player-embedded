@@ -17,10 +17,12 @@
 #include <cmath>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "src/core/js_manager_impl.h"
-#include "src/media/media_processor.h"
+#include "src/media/media_utils.h"
 #include "src/media/stream.h"
 
 namespace shaka {
@@ -28,31 +30,34 @@ namespace media {
 
 namespace {
 
-std::string ShortContainerName(const std::string& container) {
-  if (container == "matroska") {
-    return "mkv";
-  }
+std::string ShortContainerName(const std::string& mime) {
+  std::string unused_type;
+  std::string subtype;
+  std::unordered_map<std::string, std::string> unused_params;
+  if (!ParseMimeType(mime, &unused_type, &subtype, &unused_params))
+    return "";
 
-  DCHECK_LT(container.size(), 10u) << "Container needs a short name";
-  return container.substr(0, 10);
+  DCHECK_LT(subtype.size(), 8u) << "Container needs a short name";
+  return subtype.substr(0, 8);
 }
 
 }  // namespace
 
-DemuxerThread::DemuxerThread(std::function<void()> on_load_meta,
-                             MediaProcessor* processor, Stream* stream)
+DemuxerThread::DemuxerThread(const std::string& mime, Demuxer::Client* client,
+                             Stream* stream)
     : mutex_("DemuxerThread"),
       new_data_("New demuxed data"),
-      on_load_meta_(std::move(on_load_meta)),
+      client_(client),
+      mime_(mime),
       shutdown_(false),
-      cur_data_(nullptr),
-      cur_size_(0),
+      data_(nullptr),
+      data_size_(0),
+      timestamp_offset_(0),
       window_start_(0),
       window_end_(HUGE_VAL),
       need_key_frame_(true),
-      processor_(processor),
       stream_(stream),
-      thread_(ShortContainerName(processor->container()) + " demux",
+      thread_(ShortContainerName(mime) + " demuxer",
               std::bind(&DemuxerThread::ThreadMain, this)) {}
 
 DemuxerThread::~DemuxerThread() {
@@ -73,13 +78,11 @@ void DemuxerThread::AppendData(double timestamp_offset, double window_start,
   DCHECK_GT(data_size, 0u);
 
   std::unique_lock<Mutex> lock(mutex_);
-  DCHECK(input_.empty());  // Should not be performing an update.
-  input_.SetBuffer(data, data_size);
-  processor_->SetTimestampOffset(timestamp_offset);
+  data_ = data;
+  data_size_ = data_size;
+  timestamp_offset_ = timestamp_offset;
   window_start_ = window_start;
   window_end_ = window_end;
-  cur_data_ = data;
-  cur_size_ = data_size;
   on_complete_ = std::move(on_complete);
 
   new_data_.SignalAll();
@@ -87,11 +90,10 @@ void DemuxerThread::AppendData(double timestamp_offset, double window_start,
 
 void DemuxerThread::ThreadMain() {
   using namespace std::placeholders;  // NOLINT
-  auto on_read = std::bind(&DemuxerThread::OnRead, this, _1, _2);
-  auto on_reset_read = std::bind(&DemuxerThread::OnResetRead, this);
-  const Status init_status =
-      processor_->InitializeDemuxer(on_read, on_reset_read);
-  if (init_status != Status::Success) {
+  auto* factory = DemuxerFactory::GetFactory();
+  if (factory)
+    demuxer_ = factory->Create(mime_, client_);
+  if (!demuxer_) {
     // If we get an error before we append the first segment, then we won't have
     // a callback yet, so we have nowhere to send the error to.  Wait until we
     // get the first segment.
@@ -99,25 +101,19 @@ void DemuxerThread::ThreadMain() {
     if (!on_complete_ && !shutdown_) {
       new_data_.ResetAndWaitWhileUnlocked(lock);
     }
-    CallOnComplete(init_status);
+    CallOnComplete(Status::UnknownError);
     return;
   }
 
-  // The demuxer initialization will read the init segment and load any metadata
-  // it needs.
-  on_load_meta_();
-
   while (!shutdown_) {
-    std::shared_ptr<EncodedFrame> frame;
-    const Status status = processor_->ReadDemuxedFrame(&frame);
-    if (status != Status::Success) {
-      std::unique_lock<Mutex> lock(mutex_);
-      CallOnComplete(status);
+    std::unique_lock<Mutex> lock(mutex_);
+    std::vector<std::shared_ptr<EncodedFrame>> frames;
+    if (!demuxer_->Demux(timestamp_offset_, data_, data_size_, &frames)) {
+      CallOnComplete(Status::UnknownError);
       break;
     }
 
-    {
-      std::unique_lock<Mutex> lock(mutex_);
+    for (auto& frame : frames) {
       if (frame->pts < window_start_ ||
           frame->pts + frame->duration > window_end_) {
         need_key_frame_ = true;
@@ -133,34 +129,11 @@ void DemuxerThread::ThreadMain() {
           continue;
         }
       }
+      stream_->GetDemuxedFrames()->AddFrame(frame);
     }
-    stream_->GetDemuxedFrames()->AddFrame(frame);
-  }
-}
-
-size_t DemuxerThread::OnRead(uint8_t* data, size_t data_size) {
-  std::unique_lock<Mutex> lock(mutex_);
-
-  // If we get called with no input, then we are done processing the previous
-  // data, so call on_complete.  This is a no-op if there is no callback.
-  if (input_.empty()) {
     CallOnComplete(Status::Success);
-    if (!shutdown_) {
-      new_data_.ResetAndWaitWhileUnlocked(lock);
-    }
+    new_data_.ResetAndWaitWhileUnlocked(lock);
   }
-
-  if (shutdown_)
-    return 0;
-
-  const size_t bytes_read = input_.Read(data, data_size);
-  VLOG(3) << "ReadCallback: Read " << bytes_read << " bytes from stream.";
-  return bytes_read;
-}
-
-void DemuxerThread::OnResetRead() {
-  std::unique_lock<Mutex> lock(mutex_);
-  input_.SetBuffer(cur_data_, cur_size_);
 }
 
 void DemuxerThread::CallOnComplete(Status status) {

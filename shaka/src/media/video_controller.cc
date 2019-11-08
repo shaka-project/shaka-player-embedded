@@ -116,7 +116,8 @@ VideoController::VideoController(
                std::bind(&VideoController::GetDecodedRanges, this),
                MainThreadCallback(std::move(on_ready_state_changed)),
                &util::Clock::Instance, &pipeline_),
-      cdm_(nullptr) {
+      cdm_(nullptr),
+      init_count_(0) {
   Reset();
 }
 
@@ -189,14 +190,12 @@ Status VideoController::AddSource(const std::string& mime_type,
   if (sources_.count(*source_type) != 0)
     return Status::NotAllowed;
 
-  std::unique_ptr<Source> source(new Source(
-      *source_type, &pipeline_, container, codec,
-      MainThreadCallback(on_waiting_for_key_),
-      std::bind(&VideoController::OnEncryptedInitData, this, _1, _2, _3),
-      std::bind(&PipelineManager::GetCurrentTime, &pipeline_),
-      std::bind(&VideoController::GetPlaybackRate, this),
-      std::bind(&VideoController::OnError, this, *source_type, _1),
-      std::bind(&VideoController::OnLoadMeta, this, *source_type)));
+  std::unique_ptr<Source> source(
+      new Source(*source_type, &pipeline_, this, mime_type, container, codec,
+                 MainThreadCallback(on_waiting_for_key_),
+                 std::bind(&PipelineManager::GetCurrentTime, &pipeline_),
+                 std::bind(&VideoController::GetPlaybackRate, this),
+                 std::bind(&VideoController::OnError, this, *source_type, _1)));
   if (source->renderer) {
     if (*source_type == SourceType::Audio)
       static_cast<AudioRenderer*>(source->renderer.get())->SetVolume(volume_);
@@ -313,23 +312,17 @@ void VideoController::OnSeek() {
   }
 }
 
-void VideoController::OnLoadMeta(SourceType type) {
-  bool done = true;
-  double duration;
+void VideoController::OnLoadedMetaData(double duration) {
+  bool done;
   {
     util::shared_lock<SharedMutex> lock(mutex_);
-    DCHECK_EQ(1u, sources_.count(type));
-    DCHECK(!sources_.at(type)->ready);
-    sources_.at(type)->ready = true;
-    duration = sources_.at(type)->processor.duration();
-
-    for (auto& pair : sources_) {
-      if (!pair.second->ready)
-        done = false;
-    }
+    DCHECK_LT(init_count_, sources_.size());
+    init_count_++;
+    done = init_count_ == sources_.size();
   }
+
   if (std::isnan(pipeline_.GetDuration()))
-    pipeline_.SetDuration(duration == 0 ? HUGE_VAL : duration);
+    pipeline_.SetDuration(duration);
   if (done)
     pipeline_.DoneInitializing();
 }
@@ -341,11 +334,10 @@ void VideoController::OnError(SourceType type, Status error) {
       PlainCallbackTask(std::bind(on_error_, type, error)));
 }
 
-void VideoController::OnEncryptedInitData(
-    eme::MediaKeyInitDataType init_data_type, const uint8_t* data,
-    size_t data_size) {
+void VideoController::OnEncrypted(eme::MediaKeyInitDataType init_data_type,
+                                  const uint8_t* data, size_t data_size) {
   JsManagerImpl::Instance()->MainThread()->AddInternalTask(
-      TaskPriority::Internal, "VideoController::OnEncryptedInitData",
+      TaskPriority::Internal, "VideoController::OnEncrypted",
       EncryptedInitDataTask(on_encrypted_init_data_, init_data_type,
                             ByteBuffer(data, data_size)));
 }
@@ -371,17 +363,16 @@ double VideoController::GetPlaybackRate() const {
 
 VideoController::Source::Source(
     SourceType source_type, PipelineManager* pipeline,
+    Demuxer::Client* demuxer_client, const std::string& mime,
     const std::string& container, const std::string& codecs,
-    std::function<void()> on_waiting_for_key,
-    std::function<void(eme::MediaKeyInitDataType, const uint8_t*, size_t)>
-        on_encrypted_init_data,
-    std::function<double()> get_time, std::function<double()> get_playback_rate,
-    std::function<void(Status)> on_error, std::function<void()> on_load_meta)
-    : processor(container, codecs, std::move(on_encrypted_init_data)),
+    std::function<void()> on_waiting_for_key, std::function<double()> get_time,
+    std::function<double()> get_playback_rate,
+    std::function<void(Status)> on_error)
+    : processor(codecs),
       decoder(get_time, std::bind(&VideoController::Source::OnSeekDone, this),
               std::move(on_waiting_for_key), std::move(on_error), &processor,
               pipeline, &stream),
-      demuxer(std::move(on_load_meta), &processor, &stream),
+      demuxer(mime, demuxer_client, &stream),
       renderer(CreateRenderer(source_type, get_time,
                               std::move(get_playback_rate), &stream)),
       ready(false) {}

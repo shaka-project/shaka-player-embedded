@@ -29,21 +29,15 @@ extern "C" {
 
 #include "src/core/js_manager_impl.h"
 #include "src/debug/mutex.h"
-#include "src/debug/thread_event.h"
 #include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
 #include "src/media/ffmpeg/ffmpeg_encoded_frame.h"
 #include "src/media/media_utils.h"
 #include "src/util/utils.h"
 
-// Special error code added by //third_party/ffmpeg/mov.patch
-#define AVERROR_SHAKA_RESET_DEMUXER (-123456)
-
 namespace shaka {
 namespace media {
 
 namespace {
-
-constexpr const size_t kInitialBufferSize = 2048;
 
 std::string ErrStr(int code) {
   if (code == 0)
@@ -141,95 +135,25 @@ const AVCodec* FindCodec(const std::string& codec_name) {
   return avcodec_find_decoder_by_name(codec_name.c_str());
 }
 
-/**
- * Creates a 'pssh' box from the given encryption info.  FFmpeg outputs the
- * encryption info in a generic structure, but EME expects it in one of several
- * binary formats.  We use the 'cenc' format, which is one or more 'pssh' boxes.
- */
-std::vector<uint8_t> CreatePssh(AVEncryptionInitInfo* info) {
-  // 4 box size
-  // 4 box type
-  // 1 version
-  // 3 flags
-  // 16 system_id
-  // if (version > 0)
-  //   4 key_id_count
-  //   for (key_id_count)
-  //     16 key_id
-  // 4 data_size
-  // [data_size] data
-  DCHECK_EQ(info->system_id_size, 16u);
-  size_t pssh_size = info->data_size + 32;
-  if (info->num_key_ids) {
-    DCHECK_EQ(info->key_id_size, 16u);
-    pssh_size += 4 + info->num_key_ids * 16;
-  }
-
-#define WRITE_INT(ptr, num) *reinterpret_cast<uint32_t*>(ptr) = htonl(num)
-
-  std::vector<uint8_t> pssh(pssh_size, 0);
-  uint8_t* ptr = pssh.data();
-  WRITE_INT(ptr, pssh_size);
-  WRITE_INT(ptr + 4, 0x70737368);  // 'pssh'
-  WRITE_INT(ptr + 8, info->num_key_ids ? 0x01000000 : 0);
-  std::memcpy(ptr + 12, info->system_id, 16);
-  ptr += 28;
-  if (info->num_key_ids) {
-    WRITE_INT(ptr, info->num_key_ids);
-    ptr += 4;
-    for (uint32_t i = 0; i < info->num_key_ids; i++) {
-      std::memcpy(ptr, info->key_ids[i], 16);
-      ptr += 16;
-    }
-  }
-
-  WRITE_INT(ptr, info->data_size);
-  std::memcpy(ptr + 4, info->data, info->data_size);
-  DCHECK_EQ(ptr + info->data_size + 4, pssh.data() + pssh_size);
-
-#undef WRITE_INT
-  return pssh;
-}
-
 }  // namespace
 
 class MediaProcessor::Impl {
  public:
-  Impl(const std::string& container, const std::string& codec,
-       std::function<void(eme::MediaKeyInitDataType, const uint8_t*, size_t)>
-           on_encrypted_init_data)
+  explicit Impl(const std::string& codec)
       : mutex_("MediaProcessor"),
-        signal_("MediaProcessor demuxer ready"),
-        on_encrypted_init_data_(std::move(on_encrypted_init_data)),
-        container_(NormalizeContainer(container)),
         codec_(NormalizeCodec(codec)),
-        raw_codec_(codec),
-        io_(nullptr),
-        demuxer_ctx_(nullptr),
         decoder_ctx_(nullptr),
         received_frame_(nullptr),
 #ifdef ENABLE_HARDWARE_DECODE
         hw_device_ctx_(nullptr),
         hw_pix_fmt_(AV_PIX_FMT_NONE),
 #endif
-        timestamp_offset_(0),
         prev_timestamp_offset_(0) {
   }
 
   ~Impl() {
-    if (io_) {
-      // If an IO buffer was allocated by libavformat, it must be freed by us.
-      if (io_->buffer) {
-        av_free(io_->buffer);
-      }
-      // The IO context itself must be freed by us as well.  Closing ctx_ does
-      // not free the IO context attached to it.
-      av_free(io_);
-    }
-
     // It is safe if these fields are nullptr.
     avcodec_free_context(&decoder_ctx_);
-    avformat_close_input(&demuxer_ctx_);
     av_frame_free(&received_frame_);
 #ifdef ENABLE_HARDWARE_DECODE
     av_buffer_unref(&hw_device_ctx_);
@@ -238,192 +162,8 @@ class MediaProcessor::Impl {
 
   NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
-  std::string container() const {
-    return container_;
-  }
   std::string codec() const {
     return codec_;
-  }
-
-  double duration() const {
-    std::unique_lock<Mutex> lock(mutex_);
-    if (!demuxer_ctx_ || demuxer_ctx_->duration == AV_NOPTS_VALUE)
-      return 0;
-    return static_cast<double>(demuxer_ctx_->duration) / AV_TIME_BASE;
-  }
-
-  Status ReinitDemuxer(std::unique_lock<Mutex>* lock) {
-    avformat_close_input(&demuxer_ctx_);
-    avio_flush(io_);
-
-    AVFormatContext* new_ctx;
-    // Create the new demuxer without the lock held because the method will
-    // block while waiting for the init segment.
-    lock->unlock();
-    const Status status = CreateDemuxer(&new_ctx);
-    if (status != Status::Success)
-      return status;
-    lock->lock();
-    demuxer_ctx_ = new_ctx;
-
-    AVStream* stream = demuxer_ctx_->streams[0];
-    AVCodecParameters* params = stream->codecpar;
-
-    const char* codec_name = avcodec_get_name(params->codec_id);
-    if (codec_ != codec_name) {
-      LOG(ERROR) << "Mismatch between codec string and media.  Codec string: '"
-                 << codec_ << "', media codec: '" << codec_name << "' (0x"
-                 << std::hex << params->codec_id << ")";
-      return Status::DecoderMismatch;
-    }
-
-    // TODO(modmaker): Pass correct MIME.
-    demuxer_stream_info_.reset(new StreamInfo(
-        container_, raw_codec_, params->codec_type == AVMEDIA_TYPE_VIDEO,
-        {stream->time_base.num, stream->time_base.den},
-        std::vector<uint8_t>{params->extradata,
-                             params->extradata + params->extradata_size}));
-    return Status::Success;
-  }
-
-  Status CreateDemuxer(AVFormatContext** context) {
-    // Allocate a demuxer context and set it to use the IO context.
-    AVFormatContext* demuxer = avformat_alloc_context();
-    if (!demuxer) {
-      return Status::OutOfMemory;
-    }
-    demuxer->pb = io_;
-    // If we enable the probes, in encrypted content we'll get logs about being
-    // unable to parse the content; however, if we disable the probes, we won't
-    // get accurate frame durations, which can cause problems.
-    // TODO: Find a way to conditionally disable parsing or to suppress the
-    // logs for encrypted content (since the errors there aren't fatal).
-    // demuxer->probesize = 0;
-    // demuxer->max_analyze_duration = 0;
-
-    // To enable extremely verbose logging:
-    // demuxer->debug = 1;
-
-    // Parse encryption info for WebM; ignored for other demuxers.
-    AVDictionary* dict = nullptr;
-    CHECK_EQ(av_dict_set_int(&dict, "parse_encryption", 1, 0), 0);
-
-    AVInputFormat* format = av_find_input_format(container_.c_str());
-    CHECK(format) << "Should have checked for support before creating.";
-    const int open_code = avformat_open_input(&demuxer, nullptr, format, &dict);
-    av_dict_free(&dict);
-    if (open_code < 0) {
-      // If avformat_open_input fails, it will free and reset |demuxer|.
-      DCHECK(!demuxer);
-
-      if (open_code == AVERROR(ENOMEM))
-        return Status::OutOfMemory;
-      if (open_code == AVERROR_INVALIDDATA)
-        return Status::InvalidContainerData;
-
-      HandleGenericFFmpegError(open_code);
-      return Status::CannotOpenDemuxer;
-    }
-
-    const int find_code = avformat_find_stream_info(demuxer, nullptr);
-    if (find_code < 0) {
-      avformat_close_input(&demuxer);
-      if (find_code == AVERROR(ENOMEM))
-        return Status::OutOfMemory;
-      if (find_code == AVERROR_INVALIDDATA)
-        return Status::InvalidContainerData;
-
-      HandleGenericFFmpegError(find_code);
-      return Status::CannotOpenDemuxer;
-    }
-
-    if (demuxer->nb_streams == 0) {
-      avformat_close_input(&demuxer);
-      return Status::NoStreamsFound;
-    }
-    if (demuxer->nb_streams > 1) {
-      avformat_close_input(&demuxer);
-      return Status::MultiplexedContentFound;
-    }
-
-    *context = demuxer;
-    return Status::Success;
-  }
-
-  Status InitializeDemuxer(std::function<size_t(uint8_t*, size_t)> on_read,
-                           std::function<void()> on_reset_read) {
-    std::unique_lock<Mutex> lock(mutex_);
-
-    on_read_ = std::move(on_read);
-    on_reset_read_ = std::move(on_reset_read);
-
-    // Allocate a context for custom IO.
-    // NOTE: The buffer may be reallocated/resized by libavformat later.
-    // It is always our responsibility to free it later with av_free.
-    io_ = avio_alloc_context(
-        reinterpret_cast<unsigned char*>(av_malloc(kInitialBufferSize)),
-        kInitialBufferSize,
-        0,     // write_flag (read-only)
-        this,  // opaque user data
-        &Impl::ReadCallback,
-        nullptr,   // write callback (read-only)
-        nullptr);  // seek callback (linear reads only)
-    if (!io_) {
-      return Status::OutOfMemory;
-    }
-
-    received_frame_ = av_frame_alloc();
-    if (!received_frame_) {
-      return Status::OutOfMemory;
-    }
-
-    const Status reinit_status = ReinitDemuxer(&lock);
-    if (reinit_status == Status::Success)
-      signal_.SignalAll();
-
-    return reinit_status;
-  }
-
-  Status ReadDemuxedFrame(std::shared_ptr<EncodedFrame>* frame) {
-    AVPacket pkt;
-    int ret = av_read_frame(demuxer_ctx_, &pkt);
-    if (ret == AVERROR_SHAKA_RESET_DEMUXER) {
-      // Special case for Shaka where we need to reinit the demuxer.
-      VLOG(1) << "Reinitializing demuxer";
-      on_reset_read_();
-
-      std::unique_lock<Mutex> lock(mutex_);
-      const Status reinit_status = ReinitDemuxer(&lock);
-      if (reinit_status != Status::Success)
-        return reinit_status;
-      ret = av_read_frame(demuxer_ctx_, &pkt);
-    }
-    if (ret < 0) {
-      av_packet_unref(&pkt);
-      if (ret == AVERROR_EOF)
-        return Status::EndOfStream;
-      if (ret == AVERROR(ENOMEM))
-        return Status::OutOfMemory;
-      if (ret == AVERROR_INVALIDDATA)
-        return Status::InvalidContainerData;
-
-      HandleGenericFFmpegError(ret);
-      return Status::UnknownError;
-    }
-
-    UpdateEncryptionInitInfo();
-
-    // Ignore discard flags.  The demuxer will set this when we try to read
-    // content behind media we have already read.
-    pkt.flags &= ~AV_PKT_FLAG_DISCARD;
-
-    VLOG(3) << "Read frame at dts=" << pkt.dts;
-    DCHECK_EQ(pkt.stream_index, 0);
-    DCHECK_EQ(demuxer_ctx_->nb_streams, 1u);
-    frame->reset(ffmpeg::FFmpegEncodedFrame::MakeFrame(
-        &pkt, demuxer_stream_info_, timestamp_offset_));
-    // No need to unref |pkt| since it was moved into the encoded frame.
-    return *frame ? Status::Success : Status::OutOfMemory;
   }
 
   Status InitializeDecoder(std::shared_ptr<const StreamInfo> info,
@@ -468,6 +208,12 @@ class MediaProcessor::Impl {
     decoder_ctx_ = avcodec_alloc_context3(decoder);
     if (!decoder_ctx_) {
       return Status::OutOfMemory;
+    }
+
+    if (!received_frame_) {
+      received_frame_ = av_frame_alloc();
+      if (!received_frame_)
+        return Status::OutOfMemory;
     }
 
     decoder_ctx_->thread_count = 0;  // Default is 1; 0 means auto-detect.
@@ -567,8 +313,6 @@ class MediaProcessor::Impl {
     }
 
     if (frame) {
-      // Wait for the signal before acquiring the lock to avoid a deadlock.
-      signal_.GetValue();
       std::unique_lock<Mutex> lock(mutex_);
 
       if (!decoder_ctx_ || frame->stream_info != decoder_stream_info_) {
@@ -660,22 +404,11 @@ class MediaProcessor::Impl {
     return Status::Success;
   }
 
-  void SetTimestampOffset(double offset) {
-    timestamp_offset_ = offset;
-  }
-
   void ResetDecoder() {
     avcodec_free_context(&decoder_ctx_);
   }
 
  private:
-  static int ReadCallback(void* opaque, uint8_t* buffer, int size) {
-    DCHECK_GE(size, 0);
-    const size_t count =
-        reinterpret_cast<Impl*>(opaque)->on_read_(buffer, size);
-    return count == 0 ? AVERROR_EOF : count;
-  }
-
 #ifdef ENABLE_HARDWARE_DECODE
   static AVPixelFormat GetPixelFormat(AVCodecContext* ctx,
                                       const AVPixelFormat* formats) {
@@ -695,69 +428,24 @@ class MediaProcessor::Impl {
   }
 #endif
 
-  void UpdateEncryptionInitInfo() {
-    int side_data_size;
-    const uint8_t* side_data = av_stream_get_side_data(
-        demuxer_ctx_->streams[0], AV_PKT_DATA_ENCRYPTION_INIT_INFO,
-        &side_data_size);
-    if (side_data) {
-      AVEncryptionInitInfo* info =
-          av_encryption_init_info_get_side_data(side_data, side_data_size);
-      std::vector<uint8_t> pssh;
-      for (auto* cur_info = info; cur_info; cur_info = cur_info->next) {
-        if (cur_info->system_id_size) {
-          const std::vector<uint8_t> temp = CreatePssh(cur_info);
-          pssh.insert(pssh.end(), temp.begin(), temp.end());
-        } else {
-          for (size_t i = 0; i < cur_info->num_key_ids; i++) {
-            on_encrypted_init_data_(eme::MediaKeyInitDataType::WebM,
-                                    cur_info->key_ids[i],
-                                    cur_info->key_id_size);
-          }
-        }
-      }
-      if (!pssh.empty()) {
-        on_encrypted_init_data_(eme::MediaKeyInitDataType::Cenc, pssh.data(),
-                                pssh.size());
-      }
-      av_encryption_init_info_free(info);
-
-      av_stream_remove_side_data(demuxer_ctx_->streams[0],
-                                 AV_PKT_DATA_ENCRYPTION_INIT_INFO);
-    }
-  }
-
 
   mutable Mutex mutex_;
-  ThreadEvent<void> signal_;
-  std::function<void(eme::MediaKeyInitDataType, const uint8_t*, size_t)>
-      on_encrypted_init_data_;
-  std::function<size_t(uint8_t*, size_t)> on_read_;
-  std::function<void()> on_reset_read_;
   const std::string container_;
   const std::string codec_;
-  const std::string raw_codec_;
 
-  std::shared_ptr<const StreamInfo> demuxer_stream_info_;
-  AVIOContext* io_;
-  AVFormatContext* demuxer_ctx_;
   AVCodecContext* decoder_ctx_;
   AVFrame* received_frame_;
 #ifdef ENABLE_HARDWARE_DECODE
   AVBufferRef* hw_device_ctx_;
   AVPixelFormat hw_pix_fmt_;
 #endif
-  double timestamp_offset_;
   double prev_timestamp_offset_;
   // The stream the decoder is currently configured to use.
   std::shared_ptr<const StreamInfo> decoder_stream_info_;
 };
 
-MediaProcessor::MediaProcessor(
-    const std::string& container, const std::string& codec,
-    std::function<void(eme::MediaKeyInitDataType, const uint8_t*, size_t)>
-        on_encrypted_init_data)
-    : impl_(new Impl(container, codec, std::move(on_encrypted_init_data))) {}
+MediaProcessor::MediaProcessor(const std::string& codec)
+    : impl_(new Impl(codec)) {}
 MediaProcessor::~MediaProcessor() {}
 
 // static
@@ -773,26 +461,8 @@ void MediaProcessor::Initialize() {
 #endif
 }
 
-std::string MediaProcessor::container() const {
-  return impl_->container();
-}
-
 std::string MediaProcessor::codec() const {
   return impl_->codec();
-}
-
-double MediaProcessor::duration() const {
-  return impl_->duration();
-}
-
-Status MediaProcessor::InitializeDemuxer(
-    std::function<size_t(uint8_t*, size_t)> on_read,
-    std::function<void()> on_reset_read) {
-  return impl_->InitializeDemuxer(std::move(on_read), std::move(on_reset_read));
-}
-
-Status MediaProcessor::ReadDemuxedFrame(std::shared_ptr<EncodedFrame>* frame) {
-  return impl_->ReadDemuxedFrame(frame);
 }
 
 Status MediaProcessor::DecodeFrame(
@@ -800,10 +470,6 @@ Status MediaProcessor::DecodeFrame(
     eme::Implementation* cdm,
     std::vector<std::shared_ptr<DecodedFrame>>* decoded) {
   return impl_->DecodeFrame(cur_time, frame, cdm, decoded);
-}
-
-void MediaProcessor::SetTimestampOffset(double offset) {
-  impl_->SetTimestampOffset(offset);
 }
 
 void MediaProcessor::ResetDecoder() {

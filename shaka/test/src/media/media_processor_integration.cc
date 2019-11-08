@@ -21,9 +21,10 @@ extern "C" {
 #include <libavutil/imgutils.h>
 }
 
+#include "shaka/media/demuxer.h"
+#include "shaka/media/frames.h"
 #include "src/eme/clearkey_implementation.h"
 #include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
-#include "src/media/ffmpeg/ffmpeg_encoded_frame.h"
 #include "src/media/frame_converter.h"
 #include "src/media/media_utils.h"
 #include "src/test/media_files.h"
@@ -46,70 +47,54 @@ constexpr const char* kMp4LowInit = "clear_low_frag_init.mp4";
 constexpr const char* kMp4LowSeg = "clear_low_frag_seg1.mp4";
 // This isn't fragmented, so it doesn't need an explicit init segment.
 constexpr const char* kMp4High = "clear_high.mp4";
-constexpr const char* kMp4Encrypted = "encrypted_low.mp4";
-constexpr const char* kMp4KeyRotation = "encrypted_key_rotation.mp4";
 
 constexpr const char* kHashFile = "hash_file.txt";
 
-/**
- * A simple helper that reads from one or more buffers into the MediaProcessor.
- */
-class SegmentReader {
+class DemuxerClient : public Demuxer::Client {
  public:
-  SegmentReader() : segment_idx_(0), segment_offset_(0) {}
-
-  void AppendSegment(std::vector<uint8_t> buffer) {
-    segments_.emplace_back(std::move(buffer));
-  }
-
-  std::function<size_t(uint8_t*, size_t)> MakeReadCallback() {
-    return [this](uint8_t* dest, size_t dest_size) -> size_t {
-      if (segment_idx_ >= segments_.size())
-        return 0;
-
-      std::vector<uint8_t>* segment = &segments_[segment_idx_];
-      dest_size = std::min(dest_size, segment->size() - segment_offset_);
-      memcpy(dest, segment->data() + segment_offset_, dest_size);
-      segment_offset_ += dest_size;
-
-      if (segment_offset_ >= segment->size()) {
-        segment_idx_++;
-        segment_offset_ = 0;
-      }
-
-      return dest_size;
-    };
-  }
-
-  std::function<void()> MakeResetReadCallback() {
-    return [this]() { segment_offset_ = 0; };
-  }
-
- private:
-  std::vector<std::vector<uint8_t>> segments_;
-  size_t segment_idx_;
-  size_t segment_offset_;
+  MOCK_METHOD1(OnLoadedMetaData, void(double));
+  MOCK_METHOD3(OnEncrypted,
+               void(eme::MediaKeyInitDataType, const uint8_t*, size_t));
 };
+
+bool EndsWith(const std::string& value, const std::string& sub) {
+  return sub.size() <= value.size() &&
+         value.substr(value.size() - sub.size()) == sub;
+}
 
 std::string GetFrameHash(const uint8_t* data, const int size) {
   const std::vector<uint8_t> digest = util::HashData(data, size);
   return util::ToHexString(digest.data(), digest.size());
 }
 
-void DecodeFramesAndCheckHashes(MediaProcessor* processor,
-                                eme::Implementation* cdm) {
+void DemuxFiles(const std::vector<std::string>& paths,
+                std::vector<std::shared_ptr<EncodedFrame>>* frames) {
+  NiceMock<DemuxerClient> client;
+  auto* factory = DemuxerFactory::GetFactory();
+  ASSERT_TRUE(factory);
+  const std::string mime =
+      EndsWith(paths[0], ".webm") ? "video/webm" : "video/mp4";
+  auto demuxer = factory->Create(mime, &client);
+  ASSERT_TRUE(demuxer);
+
+  for (const auto& path : paths) {
+    std::vector<uint8_t> data = GetMediaFile(path);
+    ASSERT_TRUE(demuxer->Demux(0, data.data(), data.size(), frames));
+  }
+}
+
+void DecodeFramesAndCheckHashes(
+    const std::vector<std::shared_ptr<EncodedFrame>>& input_frames,
+    MediaProcessor* processor, eme::Implementation* cdm) {
   FrameConverter converter;
   std::string results;
-  Status status = Status::Success;
-  while (status != Status::EndOfStream) {
-    std::shared_ptr<EncodedFrame> frame;
-    status = processor->ReadDemuxedFrame(&frame);
-    if (status != Status::EndOfStream)
-      ASSERT_EQ(status, Status::Success);
-
+  // Run this loop one extra time to pass "nullptr" to flush the last frames.
+  for (size_t i = 0; i <= input_frames.size(); i++) {
+    auto frame = i < input_frames.size() ? input_frames[i] : nullptr;
     std::vector<std::shared_ptr<DecodedFrame>> decoded_frames;
     ASSERT_EQ(processor->DecodeFrame(0, frame, cdm, &decoded_frames),
               Status::Success);
+
     for (auto& decoded : decoded_frames) {
       auto* cast_frame =
           static_cast<ffmpeg::FFmpegDecodedFrame*>(decoded.get());
@@ -130,12 +115,6 @@ void DecodeFramesAndCheckHashes(MediaProcessor* processor,
   EXPECT_EQ(results, std::string(expected.begin(), expected.end()));
 }
 
-void ExpectNoAdaptation() {
-  EXPECT_FALSE(true) << "Not expecting adaptation.";
-}
-
-void IgnoreInitData(eme::MediaKeyInitDataType, const uint8_t*, size_t) {}
-
 }  // namespace
 
 class MediaProcessorIntegration : public testing::Test {
@@ -147,195 +126,36 @@ class MediaProcessorIntegration : public testing::Test {
   }
 };
 
-TEST_F(MediaProcessorIntegration, ReadsInitSegment) {
-  SegmentReader reader;
-  reader.AppendSegment(GetMediaFile(kMp4LowInit));
-
-
-  MediaProcessor::Initialize();
-  MediaProcessor processor("mp4", "avc1.42c01e", &IgnoreInitData);
-  ASSERT_EQ(processor.InitializeDemuxer(reader.MakeReadCallback(),
-                                        &ExpectNoAdaptation),
-            Status::Success);
-}
-
-TEST_F(MediaProcessorIntegration, ReadsDemuxedFrames) {
-  SegmentReader reader;
-  reader.AppendSegment(GetMediaFile(kMp4LowInit));
-  reader.AppendSegment(GetMediaFile(kMp4LowSeg));
-
-
-  MediaProcessor::Initialize();
-  MediaProcessor processor("mp4", "avc1.42c01e", &IgnoreInitData);
-  ASSERT_EQ(processor.InitializeDemuxer(reader.MakeReadCallback(),
-                                        &ExpectNoAdaptation),
-            Status::Success);
-
-  for (size_t i = 0; i < 120; i++) {
-    std::shared_ptr<EncodedFrame> frame;
-    ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
-    // Don't test the body of the frame, it will be tested by the decoding test
-    // below.
-    EXPECT_NEAR(frame->dts, i * 0.041666, 0.0001);
-  }
-
-  std::shared_ptr<EncodedFrame> frame;
-  ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::EndOfStream);
-}
-
-TEST_F(MediaProcessorIntegration, HandlesMp4Adaptation) {
-  SegmentReader reader;
-  reader.AppendSegment(GetMediaFile(kMp4LowInit));
-  reader.AppendSegment(GetMediaFile(kMp4LowSeg));
-  reader.AppendSegment(GetMediaFile(kMp4High));
-
-
-  MediaProcessor::Initialize();
-  MediaProcessor processor("mp4", "avc1.42c01e", &IgnoreInitData);
-  ASSERT_EQ(processor.InitializeDemuxer(reader.MakeReadCallback(),
-                                        reader.MakeResetReadCallback()),
-            Status::Success);
-
-  // Low segment.
-  for (size_t i = 0; i < 120; i++) {
-    std::shared_ptr<EncodedFrame> frame;
-    ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
-    EXPECT_NEAR(frame->dts, i * 0.041666, 0.0001);
-  }
-
-  // High segment.
-  for (size_t i = 0; i < 120; i++) {
-    std::shared_ptr<EncodedFrame> frame;
-    ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
-    // The high segment also starts at 0.
-    EXPECT_NEAR(frame->dts, i * 0.041666, 0.0001);
-  }
-
-  std::shared_ptr<EncodedFrame> frame;
-  ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::EndOfStream);
-}
-
-TEST_F(MediaProcessorIntegration, AccountsForTimestampOffset) {
-  SegmentReader reader;
-  reader.AppendSegment(GetMediaFile(kMp4LowInit));
-  reader.AppendSegment(GetMediaFile(kMp4LowSeg));
-
-
-  MediaProcessor::Initialize();
-  MediaProcessor processor("mp4", "avc1.42c01e", &IgnoreInitData);
-  processor.SetTimestampOffset(20);
-  ASSERT_EQ(processor.InitializeDemuxer(reader.MakeReadCallback(),
-                                        &ExpectNoAdaptation),
-            Status::Success);
-
-  std::shared_ptr<EncodedFrame> frame;
-  ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
-  EXPECT_NEAR(frame->dts, 20, 0.0001);
-  EXPECT_NEAR(frame->pts, 20, 0.0001);
-
-  ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
-  EXPECT_NEAR(frame->dts, 20.041666, 0.0001);
-  EXPECT_NEAR(frame->pts, 20.041666, 0.0001);
-}
-
-TEST_F(MediaProcessorIntegration, DemuxerReportsEncryptedFrames) {
-  SegmentReader reader;
-  reader.AppendSegment(GetMediaFile(kMp4Encrypted));
-
-
-  MediaProcessor::Initialize();
-  MediaProcessor processor("mp4", "avc1.42c01e", &IgnoreInitData);
-  ASSERT_EQ(processor.InitializeDemuxer(reader.MakeReadCallback(),
-                                        &ExpectNoAdaptation),
-            Status::Success);
-
-  for (size_t i = 0; i < 120; i++) {
-    std::shared_ptr<EncodedFrame> frame;
-    ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
-    // The first 96 frames are clear, until the second keyframe.
-    EXPECT_EQ(frame->is_encrypted, i >= 96);
-  }
-}
-
-TEST_F(MediaProcessorIntegration, ReportsEncryptionInitInfo) {
-  using namespace std::placeholders;
-
-  SegmentReader reader;
-  reader.AppendSegment(GetMediaFile(kMp4KeyRotation));
-
-  MockFunction<void(eme::MediaKeyInitDataType, const uint8_t*, size_t)>
-      on_init_info;
-
-  EXPECT_CALL(on_init_info, Call(_, _, _)).Times(0);
-  // There should be two media segments each with 2 'pssh' boxes.  This should
-  // combine the 'pssh' boxes that appear in the same segment.
-  EXPECT_CALL(on_init_info, Call(eme::MediaKeyInitDataType::Cenc, _, Gt(0u)))
-      .Times(2);
-
-  auto cb = std::bind(&decltype(on_init_info)::Call, &on_init_info, _1, _2, _3);
-  MediaProcessor::Initialize();
-  MediaProcessor processor("mp4", "avc1.42c01e", cb);
-  ASSERT_EQ(processor.InitializeDemuxer(reader.MakeReadCallback(),
-                                        &ExpectNoAdaptation),
-            Status::Success);
-
-  for (size_t i = 0; i < 120; i++) {
-    std::shared_ptr<EncodedFrame> frame;
-    ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::Success);
-  }
-
-  std::shared_ptr<EncodedFrame> frame;
-  ASSERT_EQ(processor.ReadDemuxedFrame(&frame), Status::EndOfStream);
-}
-
 TEST_F(MediaProcessorIntegration, CanDecodeFrames) {
-  SegmentReader reader;
-  reader.AppendSegment(GetMediaFile(kMp4LowInit));
-  reader.AppendSegment(GetMediaFile(kMp4LowSeg));
-
+  std::vector<std::shared_ptr<EncodedFrame>> frames;
+  ASSERT_NO_FATAL_FAILURE(DemuxFiles({kMp4LowInit, kMp4LowSeg}, &frames));
 
   MediaProcessor::Initialize();
-  MediaProcessor processor("mp4", "avc1.42c01e", &IgnoreInitData);
-  ASSERT_EQ(processor.InitializeDemuxer(reader.MakeReadCallback(),
-                                        &ExpectNoAdaptation),
-            Status::Success);
-
-  DecodeFramesAndCheckHashes(&processor, nullptr);
+  MediaProcessor processor("avc1.42c01e");
+  DecodeFramesAndCheckHashes(frames, &processor, nullptr);
 }
 
 TEST_F(MediaProcessorIntegration, CanDecodeWithAdaptation) {
-  SegmentReader reader;
-  reader.AppendSegment(GetMediaFile(kMp4LowInit));
-  reader.AppendSegment(GetMediaFile(kMp4LowSeg));
-  reader.AppendSegment(GetMediaFile(kMp4High));
-
+  std::vector<std::shared_ptr<EncodedFrame>> frames;
+  ASSERT_NO_FATAL_FAILURE(
+      DemuxFiles({kMp4LowInit, kMp4LowSeg, kMp4High}, &frames));
 
   MediaProcessor::Initialize();
-  MediaProcessor processor("mp4", "avc1.42c01e", &IgnoreInitData);
-  ASSERT_EQ(processor.InitializeDemuxer(reader.MakeReadCallback(),
-                                        reader.MakeResetReadCallback()),
-            Status::Success);
+  MediaProcessor processor("avc1.42c01e");
 
   bool saw_first_stream = false;
   bool saw_second_stream = false;
   std::shared_ptr<const StreamInfo> first_stream_info;
-  while (true) {
-    std::shared_ptr<EncodedFrame> frame;
-    const Status status = processor.ReadDemuxedFrame(&frame);
-    if (status == Status::EndOfStream)
-      break;
-
-    auto* encoded_frame = static_cast<EncodedFrame*>(frame.get());
+  for (const auto& frame : frames) {
     if (!saw_first_stream) {
       saw_first_stream = true;
-      first_stream_info = encoded_frame->stream_info;
+      first_stream_info = frame->stream_info;
     } else {
-      if (encoded_frame->stream_info != first_stream_info)
+      if (frame->stream_info != first_stream_info)
         saw_second_stream = true;
     }
 
     std::vector<std::shared_ptr<DecodedFrame>> decoded_frames;
-    ASSERT_EQ(status, Status::Success);
     ASSERT_EQ(processor.DecodeFrame(0, frame, nullptr, &decoded_frames),
               Status::Success);
   }
@@ -359,29 +179,20 @@ class MediaProcessorDecryptIntegration
 };
 
 TEST_P(MediaProcessorDecryptIntegration, CanDecryptFrames) {
-  SegmentReader reader;
-  reader.AppendSegment(GetMediaFile(GetParam()));
-
-  auto ends_with = [this](const std::string& sub) {
-    const std::string param = GetParam();
-    return sub.size() <= param.size() &&
-           param.substr(param.size() - sub.size()) == sub;
-  };
-
   MediaProcessor::Initialize();
-  const std::string container = ends_with(".webm") ? "webm" : "mp4";
-  const std::string codec = ends_with(".webm") ? "vp9" : "avc1.42c01e";
+  const std::string container = EndsWith(GetParam(), ".webm") ? "webm" : "mp4";
+  const std::string codec =
+      EndsWith(GetParam(), ".webm") ? "vp9" : "avc1.42c01e";
   if (!IsTypeSupported(container, codec, 0, 0)) {
     LOG(WARNING) << "Skipping test since we don't have support for the media.";
     return;
   }
 
-  MediaProcessor processor(container, codec, &IgnoreInitData);
-  ASSERT_EQ(processor.InitializeDemuxer(reader.MakeReadCallback(),
-                                        &ExpectNoAdaptation),
-            Status::Success);
+  std::vector<std::shared_ptr<EncodedFrame>> frames;
+  ASSERT_NO_FATAL_FAILURE(DemuxFiles({GetParam()}, &frames));
 
-  DecodeFramesAndCheckHashes(&processor, &cdm_);
+  MediaProcessor processor(codec);
+  DecodeFramesAndCheckHashes(frames, &processor, &cdm_);
 }
 
 INSTANTIATE_TEST_CASE_P(SupportsNormalCase, MediaProcessorDecryptIntegration,

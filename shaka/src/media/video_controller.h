@@ -22,6 +22,7 @@
 
 #include "shaka/eme/configuration.h"
 #include "shaka/eme/implementation.h"
+#include "shaka/media/demuxer.h"
 #include "shaka/frame.h"
 #include "src/debug/mutex.h"
 #include "src/mapping/byte_buffer.h"
@@ -61,7 +62,7 @@ namespace media {
  * will also use this type.  This ensures that the MediaSource will remain
  * alive so long as there is either a reference to it or the video is playing.
  */
-class VideoController {
+class VideoController : Demuxer::Client {
  public:
   VideoController(std::function<void(SourceType, Status)> on_error,
                   std::function<void()> on_waiting_for_key,
@@ -69,7 +70,7 @@ class VideoController {
                       on_encrypted_init_data,
                   std::function<void(MediaReadyState)> on_ready_state_changed,
                   std::function<void(PipelineStatus)> on_pipeline_changed);
-  ~VideoController();
+  ~VideoController() override;
 
   //@{
   /** @return The pipeline manager for this video. */
@@ -134,14 +135,12 @@ class VideoController {
     Source(
         SourceType source_type,
         PipelineManager* pipeline,
-        const std::string& container,
+        Demuxer::Client* demuxer_client,
+        const std::string& mime, const std::string& container,
         const std::string& codecs, std::function<void()> on_waiting_for_key,
-        std::function<void(eme::MediaKeyInitDataType, const uint8_t*, size_t)>
-            on_encrypted_init_data,
         std::function<double()> get_time,
         std::function<double()> get_playback_rate,
-        std::function<void(Status)> on_error,
-        std::function<void()> on_load_meta);
+        std::function<void(Status)> on_error);
     ~Source();
     NON_COPYABLE_OR_MOVABLE_TYPE(Source);
 
@@ -160,12 +159,13 @@ class VideoController {
   }
 
   void OnSeek();
-  void OnLoadMeta(SourceType type);
   void OnError(SourceType type, Status error);
-  void OnEncryptedInitData(eme::MediaKeyInitDataType init_data_type,
-                           const uint8_t* data, size_t data_size);
   BufferedRanges GetDecodedRanges() const;
   double GetPlaybackRate() const;
+
+  void OnLoadedMetaData(double duration) override;
+  void OnEncrypted(eme::MediaKeyInitDataType init_data_type,
+                   const uint8_t* data, size_t data_size) override;
 
   mutable SharedMutex mutex_;
   std::unordered_map<SourceType, std::unique_ptr<Source>> sources_;
@@ -178,6 +178,7 @@ class VideoController {
   VideoPlaybackQuality quality_info_;
   eme::Implementation* cdm_;
   double volume_;
+  size_t init_count_;
 };
 
 }  // namespace media

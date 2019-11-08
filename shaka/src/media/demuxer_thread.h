@@ -17,7 +17,10 @@
 
 #include <atomic>
 #include <functional>
+#include <memory>
+#include <string>
 
+#include "shaka/media/demuxer.h"
 #include "src/debug/mutex.h"
 #include "src/debug/thread.h"
 #include "src/debug/thread_event.h"
@@ -28,13 +31,12 @@
 namespace shaka {
 namespace media {
 
-class MediaProcessor;
 class Stream;
 
 
 /**
  * Handles the thread that demuxes input content.  This handles synchronizing
- * the threads and connecting the demuxer part of MediaProcessor to the Stream.
+ * the threads and connecting the Demuxer to the Stream.
  *
  * All callbacks given to this object will be called on the event thread.
  */
@@ -42,11 +44,11 @@ class DemuxerThread {
  public:
   /**
    * Creates a new Demuxer instance that pushes to the given stream.
-   * @param on_load_meta A callback to be invoked once we have loaded metadata.
-   * @param processor The object that will process the input media.
+   * @param mime The full MIME type this will read from.
+   * @param client A client interface object for events.
    * @param stream The stream to push frames to.
    */
-  DemuxerThread(std::function<void()> on_load_meta, MediaProcessor* processor,
+  DemuxerThread(const std::string& mime, Demuxer::Client* client,
                 Stream* stream);
   ~DemuxerThread();
 
@@ -73,31 +75,23 @@ class DemuxerThread {
                   std::function<void(Status)> on_complete);
 
  private:
-  /**
-   * Called by the MediaProcessor to read data.  This should fill |*data| with
-   * the read data.
-   * @param data Where to put the data that was read.
-   * @param data_size The number of bytes in |data|.
-   * @return The number of bytes read, or 0 on EOF.
-   */
-  size_t OnRead(uint8_t* data, size_t data_size);
-  void OnResetRead();
   void ThreadMain();
   void CallOnComplete(Status status);
 
   Mutex mutex_;
+  std::unique_ptr<Demuxer> demuxer_;
   ThreadEvent<void> new_data_;
   std::function<void(Status)> on_complete_;
-  std::function<void()> on_load_meta_;
+  Demuxer::Client* client_;
+  std::string mime_;
   std::atomic<bool> shutdown_;
-  util::BufferReader input_;
-  const uint8_t* cur_data_;
-  size_t cur_size_;
+  const uint8_t* data_;
+  size_t data_size_;
+  double timestamp_offset_;
   double window_start_;
   double window_end_;
   bool need_key_frame_;
 
-  MediaProcessor* processor_;
   Stream* stream_;
 
   // Should be last so the thread starts after all the fields are initialized.
