@@ -74,6 +74,7 @@ def _CheckLicense(_):
   logging.info('Checking license headers for files...')
   ignore_files = [
       '.clang-format',
+      '.gitattributes',
       '.gitignore',
       '.gitmodules',
       'LICENSE',
@@ -83,6 +84,7 @@ def _CheckLicense(_):
       'shaka/js/shaka-player.compiled.debug.js',
   ]
   ignore_extensions = [
+      '.dat',
       '.json',
       '.md',
       '.mp4',
@@ -109,7 +111,7 @@ def _CheckLicense(_):
     with open(full_path, 'r') as f:
       text = f.read()
 
-    match = re.match('#!(/usr/bin/python|/bin/bash)\n', text)
+    match = re.match(r'#!(/usr/bin/python\d*|/bin/bash)\n', text)
     if match:
       text = text[match.end(0):]
 

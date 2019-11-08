@@ -1,5 +1,6 @@
 /core
 *.pyc
+*_pb2.py
 *~
 Makefile
 .DS_Store

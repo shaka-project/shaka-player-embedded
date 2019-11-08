@@ -1187,10 +1187,14 @@ if (is_ios) {
     visibility = [ ":*" ]
     sources = [
       "shaka/test/media/clear_high.mp4",
+      "shaka/test/media/clear_high.mp4.dat",
       "shaka/test/media/clear_low_frag_init.mp4",
+      "shaka/test/media/clear_low_frag_init.mp4.dat",
       "shaka/test/media/clear_low_frag_seg1.mp4",
+      "shaka/test/media/clear_low_frag_seg1.mp4.dat",
       "shaka/test/media/encrypted_key_rotation.mp4",
       "shaka/test/media/encrypted_low.mp4",
+      "shaka/test/media/encrypted_low.mp4.dat",
       "shaka/test/media/encrypted_low.webm",
       "shaka/test/media/encrypted_low_cbc1.mp4",
       "shaka/test/media/encrypted_low_cbcs.mp4",
@@ -1202,6 +1206,11 @@ if (is_ios) {
   }
 }
 
+proto_library("test_proto") {
+  visibility = [ ":*" ]
+  sources = [ "shaka/test/src/media/media_tests.proto" ]
+}
+
 test("tests") {
   sources = [
     "shaka/test/src/core/task_runner_unittest.cc",
@@ -1209,6 +1218,7 @@ test("tests") {
     "shaka/test/src/debug/integration.cc",
     "shaka/test/src/eme/clearkey_implementation_unittest.cc",
     "shaka/test/src/js/idb/sqlite_unittest.cc",
+    "shaka/test/src/media/demuxer_unittest.cc",
     "shaka/test/src/media/streams_unittest.cc",
     "shaka/test/src/media/media_processor_integration.cc",
     "shaka/test/src/media/media_utils_unittest.cc",
@@ -1244,6 +1254,7 @@ test("tests") {
     ":eme_plugin_files",
     ":gen_js_tests",
     ":internal_sources",
+    ":test_proto",
     # Because the tests use internal headers, it requires the protobuf.
     ":indexeddb-proto",
     "//testing/gmock:gmock",
