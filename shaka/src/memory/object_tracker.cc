@@ -53,15 +53,17 @@ void ObjectTracker::RemoveRef(const Traceable* object) {
   if (object) {
     std::unique_lock<Mutex> lock(mutex_);
     auto* key = const_cast<Traceable*>(object);  // NOLINT
-    DCHECK_EQ(objects_.count(key), 1u);
-    CHECK_GT(objects_[key], 0u);
-    objects_[key]--;
+    auto ref_count = objects_.find(key);
+    DCHECK(ref_count != objects_.end());
+    CHECK_GT(ref_count, 0u);
+    ref_count--;
 
     // Don't use IsShortLived() here since |object| may be an invalid pointer.
     // During Dispose(), objects may be destroyed with existing references to
     // them.  This means that |object| may be an invalid pointer.
-    if (last_alive_time_.count(key) > 0)
-      last_alive_time_[key] = util::Clock::Instance.GetMonotonicTime();
+    auto it = last_alive_time_.find(key);
+    if (it != last_alive_time_.end())
+      it->second = util::Clock::Instance.GetMonotonicTime();
   }
 }
 
@@ -70,8 +72,9 @@ std::unordered_set<const Traceable*> ObjectTracker::GetAliveObjects() const {
   std::unordered_set<const Traceable*> ret;
   ret.reserve(objects_.size() + 1);
   ret.insert(JsManagerImpl::InstanceOrNull());
+  const uint64_t now = util::Clock::Instance.GetMonotonicTime();
   for (auto& pair : objects_) {
-    if (pair.second != 0 || IsJsAlive(pair.first))
+    if (pair.second != 0 || IsJsAlive(pair.first, now))
       ret.insert(pair.first);
   }
   return ret;
@@ -82,12 +85,13 @@ void ObjectTracker::FreeDeadObjects(
   std::unique_lock<Mutex> lock(mutex_);
   std::unordered_set<Traceable*> to_delete;
   to_delete.reserve(objects_.size());
+  const uint64_t now = util::Clock::Instance.GetMonotonicTime();
   for (auto pair : objects_) {
     // |alive| also contains objects that have a non-zero ref count.  But we
     // need to check against our ref count also to ensure new objects that
     // are created while the GC is running are not deleted.
     if (pair.second == 0u && alive.count(pair.first) == 0 &&
-        !IsJsAlive(pair.first)) {
+        !IsJsAlive(pair.first, now)) {
       to_delete.insert(pair.first);
     }
   }
@@ -109,8 +113,7 @@ void ObjectTracker::UnregisterAllObjects() {
   objects_.clear();
 }
 
-bool ObjectTracker::IsJsAlive(Traceable* object) const {
-  const uint64_t now = util::Clock::Instance.GetMonotonicTime();
+bool ObjectTracker::IsJsAlive(Traceable* object, uint64_t now) const {
   if (object->IsShortLived()) {
     if (last_alive_time_.count(object) == 0)
       return false;
@@ -163,7 +166,7 @@ void ObjectTracker::DestroyObjects(
   // Don't remove elements from |objects_| until after the destructor so the
   // destructor can call AddRef.
   for (auto it = objects_.begin(); it != objects_.end();) {
-    if (to_delete_.count(it->first) > 0) {
+    if (to_delete_.find(it->first) != to_delete_.end()) {
       last_alive_time_.erase(it->first);
       it = objects_.erase(it);
     } else {

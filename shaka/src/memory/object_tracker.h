@@ -93,7 +93,7 @@ class ObjectTracker final : public PseudoSingleton<ObjectTracker> {
   void UnregisterAllObjects();
 
   /** @return Whether the given object is alive in JavaScript. */
-  bool IsJsAlive(Traceable* object) const;
+  bool IsJsAlive(Traceable* object, uint64_t now) const;
 
   /** @return The number of references to the given object. */
   uint32_t GetRefCount(Traceable* object) const;
