@@ -37,6 +37,7 @@ namespace js {
   DEFINE_EVENT(Seeking, "seeking")                       \
   DEFINE_EVENT(Ended, "ended")                           \
   DEFINE_EVENT(CueChange, "cuechange")                   \
+  DEFINE_EVENT(RateChange, "ratechange")                 \
   /* EME events. */                                      \
   DEFINE_EVENT(KeyStatusesChange, "keystatuseschange")   \
   DEFINE_EVENT(Message, "message")                       \

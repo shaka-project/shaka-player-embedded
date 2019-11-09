@@ -87,6 +87,9 @@ class HTMLVideoElement : public dom::Element {
   double Duration() const;
   double PlaybackRate() const;
   void SetPlaybackRate(double rate);
+  ExceptionOr<void> SetPlaybackRateHelper(double rate);
+  double DefaultPlaybackRate() const;
+  ExceptionOr<void> SetDefaultPlaybackRate(double default_playback_rate);
   bool Muted() const;
   void SetMuted(bool muted);
   double Volume() const;
@@ -109,6 +112,8 @@ class HTMLVideoElement : public dom::Element {
   media::PipelineStatus pipeline_status_;
   double volume_;
   bool will_play_;
+  double default_playback_rate_;
+  double playback_rate_;
   bool is_muted_;
   const util::Clock* const clock_;
   std::atomic<bool> shutdown_;

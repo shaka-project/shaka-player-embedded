@@ -34,6 +34,8 @@ HTMLVideoElement::HTMLVideoElement(RefPtr<dom::Document> document)
       pipeline_status_(media::PipelineStatus::Initializing),
       volume_(1),
       will_play_(false),
+      default_playback_rate_(1.0),
+      playback_rate_(default_playback_rate_),
       is_muted_(false),
       clock_(&util::Clock::Instance),
       shutdown_(false),
@@ -192,6 +194,7 @@ Promise HTMLVideoElement::SetMediaKeys(RefPtr<eme::MediaKeys> media_keys) {
 
 void HTMLVideoElement::Load() {
   error = nullptr;
+  SetPlaybackRate(default_playback_rate_);
   if (media_source_) {
     media_source_->CloseMediaSource();
     media_source_.reset();
@@ -274,20 +277,56 @@ double HTMLVideoElement::Duration() const {
 }
 
 double HTMLVideoElement::PlaybackRate() const {
-  if (!media_source_)
-    return 1;
-
-  return media_source_->GetController()
-      ->GetPipelineManager()
-      ->GetPlaybackRate();
+  return playback_rate_;
 }
 
 void HTMLVideoElement::SetPlaybackRate(double rate) {
+  SetPlaybackRateHelper(rate);
+}
+
+ExceptionOr<void> HTMLVideoElement::SetPlaybackRateHelper(double rate) {
+  if (std::isnan(rate) || !std::isfinite(rate)) {
+    return JsError::TypeError("The value provided is non-finite");
+  }
+
+  if (rate < 0) {
+    return JsError::DOMException(
+      NotSupportedError,
+      util::StringPrintf("The provided playback rate (%f) is not in the " \
+        "supported playback range.", rate));
+  }
+
+  playback_rate_ = rate;
+
   if (media_source_) {
-    return media_source_->GetController()
+    media_source_->GetController()
         ->GetPipelineManager()
         ->SetPlaybackRate(rate);
   }
+
+  ScheduleEvent<events::Event>(EventType::RateChange);
+
+  return {};
+}
+
+double HTMLVideoElement::DefaultPlaybackRate() const {
+  return default_playback_rate_;
+}
+
+ExceptionOr<void> HTMLVideoElement::SetDefaultPlaybackRate(double default_rate) {
+  if (std::isnan(default_rate) || !std::isfinite(default_rate)) {
+    return JsError::TypeError("The value provided is non-finite.");
+  }
+
+  if (default_rate < 0) {
+    return {};
+  }
+
+  default_playback_rate_ = default_rate;
+
+  ScheduleEvent<events::Event>(EventType::RateChange);
+
+  return {};
 }
 
 bool HTMLVideoElement::Muted() const {
@@ -380,7 +419,9 @@ HTMLVideoElementFactory::HTMLVideoElementFactory() {
                      &HTMLVideoElement::SetCurrentTime);
   AddGenericProperty("duration", &HTMLVideoElement::Duration);
   AddGenericProperty("playbackRate", &HTMLVideoElement::PlaybackRate,
-                     &HTMLVideoElement::SetPlaybackRate);
+                     &HTMLVideoElement::SetPlaybackRateHelper);
+  AddGenericProperty("defaultPlaybackRate", &HTMLVideoElement::DefaultPlaybackRate,
+                     &HTMLVideoElement::SetDefaultPlaybackRate);
 
   AddMemberFunction("load", &HTMLVideoElement::Load);
   AddMemberFunction("play", &HTMLVideoElement::Play);
@@ -395,7 +436,6 @@ HTMLVideoElementFactory::HTMLVideoElementFactory() {
   NotImplemented("networkState");
   NotImplemented("preload");
   NotImplemented("getStartDate");
-  NotImplemented("defaultPlaybackRate");
   NotImplemented("playable");
   NotImplemented("mediaGroup");
   NotImplemented("controller");
