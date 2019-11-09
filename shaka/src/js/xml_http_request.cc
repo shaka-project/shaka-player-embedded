@@ -324,19 +324,27 @@ void XMLHttpRequest::RaiseProgressEvents() {
 }
 
 void XMLHttpRequest::OnDataReceived(uint8_t* buffer, size_t length) {
-  std::unique_lock<Mutex> lock(mutex_);
+  bool raise_events = false;
 
-  // We need to schedule these events from this callback since we don't know
-  // when the last header will be received.
-  const uint64_t now = util::Clock::Instance.GetMonotonicTime();
-  if (!abort_pending_ && now - last_progress_time_ >= kProgressInterval) {
-    last_progress_time_ = now;
+  {
+    std::unique_lock<Mutex> lock(mutex_);
+
+    // We need to schedule these events from this callback since we don't know
+    // when the last header will be received.
+    const uint64_t now = util::Clock::Instance.GetMonotonicTime();
+    if (!abort_pending_ && now - last_progress_time_ >= kProgressInterval) {
+      last_progress_time_ = now;
+      raise_events = true;
+    }
+
+    temp_data_.AppendCopy(buffer, length);
+  }
+
+  if(raise_events) {
     JsManagerImpl::Instance()->MainThread()->AddInternalTask(
         TaskPriority::Internal, "Schedule XHR events",
         MemberCallbackTask(this, &XMLHttpRequest::RaiseProgressEvents));
   }
-
-  temp_data_.AppendCopy(buffer, length);
 }
 
 void XMLHttpRequest::OnHeaderReceived(const uint8_t* buffer, size_t length) {
