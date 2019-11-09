@@ -223,7 +223,7 @@ void MediaSource::OnWaitingForKey() {
 }
 
 void MediaSource::OnEncrypted(eme::MediaKeyInitDataType init_data_type,
-                              ByteBuffer init_data) {
+                              ByteBuffer& init_data) {
   if (video_element_) {
     video_element_->ScheduleEvent<events::MediaEncryptedEvent>(
         EventType::Encrypted, init_data_type, std::move(init_data));

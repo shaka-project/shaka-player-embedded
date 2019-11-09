@@ -65,7 +65,7 @@ class VideoController {
  public:
   VideoController(std::function<void(SourceType, Status)> on_error,
                   std::function<void()> on_waiting_for_key,
-                  std::function<void(eme::MediaKeyInitDataType, ByteBuffer)>
+                  std::function<void(eme::MediaKeyInitDataType, ByteBuffer&)>
                       on_encrypted_init_data,
                   std::function<void(MediaReadyState)> on_ready_state_changed,
                   std::function<void(PipelineStatus)> on_pipeline_changed);
@@ -171,7 +171,7 @@ class VideoController {
   std::unordered_map<SourceType, std::unique_ptr<Source>> sources_;
   std::function<void(SourceType, Status)> on_error_;
   std::function<void()> on_waiting_for_key_;
-  std::function<void(eme::MediaKeyInitDataType, ByteBuffer)>
+  std::function<void(eme::MediaKeyInitDataType, ByteBuffer&)>
       on_encrypted_init_data_;
   PipelineManager pipeline_;
   PipelineMonitor monitor_;

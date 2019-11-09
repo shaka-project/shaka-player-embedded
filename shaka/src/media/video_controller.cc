@@ -75,7 +75,7 @@ Renderer* CreateRenderer(SourceType source, std::function<double()> get_time,
 class EncryptedInitDataTask : public memory::Traceable {
  public:
   EncryptedInitDataTask(
-      std::function<void(eme::MediaKeyInitDataType, ByteBuffer)> cb,
+      std::function<void(eme::MediaKeyInitDataType, ByteBuffer&)> cb,
       eme::MediaKeyInitDataType type, ByteBuffer buffer)
       : cb_(cb), type_(type), buffer_(std::move(buffer)) {}
 
@@ -86,11 +86,11 @@ class EncryptedInitDataTask : public memory::Traceable {
   }
 
   void operator()() {
-    cb_(type_, std::move(buffer_));
+    cb_(type_, buffer_);
   }
 
  private:
-  const std::function<void(eme::MediaKeyInitDataType, ByteBuffer)> cb_;
+  const std::function<void(eme::MediaKeyInitDataType, ByteBuffer&)> cb_;
   const eme::MediaKeyInitDataType type_;
   ByteBuffer buffer_;
 };
@@ -100,7 +100,7 @@ class EncryptedInitDataTask : public memory::Traceable {
 VideoController::VideoController(
     std::function<void(SourceType, Status)> on_error,
     std::function<void()> on_waiting_for_key,
-    std::function<void(eme::MediaKeyInitDataType, ByteBuffer)>
+    std::function<void(eme::MediaKeyInitDataType, ByteBuffer&)>
         on_encrypted_init_data,
     std::function<void(MediaReadyState)> on_ready_state_changed,
     std::function<void(PipelineStatus)> on_pipeline_changed)

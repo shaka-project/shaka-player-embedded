@@ -92,7 +92,7 @@ class MediaSource : public events::EventTarget {
   void OnWaitingForKey();
   /** Called when we get new encrypted initialization data. */
   void OnEncrypted(shaka::eme::MediaKeyInitDataType init_data_type,
-                   ByteBuffer init_data);
+                   ByteBuffer& init_data);
 
   std::unordered_map<media::SourceType, Member<SourceBuffer>> source_buffers_;
   media::VideoController controller_;
