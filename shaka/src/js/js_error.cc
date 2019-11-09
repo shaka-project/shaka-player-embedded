@@ -122,7 +122,7 @@ JsError JsError::DOMException(ExceptionCode code) {
 }
 
 JsError JsError::DOMException(ExceptionCode code, const std::string& message) {
-  RefPtr<dom::DOMException> except = new dom::DOMException(code, message);
+  RefPtr<dom::DOMException> except = new dom::DOMException(message, code);
   FillStack(except);
   return JsError(except->JsThis());
 }
