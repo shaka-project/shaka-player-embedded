@@ -316,7 +316,8 @@ void HTMLVideoElement::SetVolume(double volume) {
 }
 
 bool HTMLVideoElement::Paused() const {
-  return pipeline_status_ == media::PipelineStatus::Paused ||
+  return pipeline_status_ == media::PipelineStatus::Initializing ||
+         pipeline_status_ == media::PipelineStatus::Paused ||
          pipeline_status_ == media::PipelineStatus::SeekingPause ||
          pipeline_status_ == media::PipelineStatus::Ended;
 }
