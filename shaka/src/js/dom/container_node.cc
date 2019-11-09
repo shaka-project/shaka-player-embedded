@@ -76,8 +76,8 @@ ExceptionOr<RefPtr<Element>> ContainerNode::QuerySelector(
 
 
 ContainerNodeFactory::ContainerNodeFactory() {
-  AddMemberFunction("getElementsByTagName", &Element::GetElementsByTagName);
-  AddMemberFunction("querySelector", &Element::QuerySelector);
+  AddMemberFunction("getElementsByTagName", &ContainerNode::GetElementsByTagName);
+  AddMemberFunction("querySelector", &ContainerNode::QuerySelector);
 
   NotImplemented("children");
   NotImplemented("firstElementChild");
