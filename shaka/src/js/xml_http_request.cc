@@ -158,7 +158,6 @@ XMLHttpRequest::~XMLHttpRequest() {
 void XMLHttpRequest::Trace(memory::HeapTracer* tracer) const {
   // No need to trace on_* members as EventTarget handles it.
   EventTarget::Trace(tracer);
-  std::unique_lock<Mutex> lock(mutex_);
   tracer->Trace(&response);
   tracer->Trace(&upload_data_);
 }

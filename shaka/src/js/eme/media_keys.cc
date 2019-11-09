@@ -50,9 +50,9 @@ MediaKeys::~MediaKeys() {
 // \endcond Doxygen_Skip
 
 void MediaKeys::Trace(memory::HeapTracer* tracer) const {
-  std::unique_lock<std::mutex> lock(mutex_);
-
   BackingObject::Trace(tracer);
+
+  std::unique_lock<std::mutex> lock(mutex_);
   tracer->Trace(&sessions_);
 }
 
