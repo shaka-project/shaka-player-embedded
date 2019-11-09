@@ -75,8 +75,8 @@ class PipelineManager {
   /** Pauses the video. */
   virtual void Pause();
 
-  /** Called when the video stalls due to lack of content. */
-  virtual void Stalled();
+  /** Called when the video is buffering content. */
+  virtual void Buffering();
 
   /** Called when the video has enough content to play forward. */
   virtual void CanPlay();

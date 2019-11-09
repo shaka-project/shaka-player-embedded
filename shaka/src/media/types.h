@@ -112,6 +112,10 @@ DEFINE_ENUM_AND_TO_STRING(SourceType, DEFINE_ENUM_);
 #define DEFINE_ENUM_(DEFINE)                                              \
   /** The pipeline is starting up. */                                     \
   DEFINE(Initializing)                                                    \
+  /** Playback of the media has been requested, but the pipline has not   \
+   * transitioned to playing yet.                                         \
+   */                                                                     \
+  DEFINE(PlayRequested)                                                   \
   /** The pipeline is playing media. */                                   \
   DEFINE(Playing)                                                         \
   /** The pipeline is paused (by user action). */                         \
@@ -125,11 +129,11 @@ DEFINE_ENUM_AND_TO_STRING(SourceType, DEFINE_ENUM_);
   /** Similar to SeekingPlay, but will remain paused. */                  \
   DEFINE(SeekingPause)                                                    \
   /**                                                                     \
-   * The pipeline is stalled waiting for new content.  This only happens  \
-   * when playing.  If the video is paused, it will be in Paused, even if \
-   * there is no content.                                                 \
+   * The pipeline is buffering while waiting for new content.  This only  \
+   * happens when playing.  If the video is paused, it will be in Paused, \
+   * even if there is no content.                                         \
    */                                                                     \
-  DEFINE(Stalled)                                                         \
+  DEFINE(Buffering)                                                       \
   /** The video has ended and the pipeline is waiting for user action. */ \
   DEFINE(Ended)                                                           \
   /** There was an error that has stopped the pipeline. */                \

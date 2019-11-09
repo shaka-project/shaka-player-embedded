@@ -84,7 +84,7 @@ void PipelineMonitor::ThreadMain() {
       // forward without the correct frames.
       pipeline_->CanPlay();
     } else {
-      pipeline_->Stalled();
+      pipeline_->Buffering();
     }
 
     if (pipeline_->GetPipelineStatus() == PipelineStatus::Initializing) {

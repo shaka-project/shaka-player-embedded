@@ -114,19 +114,21 @@ void HTMLVideoElement::OnPipelineStatusChanged(media::PipelineStatus status) {
       ScheduleEvent<events::Event>(EventType::Emptied);
       break;
     case media::PipelineStatus::Playing:
-      if (pipeline_status_ == media::PipelineStatus::Paused) {
+      if (pipeline_status_ == media::PipelineStatus::Paused ||
+          pipeline_status_ == media::PipelineStatus::PlayRequested) {
         ScheduleEvent<events::Event>(EventType::Play);
       } else if (pipeline_status_ == media::PipelineStatus::SeekingPlay) {
         ScheduleEvent<events::Event>(EventType::Seeked);
       } else {
-        DCHECK(pipeline_status_ == media::PipelineStatus::Stalled ||
+        DCHECK(pipeline_status_ == media::PipelineStatus::Buffering ||
                pipeline_status_ == media::PipelineStatus::Initializing);
       }
       ScheduleEvent<events::Event>(EventType::Playing);
       break;
     case media::PipelineStatus::Paused:
       if (pipeline_status_ == media::PipelineStatus::Playing ||
-          pipeline_status_ == media::PipelineStatus::Stalled) {
+          pipeline_status_ == media::PipelineStatus::PlayRequested ||
+          pipeline_status_ == media::PipelineStatus::Buffering) {
         ScheduleEvent<events::Event>(EventType::Pause);
       } else if (pipeline_status_ == media::PipelineStatus::SeekingPause) {
         ScheduleEvent<events::Event>(EventType::Seeked);

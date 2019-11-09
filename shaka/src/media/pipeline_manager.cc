@@ -47,7 +47,7 @@ void PipelineManager::DoneInitializing() {
       return;
     DCHECK_EQ(status_, PipelineStatus::Initializing);
     if (autoplay_) {
-      new_status = status_ = PipelineStatus::Stalled;
+      new_status = status_ = PipelineStatus::PlayRequested;
     } else {
       new_status = status_ = PipelineStatus::Paused;
     }
@@ -82,7 +82,8 @@ void PipelineManager::SetDuration(double duration) {
       prev_media_time_ = duration;
       prev_wall_time_ = wall_time;
       if (status_ == PipelineStatus::Playing ||
-          status_ == PipelineStatus::Stalled) {
+          status_ == PipelineStatus::PlayRequested ||
+          status_ == PipelineStatus::Buffering) {
         new_status = status_ = PipelineStatus::SeekingPlay;
       } else if (status_ == PipelineStatus::Paused ||
                  status_ == PipelineStatus::Ended) {
@@ -115,7 +116,8 @@ void PipelineManager::SetCurrentTime(double time) {
       prev_wall_time_ = clock_->GetMonotonicTime();
       switch (status_) {
         case PipelineStatus::Playing:
-        case PipelineStatus::Stalled:
+        case PipelineStatus::PlayRequested:
+        case PipelineStatus::Buffering:
         case PipelineStatus::SeekingPlay:
           new_status = status_ = PipelineStatus::SeekingPlay;
           break;
@@ -151,7 +153,7 @@ void PipelineManager::Play() {
     SyncPoint();
     if (status_ == PipelineStatus::Paused) {
       // Assume we are stalled; we will transition to Playing quickly if not.
-      new_status = status_ = PipelineStatus::Stalled;
+      new_status = status_ = PipelineStatus::PlayRequested;
     } else if (status_ == PipelineStatus::Ended) {
       {
         util::Unlocker<SharedMutex> unlock(&lock);
@@ -176,7 +178,8 @@ void PipelineManager::Pause() {
     std::unique_lock<SharedMutex> lock(mutex_);
     SyncPoint();
     if (status_ == PipelineStatus::Playing ||
-        status_ == PipelineStatus::Stalled) {
+        status_ == PipelineStatus::PlayRequested ||
+        status_ == PipelineStatus::Buffering) {
       new_status = status_ = PipelineStatus::Paused;
     } else if (status_ == PipelineStatus::SeekingPlay) {
       new_status = status_ = PipelineStatus::SeekingPause;
@@ -188,18 +191,18 @@ void PipelineManager::Pause() {
     on_status_changed_(new_status);
 }
 
-void PipelineManager::Stalled() {
+void PipelineManager::Buffering() {
   bool status_changed = false;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
     if (status_ == PipelineStatus::Playing) {
       SyncPoint();
-      status_ = PipelineStatus::Stalled;
+      status_ = PipelineStatus::Buffering;
       status_changed = true;
     }
   }
   if (status_changed)
-    on_status_changed_(PipelineStatus::Stalled);
+    on_status_changed_(PipelineStatus::Buffering);
 }
 
 void PipelineManager::CanPlay() {
@@ -207,7 +210,8 @@ void PipelineManager::CanPlay() {
   {
     std::unique_lock<SharedMutex> lock(mutex_);
     SyncPoint();
-    if (status_ == PipelineStatus::Stalled ||
+    if (status_ == PipelineStatus::PlayRequested ||
+        status_ == PipelineStatus::Buffering ||
         status_ == PipelineStatus::SeekingPlay) {
       new_status = status_ = PipelineStatus::Playing;
     } else if (status_ == PipelineStatus::SeekingPause) {
