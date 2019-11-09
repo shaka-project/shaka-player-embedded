@@ -16,6 +16,7 @@
 
 #include "src/js/dom/comment.h"
 #include "src/js/dom/element.h"
+#include "src/js/dom/attr.h"
 #include "src/js/dom/text.h"
 #include "src/js/mse/video_element.h"
 #include "src/memory/heap_tracer.h"
@@ -64,6 +65,14 @@ RefPtr<Element> Document::DocumentElement() const {
   return nullptr;
 }
 
+RefPtr<Attr> Document::CreateAttribute(const std::string& name) {
+  return new Attr(this, nullptr, util::ToAsciiLower(name), nullopt, nullopt, "");
+}
+
+RefPtr<Attr> Document::CreateAttributeNS(const std::string& namespace_uri, const std::string& name) {
+  return new Attr(this, nullptr, name, namespace_uri, nullopt, "");
+}
+
 RefPtr<Element> Document::CreateElement(const std::string& name) {
   if (name == "video") {
     // This should only be used in Shaka Player integration tests.
@@ -82,6 +91,8 @@ RefPtr<Text> Document::CreateTextNode(const std::string& data) {
 
 
 DocumentFactory::DocumentFactory() {
+  AddMemberFunction("createAttribute", &Document::createAttribute);
+  AddMemberFunction("createAttributeNS", &Document::createAttributeNS);
   AddMemberFunction("createElement", &Document::CreateElement);
   AddMemberFunction("createComment", &Document::CreateComment);
   AddMemberFunction("createTextNode", &Document::CreateTextNode);
@@ -97,8 +108,6 @@ DocumentFactory::DocumentFactory() {
   NotImplemented("createCDATASection");
   NotImplemented("createProcessingInstruction");
 
-  NotImplemented("createAttribute");
-  NotImplemented("createAttributeNS");
   NotImplemented("createRange");
   NotImplemented("createNodeIterator");
   NotImplemented("createTreeWalker");

@@ -24,6 +24,7 @@
 namespace shaka {
 namespace js {
 namespace dom {
+class Attr;
 class Comment;
 class Element;
 class Text;
@@ -59,6 +60,9 @@ class Document : public ContainerNode {
   optional<std::string> TextContent() const override;
 
   RefPtr<Element> DocumentElement() const;
+
+  RefPtr<Attr> CreateAttribute(const std::string& name);
+  RefPtr<Attr> CreateAttributeNS(const std::string& namespace_uri, const std::string& name);
 
   RefPtr<Element> CreateElement(const std::string& name);
   RefPtr<Comment> CreateComment(const std::string& data);

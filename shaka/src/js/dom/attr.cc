@@ -21,15 +21,27 @@ namespace shaka {
 namespace js {
 namespace dom {
 
-Attr::Attr(RefPtr<Element> owner, const std::string& local_name,
+Attr::Attr(RefPtr<Element> owner,
+           const std::string& local_name,
            optional<std::string> namespace_uri,
-           optional<std::string> namespace_prefix, const std::string& value)
-    : Node(ATTRIBUTE_NODE, owner->document()),
-      namespace_uri(namespace_uri),
+           optional<std::string> namespace_prefix,
+           const std::string& value)
+    : Attr(owner->document(), owner, local_name, namespace_uri, namespace_prefix, value) {}
+
+Attr::Attr(RefPtr<Document> document,
+           RefPtr<Element> owner,
+           const std::string& local_name,
+           optional<std::string> namespace_uri,
+           optional<std::string> namespace_prefix,
+           const std::string& value)
+    : Node(ATTRIBUTE_NODE, document),
+      namespace_uri(namespace_uri.has_value() && !namespace_uri.value.empty() ? namespace_uri : nullopt),
       namespace_prefix(namespace_prefix),
       local_name(local_name),
       value(value),
-      owner_element(owner) {}
+      owner_element(owner) {
+  DCHECK(!owner || owner->document() == document);
+}
 
 // \cond Doxygen_Skip
 Attr::~Attr() {}

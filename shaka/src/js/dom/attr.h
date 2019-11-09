@@ -33,7 +33,15 @@ class Attr final : public Node {
   DECLARE_TYPE_INFO(Attr);
 
  public:
-  Attr(RefPtr<Element> owner, const std::string& local_name,
+  Attr(RefPtr<Element> owner,
+       const std::string& local_name,
+       optional<std::string> namespace_uri,
+       optional<std::string> namespace_prefix,
+       const std::string& value);
+
+  Attr(RefPtr<Document> document,
+       RefPtr<Element> owner,
+       const std::string& local_name,
        optional<std::string> namespace_uri,
        optional<std::string> namespace_prefix,
        const std::string& value);
