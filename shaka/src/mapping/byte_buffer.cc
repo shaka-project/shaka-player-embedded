@@ -242,6 +242,7 @@ void ByteBuffer::Trace(memory::HeapTracer* tracer) const {
 }
 
 void ByteBuffer::ClearFields() {
+  buffer_.reset();
   ptr_ = nullptr;
   size_ = 0;
   own_ptr_ = false;
