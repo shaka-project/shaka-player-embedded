@@ -308,8 +308,7 @@ bool RunScript(const std::string& path);
  *
  * @param path The file path to the JavaScript file.  This is only used for
  *   logging.
- * @param data The contents of the file.  It must only contain ASCII and must
- *   live for the duration of the current isolate.
+ * @param data The contents of the file.
  * @param data_size The number of bytes in |data|.
  */
 bool RunScript(const std::string& path, const uint8_t* data, size_t data_size);
@@ -321,9 +320,11 @@ bool RunScript(const std::string& path, const uint8_t* data, size_t data_size);
  */
 ReturnVal<JsValue> ParseJsonString(const std::string& json);
 
-
 /** @return A new string object containing the given UTF-8 string. */
 ReturnVal<JsString> JsStringFromUtf8(const std::string& str);
+
+/** @return A new string object containing the given UTF-8 string in bytes. */
+ReturnVal<JsString> JsStringFromUtf8(const uint8_t* data, size_t size);
 
 /** @return The JavaScript value |undefined|. */
 ReturnVal<JsValue> JsUndefined();
