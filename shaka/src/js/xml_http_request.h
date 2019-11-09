@@ -83,6 +83,8 @@ class XMLHttpRequest : public events::EventTarget {
   ExceptionOr<void> Send(optional<variant<ByteBuffer, ByteString>> maybe_data);
   ExceptionOr<void> SetRequestHeader(const std::string& key,
                                      const std::string& value);
+  bool GetWithCredentials() const;
+  ExceptionOr<void> SetWithCredentials(bool with_credentials);
 
   /**
    * Called from a CURL callback when (part of) the body data is received.
@@ -116,7 +118,6 @@ class XMLHttpRequest : public events::EventTarget {
   int status;
   std::string status_text;
   uint64_t timeout_ms;  // JavaScript "timeout"
-  bool with_credentials;
 
  private:
   friend NetworkThread;
@@ -135,6 +136,7 @@ class XMLHttpRequest : public events::EventTarget {
 
   CURL* curl_;
   curl_slist* request_headers_;
+  bool with_credentials_;
   size_t upload_pos_;
   uint64_t last_progress_time_;
   double estimated_size_;

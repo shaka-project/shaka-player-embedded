@@ -129,7 +129,8 @@ XMLHttpRequest::XMLHttpRequest()
     : ready_state(XMLHttpRequest::ReadyState::Unsent),
       mutex_("XMLHttpRequest"),
       curl_(curl_easy_init()),
-      request_headers_(nullptr) {
+      request_headers_(nullptr),
+      with_credentials_(false) {
   AddListenerField(EventType::Abort, &on_abort);
   AddListenerField(EventType::Error, &on_error);
   AddListenerField(EventType::Load, &on_load);
@@ -301,6 +302,23 @@ ExceptionOr<void> XMLHttpRequest::SetRequestHeader(const std::string& key,
   return {};
 }
 
+bool XMLHttpRequest::WithCredentials() const {
+  return with_credentials_;
+}
+
+ExceptionOr<void> XMLHttpRequest::SetWithCredentials(bool with_credentials) {
+  if (ready_state != XMLHttpRequest::ReadyState::Unsent &&
+      ready_state != XMLHttpRequest::ReadyState::Opened) {
+    return JsError::DOMException(
+      InvalidStateError,
+      "The value may only be set if the object's state is UNSENT or OPENED.");
+  }
+
+  with_credentials_ = with_credentials;
+
+  return {};
+}
+
 void XMLHttpRequest::RaiseProgressEvents() {
   if (abort_pending_)
     return;
@@ -416,7 +434,6 @@ void XMLHttpRequest::Reset() {
   status = 0;
   status_text = "";
   timeout_ms = 0;
-  with_credentials = false;
 
   last_progress_time_ = 0;
   estimated_size_ = 0;
@@ -513,7 +530,7 @@ XMLHttpRequestFactory::XMLHttpRequestFactory() {
   AddReadOnlyProperty("status", &XMLHttpRequest::status);
   AddReadOnlyProperty("statusText", &XMLHttpRequest::status_text);
   AddReadWriteProperty("timeout", &XMLHttpRequest::timeout_ms);
-  AddReadOnlyProperty("withCredentials", &XMLHttpRequest::with_credentials);
+  AddGenericProperty("withCredentials", &XMLHttpRequest::GetWithCredentials, &XMLHttpRequest::SetWithCredentials);
 
   AddListenerField(EventType::Abort, &XMLHttpRequest::on_abort);
   AddListenerField(EventType::Error, &XMLHttpRequest::on_error);
