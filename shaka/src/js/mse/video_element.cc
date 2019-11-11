@@ -135,13 +135,8 @@ void HTMLVideoElement::OnPipelineStatusChanged(media::PipelineStatus status) {
       }
       break;
     case media::PipelineStatus::Stalled:
-      if (pipeline_status_ == media::PipelineStatus::Playing)
-        ScheduleEvent<events::Event>(EventType::Pause);
       break;
     case media::PipelineStatus::SeekingPlay:
-      if (pipeline_status_ == media::PipelineStatus::Playing)
-        ScheduleEvent<events::Event>(EventType::Pause);
-      FALL_THROUGH_INTENDED;
     case media::PipelineStatus::SeekingPause:
       ScheduleEvent<events::Event>(EventType::Seeking);
       break;
