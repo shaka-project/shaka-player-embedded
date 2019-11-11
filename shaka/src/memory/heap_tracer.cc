@@ -41,28 +41,8 @@ void HeapTracer::ForceAlive(const Traceable* ptr) {
 }
 
 void HeapTracer::Trace(const Traceable* ptr) {
-  std::unordered_set<const Traceable*> to_trace;
-  {
-    std::unique_lock<Mutex> lock(mutex_);
-    to_trace = std::move(pending_);
-    to_trace.insert(ptr);
-    DCHECK(pending_.empty());
-
-    // We need to be careful about circular dependencies.  It should not
-    // happen, but we do not want to get into an infinite loop.  Only
-    // traverse if we have not seen it before.
-    for (auto it = to_trace.begin(); it != to_trace.end();) {
-      if (*it && alive_.count(*it) == 0) {
-        alive_.insert(*it);
-        ++it;
-      } else {
-        it = to_trace.erase(it);
-      }
-    }
-  }
-
-  for (const Traceable* item : to_trace)
-    item->Trace(this);
+  std::unique_lock<Mutex> lock(mutex_);
+  pending_.insert(ptr);
 }
 
 void HeapTracer::BeginPass() {
@@ -70,9 +50,36 @@ void HeapTracer::BeginPass() {
 }
 
 void HeapTracer::TraceCommon(
-    const std::unordered_set<const Traceable*> ref_alive) {
-  for (const Traceable* ptr : ref_alive) {
-    Trace(ptr);
+    const std::unordered_set<const Traceable*>& ref_alive) {
+  {
+    std::unique_lock<Mutex> lock(mutex_);
+    pending_.insert(ref_alive.begin(), ref_alive.end());
+  }
+
+  while (true) {
+    std::unordered_set<const Traceable*> to_trace;
+
+    {
+      std::unique_lock<Mutex> lock(mutex_);
+      to_trace = std::move(pending_);
+
+      // We need to be careful about circular dependencies.  Only traverse if we
+      // have not seen it before.
+      for (auto it = to_trace.begin(); it != to_trace.end();) {
+        if (*it && alive_.count(*it) == 0) {
+          alive_.insert(*it);
+          ++it;
+        } else {
+          it = to_trace.erase(it);
+        }
+      }
+    }
+
+    if (to_trace.empty())
+      break;
+    for (const Traceable* ptr : to_trace) {
+      ptr->Trace(this);
+    }
   }
 }
 

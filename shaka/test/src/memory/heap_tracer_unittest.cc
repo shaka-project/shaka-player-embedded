@@ -82,8 +82,8 @@ class HeapTracerTest : public testing::Test {
                  Traceable* root) {
     HeapTracer* tracer = tracker.heap_tracer();
     tracer->BeginPass();
-    tracer->TraceCommon(ref_alive);
     tracer->Trace(root);
+    tracer->TraceCommon(ref_alive);
   }
 
   ObjectTracker::UnsetForTesting unset_;

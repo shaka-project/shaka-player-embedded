@@ -263,9 +263,9 @@ TEST(TaskRunnerTest, TracesPendingEvents) {
   TaskRunner runner([](TaskRunner::RunLoop loop) { loop(); }, &clock, true);
   runner.AddTimer(5, MockTask(&watcher));
   util::Clock::Instance.SleepSeconds(0.001);
-  runner.Trace(&tracer);
+  tracer.TraceCommon({&runner});
   util::Clock::Instance.SleepSeconds(0.001);
-  runner.Trace(&tracer);
+  tracer.TraceCommon({&runner});
   util::Clock::Instance.SleepSeconds(0.001);
   runner.Stop();
 }

@@ -61,10 +61,10 @@ bool V8HeapTracer::AdvanceTracing(double /* deadline_ms */,
   VLOG(2) << "GC run step";
   util::Clock clock;
   const uint64_t start = clock.GetMonotonicTime();
-  heap_tracer_->TraceCommon(object_tracker_->GetAliveObjects());
   for (auto& pair : fields_) {
     heap_tracer_->Trace(reinterpret_cast<BackingObject*>(pair.first));
   }
+  heap_tracer_->TraceCommon(object_tracker_->GetAliveObjects());
 
   VLOG(2) << "Tracing " << heap_tracer_->alive().size() << " objects took "
           << ((clock.GetMonotonicTime() - start) / 1000.0) << " seconds";

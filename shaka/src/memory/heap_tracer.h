@@ -151,7 +151,7 @@ class HeapTracer {
    * Traces common objects, including the given ref-counted alive objects.  This
    * MUST be called at least once each GC pass.
    */
-  void TraceCommon(const std::unordered_set<const Traceable*> ref_alive);
+  void TraceCommon(const std::unordered_set<const Traceable*>& ref_alive);
 
   /** Resets the stored state. */
   void ResetState();
