@@ -58,12 +58,12 @@ class XMLHttpRequest : public events::EventTarget {
   DECLARE_TYPE_INFO(XMLHttpRequest);
 
  public:
-  enum ReadyState {
-    UNSENT = 0,
-    OPENED = 1,
-    HEADERS_RECEIVED = 2,
-    LOADING = 3,
-    DONE = 4,
+  enum class ReadyState {
+    Unsent = 0,
+    Opened = 1,
+    HeadersReceived = 2,
+    Loading = 3,
+    Done = 4,
   };
 
   XMLHttpRequest();
@@ -108,7 +108,7 @@ class XMLHttpRequest : public events::EventTarget {
   Listener on_timeout;
   Listener on_load_end;
 
-  int ready_state;
+  ReadyState ready_state;
   ByteBuffer response;
   std::string response_text;
   std::string response_type;
@@ -150,5 +150,7 @@ class XMLHttpRequestFactory
 
 }  // namespace js
 }  // namespace shaka
+
+CONVERT_ENUM_AS_NUMBER(shaka::js, XMLHttpRequest::ReadyState);
 
 #endif  // SHAKA_EMBEDDED_JS_XML_HTTP_REQUEST_H_

@@ -126,7 +126,7 @@ bool ParseStatusLine(const char* buffer, size_t length, int* code,
 }  // namespace
 
 XMLHttpRequest::XMLHttpRequest()
-    : ready_state(UNSENT),
+    : ready_state(XMLHttpRequest::ReadyState::Unsent),
       mutex_("XMLHttpRequest"),
       curl_(curl_easy_init()),
       request_headers_(nullptr) {
@@ -175,9 +175,9 @@ void XMLHttpRequest::Abort() {
   JsManagerImpl::Instance()->NetworkThread()->AbortRequest(this);
 
   std::unique_lock<Mutex> lock(mutex_);
-  if (ready_state != DONE) {
+  if (ready_state != XMLHttpRequest::ReadyState::Done) {
     // Fire events synchronously.
-    ready_state = DONE;
+    ready_state = XMLHttpRequest::ReadyState::Done;
     RaiseEvent<events::Event>(EventType::ReadyStateChange);
 
     double total_size = CurrentDownloadSize(curl_);
@@ -190,7 +190,7 @@ void XMLHttpRequest::Abort() {
 
   // The spec says at the end to change the ready state without firing an event.
   // https://xhr.spec.whatwg.org/#the-abort()-method
-  ready_state = UNSENT;
+  ready_state = XMLHttpRequest::ReadyState::Unsent;
 }
 
 std::string XMLHttpRequest::GetAllResponseHeaders() const {
@@ -226,7 +226,7 @@ ExceptionOr<void> XMLHttpRequest::Open(const std::string& method,
   Reset();
 
   std::unique_lock<Mutex> lock(mutex_);
-  this->ready_state = OPENED;
+  this->ready_state = XMLHttpRequest::ReadyState::Opened;
   ScheduleEvent<events::Event>(EventType::ReadyStateChange);
 
   curl_easy_setopt(curl_, CURLOPT_URL, url.c_str());
@@ -251,7 +251,7 @@ ExceptionOr<void> XMLHttpRequest::Send(
   {
     std::unique_lock<Mutex> lock(mutex_);
     // If we are not open, or if the request has already been sent.
-    if (ready_state != OPENED || contains_request) {
+    if (ready_state != XMLHttpRequest::ReadyState::Opened || contains_request) {
       return JsError::DOMException(InvalidStateError,
                                    "The object's state must be OPENED.");
     }
@@ -292,7 +292,7 @@ ExceptionOr<void> XMLHttpRequest::Send(
 ExceptionOr<void> XMLHttpRequest::SetRequestHeader(const std::string& key,
                                                    const std::string& value) {
   std::unique_lock<Mutex> lock(mutex_);
-  if (ready_state != OPENED) {
+  if (ready_state != XMLHttpRequest::ReadyState::Opened) {
     return JsError::DOMException(InvalidStateError,
                                  "The object's state must be OPENED.");
   }
@@ -305,12 +305,12 @@ void XMLHttpRequest::RaiseProgressEvents() {
   if (abort_pending_)
     return;
 
-  if (ready_state == OPENED) {
-    this->ready_state = HEADERS_RECEIVED;
+  if (ready_state == XMLHttpRequest::ReadyState::Opened) {
+    this->ready_state = XMLHttpRequest::ReadyState::HeadersReceived;
     RaiseEvent<events::Event>(EventType::ReadyStateChange);
   }
-  if (ready_state != LOADING) {
-    this->ready_state = LOADING;
+  if (ready_state != XMLHttpRequest::ReadyState::Loading) {
+    this->ready_state = XMLHttpRequest::ReadyState::Loading;
     RaiseEvent<events::Event>(EventType::ReadyStateChange);
   }
 
@@ -474,7 +474,7 @@ void XMLHttpRequest::OnRequestComplete(CURLcode code) {
   // Don't schedule events if we are aborted, they will be called within
   // Abort().
   if (!abort_pending_) {
-    this->ready_state = DONE;
+    this->ready_state = XMLHttpRequest::ReadyState::Done;
     ScheduleEvent<events::Event>(EventType::ReadyStateChange);
 
     double total_size = CurrentDownloadSize(curl_);
@@ -499,6 +499,12 @@ void XMLHttpRequest::OnRequestComplete(CURLcode code) {
 
 
 XMLHttpRequestFactory::XMLHttpRequestFactory() {
+  AddConstant("UNSENT", XMLHttpRequest::ReadyState::Unsent);
+  AddConstant("OPENED", XMLHttpRequest::ReadyState::Opened);
+  AddConstant("HEADERS_RECEIVED", XMLHttpRequest::ReadyState::HeadersReceived);
+  AddConstant("LOADING", XMLHttpRequest::ReadyState::Loading);
+  AddConstant("DONE", XMLHttpRequest::ReadyState::Done);
+
   AddReadOnlyProperty("readyState", &XMLHttpRequest::ready_state);
   AddReadOnlyProperty("response", &XMLHttpRequest::response);
   AddReadOnlyProperty("responseText", &XMLHttpRequest::response_text);
