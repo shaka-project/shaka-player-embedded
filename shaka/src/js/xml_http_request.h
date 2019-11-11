@@ -28,6 +28,7 @@
 #include "src/mapping/backing_object_factory.h"
 #include "src/mapping/byte_buffer.h"
 #include "src/mapping/byte_string.h"
+#include "src/mapping/enum.h"
 #include "src/mapping/exception_or.h"
 #include "src/util/dynamic_buffer.h"
 
