@@ -53,8 +53,6 @@ class JsManagerImpl : public memory::Traceable,
   std::string GetPathForStaticFile(const std::string& file) const;
   std::string GetPathForDynamicFile(const std::string& file) const;
 
-  void Run();
-
   void Stop() {
     event_loop_.Stop();
   }
