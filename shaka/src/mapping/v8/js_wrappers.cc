@@ -249,7 +249,7 @@ bool RunScript(const std::string& path) {
 }
 
 bool RunScript(const std::string& path, const uint8_t* data, size_t data_size) {
-  v8::Local<v8::String> source = MakeExternalString(data, data_size);
+  v8::Local<v8::String> source = JsStringFromUtf8(data, data_size);
   return RunScriptImpl(path, source);
 }
 
@@ -271,6 +271,12 @@ ReturnVal<JsString> JsStringFromUtf8(const std::string& str) {
   // and may be common, Chromium has a v8AtomicString method for this.
   return v8::String::NewFromUtf8(GetIsolate(), str.c_str(),
                                  v8::NewStringType::kNormal, str.size())
+      .ToLocalChecked();
+}
+
+ReturnVal<JsString> JsStringFromUtf8(const uint8_t* data, size_t size) {
+  return v8::String::NewFromUtf8(GetIsolate(), reinterpret_cast<const char*>(data),
+                                 v8::NewStringType::kNormal, size)
       .ToLocalChecked();
 }
 

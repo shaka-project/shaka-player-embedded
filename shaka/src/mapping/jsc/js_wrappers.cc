@@ -246,9 +246,7 @@ bool RunScript(const std::string& path) {
 }
 
 bool RunScript(const std::string& path, const uint8_t* data, size_t size) {
-  const std::vector<uint16_t> data_utf16(data, data + size);
-  LocalVar<JsString> code =
-      JSStringCreateWithCharacters(data_utf16.data(), data_utf16.size());
+  LocalVar<JsString> code = JsStringFromUtf8(data, size);
   LocalVar<JsString> source = JsStringFromUtf8(path);
 
   JSValueRef except = nullptr;
@@ -265,6 +263,12 @@ ReturnVal<JsValue> ParseJsonString(const std::string& json) {
   return JSValueMakeFromJSONString(GetContext(), input);
 }
 
+ReturnVal<JsString> JsStringFromUtf8(const uint8_t* data, size_t size) {
+  util::CFRef<CFStringRef> cf_str(CFStringCreateWithBytes(
+      nullptr, data, size,
+      kCFStringEncodingUTF8, false));
+  return JSStringCreateWithCFString(cf_str);
+}
 
 ReturnVal<JsString> JsStringFromUtf8(const std::string& str) {
   util::CFRef<CFStringRef> cf_str(CFStringCreateWithBytes(
