@@ -15,16 +15,16 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "src/media/media_processor.h"
-
 extern "C" {
 #include <libavutil/imgutils.h>
 }
 
+#include "shaka/media/decoder.h"
 #include "shaka/media/demuxer.h"
 #include "shaka/media/frames.h"
 #include "src/eme/clearkey_implementation.h"
 #include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
+#include "src/media/ffmpeg/ffmpeg_decoder.h"
 #include "src/media/frame_converter.h"
 #include "src/media/media_utils.h"
 #include "src/test/media_files.h"
@@ -85,17 +85,18 @@ void DemuxFiles(const std::vector<std::string>& paths,
 
 void DecodeFramesAndCheckHashes(
     const std::vector<std::shared_ptr<EncodedFrame>>& input_frames,
-    MediaProcessor* processor, eme::Implementation* cdm) {
+    Decoder* decoder, eme::Implementation* cdm) {
   FrameConverter converter;
   std::string results;
   // Run this loop one extra time to pass "nullptr" to flush the last frames.
   for (size_t i = 0; i <= input_frames.size(); i++) {
     auto frame = i < input_frames.size() ? input_frames[i] : nullptr;
     std::vector<std::shared_ptr<DecodedFrame>> decoded_frames;
-    ASSERT_EQ(processor->DecodeFrame(0, frame, cdm, &decoded_frames),
-              Status::Success);
+    ASSERT_EQ(decoder->Decode(frame, cdm, &decoded_frames),
+              MediaStatus::Success);
 
     for (auto& decoded : decoded_frames) {
+      // TODO(modmaker): Avoid using FFmpeg-specific classes.
       auto* cast_frame =
           static_cast<ffmpeg::FFmpegDecodedFrame*>(decoded.get());
       const uint8_t* const* data = cast_frame->data.data();
@@ -115,9 +116,13 @@ void DecodeFramesAndCheckHashes(
   EXPECT_EQ(results, std::string(expected.begin(), expected.end()));
 }
 
+std::unique_ptr<Decoder> MakeDecoder() {
+  return std::unique_ptr<Decoder>(new ffmpeg::FFmpegDecoder);
+}
+
 }  // namespace
 
-class MediaProcessorIntegration : public testing::Test {
+class DecoderIntegration : public testing::Test {
  protected:
   void LoadKeyForTesting(eme::ClearKeyImplementation* clear_key,
                          const std::vector<uint8_t>& key_id,
@@ -126,22 +131,20 @@ class MediaProcessorIntegration : public testing::Test {
   }
 };
 
-TEST_F(MediaProcessorIntegration, CanDecodeFrames) {
+TEST_F(DecoderIntegration, CanDecodeFrames) {
   std::vector<std::shared_ptr<EncodedFrame>> frames;
   ASSERT_NO_FATAL_FAILURE(DemuxFiles({kMp4LowInit, kMp4LowSeg}, &frames));
 
-  MediaProcessor::Initialize();
-  MediaProcessor processor("avc1.42c01e");
-  DecodeFramesAndCheckHashes(frames, &processor, nullptr);
+  auto decoder = MakeDecoder();
+  DecodeFramesAndCheckHashes(frames, decoder.get(), nullptr);
 }
 
-TEST_F(MediaProcessorIntegration, CanDecodeWithAdaptation) {
+TEST_F(DecoderIntegration, CanDecodeWithAdaptation) {
   std::vector<std::shared_ptr<EncodedFrame>> frames;
   ASSERT_NO_FATAL_FAILURE(
       DemuxFiles({kMp4LowInit, kMp4LowSeg, kMp4High}, &frames));
 
-  MediaProcessor::Initialize();
-  MediaProcessor processor("avc1.42c01e");
+  auto decoder = MakeDecoder();
 
   bool saw_first_stream = false;
   bool saw_second_stream = false;
@@ -156,8 +159,8 @@ TEST_F(MediaProcessorIntegration, CanDecodeWithAdaptation) {
     }
 
     std::vector<std::shared_ptr<DecodedFrame>> decoded_frames;
-    ASSERT_EQ(processor.DecodeFrame(0, frame, nullptr, &decoded_frames),
-              Status::Success);
+    ASSERT_EQ(decoder->Decode(frame, nullptr, &decoded_frames),
+              MediaStatus::Success);
   }
 
   EXPECT_TRUE(saw_first_stream);
@@ -165,10 +168,9 @@ TEST_F(MediaProcessorIntegration, CanDecodeWithAdaptation) {
 }
 
 
-class MediaProcessorDecryptIntegration
-    : public testing::TestWithParam<const char*> {
+class DecoderDecryptIntegration : public testing::TestWithParam<const char*> {
  protected:
-  MediaProcessorDecryptIntegration() : cdm_(nullptr) {
+  DecoderDecryptIntegration() : cdm_(nullptr) {
     cdm_.LoadKeyForTesting({0xab, 0xba, 0x27, 0x1e, 0x8b, 0xcf, 0x55, 0x2b,
                             0xbd, 0x2e, 0x86, 0xa4, 0x34, 0xa9, 0xa5, 0xd9},
                            {0x69, 0xea, 0xa8, 0x02, 0xa6, 0x76, 0x3a, 0xf9,
@@ -178,8 +180,7 @@ class MediaProcessorDecryptIntegration
   eme::ClearKeyImplementation cdm_;
 };
 
-TEST_P(MediaProcessorDecryptIntegration, CanDecryptFrames) {
-  MediaProcessor::Initialize();
+TEST_P(DecoderDecryptIntegration, CanDecryptFrames) {
   const std::string container = EndsWith(GetParam(), ".webm") ? "webm" : "mp4";
   const std::string codec =
       EndsWith(GetParam(), ".webm") ? "vp9" : "avc1.42c01e";
@@ -191,15 +192,15 @@ TEST_P(MediaProcessorDecryptIntegration, CanDecryptFrames) {
   std::vector<std::shared_ptr<EncodedFrame>> frames;
   ASSERT_NO_FATAL_FAILURE(DemuxFiles({GetParam()}, &frames));
 
-  MediaProcessor processor(codec);
-  DecodeFramesAndCheckHashes(frames, &processor, &cdm_);
+  auto decoder = MakeDecoder();
+  DecodeFramesAndCheckHashes(frames, decoder.get(), &cdm_);
 }
 
-INSTANTIATE_TEST_CASE_P(SupportsNormalCase, MediaProcessorDecryptIntegration,
+INSTANTIATE_TEST_CASE_P(SupportsNormalCase, DecoderDecryptIntegration,
                         testing::Values("encrypted_low.mp4",
                                         "encrypted_low.webm"));
 
-INSTANTIATE_TEST_CASE_P(SupportsUnusualCases, MediaProcessorDecryptIntegration,
+INSTANTIATE_TEST_CASE_P(SupportsUnusualCases, DecoderDecryptIntegration,
                         testing::Values("encrypted_low_cenc.mp4",
                                         "encrypted_low_cens.mp4",
                                         "encrypted_low_cbc1.mp4",

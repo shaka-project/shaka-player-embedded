@@ -29,7 +29,6 @@
 #include "src/mapping/struct.h"
 #include "src/media/decoder_thread.h"
 #include "src/media/demuxer_thread.h"
-#include "src/media/media_processor.h"
 #include "src/media/media_utils.h"
 #include "src/media/pipeline_manager.h"
 #include "src/media/pipeline_monitor.h"
@@ -136,8 +135,7 @@ class VideoController : Demuxer::Client {
         SourceType source_type,
         PipelineManager* pipeline,
         Demuxer::Client* demuxer_client,
-        const std::string& mime, const std::string& container,
-        const std::string& codecs, std::function<void()> on_waiting_for_key,
+        const std::string& mime, std::function<void()> on_waiting_for_key,
         std::function<double()> get_time,
         std::function<double()> get_playback_rate,
         std::function<void(Status)> on_error);
@@ -146,7 +144,6 @@ class VideoController : Demuxer::Client {
 
     void OnSeekDone();
 
-    MediaProcessor processor;
     Stream stream;
     DecoderThread decoder;
     DemuxerThread demuxer;

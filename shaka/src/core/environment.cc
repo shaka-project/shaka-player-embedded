@@ -67,7 +67,6 @@
 #include "src/mapping/js_engine.h"
 #include "src/mapping/js_wrappers.h"
 #include "src/mapping/register_member.h"
-#include "src/media/media_processor.h"
 
 namespace shaka {
 
@@ -158,8 +157,6 @@ void Environment::Install() {
   RegisterDefaultKeySystems();
 
   impl_.reset(new Impl);
-
-  media::MediaProcessor::Initialize();
 
   JsEngine* engine = JsEngine::Instance();
   LocalVar<JsValue> window(engine->global_value());

@@ -191,7 +191,7 @@ Status VideoController::AddSource(const std::string& mime_type,
     return Status::NotAllowed;
 
   std::unique_ptr<Source> source(
-      new Source(*source_type, &pipeline_, this, mime_type, container, codec,
+      new Source(*source_type, &pipeline_, this, mime_type,
                  MainThreadCallback(on_waiting_for_key_),
                  std::bind(&PipelineManager::GetCurrentTime, &pipeline_),
                  std::bind(&VideoController::GetPlaybackRate, this),
@@ -305,7 +305,6 @@ void VideoController::DebugDumpStats() const {
 void VideoController::OnSeek() {
   util::shared_lock<SharedMutex> lock(mutex_);
   for (auto& pair : sources_) {
-    // No need to reset |processor| since that is done by the decoder.
     pair.second->decoder.OnSeek();
     if (pair.second->renderer)
       pair.second->renderer->OnSeek();
@@ -361,17 +360,17 @@ double VideoController::GetPlaybackRate() const {
 }
 
 
-VideoController::Source::Source(
-    SourceType source_type, PipelineManager* pipeline,
-    Demuxer::Client* demuxer_client, const std::string& mime,
-    const std::string& container, const std::string& codecs,
-    std::function<void()> on_waiting_for_key, std::function<double()> get_time,
-    std::function<double()> get_playback_rate,
-    std::function<void(Status)> on_error)
-    : processor(codecs),
-      decoder(get_time, std::bind(&VideoController::Source::OnSeekDone, this),
-              std::move(on_waiting_for_key), std::move(on_error), &processor,
-              pipeline, &stream),
+VideoController::Source::Source(SourceType source_type,
+                                PipelineManager* pipeline,
+                                Demuxer::Client* demuxer_client,
+                                const std::string& mime,
+                                std::function<void()> on_waiting_for_key,
+                                std::function<double()> get_time,
+                                std::function<double()> get_playback_rate,
+                                std::function<void(Status)> on_error)
+    : decoder(get_time, std::bind(&VideoController::Source::OnSeekDone, this),
+              std::move(on_waiting_for_key), std::move(on_error), pipeline,
+              &stream),
       demuxer(mime, demuxer_client, &stream),
       renderer(CreateRenderer(source_type, get_time,
                               std::move(get_playback_rate), &stream)),

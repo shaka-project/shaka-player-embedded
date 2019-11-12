@@ -29,8 +29,8 @@
 namespace shaka {
 
 namespace media {
-class MediaProcessorIntegration;
-class MediaProcessorDecryptIntegration;
+class DecoderIntegration;
+class DecoderDecryptIntegration;
 }  // namespace media
 
 namespace eme {
@@ -95,8 +95,8 @@ class ClearKeyImplementation final : public Implementation {
   };
 
   friend class ClearKeyImplementationTest;
-  friend class media::MediaProcessorIntegration;
-  friend class media::MediaProcessorDecryptIntegration;
+  friend class media::DecoderIntegration;
+  friend class media::DecoderDecryptIntegration;
 
   void LoadKeyForTesting(std::vector<uint8_t> key_id, std::vector<uint8_t> key);
 

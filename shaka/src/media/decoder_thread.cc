@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-#include "src/media/media_processor.h"
+#include "src/media/ffmpeg/ffmpeg_decoder.h"
 #include "src/media/pipeline_manager.h"
 #include "src/media/stream.h"
 
@@ -37,11 +37,10 @@ DecoderThread::DecoderThread(std::function<double()> get_time,
                              std::function<void()> seek_done,
                              std::function<void()> on_waiting_for_key,
                              std::function<void(Status)> on_error,
-                             MediaProcessor* processor,
                              PipelineManager* pipeline, Stream* stream)
-    : processor_(processor),
-      pipeline_(pipeline),
+    : pipeline_(pipeline),
       stream_(stream),
+      decoder_(new ffmpeg::FFmpegDecoder),
       get_time_(std::move(get_time)),
       seek_done_(std::move(seek_done)),
       on_waiting_for_key_(std::move(on_waiting_for_key)),
@@ -52,8 +51,7 @@ DecoderThread::DecoderThread(std::function<double()> get_time,
       did_flush_(false),
       last_frame_time_(NAN),
       raised_waiting_event_(false),
-      thread_(processor->codec() + " decoder",
-              std::bind(&DecoderThread::ThreadMain, this)) {}
+      thread_("Decoder", std::bind(&DecoderThread::ThreadMain, this)) {}
 
 DecoderThread::~DecoderThread() {
   CHECK(!thread_.joinable()) << "Need to call Stop() before destroying";
@@ -81,7 +79,7 @@ void DecoderThread::ThreadMain() {
 
     std::shared_ptr<EncodedFrame> frame;
     if (std::isnan(last_time)) {
-      processor_->ResetDecoder();
+      decoder_->ResetDecoder();
       frame = stream_->GetDemuxedFrames()->GetFrame(
           cur_time, FrameLocation::KeyFrameBefore);
     } else {
@@ -108,9 +106,8 @@ void DecoderThread::ThreadMain() {
 
     std::vector<std::shared_ptr<DecodedFrame>> decoded;
     eme::Implementation* cdm = cdm_.load(std::memory_order_acquire);
-    const Status decode_status =
-        processor_->DecodeFrame(cur_time, frame, cdm, &decoded);
-    if (decode_status == Status::KeyNotFound) {
+    const MediaStatus decode_status = decoder_->Decode(frame, cdm, &decoded);
+    if (decode_status == MediaStatus::KeyNotFound) {
       // If we don't have the required key, signal the <video> and wait.
       if (!raised_waiting_event_) {
         raised_waiting_event_ = true;
@@ -119,8 +116,8 @@ void DecoderThread::ThreadMain() {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       continue;
     }
-    if (decode_status != Status::Success) {
-      on_error_(decode_status);
+    if (decode_status != MediaStatus::Success) {
+      on_error_(Status::UnknownError);
       break;
     }
 

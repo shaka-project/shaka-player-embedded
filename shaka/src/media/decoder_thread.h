@@ -17,7 +17,9 @@
 
 #include <atomic>
 #include <functional>
+#include <memory>
 
+#include "shaka/media/decoder.h"
 #include "src/debug/thread.h"
 #include "src/media/types.h"
 #include "src/util/macros.h"
@@ -30,14 +32,13 @@ class Implementation;
 
 namespace media {
 
-class MediaProcessor;
 class PipelineManager;
 class Stream;
 
 
 /**
  * Handles the thread that decodes input content.  This handles synchronizing
- * the threads and connecting the decoder part of MediaProcessor to the Stream.
+ * the threads and connecting the Decoder to the Stream.
  */
 class DecoderThread {
  public:
@@ -48,7 +49,6 @@ class DecoderThread {
    * @param on_waiting_for_key A callback for when the decoder is waiting for
    *   an encryption key.
    * @param on_error A callback for when there is a decoder error.
-   * @param processor The processor that will process the media.
    * @param pipeline The pipeline that is used to determine the range of media.
    * @param stream The stream to pull frames from.
    */
@@ -56,7 +56,6 @@ class DecoderThread {
                 std::function<void()> seek_done,
                 std::function<void()> on_waiting_for_key,
                 std::function<void(Status)> on_error,
-                MediaProcessor* processor,
                 PipelineManager* pipeline,
                 Stream* stream);
   ~DecoderThread();
@@ -77,9 +76,9 @@ class DecoderThread {
  private:
   void ThreadMain();
 
-  MediaProcessor* processor_;
   PipelineManager* pipeline_;
   Stream* stream_;
+  std::unique_ptr<Decoder> decoder_;
 
   std::function<double()> get_time_;
   std::function<void()> seek_done_;
