@@ -31,6 +31,7 @@ HTMLVideoElement::HTMLVideoElement(RefPtr<dom::Document> document)
       ready_state(media::HAVE_NOTHING),
       autoplay(false),
       loop(false),
+      default_muted(false),
       pipeline_status_(media::PipelineStatus::Initializing),
       volume_(1),
       will_play_(false),
@@ -192,6 +193,7 @@ Promise HTMLVideoElement::SetMediaKeys(RefPtr<eme::MediaKeys> media_keys) {
 
 void HTMLVideoElement::Load() {
   error = nullptr;
+  SetMuted(default_muted);
   if (media_source_) {
     media_source_->CloseMediaSource();
     media_source_.reset();
@@ -305,9 +307,23 @@ double HTMLVideoElement::Volume() const {
 }
 
 void HTMLVideoElement::SetVolume(double volume) {
+  SetVolumeHelper(volume);
+}
+
+ExceptionOr<void> HTMLVideoElement::SetVolumeHelper(double volume) {
+  if (volume < 0 || volume > 1) {
+    return JsError::DOMException(
+      IndexSizeError,
+      util::StringPrintf(
+        "The volume provided (%f) is outside the range [0, 1].",
+        volume));
+  }
+
   volume_ = volume;
   if (media_source_)
     media_source_->GetController()->SetVolume(is_muted_ ? 0 : volume_);
+
+  return {};
 }
 
 bool HTMLVideoElement::Paused() const {
@@ -363,6 +379,7 @@ HTMLVideoElementFactory::HTMLVideoElementFactory() {
 
   AddReadWriteProperty("autoplay", &HTMLVideoElement::autoplay);
   AddReadWriteProperty("loop", &HTMLVideoElement::loop);
+  AddReadWriteProperty("defaultMuted", &HTMLVideoElement::default_muted);
   AddReadOnlyProperty("mediaKeys", &HTMLVideoElement::media_keys);
   AddReadOnlyProperty("readyState", &HTMLVideoElement::ready_state);
   AddReadOnlyProperty("textTracks", &HTMLVideoElement::text_tracks);
@@ -381,6 +398,10 @@ HTMLVideoElementFactory::HTMLVideoElementFactory() {
   AddGenericProperty("duration", &HTMLVideoElement::Duration);
   AddGenericProperty("playbackRate", &HTMLVideoElement::PlaybackRate,
                      &HTMLVideoElement::SetPlaybackRate);
+  AddGenericProperty("volume", &HTMLVideoElement::Volume,
+                               &HTMLVideoElement::SetVolumeHelper);
+  AddGenericProperty("muted", &HTMLVideoElement::Muted,
+                              &HTMLVideoElement::SetMuted);
 
   AddMemberFunction("load", &HTMLVideoElement::Load);
   AddMemberFunction("play", &HTMLVideoElement::Play);
@@ -400,9 +421,6 @@ HTMLVideoElementFactory::HTMLVideoElementFactory() {
   NotImplemented("mediaGroup");
   NotImplemented("controller");
   NotImplemented("controls");
-  NotImplemented("volume");
-  NotImplemented("muted");
-  NotImplemented("defaultMuted");
   NotImplemented("audioTracks");
   NotImplemented("videoTracks");
 }

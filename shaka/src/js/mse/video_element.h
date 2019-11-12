@@ -74,6 +74,7 @@ class HTMLVideoElement : public dom::Element {
   media::MediaReadyState ready_state;
   bool autoplay;
   bool loop;
+  bool default_muted;
   std::vector<Member<TextTrack>> text_tracks;
   RefPtr<MediaError> error;
 
@@ -91,6 +92,7 @@ class HTMLVideoElement : public dom::Element {
   void SetMuted(bool muted);
   double Volume() const;
   void SetVolume(double volume);
+  ExceptionOr<void> SetVolumeHelper(double volume);
 
   bool Paused() const;
   bool Seeking() const;
