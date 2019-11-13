@@ -37,15 +37,15 @@ VideoRenderer::VideoRenderer(std::function<double()> get_time, Stream* stream)
     : mutex_("VideoRenderer"),
       stream_(stream),
       get_time_(std::move(get_time)),
-      drawer_(new FrameDrawer),
       prev_time_(-1),
       is_seeking_(false) {}
 
 VideoRenderer::~VideoRenderer() {}
 
 
-Frame VideoRenderer::DrawFrame(int* dropped_frame_count, bool* is_new_frame,
-                               double* delay) {
+std::shared_ptr<DecodedFrame> VideoRenderer::DrawFrame(int* dropped_frame_count,
+                                                       bool* is_new_frame,
+                                                       double* delay) {
   std::unique_lock<Mutex> lock(mutex_);
 
   // Discard any old frames, except when seeking.
@@ -64,7 +64,7 @@ Frame VideoRenderer::DrawFrame(int* dropped_frame_count, bool* is_new_frame,
                                                   FrameLocation::Near)
           : stream_->GetDecodedFrames()->GetFrame(time, FrameLocation::Near);
   if (!ideal_frame)
-    return Frame();
+    return nullptr;
 
   // TODO: Consider changing effective playback rate to speed up video when
   // behind.  This makes playback smoother at the cost of being more complicated
@@ -83,7 +83,7 @@ Frame VideoRenderer::DrawFrame(int* dropped_frame_count, bool* is_new_frame,
     }
     prev_time_ = ideal_frame->pts;
   }
-  return drawer_->DrawFrame(ideal_frame.get());
+  return ideal_frame;
 }
 
 void VideoRenderer::OnSeek() {
@@ -102,11 +102,6 @@ void VideoRenderer::OnSeekDone() {
   const double time = get_time_();
   stream_->GetDecodedFrames()->Remove(0, time - 1);
   stream_->GetDecodedFrames()->Remove(time + 1, HUGE_VAL);
-}
-
-void VideoRenderer::SetDrawerForTesting(std::unique_ptr<FrameDrawer> drawer) {
-  std::unique_lock<Mutex> lock(mutex_);
-  swap(drawer_, drawer);
 }
 
 }  // namespace media

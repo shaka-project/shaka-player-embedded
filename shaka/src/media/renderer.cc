@@ -17,9 +17,10 @@
 namespace shaka {
 namespace media {
 
-Frame Renderer::DrawFrame(int* /* dropped_frame_count */,
-                          bool* /* is_new_frame */, double* /* delay */) {
-  return Frame();
+std::shared_ptr<DecodedFrame> Renderer::DrawFrame(
+    int* /* dropped_frame_count */, bool* /* is_new_frame */,
+    double* /* delay */) {
+  return nullptr;
 }
 
 void Renderer::OnSeek() {}

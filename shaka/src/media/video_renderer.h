@@ -19,7 +19,6 @@
 #include <memory>
 
 #include "src/debug/mutex.h"
-#include "src/media/frame_drawer.h"
 #include "src/media/renderer.h"
 #include "src/util/macros.h"
 
@@ -38,19 +37,16 @@ class VideoRenderer : public Renderer {
 
   NON_COPYABLE_OR_MOVABLE_TYPE(VideoRenderer);
 
-  Frame DrawFrame(int* dropped_frame_count, bool* is_new_frame,
-                  double* delay) override;
+  std::shared_ptr<DecodedFrame> DrawFrame(int* dropped_frame_count,
+                                          bool* is_new_frame,
+                                          double* delay) override;
   void OnSeek() override;
   void OnSeekDone() override;
 
  private:
-  void SetDrawerForTesting(std::unique_ptr<FrameDrawer> drawer);
-  friend class VideoRendererTest;
-
   Mutex mutex_;
   Stream* const stream_;
   const std::function<double()> get_time_;
-  std::unique_ptr<FrameDrawer> drawer_;
   double prev_time_;
   bool is_seeking_;
 };

@@ -85,11 +85,11 @@ void Video::Initialize(Client* client) {
       ->GetValue();
 }
 
-Frame Video::DrawFrame(double* delay) {
+std::shared_ptr<media::DecodedFrame> Video::DrawFrame(double* delay) {
   DCHECK(impl_->inner) << "Must call Initialize.";
   RefPtr<js::mse::MediaSource> source = impl_->inner->GetMediaSource();
   if (!source)
-    return Frame();
+    return nullptr;
   return source->GetController()->DrawFrame(delay);
 }
 

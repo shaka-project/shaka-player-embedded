@@ -52,7 +52,7 @@ size_t GetPlaneCount(variant<PixelFormat, SampleFormat> format,
       case PixelFormat::NV12:
         return 2;
       case PixelFormat::RGB24:
-      case PixelFormat::VIDEO_TOOLBOX:
+      case PixelFormat::VideoToolbox:
         return 1;
 
       default:

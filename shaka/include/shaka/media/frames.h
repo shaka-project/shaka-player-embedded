@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "../eme/implementation.h"
-#include "../frame.h"  // TODO(modmaker): Merge this file into here.
 #include "../macros.h"
 #include "../variant.h"
 #include "stream_info.h"
@@ -41,6 +40,62 @@ enum class MediaStatus : uint8_t {
    * continue if the same frame was given again when the key is added.
    */
   KeyNotFound,
+};
+
+/**
+ * Defines possible binary formats of raw texture data.
+ *
+ * @ingroup media
+ */
+enum class PixelFormat : uint8_t {
+  Unknown,
+
+  /**
+   * Planar YUV 4:2:0, 12bpp.  This is FFmpeg's AV_PIX_FMT_YUV420P.
+   *
+   * The first plane holds the Y values for each pixel; each pixel has one byte.
+   * The second and third planes hold U and V data respectively.  Each byte
+   * in the row represents a 2x2 pixel region on the image.  This means that
+   * the second and third planes have half as many bytes in each row.
+   */
+  YUV420P,
+
+  /**
+   * Planar YUV 4:2:0, 12bpp, using interleaved U/V components.  This is
+   * FFmpeg's AV_PIX_FMT_NV12.
+   *
+   * The first plane holds Y values for each pixel, as a single byte.  The
+   * second plane holds interleaved U/V components.  Each byte is alternating
+   * U/V data where each pair represent a 2x2 pixel region on the image.
+   */
+  NV12,
+
+  /**
+   * Packed RGB 8:8:8, 24bpp.  This is FFmpeg's AV_PIX_FMT_RGB24.
+   *
+   * There is only one plane holding the data.  Each pixel is represented by
+   * three bytes for R-G-B.
+   */
+  RGB24,
+
+
+  /**
+   * A VideoToolbox hardware encoded frame.  @a data[0] will contain a
+   * CVPixelBufferRef object containing the texture.
+   */
+  VideoToolbox,
+
+  /**
+   * Apps can define custom pixel formats and use any values above 128.  This
+   * library doesn't care about the PixelFormat outside of the Decoder and the
+   * VideoRenderer.
+   */
+  //{
+  AppFormat1 = 128,
+  AppFormat2 = 129,
+  AppFormat3 = 130,
+  AppFormat4 = 131,
+  //}
 };
 
 /**

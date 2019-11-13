@@ -41,7 +41,7 @@ bool MapFrameFormat(bool is_video, AVFrame* frame,
         return true;
 
       case AV_PIX_FMT_VIDEOTOOLBOX:
-        *format = PixelFormat::VIDEO_TOOLBOX;
+        *format = PixelFormat::VideoToolbox;
         return true;
 
       default:
@@ -126,7 +126,7 @@ FFmpegDecodedFrame* FFmpegDecodedFrame::CreateFrame(bool is_video,
 
   std::vector<const uint8_t*> data;
   std::vector<size_t> linesize;
-  if (is_video && get<PixelFormat>(format) == PixelFormat::VIDEO_TOOLBOX) {
+  if (is_video && get<PixelFormat>(format) == PixelFormat::VideoToolbox) {
     data.emplace_back(frame->data[3]);
     linesize.emplace_back(0);
   } else {

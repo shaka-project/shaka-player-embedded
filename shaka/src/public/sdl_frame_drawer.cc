@@ -46,35 +46,20 @@ struct TextureInfo {
 };
 
 
-Uint32 SdlPixelFormatFromPublic(PixelFormat format) {
-  switch (format) {
+Uint32 SdlPixelFormatFromPublic(
+    variant<media::PixelFormat, media::SampleFormat> format) {
+  switch (get<media::PixelFormat>(format)) {
 #if SDL_VERSION_ATLEAST(2, 0, 4)
-    case PixelFormat::NV12:
+    case media::PixelFormat::NV12:
       return SDL_PIXELFORMAT_NV12;
 #endif
-    case PixelFormat::YUV420P:
+    case media::PixelFormat::YUV420P:
       return SDL_PIXELFORMAT_IYUV;
-    case PixelFormat::RGB24:
+    case media::PixelFormat::RGB24:
       return SDL_PIXELFORMAT_RGB24;
 
     default:
       return SDL_PIXELFORMAT_UNKNOWN;
-  }
-}
-
-PixelFormat PublicPixelFormatFromSdl(Uint32 format) {
-  switch (format) {
-#if SDL_VERSION_ATLEAST(2, 0, 4)
-    case SDL_PIXELFORMAT_NV12:
-      return PixelFormat::NV12;
-#endif
-    case SDL_PIXELFORMAT_IYUV:
-      return PixelFormat::YUV420P;
-    case SDL_PIXELFORMAT_RGB24:
-      return PixelFormat::RGB24;
-
-    default:
-      return PixelFormat::Unknown;
   }
 }
 
@@ -102,20 +87,17 @@ class SdlFrameDrawer::Impl {
     }
   }
 
-  SDL_Texture* Draw(Frame* frame) {
-    if (!frame || !frame->valid())
+  SDL_Texture* Draw(std::shared_ptr<media::DecodedFrame> frame) {
+    if (!frame)
       return nullptr;
 
-    auto sdl_pix_fmt = SdlPixelFormatFromPublic(frame->pixel_format());
+    auto sdl_pix_fmt = SdlPixelFormatFromPublic(frame->format);
     if (sdl_pix_fmt == SDL_PIXELFORMAT_UNKNOWN ||
         texture_formats_.count(sdl_pix_fmt) == 0) {
-      if (!Convert(frame))
-        return nullptr;
-      sdl_pix_fmt = SdlPixelFormatFromPublic(frame->pixel_format());
+      return nullptr;
     }
 
-    SDL_Texture* texture =
-        GetTexture(sdl_pix_fmt, frame->width(), frame->height());
+    SDL_Texture* texture = GetTexture(sdl_pix_fmt, frame->width, frame->height);
     if (!texture)
       return nullptr;
 
@@ -126,13 +108,11 @@ class SdlFrameDrawer::Impl {
   }
 
  private:
-  bool DrawOntoTexture(Frame* frame, SDL_Texture* texture, Uint32 sdl_pix_fmt) {
-    const uint8_t* const* frame_data = frame->data();
-    const int* frame_linesize = frame->linesize();
+  bool DrawOntoTexture(std::shared_ptr<media::DecodedFrame> frame,
+                       SDL_Texture* texture, Uint32 sdl_pix_fmt) {
+    const uint8_t* const* frame_data = frame->data.data();
+    const size_t* frame_linesize = frame->linesize.data();
 
-    // TODO: It is possible for linesize values to be negative.  Handle this
-    // case: https://www.ffmpeg.org/doxygen/trunk/ffplay_8c_source.html#l00905
-    DCHECK_GE(frame_linesize[0], 0);
     if (sdl_pix_fmt == SDL_PIXELFORMAT_IYUV) {
       if (SDL_UpdateYUVTexture(
               texture, nullptr, frame_data[0], frame_linesize[0], frame_data[1],
@@ -151,23 +131,23 @@ class SdlFrameDrawer::Impl {
         return false;
       }
 
-      if (pitch == frame_linesize[0]) {
+      if (static_cast<size_t>(pitch) == frame_linesize[0]) {
         // TODO: Sometimes there is a green bar at the bottom.
-        const size_t size0 = pitch * frame->height();
+        const size_t size0 = pitch * frame->height;
         memcpy(pixels, frame_data[0], size0);
         memcpy(pixels + size0, frame_data[1], size0 / 2);
       } else {
         // FFmpeg may add padding to the rows, so we need to drop it by manually
         // copying each line.
         DCHECK_GE(frame_linesize[0], pitch);
-        const int min_width = std::min(pitch, frame_linesize[0]);
-        for (uint32_t row = 0; row < frame->height(); row++) {
+        const int min_width = std::min<size_t>(pitch, frame_linesize[0]);
+        for (uint32_t row = 0; row < frame->height; row++) {
           uint8_t* dest = pixels + pitch * row;
           const uint8_t* src = frame_data[0] + frame_linesize[0] * row;
           memcpy(dest, src, min_width);
         }
-        for (uint32_t row = 0; row < frame->height() / 2; row++) {
-          uint8_t* dest = pixels + pitch * (row + frame->height());
+        for (uint32_t row = 0; row < frame->height / 2; row++) {
+          uint8_t* dest = pixels + pitch * (row + frame->height);
           const uint8_t* src = frame_data[1] + frame_linesize[1] * row;
           memcpy(dest, src, min_width);
         }
@@ -184,15 +164,6 @@ class SdlFrameDrawer::Impl {
     }
 
     return true;
-  }
-
-  bool Convert(Frame* frame) {
-    for (Uint32 sdl_fmt : texture_formats_) {
-      auto public_fmt = PublicPixelFormatFromSdl(sdl_fmt);
-      if (public_fmt != PixelFormat::Unknown && frame->ConvertTo(public_fmt))
-        return true;
-    }
-    return false;
   }
 
   SDL_Texture* GetTexture(Uint32 pixel_format, int width, int height) {
@@ -240,7 +211,7 @@ void SdlFrameDrawer::SetRenderer(SDL_Renderer* renderer) {
   impl_->SetRenderer(renderer);
 }
 
-SDL_Texture* SdlFrameDrawer::Draw(Frame* frame) {
+SDL_Texture* SdlFrameDrawer::Draw(std::shared_ptr<media::DecodedFrame> frame) {
   return impl_->Draw(frame);
 }
 

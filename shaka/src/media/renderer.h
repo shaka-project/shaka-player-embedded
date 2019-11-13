@@ -15,7 +15,9 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_RENDERER_H_
 #define SHAKA_EMBEDDED_MEDIA_RENDERER_H_
 
-#include "shaka/frame.h"
+#include <memory>
+
+#include "shaka/media/frames.h"
 
 namespace shaka {
 namespace media {
@@ -40,8 +42,9 @@ class Renderer {
    * @param delay [OUT] Optional, will contain the delay, in seconds, until the
    *   next frame should be drawn.
    */
-  virtual Frame DrawFrame(int* dropped_frame_count, bool* is_new_frame,
-                          double* delay);
+  virtual std::shared_ptr<DecodedFrame> DrawFrame(int* dropped_frame_count,
+                                                  bool* is_new_frame,
+                                                  double* delay);
 
   /** Called when the video seeks. */
   virtual void OnSeek();

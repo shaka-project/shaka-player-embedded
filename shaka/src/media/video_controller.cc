@@ -138,15 +138,15 @@ void VideoController::SetVolume(double volume) {
     static_cast<AudioRenderer*>(source->renderer.get())->SetVolume(volume);
 }
 
-Frame VideoController::DrawFrame(double* delay) {
+std::shared_ptr<DecodedFrame> VideoController::DrawFrame(double* delay) {
   std::unique_lock<SharedMutex> lock(mutex_);
   Source* source = GetSource(SourceType::Video);
   if (!source || !source->renderer)
-    return Frame();
+    return nullptr;
 
   int dropped_frame_count = 0;
   bool is_new_frame = false;
-  Frame ret =
+  auto ret =
       source->renderer->DrawFrame(&dropped_frame_count, &is_new_frame, delay);
   quality_info_.droppedVideoFrames += dropped_frame_count;
   quality_info_.totalVideoFrames += dropped_frame_count;

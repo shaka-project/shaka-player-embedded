@@ -19,6 +19,7 @@
 
 #include <functional>
 
+#include "shaka/media/frames.h"
 #include "src/debug/mutex.h"
 #include "src/debug/thread.h"
 #include "src/debug/thread_event.h"
@@ -30,10 +31,6 @@ struct SwrContext;
 
 namespace shaka {
 namespace media {
-
-namespace ffmpeg {
-class FFmpegDecodedFrame;
-}  // namespace ffmpeg
 
 /**
  * Defines a renderer that draws audio frames to the audio device.
@@ -56,7 +53,7 @@ class AudioRenderer : public Renderer {
 
  private:
   void ThreadMain();
-  bool InitDevice(const ffmpeg::FFmpegDecodedFrame* frame);
+  bool InitDevice(const DecodedFrame* frame);
 
   static void OnAudioCallback(void*, uint8_t*, int);
   void AudioCallback(uint8_t* data, int size);

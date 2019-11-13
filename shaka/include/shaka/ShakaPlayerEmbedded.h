@@ -33,7 +33,6 @@
 #ifdef __cplusplus
 #  include "async_results.h"
 #  include "error.h"
-#  include "frame.h"
 #  include "js_manager.h"
 #  include "manifest.h"
 #  include "offline_externs.h"
@@ -60,6 +59,7 @@
 #  include "media/decoder.h"
 #  include "media/default_media_player.h"
 #  include "media/demuxer.h"
+#  include "media/ffmpeg_utils.h"
 #  include "media/frames.h"
 #  include "media/media_capabilities.h"
 #  include "media/media_player.h"

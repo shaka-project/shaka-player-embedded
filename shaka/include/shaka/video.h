@@ -19,9 +19,9 @@
 
 #include <memory>
 
-#include "frame.h"
 #include "js_manager.h"
 #include "macros.h"
+#include "media/frames.h"
 #include "shaka_config.h"
 #include "text_track.h"
 
@@ -119,7 +119,7 @@ class SHAKA_EXPORT Video final {
    * @return The texture holding the video frame, or an invalid frame if nothing
    *   is ready.
    */
-  Frame DrawFrame(double* delay);
+  std::shared_ptr<media::DecodedFrame> DrawFrame(double* delay);
 
 
   /** @return The duration of the video, or 0 if nothing is loaded. */

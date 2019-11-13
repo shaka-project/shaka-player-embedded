@@ -23,7 +23,7 @@
 #include "shaka/eme/configuration.h"
 #include "shaka/eme/implementation.h"
 #include "shaka/media/demuxer.h"
-#include "shaka/frame.h"
+#include "shaka/media/frames.h"
 #include "src/debug/mutex.h"
 #include "src/mapping/byte_buffer.h"
 #include "src/mapping/struct.h"
@@ -86,7 +86,7 @@ class VideoController : Demuxer::Client {
   void SetVolume(double volume);
 
   /** Draws the current video frame onto a texture and returns it. */
-  Frame DrawFrame(double* delay);
+  std::shared_ptr<DecodedFrame> DrawFrame(double* delay);
   /** Sets the CDM implementation used to decrypt media. */
   void SetCdm(eme::Implementation* cdm);
 

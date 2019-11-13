@@ -168,10 +168,10 @@ class DemoApp : shaka::Player::Client {
 
       double delay = 1.0 / 60;
       auto frame = video_.DrawFrame(&delay);
-      SDL_Texture* texture = drawer_.Draw(&frame);
+      SDL_Texture* texture = drawer_.Draw(frame);
       if (texture) {
-        const int video_width = frame.width();
-        const int video_height = frame.height();
+        const int video_width = frame->width;
+        const int video_height = frame->height;
 
         int win_width, win_height;
         SDL_GetWindowSize(window_, &win_width, &win_height);

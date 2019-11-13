@@ -19,7 +19,7 @@
 
 #include <memory>
 
-#include "frame.h"
+#include "media/frames.h"
 #include "macros.h"
 
 namespace shaka {
@@ -55,7 +55,7 @@ class SHAKA_EXPORT SdlFrameDrawer final {
    * @param frame The frame to draw.
    * @return The created texture, or nullptr on error.
    */
-  SDL_Texture* Draw(Frame* frame);
+  SDL_Texture* Draw(std::shared_ptr<media::DecodedFrame> frame);
 
  private:
   class Impl;

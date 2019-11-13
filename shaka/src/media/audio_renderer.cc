@@ -23,7 +23,6 @@ extern "C" {
 #include <algorithm>
 #include <utility>
 
-#include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
 #include "src/util/clock.h"
 #include "src/util/utils.h"
 
@@ -142,6 +141,41 @@ int64_t GetChannelLayout(int num_channels) {
   }
 }
 
+int GetFFmpegFormat(variant<PixelFormat, SampleFormat> format) {
+  switch (get<SampleFormat>(format)) {
+    case SampleFormat::PackedU8:
+      return AV_SAMPLE_FMT_U8;
+    case SampleFormat::PackedS16:
+      return AV_SAMPLE_FMT_S16;
+    case SampleFormat::PackedS32:
+      return AV_SAMPLE_FMT_S32;
+    case SampleFormat::PackedS64:
+      return AV_SAMPLE_FMT_S64;
+    case SampleFormat::PackedFloat:
+      return AV_SAMPLE_FMT_FLT;
+    case SampleFormat::PackedDouble:
+      return AV_SAMPLE_FMT_DBL;
+
+    case SampleFormat::PlanarU8:
+      return AV_SAMPLE_FMT_U8P;
+    case SampleFormat::PlanarS16:
+      return AV_SAMPLE_FMT_S16P;
+    case SampleFormat::PlanarS32:
+      return AV_SAMPLE_FMT_S32P;
+    case SampleFormat::PlanarS64:
+      return AV_SAMPLE_FMT_S64P;
+    case SampleFormat::PlanarFloat:
+      return AV_SAMPLE_FMT_FLTP;
+    case SampleFormat::PlanarDouble:
+      return AV_SAMPLE_FMT_DBLP;
+
+    default:
+      LOG(DFATAL) << "Unknown audio sample format: "
+                  << static_cast<int>(get<SampleFormat>(format));
+      return AV_SAMPLE_FMT_NONE;
+  }
+}
+
 }  // namespace
 
 AudioRenderer::AudioRenderer(std::function<double()> get_time,
@@ -209,18 +243,15 @@ void AudioRenderer::ThreadMain() {
       }
 
       cur_time_ = get_time_();
-      auto base_frame = stream_->GetDecodedFrames()->GetFrame(
-          cur_time_, FrameLocation::After);
-      if (!base_frame) {
+      auto frame = stream_->GetDecodedFrames()->GetFrame(cur_time_,
+                                                         FrameLocation::After);
+      if (!frame) {
         util::Unlocker<Mutex> unlock(&lock);
         util::Clock::Instance.SleepSeconds(0.01);
         continue;
       }
 
-      auto* frame =
-          static_cast<const ffmpeg::FFmpegDecodedFrame*>(base_frame.get());
-
-      if (!InitDevice(frame))
+      if (!InitDevice(frame.get()))
         return;
 
       SDL_PauseAudioDevice(audio_device_, 0);
@@ -231,7 +262,7 @@ void AudioRenderer::ThreadMain() {
   }
 }
 
-bool AudioRenderer::InitDevice(const ffmpeg::FFmpegDecodedFrame* frame) {
+bool AudioRenderer::InitDevice(const DecodedFrame* frame) {
   if (!SDL_WasInit(SDL_INIT_AUDIO)) {
     SDL_SetMainReady();
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
@@ -241,11 +272,10 @@ bool AudioRenderer::InitDevice(const ffmpeg::FFmpegDecodedFrame* frame) {
   }
 
   memset(&audio_spec_, 0, sizeof(audio_spec_));
-  audio_spec_.freq = frame->raw_frame()->sample_rate;
+  audio_spec_.freq = frame->sample_rate;
   audio_spec_.format = SDLFormatFromShaka(frame->format);
-  audio_spec_.channels = static_cast<Uint8>(frame->raw_frame()->channels);
-  audio_spec_.samples = static_cast<Uint16>(frame->raw_frame()->nb_samples *
-                                            frame->raw_frame()->channels);
+  audio_spec_.channels = static_cast<Uint8>(frame->channel_count);
+  audio_spec_.samples = static_cast<Uint16>(frame->sample_count);
   audio_spec_.callback = &OnAudioCallback;
   audio_spec_.userdata = this;
   audio_device_ =
@@ -263,15 +293,15 @@ bool AudioRenderer::InitDevice(const ffmpeg::FFmpegDecodedFrame* frame) {
   if (av_sample_format == AV_SAMPLE_FMT_NONE)
     return false;
 
-  const auto format = static_cast<AVSampleFormat>(frame->raw_frame()->format);
+  const auto format = GetFFmpegFormat(frame->format);
   swr_ctx_ = swr_alloc_set_opts(
       swr_ctx_,
       GetChannelLayout(obtained_audio_spec_.channels),  // out_ch_layout
       av_sample_format,                                 // out_sample_fmt
       obtained_audio_spec_.freq,                        // out_sample_rate
-      frame->raw_frame()->channel_layout,               // in_ch_layout
-      format,                                           // in_sample_fmt
-      frame->raw_frame()->sample_rate,                  // in_sample_rate
+      GetChannelLayout(frame->channel_count),           // in_ch_layout
+      static_cast<AVSampleFormat>(format),              // in_sample_fmt
+      frame->sample_rate,                               // in_sample_rate
       0,                                                // log_offset,
       nullptr);                                         // log_ctx
   if (!swr_ctx_) {
@@ -354,44 +384,39 @@ void AudioRenderer::AudioCallback(uint8_t* data, int size) {
   data += initial_sample_count * sample_size;
 
   while (size_in_samples > 0) {
-    auto base_frame =
+    auto frame =
         stream_->GetDecodedFrames()->GetFrame(cur_time_, FrameLocation::After);
-    if (!base_frame)
+    if (!frame)
       break;
-
-    auto* frame =
-        static_cast<const ffmpeg::FFmpegDecodedFrame*>(base_frame.get());
 
     // If the source changed, we need to reset.  If the new frame has a lower
     // sample rate or channel count, we can just use swresample to change
     // these.  If they are higher, we want to try to create a new device so we
     // get the benefits.
-    if (frame->raw_frame()->sample_rate > audio_spec_.freq ||
-        frame->raw_frame()->channels > audio_spec_.channels ||
+    if (frame->sample_rate > static_cast<uint32_t>(audio_spec_.freq) ||
+        frame->channel_count > audio_spec_.channels ||
         SDLFormatFromShaka(frame->format) != audio_spec_.format) {
       need_reset_ = true;
       on_reset_.SignalAll();
       break;
     }
-    if (frame->raw_frame()->sample_rate != audio_spec_.freq) {
-      av_opt_set_int(swr_ctx_, "in_sample_rate",
-                     frame->raw_frame()->sample_rate, 0);
+    if (frame->sample_rate != static_cast<uint32_t>(audio_spec_.freq)) {
+      av_opt_set_int(swr_ctx_, "in_sample_rate", frame->sample_rate, 0);
       swr_init(swr_ctx_);
-      audio_spec_.freq = frame->raw_frame()->sample_rate;
+      audio_spec_.freq = frame->sample_rate;
     }
-    if (frame->raw_frame()->channels != audio_spec_.channels) {
+    if (frame->channel_count != audio_spec_.channels) {
       av_opt_set_int(swr_ctx_, "in_channel_layout",
-                     GetChannelLayout(frame->raw_frame()->channels), 0);
+                     GetChannelLayout(frame->channel_count), 0);
       swr_init(swr_ctx_);
-      audio_spec_.channels = static_cast<Uint8>(frame->raw_frame()->channels);
+      audio_spec_.channels = static_cast<Uint8>(frame->channel_count);
     }
 
     // Assume the first byte in the array will be played "right-now", or at
     // |now_time|.  This is technically not correct, but the delay shouldn't be
     // noticeable.
-    const auto pts =
-        static_cast<uint64_t>(frame->pts * obtained_audio_spec_.freq *
-                              frame->raw_frame()->sample_rate);
+    const auto pts = static_cast<uint64_t>(
+        frame->pts * obtained_audio_spec_.freq * frame->sample_rate);
     // Swr will adjust the audio so the next sample will happen at |pts|.
     if (swr_next_pts(swr_ctx_, pts) < 0)
       break;
@@ -399,7 +424,7 @@ void AudioRenderer::AudioCallback(uint8_t* data, int size) {
     const int samples_read =
         swr_convert(swr_ctx_, &data, size_in_samples,
                     const_cast<const uint8_t**>(frame->data.data()),  // NOLINT
-                    frame->raw_frame()->nb_samples);
+                    frame->sample_count);
     if (samples_read < 0)
       break;
 

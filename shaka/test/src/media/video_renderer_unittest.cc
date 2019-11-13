@@ -30,11 +30,6 @@ using testing::Return;
 
 namespace {
 
-class MockFrameDrawer : public FrameDrawer {
- public:
-  MOCK_METHOD1(DrawFrame, Frame(const BaseFrame* frame));
-};
-
 std::shared_ptr<DecodedFrame> MakeFrame(double start) {
   auto* ret = new DecodedFrame(start, start, 0.01, PixelFormat::RGB24, 0, 0, 0,
                                0, 0, {}, {});
@@ -45,94 +40,65 @@ constexpr const double kMinDelay = 1.0 / 120;
 
 }  // namespace
 
-class VideoRendererTest : public testing::Test {
- protected:
-  void SetDrawer(VideoRenderer* renderer, FrameDrawer* drawer) {
-    renderer->SetDrawerForTesting(std::unique_ptr<FrameDrawer>(drawer));
-  }
-};
-
-TEST_F(VideoRendererTest, WorksWithNoNextFrame) {
+TEST(VideoRendererTest, WorksWithNoNextFrame) {
   Stream stream;
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
+  auto frame = MakeFrame(0.0);
+  stream.GetDecodedFrames()->AddFrame(frame);
 
   MockFunction<double()> get_time;
-  auto* drawer = new MockFrameDrawer;
-
-  {
-#define FRAME_AT(i) \
-  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near).get())
-    InSequence seq;
-    EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
-#undef FRAME_AT
-  }
+  ON_CALL(get_time, Call()).WillByDefault(Return(0));
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),
                          &stream);
-  SetDrawer(&renderer, drawer);  // Takes ownership.
 
   int dropped_frame_count = 0;
   bool is_new_frame = false;
   double delay = 0;
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  auto ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  EXPECT_EQ(ret, frame);
   EXPECT_EQ(dropped_frame_count, 0);
   EXPECT_TRUE(is_new_frame);
   EXPECT_EQ(delay, kMinDelay);
 }
 
-TEST_F(VideoRendererTest, WorksWithNoFrames) {
+TEST(VideoRendererTest, WorksWithNoFrames) {
   Stream stream;
 
   MockFunction<double()> get_time;
-  auto* drawer = new MockFrameDrawer;
-
-  {
-    InSequence seq;
-    EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0));
-    EXPECT_CALL(*drawer, DrawFrame(_)).Times(0);
-  }
+  ON_CALL(get_time, Call()).WillByDefault(Return(0));
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),
                          &stream);
-  SetDrawer(&renderer, drawer);  // Takes ownership.
 
   int dropped_frame_count = 0;
   bool is_new_frame = false;
   double delay = 0;
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  auto ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  EXPECT_FALSE(ret);
 }
 
-TEST_F(VideoRendererTest, DrawsFrameInPast) {
+TEST(VideoRendererTest, DrawsFrameInPast) {
   Stream stream;
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
+  auto frame = MakeFrame(0.0);
+  stream.GetDecodedFrames()->AddFrame(frame);
 
   MockFunction<double()> get_time;
-  auto* drawer = new MockFrameDrawer;
-
-  {
-#define FRAME_AT(i) \
-  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near).get())
-    InSequence seq;
-    EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(4));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
-#undef FRAME_AT
-  }
+  ON_CALL(get_time, Call()).WillByDefault(Return(4));
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),
                          &stream);
-  SetDrawer(&renderer, drawer);  // Takes ownership.
 
   int dropped_frame_count = 0;
   bool is_new_frame = false;
   double delay = 0;
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  auto ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  EXPECT_EQ(ret, frame);
   EXPECT_EQ(dropped_frame_count, 0);
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, kMinDelay);
 }
 
-TEST_F(VideoRendererTest, WillDropFrames) {
+TEST(VideoRendererTest, WillDropFrames) {
   Stream stream;
   stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
   stream.GetDecodedFrames()->AddFrame(MakeFrame(0.01));
@@ -141,41 +107,40 @@ TEST_F(VideoRendererTest, WillDropFrames) {
   stream.GetDecodedFrames()->AddFrame(MakeFrame(0.04));
 
   MockFunction<double()> get_time;
-  auto* drawer = new MockFrameDrawer;
+  MockFunction<void()> step;
 
   {
-#define FRAME_AT(i) \
-  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near).get())
     InSequence seq;
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
+    EXPECT_CALL(step, Call()).Times(1);
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0.03));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0.03))).Times(1);
-#undef FRAME_AT
   }
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),
                          &stream);
-  SetDrawer(&renderer, drawer);  // Takes ownership.
 
   int dropped_frame_count = 0;
   bool is_new_frame = false;
   double delay = 0;
 
   // Time: 0
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  auto ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  EXPECT_EQ(ret, stream.GetDecodedFrames()->GetFrame(0, FrameLocation::Near));
   EXPECT_EQ(dropped_frame_count, 0);
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.01);
+  step.Call();
 
   // Time: 0.03
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  EXPECT_EQ(ret,
+            stream.GetDecodedFrames()->GetFrame(0.03, FrameLocation::Near));
   EXPECT_EQ(dropped_frame_count, 2);
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.01);
 }
 
-TEST_F(VideoRendererTest, HandlesSeeks) {
+TEST(VideoRendererTest, HandlesSeeks) {
   Stream stream;
   stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
   stream.GetDecodedFrames()->AddFrame(MakeFrame(0.01));
@@ -184,111 +149,117 @@ TEST_F(VideoRendererTest, HandlesSeeks) {
   stream.GetDecodedFrames()->AddFrame(MakeFrame(0.04));
 
   MockFunction<double()> get_time;
-  auto* drawer = new MockFrameDrawer;
+  MockFunction<void()> step;
 
   {
-#define FRAME_AT(i) \
-  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near).get())
     InSequence seq;
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
+    EXPECT_CALL(step, Call()).Times(1);
     // Seek
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0.03));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0.03))).Times(1);
-#undef FRAME_AT
   }
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),
                          &stream);
-  SetDrawer(&renderer, drawer);  // Takes ownership.
 
   int dropped_frame_count = 0;
   bool is_new_frame = false;
   double delay = 0;
 
   // Time: 0
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  auto ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  EXPECT_EQ(ret, stream.GetDecodedFrames()->GetFrame(0, FrameLocation::Near));
   EXPECT_EQ(dropped_frame_count, 0);
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.01);
 
   renderer.OnSeek();
   renderer.OnSeekDone();
+  step.Call();
 
   // Time: 0.04
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  EXPECT_EQ(ret,
+            stream.GetDecodedFrames()->GetFrame(0.03, FrameLocation::Near));
   EXPECT_EQ(dropped_frame_count, 0);  // Skipped over frames, but don't count.
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.01);
 }
 
-TEST_F(VideoRendererTest, TracksNewFrames) {
+TEST(VideoRendererTest, TracksNewFrames) {
   Stream stream;
   stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
   stream.GetDecodedFrames()->AddFrame(MakeFrame(0.02));
   stream.GetDecodedFrames()->AddFrame(MakeFrame(0.04));
 
   MockFunction<double()> get_time;
-  auto* drawer = new MockFrameDrawer;
+  MockFunction<void()> step;
 
   {
-#define FRAME_AT(i) \
-  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near).get())
     InSequence seq;
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
+    EXPECT_CALL(step, Call()).Times(1);
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0.006));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
+    EXPECT_CALL(step, Call()).Times(1);
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0.006));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0))).Times(1);
+    EXPECT_CALL(step, Call()).Times(1);
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0.025));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0.02))).Times(1);
+    EXPECT_CALL(step, Call()).Times(1);
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0.031));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0.02))).Times(1);
+    EXPECT_CALL(step, Call()).Times(1);
     EXPECT_CALL(get_time, Call()).WillRepeatedly(Return(0.044));
-    EXPECT_CALL(*drawer, DrawFrame(FRAME_AT(0.04))).Times(1);
-#undef FRAME_AT
   }
 
   VideoRenderer renderer(std::bind(&MockFunction<double()>::Call, &get_time),
                          &stream);
-  SetDrawer(&renderer, drawer);  // Takes ownership.
 
   int dropped_frame_count = 0;
   bool is_new_frame = false;
   double delay = 0;
 
+#define FRAME_AT(i) \
+  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near))
+
   // Time: 0
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  auto ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
   EXPECT_EQ(dropped_frame_count, 0);
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.02);
+  step.Call();
 
   for (int i = 0; i < 2; i++) {
     // Time: 0.006
-    renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+    ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+    EXPECT_EQ(ret, FRAME_AT(0));
     EXPECT_EQ(dropped_frame_count, 0);
     EXPECT_FALSE(is_new_frame);
     EXPECT_DOUBLE_EQ(delay, 0.014);
+    step.Call();
   }
 
   // Time: 0.025
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  EXPECT_EQ(ret, FRAME_AT(0.02));
   EXPECT_EQ(dropped_frame_count, 0);
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.015);
+  step.Call();
 
   // Time: 0.031
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  EXPECT_EQ(ret, FRAME_AT(0.02));
   EXPECT_EQ(dropped_frame_count, 0);
   EXPECT_FALSE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.009);
+  step.Call();
 
   // Time: 0.044
-  renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
+  EXPECT_EQ(ret, FRAME_AT(0.04));
   EXPECT_EQ(dropped_frame_count, 0);
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, kMinDelay);
+#undef FRAME_AT
 }
 
 }  // namespace media

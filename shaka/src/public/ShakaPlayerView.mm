@@ -87,9 +87,25 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
   __weak id<ShakaPlayerClient> _client;
 };
 
-void FreeFrame(void *info, const void *data, size_t size) {
-  auto *frame = reinterpret_cast<shaka::Frame *>(info);
+struct FrameInfo {
+  std::shared_ptr<shaka::media::DecodedFrame> frame;
+  size_t widths[4];
+  size_t heights[4];
+};
+
+void FreeFrameBytes(void *info, const void *, size_t) {
+  auto *frame = reinterpret_cast<FrameInfo *>(info);
   delete frame;
+}
+
+void FreeFramePlanar(void *info, const void *, size_t, size_t, const void **) {
+  auto *frame = reinterpret_cast<FrameInfo *>(info);
+  delete frame;
+}
+
+shaka::Error MakeError(const std::string &prefix, long code) {
+  std::string message = prefix + " error status " + std::to_string(code);
+  return shaka::Error(std::move(message));
 }
 
 }  // namespace
@@ -203,62 +219,88 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 - (CGImageRef)drawFrame {
   double delay = ShakaRenderLoopDelay;
-  std::unique_ptr<shaka::Frame> frame(new shaka::Frame(_video->DrawFrame(&delay)));
-  if (!frame->valid())
+  auto frame = _video->DrawFrame(&delay);
+  if (!frame)
     return nullptr;
-  if (frame->pixel_format() == shaka::PixelFormat::VIDEO_TOOLBOX) {
-    CGImage *ret = nullptr;
-    uint8_t *data = const_cast<uint8_t *>(frame->data()[3]);
-    // This retains the buffer, so the Frame is free to be deleted.
-    const long status =
-        VTCreateCGImageFromCVPixelBuffer(reinterpret_cast<CVPixelBufferRef>(data), nullptr, &ret);
+
+  CVPixelBufferRef pixel_buffer;
+  bool free_pixel_buffer;
+  auto pix_fmt = shaka::get<shaka::media::PixelFormat>(frame->format);
+  if (pix_fmt == shaka::media::PixelFormat::VideoToolbox) {
+    uint8_t *data = const_cast<uint8_t *>(frame->data[0]);
+    pixel_buffer = reinterpret_cast<CVPixelBufferRef>(data);
+    free_pixel_buffer = false;
+  } else if (pix_fmt == shaka::media::PixelFormat::RGB24) {
+    // Get size.
+    const int align = 16;
+    const uint32_t width = frame->width;
+    const uint32_t height = frame->height;
+    const size_t bytes_per_row = frame->linesize[0];
+    CFIndex size = av_image_get_buffer_size(AV_PIX_FMT_RGB24, width, height, align);
+
+    // TODO: Handle padding.
+
+    // Make a CGDataProvider object to distribute the data to the CGImage.
+    // This takes ownership of the frame and calls the given callback when the
+    // CGImage is destroyed.
+    const uint8_t *data = frame->data[0];
+    auto *info = new FrameInfo;
+    info->frame = frame;
+    CGDataProviderRef provider = CGDataProviderCreateWithData(info, data, size, &FreeFrameBytes);
+
+    // CGColorSpaceCreateDeviceRGB makes a device-specific colorSpace, so use a
+    // standardized one instead.
+    CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+
+    // Create a CGImage.
+    const size_t bits_per_pixel = 24;
+    const size_t bits_per_component = 8;
+    const bool should_interpolate = false;
+    CGImage *image = CGImageCreate(width, height, bits_per_component, bits_per_pixel, bytes_per_row,
+                                   color_space, kCGBitmapByteOrderDefault, provider, nullptr,
+                                   should_interpolate, kCGRenderingIntentDefault);
+
+    // Dispose of temporary data.
+    CGColorSpaceRelease(color_space);
+    CGDataProviderRelease(provider);
+
+    return image;
+  } else {
+    if (pix_fmt != shaka::media::PixelFormat::YUV420P)
+      return nullptr;
+
+    const OSType ios_pix_fmt = kCVPixelFormatType_420YpCbCr8Planar;
+    auto *info = new FrameInfo;
+    info->frame = frame;
+    info->widths[0] = frame->width;
+    info->widths[1] = info->widths[2] = frame->width / 2;
+    info->heights[0] = frame->height;
+    info->heights[1] = info->heights[2] = frame->height / 2;
+
+    const auto status = CVPixelBufferCreateWithPlanarBytes(
+        nullptr, frame->width, frame->height, ios_pix_fmt, nullptr, 0, frame->data.size(),
+        const_cast<void **>(reinterpret_cast<const void *const *>(frame->data.data())),
+        info->widths, info->heights, const_cast<size_t *>(frame->linesize.data()), &FreeFramePlanar,
+        info, nullptr, &pixel_buffer);
     if (status != 0) {
-      // Create a shaka::Error object, so it can be dispatched via the Client.
-      std::string message = "VTCreateCGImageFromCVPixelBuffer error status ";
-      message += std::to_string(status);
-      shaka::Error err = shaka::Error(message);
-      _client.OnError(err);
+      _client.OnError(MakeError("CVPixelBufferCreateWithPlanarBytes ", status));
       return nullptr;
     }
-    return ret;
+
+    free_pixel_buffer = true;
   }
 
-  if (!frame->ConvertTo(shaka::PixelFormat::RGB24))
+  CGImage *ret = nullptr;
+  // This retains the buffer, so the Frame is free to be deleted.
+  const long status = VTCreateCGImageFromCVPixelBuffer(pixel_buffer, nullptr, &ret);
+  if (free_pixel_buffer)
+    CVPixelBufferRelease(pixel_buffer);
+
+  if (status != 0) {
+    _client.OnError(MakeError("VTCreateCGImageFromCVPixelBuffer ", status));
     return nullptr;
-
-  // Get size.
-  const int align = 16;
-  const uint32_t width = frame->width();
-  const uint32_t height = frame->height();
-  const size_t bytes_per_row = frame->linesize()[0];
-  CFIndex size = av_image_get_buffer_size(AV_PIX_FMT_RGB24, width, height, align);
-
-  // TODO: Handle padding.
-
-  // Make a CGDataProvider object to distribute the data to the CGImage.
-  // This takes ownership of the frame and calls the given callback when the
-  // CGImage is destroyed.
-  const uint8_t *data = frame->data()[0];
-  CGDataProviderRef provider =
-      CGDataProviderCreateWithData(frame.release(), data, size, &FreeFrame);
-
-  // CGColorSpaceCreateDeviceRGB makes a device-specific colorSpace, so use a
-  // standardized one instead.
-  CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-
-  // Create a CGImage.
-  const size_t bits_per_pixel = 24;
-  const size_t bits_per_component = 8;
-  const bool should_interpolate = false;
-  CGImage *image = CGImageCreate(width, height, bits_per_component, bits_per_pixel, bytes_per_row,
-                                 color_space, kCGBitmapByteOrderDefault, provider, nullptr,
-                                 should_interpolate, kCGRenderingIntentDefault);
-
-  // Dispose of temporary data.
-  CGColorSpaceRelease(color_space);
-  CGDataProviderRelease(provider);
-
-  return image;
+  }
+  return ret;
 }
 
 - (void)renderLoop:(NSTimer *)timer {
