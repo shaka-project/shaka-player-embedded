@@ -22,6 +22,7 @@
 
 #include "shaka/eme/configuration.h"
 #include "shaka/eme/implementation.h"
+#include "shaka/media/decoder.h"
 #include "shaka/media/demuxer.h"
 #include "shaka/media/frames.h"
 #include "shaka/media/streams.h"
@@ -130,7 +131,7 @@ class VideoController : Demuxer::Client {
   void DebugDumpStats() const;
 
  private:
-  struct Source {
+  struct Source : DecoderThread::Client {
     Source(
         SourceType source_type,
         PipelineManager* pipeline,
@@ -139,17 +140,29 @@ class VideoController : Demuxer::Client {
         std::function<double()> get_time,
         std::function<double()> get_playback_rate,
         std::function<void(Status)> on_error);
-    ~Source();
+    ~Source() override;
+
     NON_COPYABLE_OR_MOVABLE_TYPE(Source);
 
-    void OnSeekDone();
+    double CurrentTime() const override;
+    double Duration() const override;
+    void OnWaitingForKey() override;
+
+    void OnSeekDone() override;
+    void OnError() override;
 
     ElementaryStream encoded_frames;
     DecodedStream decoded_frames;
-    DecoderThread decoder;
+    std::unique_ptr<Decoder> decoder;
+    DecoderThread decoder_thread;
     DemuxerThread demuxer;
     std::unique_ptr<Renderer> renderer;
     bool ready;
+
+    PipelineManager* pipeline;
+    std::function<double()> get_time;
+    std::function<void()> on_waiting_for_key;
+    std::function<void(Status)> on_error;
   };
 
   Source* GetSource(SourceType type) const {

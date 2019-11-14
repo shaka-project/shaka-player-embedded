@@ -14,15 +14,16 @@
 
 #include "src/media/decoder_thread.h"
 
+#include <glog/logging.h>
+
 #include <algorithm>
-#include <chrono>
 #include <cmath>
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include "src/media/ffmpeg/ffmpeg_decoder.h"
-#include "src/media/pipeline_manager.h"
+#include "src/util/clock.h"
+#include "src/util/utils.h"
 
 namespace shaka {
 namespace media {
@@ -51,113 +52,131 @@ double DecodedAheadOf(StreamBase* stream, double time) {
 
 }  // namespace
 
-DecoderThread::DecoderThread(std::function<double()> get_time,
-                             std::function<void()> seek_done,
-                             std::function<void()> on_waiting_for_key,
-                             std::function<void(Status)> on_error,
-                             PipelineManager* pipeline,
-                             ElementaryStream* encoded_frames,
-                             DecodedStream* decoded_frames)
-    : pipeline_(pipeline),
-      encoded_frames_(encoded_frames),
-      decoded_frames_(decoded_frames),
-      decoder_(new ffmpeg::FFmpegDecoder),
-      get_time_(std::move(get_time)),
-      seek_done_(std::move(seek_done)),
-      on_waiting_for_key_(std::move(on_waiting_for_key)),
-      on_error_(std::move(on_error)),
+DecoderThread::DecoderThread(Client* client, DecodedStream* output)
+    : mutex_("DecoderThread"),
+      signal_("DecoderChanged"),
+      client_(client),
+      input_(nullptr),
+      output_(output),
+      decoder_(nullptr),
       cdm_(nullptr),
+      last_frame_time_(NAN),
       shutdown_(false),
       is_seeking_(false),
       did_flush_(false),
-      last_frame_time_(NAN),
       raised_waiting_event_(false),
       thread_("Decoder", std::bind(&DecoderThread::ThreadMain, this)) {}
 
 DecoderThread::~DecoderThread() {
-  CHECK(!thread_.joinable()) << "Need to call Stop() before destroying";
-}
-
-void DecoderThread::Stop() {
-  shutdown_.store(true, std::memory_order_release);
+  {
+    std::unique_lock<Mutex> lock(mutex_);
+    shutdown_ = true;
+    signal_.SignalAllIfNotSet();
+  }
   thread_.join();
 }
 
+void DecoderThread::Attach(const ElementaryStream* input) {
+  std::unique_lock<Mutex> lock(mutex_);
+  input_ = input;
+  if (input && decoder_)
+    signal_.SignalAllIfNotSet();
+}
+
+void DecoderThread::Detach() {
+  std::unique_lock<Mutex> lock(mutex_);
+  input_ = nullptr;
+}
+
 void DecoderThread::OnSeek() {
-  last_frame_time_.store(NAN, std::memory_order_release);
-  is_seeking_.store(true, std::memory_order_release);
-  did_flush_.store(false, std::memory_order_release);
+  std::unique_lock<Mutex> lock(mutex_);
+  last_frame_time_ = NAN;
+  is_seeking_ = true;
+  did_flush_ = false;
 }
 
 void DecoderThread::SetCdm(eme::Implementation* cdm) {
-  cdm_.store(cdm, std::memory_order_release);
+  std::unique_lock<Mutex> lock(mutex_);
+  cdm_ = cdm;
+}
+
+void DecoderThread::SetDecoder(Decoder* decoder) {
+  std::unique_lock<Mutex> lock(mutex_);
+  decoder_ = decoder;
+  if (decoder && input_)
+    signal_.SignalAllIfNotSet();
 }
 
 void DecoderThread::ThreadMain() {
-  while (!shutdown_.load(std::memory_order_acquire)) {
-    const double cur_time = get_time_();
-    double last_time = last_frame_time_.load(std::memory_order_acquire);
+  std::unique_lock<Mutex> lock(mutex_);
+  while (!shutdown_) {
+    if (!input_ || !decoder_) {
+      if (input_)
+        LOG(DFATAL) << "No decoder provided and no default decoder exists";
+
+      signal_.ResetAndWaitWhileUnlocked(lock);
+      continue;
+    }
+
+    const double cur_time = client_->CurrentTime();
+    double last_time = last_frame_time_;
 
     std::shared_ptr<EncodedFrame> frame;
     if (std::isnan(last_time)) {
       decoder_->ResetDecoder();
-      frame =
-          encoded_frames_->GetFrame(cur_time, FrameLocation::KeyFrameBefore);
+      frame = input_->GetFrame(cur_time, FrameLocation::KeyFrameBefore);
     } else {
-      frame = encoded_frames_->GetFrame(last_time, FrameLocation::After);
+      frame = input_->GetFrame(last_time, FrameLocation::After);
     }
 
-    if (DecodedAheadOf(decoded_frames_, cur_time) > kDecodeBufferSize) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(25));
+    if (DecodedAheadOf(output_, cur_time) > kDecodeBufferSize) {
+      util::Unlocker<Mutex> unlock(&lock);
+      util::Clock::Instance.SleepSeconds(0.025);
       continue;
     }
     if (!frame) {
       if (!std::isnan(last_time) &&
-          last_time + kEndDelta >= pipeline_->GetDuration() &&
-          !did_flush_.load(std::memory_order_acquire)) {
+          last_time + kEndDelta >= client_->Duration() && !did_flush_) {
         // If this is the last frame, pass the null to DecodeFrame, which will
         // flush the decoder.
-        did_flush_.store(true, std::memory_order_release);
+        did_flush_ = true;
       } else {
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+        util::Unlocker<Mutex> unlock(&lock);
+        util::Clock::Instance.SleepSeconds(0.025);
         continue;
       }
     }
 
     std::vector<std::shared_ptr<DecodedFrame>> decoded;
-    eme::Implementation* cdm = cdm_.load(std::memory_order_acquire);
-    const MediaStatus decode_status = decoder_->Decode(frame, cdm, &decoded);
+    const MediaStatus decode_status = decoder_->Decode(frame, cdm_, &decoded);
     if (decode_status == MediaStatus::KeyNotFound) {
       // If we don't have the required key, signal the <video> and wait.
       if (!raised_waiting_event_) {
         raised_waiting_event_ = true;
-        on_waiting_for_key_();
+        client_->OnWaitingForKey();
       }
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      // TODO: Consider adding a signal for new keys so we can avoid polling and
+      // just wait on a condition variable.
+      util::Unlocker<Mutex> unlock(&lock);
+      util::Clock::Instance.SleepSeconds(0.2);
       continue;
     }
     if (decode_status != MediaStatus::Success) {
-      on_error_(Status::UnknownError);
+      client_->OnError();
       break;
     }
 
     raised_waiting_event_ = false;
     const double last_pts = decoded.empty() ? -1 : decoded.back()->pts;
     for (auto& decoded_frame : decoded) {
-      decoded_frames_->AddFrame(decoded_frame);
+      output_->AddFrame(decoded_frame);
     }
 
     if (frame) {
-      // Don't change the |last_frame_time_| if it was reset to NAN while this
-      // was running.
-      const bool updated = last_frame_time_.compare_exchange_strong(
-          last_time, frame->dts, std::memory_order_acq_rel);
-      if (updated && last_pts >= cur_time) {
-        bool expected = true;
-        if (is_seeking_.compare_exchange_strong(expected, false,
-                                                std::memory_order_acq_rel)) {
-          seek_done_();
-        }
+      last_frame_time_ = frame->dts;
+      if (last_pts >= cur_time && is_seeking_) {
+        is_seeking_ = false;
+        client_->OnSeekDone();
       }
     }
   }

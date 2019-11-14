@@ -15,14 +15,11 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_DECODER_THREAD_H_
 #define SHAKA_EMBEDDED_MEDIA_DECODER_THREAD_H_
 
-#include <atomic>
-#include <functional>
-#include <memory>
-
 #include "shaka/media/decoder.h"
 #include "shaka/media/streams.h"
+#include "src/debug/mutex.h"
 #include "src/debug/thread.h"
-#include "src/media/types.h"
+#include "src/debug/thread_event.h"
 #include "src/util/macros.h"
 
 namespace shaka {
@@ -33,39 +30,40 @@ class Implementation;
 
 namespace media {
 
-class PipelineManager;
-
-
 /**
  * Handles the thread that decodes input content.  This handles synchronizing
  * the threads and connecting the Decoder to the Stream.
  */
 class DecoderThread {
  public:
+  class Client {
+   public:
+    virtual ~Client() {}
+
+    // These should have the same names as MediaPlayer to ensure we can subclass
+    // both.
+    virtual double CurrentTime() const = 0;
+    virtual double Duration() const = 0;
+    virtual void OnWaitingForKey() = 0;
+
+    virtual void OnSeekDone() = 0;
+    virtual void OnError() = 0;
+  };
+
   /**
-   * @param get_time A callback to get the current playhead time.  This will be
-   *   called from the background thread.
-   * @param seek_done A callback for when a frame has been decoded after a seek.
-   * @param on_waiting_for_key A callback for when the decoder is waiting for
-   *   an encryption key.
-   * @param on_error A callback for when there is a decoder error.
-   * @param pipeline The pipeline that is used to determine the range of media.
-   * @param encoded_frames The input to pull frames from.
-   * @param decoded_frames The output to push frames to.
+   * @param client A client object for callback events.
+   * @param output The object to put decoded frames into.
    */
-  DecoderThread(std::function<double()> get_time,
-                std::function<void()> seek_done,
-                std::function<void()> on_waiting_for_key,
-                std::function<void(Status)> on_error,
-                PipelineManager* pipeline,
-                ElementaryStream* encoded_frames,
-                DecodedStream* decoded_frames);
+  DecoderThread(Client* client, DecodedStream* output);
   ~DecoderThread();
 
   NON_COPYABLE_OR_MOVABLE_TYPE(DecoderThread);
 
-  /** Stops the background thread and joins it. */
-  void Stop();
+  /** Starts decoding frames from the given stream. */
+  void Attach(const ElementaryStream* input);
+
+  /** Stops decoding frames from the current stream. */
+  void Detach();
 
   /**
    * Called when the video seeks.  This should reset any internal data and start
@@ -75,24 +73,26 @@ class DecoderThread {
 
   void SetCdm(eme::Implementation* cdm);
 
+  /** Sets the decoder used to decode frames. */
+  void SetDecoder(Decoder* decoder);
+
  private:
   void ThreadMain();
 
-  PipelineManager* pipeline_;
-  ElementaryStream* encoded_frames_;
-  DecodedStream* decoded_frames_;
-  std::unique_ptr<Decoder> decoder_;
+  Mutex mutex_;
+  ThreadEvent<void> signal_;
 
-  std::function<double()> get_time_;
-  std::function<void()> seek_done_;
-  std::function<void()> on_waiting_for_key_;
-  std::function<void(Status)> on_error_;
-  std::atomic<eme::Implementation*> cdm_;
-  std::atomic<bool> shutdown_;
-  std::atomic<bool> is_seeking_;
-  std::atomic<bool> did_flush_;
-  std::atomic<double> last_frame_time_;
-  bool raised_waiting_event_ = false;
+  Client* const client_;
+  const ElementaryStream* input_;
+  DecodedStream* const output_;
+  Decoder* decoder_;
+
+  eme::Implementation* cdm_;
+  double last_frame_time_;
+  bool shutdown_;
+  bool is_seeking_;
+  bool did_flush_;
+  bool raised_waiting_event_;
 
   Thread thread_;
 };

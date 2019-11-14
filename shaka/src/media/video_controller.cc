@@ -23,6 +23,7 @@
 
 #include "src/core/js_manager_impl.h"
 #include "src/media/audio_renderer.h"
+#include "src/media/ffmpeg/ffmpeg_decoder.h"
 #include "src/media/media_utils.h"
 #include "src/media/video_renderer.h"
 #include "src/util/clock.h"
@@ -125,7 +126,6 @@ VideoController::~VideoController() {
   util::shared_lock<SharedMutex> lock(mutex_);
   for (const auto& source : sources_) {
     source.second->demuxer.Stop();
-    source.second->decoder.Stop();
   }
   monitor_.Stop();
 }
@@ -174,7 +174,7 @@ void VideoController::SetCdm(eme::Implementation* cdm) {
   std::unique_lock<SharedMutex> lock(mutex_);
   cdm_ = cdm;
   for (auto& pair : sources_) {
-    pair.second->decoder.SetCdm(cdm);
+    pair.second->decoder_thread.SetCdm(cdm);
   }
 }
 
@@ -200,7 +200,7 @@ Status VideoController::AddSource(const std::string& mime_type,
     if (*source_type == SourceType::Audio)
       static_cast<AudioRenderer*>(source->renderer.get())->SetVolume(volume_);
   }
-  source->decoder.SetCdm(cdm_);
+  source->decoder_thread.SetCdm(cdm_);
   sources_.emplace(*source_type, std::move(source));
   return Status::Success;
 }
@@ -268,7 +268,7 @@ void VideoController::Reset() {
     util::shared_lock<SharedMutex> shared(mutex_);
     for (auto& source : sources_) {
       source.second->demuxer.Stop();
-      source.second->decoder.Stop();
+      source.second->decoder_thread.Detach();
     }
   }
 
@@ -305,7 +305,7 @@ void VideoController::DebugDumpStats() const {
 void VideoController::OnSeek() {
   util::shared_lock<SharedMutex> lock(mutex_);
   for (auto& pair : sources_) {
-    pair.second->decoder.OnSeek();
+    pair.second->decoder_thread.OnSeek();
     if (pair.second->renderer)
       pair.second->renderer->OnSeek();
   }
@@ -367,19 +367,41 @@ VideoController::Source::Source(SourceType source_type,
                                 std::function<double()> get_time,
                                 std::function<double()> get_playback_rate,
                                 std::function<void(Status)> on_error)
-    : decoder(get_time, std::bind(&VideoController::Source::OnSeekDone, this),
-              std::move(on_waiting_for_key), std::move(on_error), pipeline,
-              &encoded_frames, &decoded_frames),
+    : decoder(new ffmpeg::FFmpegDecoder),
+      decoder_thread(this, &decoded_frames),
       demuxer(mime, demuxer_client, &encoded_frames),
       renderer(CreateRenderer(source_type, get_time,
                               std::move(get_playback_rate), &decoded_frames)),
-      ready(false) {}
+      ready(false),
+      pipeline(pipeline),
+      get_time(get_time),
+      on_waiting_for_key(on_waiting_for_key),
+      on_error(on_error) {
+  decoder_thread.SetDecoder(decoder.get());
+  decoder_thread.Attach(&encoded_frames);
+}
 
 VideoController::Source::~Source() {}
+
+double VideoController::Source::CurrentTime() const {
+  return get_time();
+}
+
+double VideoController::Source::Duration() const {
+  return pipeline->GetDuration();
+}
+
+void VideoController::Source::OnWaitingForKey() {
+  on_waiting_for_key();
+}
 
 void VideoController::Source::OnSeekDone() {
   if (renderer)
     renderer->OnSeekDone();
+}
+
+void VideoController::Source::OnError() {
+  on_error(Status::UnknownError);
 }
 
 }  // namespace media
