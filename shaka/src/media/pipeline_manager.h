@@ -45,6 +45,9 @@ class PipelineManager {
                   std::function<void()> on_seek, const util::Clock* clock);
   virtual ~PipelineManager();
 
+  /** Resets the state to the initial state; this doesn't raise events. */
+  virtual void Reset();
+
   /** Tells the manager that we have gotten all the initialization data. */
   virtual void DoneInitializing();
 

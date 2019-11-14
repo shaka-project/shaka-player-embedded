@@ -628,6 +628,8 @@ source_set("internal_sources") {
     "shaka/src/media/media_player.cc",
     "shaka/src/media/media_utils.cc",
     "shaka/src/media/media_utils.h",
+    "shaka/src/media/mse_media_player.cc",
+    "shaka/src/media/mse_media_player.h",
     "shaka/src/media/pipeline_manager.cc",
     "shaka/src/media/pipeline_manager.h",
     "shaka/src/media/pipeline_monitor.cc",

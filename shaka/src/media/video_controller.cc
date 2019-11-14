@@ -220,6 +220,7 @@ VideoController::VideoController(
       video_renderer_(nullptr),
       audio_renderer_(nullptr),
       init_count_(0) {
+  monitor_.Start();
   Reset();
 }
 
@@ -485,8 +486,6 @@ double VideoController::Source::Duration() const {
 void VideoController::Source::OnWaitingForKey() {
   on_waiting_for_key();
 }
-
-void VideoController::Source::OnSeekDone() {}
 
 void VideoController::Source::OnError() {
   on_error(Status::UnknownError);

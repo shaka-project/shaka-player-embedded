@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "shaka/media/streams.h"
+#include "src/util/utils.h"
 
 namespace shaka {
 namespace media {
@@ -50,27 +51,48 @@ PipelineMonitor::PipelineMonitor(
     std::function<BufferedRanges()> get_decoded,
     std::function<void(VideoReadyState)> ready_state_changed,
     const util::Clock* clock, PipelineManager* pipeline)
-    : get_buffered_(std::move(get_buffered)),
+    : mutex_("PipelineMonitor"),
+      start_("PipelineMonitor::Start"),
+      get_buffered_(std::move(get_buffered)),
       get_decoded_(std::move(get_decoded)),
       ready_state_changed_(std::move(ready_state_changed)),
       clock_(clock),
       pipeline_(pipeline),
       shutdown_(false),
+      running_(false),
       ready_state_(VideoReadyState::HaveNothing),
       thread_("PipelineMonitor",
               std::bind(&PipelineMonitor::ThreadMain, this)) {}
 
 PipelineMonitor::~PipelineMonitor() {
-  CHECK(!thread_.joinable()) << "Need to call Stop() before destroying";
-}
-
-void PipelineMonitor::Stop() {
-  shutdown_.store(true, std::memory_order_release);
+  {
+    std::unique_lock<Mutex> lock(mutex_);
+    shutdown_ = true;
+    start_.SignalAllIfNotSet();
+  }
   thread_.join();
 }
 
+void PipelineMonitor::Start() {
+  std::unique_lock<Mutex> lock(mutex_);
+  ready_state_ = VideoReadyState::HaveNothing;
+  running_ = true;
+  start_.SignalAllIfNotSet();
+}
+
+void PipelineMonitor::Stop() {
+  std::unique_lock<Mutex> lock(mutex_);
+  running_ = false;
+}
+
 void PipelineMonitor::ThreadMain() {
-  while (!shutdown_.load(std::memory_order_acquire)) {
+  std::unique_lock<Mutex> lock(mutex_);
+  while (!shutdown_) {
+    if (!running_) {
+      start_.ResetAndWaitWhileUnlocked(lock);
+      continue;
+    }
+
     const BufferedRanges buffered = get_buffered_();
     const BufferedRanges decoded = get_decoded_();
     const double time = pipeline_->GetCurrentTime();
@@ -97,6 +119,7 @@ void PipelineMonitor::ThreadMain() {
       ChangeReadyState(VideoReadyState::HaveMetadata);
     }
 
+    util::Unlocker<Mutex> unlock(&lock);
     clock_->SleepSeconds(0.01);
   }
 }

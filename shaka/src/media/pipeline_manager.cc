@@ -29,15 +29,21 @@ PipelineManager::PipelineManager(
     : mutex_("PipelineManager"),
       on_status_changed_(std::move(on_status_changed)),
       on_seek_(std::move(on_seek)),
-      clock_(clock),
-      status_(PipelineStatus::Initializing),
-      prev_media_time_(0),
-      prev_wall_time_(clock->GetMonotonicTime()),
-      playback_rate_(1),
-      duration_(NAN),
-      autoplay_(false) {}
+      clock_(clock) {
+  Reset();
+}
 
 PipelineManager::~PipelineManager() {}
+
+void PipelineManager::Reset() {
+  std::unique_lock<SharedMutex> lock(mutex_);
+  status_ = PipelineStatus::Initializing;
+  prev_media_time_ = 0;
+  prev_wall_time_ = clock_->GetMonotonicTime();
+  playback_rate_ = 1;
+  duration_ = NAN;
+  autoplay_ = false;
+}
 
 void PipelineManager::DoneInitializing() {
   PipelineStatus new_status;

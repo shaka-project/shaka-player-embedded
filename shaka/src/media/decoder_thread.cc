@@ -62,7 +62,6 @@ DecoderThread::DecoderThread(Client* client, DecodedStream* output)
       cdm_(nullptr),
       last_frame_time_(NAN),
       shutdown_(false),
-      is_seeking_(false),
       did_flush_(false),
       raised_waiting_event_(false),
       thread_("Decoder", std::bind(&DecoderThread::ThreadMain, this)) {}
@@ -91,7 +90,6 @@ void DecoderThread::Detach() {
 void DecoderThread::OnSeek() {
   std::unique_lock<Mutex> lock(mutex_);
   last_frame_time_ = NAN;
-  is_seeking_ = true;
   did_flush_ = false;
 }
 
@@ -167,18 +165,12 @@ void DecoderThread::ThreadMain() {
     }
 
     raised_waiting_event_ = false;
-    const double last_pts = decoded.empty() ? -1 : decoded.back()->pts;
     for (auto& decoded_frame : decoded) {
       output_->AddFrame(decoded_frame);
     }
 
-    if (frame) {
+    if (frame)
       last_frame_time_ = frame->dts;
-      if (last_pts >= cur_time && is_seeking_) {
-        is_seeking_ = false;
-        client_->OnSeekDone();
-      }
-    }
   }
 }
 

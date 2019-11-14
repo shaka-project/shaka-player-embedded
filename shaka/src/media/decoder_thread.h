@@ -46,7 +46,6 @@ class DecoderThread {
     virtual double Duration() const = 0;
     virtual void OnWaitingForKey() = 0;
 
-    virtual void OnSeekDone() = 0;
     virtual void OnError() = 0;
   };
 
@@ -90,7 +89,6 @@ class DecoderThread {
   eme::Implementation* cdm_;
   double last_frame_time_;
   bool shutdown_;
-  bool is_seeking_;
   bool did_flush_;
   bool raised_waiting_event_;
 

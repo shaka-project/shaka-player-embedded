@@ -15,11 +15,12 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_PIPELINE_MONITOR_H_
 #define SHAKA_EMBEDDED_MEDIA_PIPELINE_MONITOR_H_
 
-#include <atomic>
 #include <functional>
 
 #include "shaka/media/media_player.h"
+#include "src/debug/mutex.h"
 #include "src/debug/thread.h"
+#include "src/debug/thread_event.h"
 #include "src/media/pipeline_manager.h"
 #include "src/media/types.h"
 #include "src/util/clock.h"
@@ -40,7 +41,10 @@ class PipelineMonitor {
                   const util::Clock* clock, PipelineManager* pipeline);
   ~PipelineMonitor();
 
-  /** Stops the background thread and joins it. */
+  /** Starts monitoring the current state. */
+  void Start();
+
+  /** Stops monitoring and waits for a call to start. */
   void Stop();
 
  private:
@@ -48,12 +52,16 @@ class PipelineMonitor {
 
   void ChangeReadyState(VideoReadyState new_state);
 
+  Mutex mutex_;
+  ThreadEvent<void> start_;
+
   const std::function<BufferedRanges()> get_buffered_;
   const std::function<BufferedRanges()> get_decoded_;
   const std::function<void(VideoReadyState)> ready_state_changed_;
   const util::Clock* const clock_;
   PipelineManager* const pipeline_;
-  std::atomic<bool> shutdown_;
+  bool shutdown_;
+  bool running_;
   VideoReadyState ready_state_;
 
   Thread thread_;

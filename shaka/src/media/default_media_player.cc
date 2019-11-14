@@ -14,25 +14,41 @@
 
 #include "shaka/media/default_media_player.h"
 
+#include "src/media/mse_media_player.h"
+
 namespace shaka {
 namespace media {
 
-class DefaultMediaPlayer::Impl {};
+class DefaultMediaPlayer::Impl {
+ public:
+  Impl(VideoRenderer* video_renderer, AudioRenderer* audio_renderer)
+      : mse_player(video_renderer, audio_renderer) {}
+
+  MseMediaPlayer mse_player;
+};
 
 DefaultMediaPlayer::DefaultMediaPlayer(VideoRenderer* video_renderer,
-                                       AudioRenderer* audio_renderer) {}
+                                       AudioRenderer* audio_renderer)
+    : impl_(new Impl(video_renderer, audio_renderer)) {}
 DefaultMediaPlayer::~DefaultMediaPlayer() {}
 
 void DefaultMediaPlayer::SetDecoders(Decoder* video_decoder,
-                                     Decoder* audio_decoder) {}
+                                     Decoder* audio_decoder) {
+  impl_->mse_player.SetDecoders(video_decoder, audio_decoder);
+}
 
 MediaCapabilitiesInfo DefaultMediaPlayer::DecodingInfo(
     const MediaDecodingConfiguration& config) const {
-  return MediaCapabilitiesInfo();
+  if (config.type == MediaDecodingType::File)
+    return MediaCapabilitiesInfo();
+  else
+    return impl_->mse_player.DecodingInfo(config);
 }
 
 MediaPlayer* DefaultMediaPlayer::CreateMse() {
-  return nullptr;
+  if (!impl_->mse_player.AttachMse())
+    return nullptr;
+  return &impl_->mse_player;
 }
 MediaPlayer* DefaultMediaPlayer::CreateSource(const std::string& src) {
   return nullptr;

@@ -107,8 +107,8 @@ TEST(PipelineMonitorTest, ChangesReadyState) {
 
   PipelineMonitor monitor(CALLBACK(get_buffered), CALLBACK(get_buffered),
                           CALLBACK1(ready_state_changed), &clock, &pipeline);
+  monitor.Start();
   util::Clock::Instance.SleepSeconds(0.01);
-  monitor.Stop();
 }
 
 TEST(PipelineMonitorTest, ChangesPiplineStatuses) {
@@ -158,8 +158,8 @@ TEST(PipelineMonitorTest, ChangesPiplineStatuses) {
 
   PipelineMonitor monitor(CALLBACK(get_buffered), CALLBACK(get_buffered),
                           CALLBACK1(ready_state_changed), &clock, &pipeline);
+  monitor.Start();
   util::Clock::Instance.SleepSeconds(0.01);
-  monitor.Stop();
 }
 
 }  // namespace media

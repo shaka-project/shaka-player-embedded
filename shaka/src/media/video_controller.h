@@ -146,7 +146,6 @@ class VideoController : Demuxer::Client {
     double Duration() const override;
     void OnWaitingForKey() override;
 
-    void OnSeekDone() override;
     void OnError() override;
 
     ElementaryStream encoded_frames;
