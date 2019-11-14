@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "shaka/media/decoder.h"
+#include "shaka/media/streams.h"
 #include "src/debug/thread.h"
 #include "src/media/types.h"
 #include "src/util/macros.h"
@@ -33,7 +34,6 @@ class Implementation;
 namespace media {
 
 class PipelineManager;
-class Stream;
 
 
 /**
@@ -50,14 +50,16 @@ class DecoderThread {
    *   an encryption key.
    * @param on_error A callback for when there is a decoder error.
    * @param pipeline The pipeline that is used to determine the range of media.
-   * @param stream The stream to pull frames from.
+   * @param encoded_frames The input to pull frames from.
+   * @param decoded_frames The output to push frames to.
    */
   DecoderThread(std::function<double()> get_time,
                 std::function<void()> seek_done,
                 std::function<void()> on_waiting_for_key,
                 std::function<void(Status)> on_error,
                 PipelineManager* pipeline,
-                Stream* stream);
+                ElementaryStream* encoded_frames,
+                DecodedStream* decoded_frames);
   ~DecoderThread();
 
   NON_COPYABLE_OR_MOVABLE_TYPE(DecoderThread);
@@ -77,7 +79,8 @@ class DecoderThread {
   void ThreadMain();
 
   PipelineManager* pipeline_;
-  Stream* stream_;
+  ElementaryStream* encoded_frames_;
+  DecodedStream* decoded_frames_;
   std::unique_ptr<Decoder> decoder_;
 
   std::function<double()> get_time_;

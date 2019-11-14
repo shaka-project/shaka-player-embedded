@@ -180,7 +180,7 @@ int GetFFmpegFormat(variant<PixelFormat, SampleFormat> format) {
 
 AudioRenderer::AudioRenderer(std::function<double()> get_time,
                              std::function<double()> get_playback_rate,
-                             Stream* stream)
+                             DecodedStream* stream)
     : get_time_(std::move(get_time)),
       get_playback_rate_(std::move(get_playback_rate)),
       stream_(stream),
@@ -220,8 +220,8 @@ void AudioRenderer::OnSeekDone() {
 
   // Now that the seek is done, discard frames from the old time.
   const double time = get_time_();
-  stream_->GetDecodedFrames()->Remove(0, time - 3);
-  stream_->GetDecodedFrames()->Remove(time + 3, HUGE_VAL);
+  stream_->Remove(0, time - 3);
+  stream_->Remove(time + 3, HUGE_VAL);
 }
 
 void AudioRenderer::SetVolume(double volume) {
@@ -243,8 +243,7 @@ void AudioRenderer::ThreadMain() {
       }
 
       cur_time_ = get_time_();
-      auto frame = stream_->GetDecodedFrames()->GetFrame(cur_time_,
-                                                         FrameLocation::After);
+      auto frame = stream_->GetFrame(cur_time_, FrameLocation::After);
       if (!frame) {
         util::Unlocker<Mutex> unlock(&lock);
         util::Clock::Instance.SleepSeconds(0.01);
@@ -334,7 +333,7 @@ void AudioRenderer::AudioCallback(uint8_t* data, int size) {
   std::unique_lock<Mutex> lock(mutex_);
 
   if (cur_time_ >= 0)
-    stream_->GetDecodedFrames()->Remove(0, cur_time_ - 0.2);
+    stream_->Remove(0, cur_time_ - 0.2);
 
   const double playback_rate = get_playback_rate_();
   // TODO: Support playback rate by using atemp filter.
@@ -384,8 +383,7 @@ void AudioRenderer::AudioCallback(uint8_t* data, int size) {
   data += initial_sample_count * sample_size;
 
   while (size_in_samples > 0) {
-    auto frame =
-        stream_->GetDecodedFrames()->GetFrame(cur_time_, FrameLocation::After);
+    auto frame = stream_->GetFrame(cur_time_, FrameLocation::After);
     if (!frame)
       break;
 

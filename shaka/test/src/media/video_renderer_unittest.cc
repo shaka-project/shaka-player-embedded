@@ -18,7 +18,7 @@
 #include <gtest/gtest.h>
 
 #include "shaka/media/frames.h"
-#include "src/media/stream.h"
+#include "shaka/media/streams.h"
 
 namespace shaka {
 namespace media {
@@ -41,9 +41,9 @@ constexpr const double kMinDelay = 1.0 / 120;
 }  // namespace
 
 TEST(VideoRendererTest, WorksWithNoNextFrame) {
-  Stream stream;
+  DecodedStream stream;
   auto frame = MakeFrame(0.0);
-  stream.GetDecodedFrames()->AddFrame(frame);
+  stream.AddFrame(frame);
 
   MockFunction<double()> get_time;
   ON_CALL(get_time, Call()).WillByDefault(Return(0));
@@ -62,7 +62,7 @@ TEST(VideoRendererTest, WorksWithNoNextFrame) {
 }
 
 TEST(VideoRendererTest, WorksWithNoFrames) {
-  Stream stream;
+  DecodedStream stream;
 
   MockFunction<double()> get_time;
   ON_CALL(get_time, Call()).WillByDefault(Return(0));
@@ -78,9 +78,9 @@ TEST(VideoRendererTest, WorksWithNoFrames) {
 }
 
 TEST(VideoRendererTest, DrawsFrameInPast) {
-  Stream stream;
+  DecodedStream stream;
   auto frame = MakeFrame(0.0);
-  stream.GetDecodedFrames()->AddFrame(frame);
+  stream.AddFrame(frame);
 
   MockFunction<double()> get_time;
   ON_CALL(get_time, Call()).WillByDefault(Return(4));
@@ -99,12 +99,12 @@ TEST(VideoRendererTest, DrawsFrameInPast) {
 }
 
 TEST(VideoRendererTest, WillDropFrames) {
-  Stream stream;
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.01));
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.02));
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.03));
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.04));
+  DecodedStream stream;
+  stream.AddFrame(MakeFrame(0.00));
+  stream.AddFrame(MakeFrame(0.01));
+  stream.AddFrame(MakeFrame(0.02));
+  stream.AddFrame(MakeFrame(0.03));
+  stream.AddFrame(MakeFrame(0.04));
 
   MockFunction<double()> get_time;
   MockFunction<void()> step;
@@ -125,7 +125,7 @@ TEST(VideoRendererTest, WillDropFrames) {
 
   // Time: 0
   auto ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
-  EXPECT_EQ(ret, stream.GetDecodedFrames()->GetFrame(0, FrameLocation::Near));
+  EXPECT_EQ(ret, stream.GetFrame(0, FrameLocation::Near));
   EXPECT_EQ(dropped_frame_count, 0);
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.01);
@@ -133,20 +133,19 @@ TEST(VideoRendererTest, WillDropFrames) {
 
   // Time: 0.03
   ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
-  EXPECT_EQ(ret,
-            stream.GetDecodedFrames()->GetFrame(0.03, FrameLocation::Near));
+  EXPECT_EQ(ret, stream.GetFrame(0.03, FrameLocation::Near));
   EXPECT_EQ(dropped_frame_count, 2);
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.01);
 }
 
 TEST(VideoRendererTest, HandlesSeeks) {
-  Stream stream;
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.01));
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.02));
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.03));
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.04));
+  DecodedStream stream;
+  stream.AddFrame(MakeFrame(0.00));
+  stream.AddFrame(MakeFrame(0.01));
+  stream.AddFrame(MakeFrame(0.02));
+  stream.AddFrame(MakeFrame(0.03));
+  stream.AddFrame(MakeFrame(0.04));
 
   MockFunction<double()> get_time;
   MockFunction<void()> step;
@@ -168,7 +167,7 @@ TEST(VideoRendererTest, HandlesSeeks) {
 
   // Time: 0
   auto ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
-  EXPECT_EQ(ret, stream.GetDecodedFrames()->GetFrame(0, FrameLocation::Near));
+  EXPECT_EQ(ret, stream.GetFrame(0, FrameLocation::Near));
   EXPECT_EQ(dropped_frame_count, 0);
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.01);
@@ -179,18 +178,17 @@ TEST(VideoRendererTest, HandlesSeeks) {
 
   // Time: 0.04
   ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);
-  EXPECT_EQ(ret,
-            stream.GetDecodedFrames()->GetFrame(0.03, FrameLocation::Near));
+  EXPECT_EQ(ret, stream.GetFrame(0.03, FrameLocation::Near));
   EXPECT_EQ(dropped_frame_count, 0);  // Skipped over frames, but don't count.
   EXPECT_TRUE(is_new_frame);
   EXPECT_DOUBLE_EQ(delay, 0.01);
 }
 
 TEST(VideoRendererTest, TracksNewFrames) {
-  Stream stream;
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.00));
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.02));
-  stream.GetDecodedFrames()->AddFrame(MakeFrame(0.04));
+  DecodedStream stream;
+  stream.AddFrame(MakeFrame(0.00));
+  stream.AddFrame(MakeFrame(0.02));
+  stream.AddFrame(MakeFrame(0.04));
 
   MockFunction<double()> get_time;
   MockFunction<void()> step;
@@ -217,8 +215,7 @@ TEST(VideoRendererTest, TracksNewFrames) {
   bool is_new_frame = false;
   double delay = 0;
 
-#define FRAME_AT(i) \
-  (stream.GetDecodedFrames()->GetFrame(i, FrameLocation::Near))
+#define FRAME_AT(i) (stream.GetFrame(i, FrameLocation::Near))
 
   // Time: 0
   auto ret = renderer.DrawFrame(&dropped_frame_count, &is_new_frame, &delay);

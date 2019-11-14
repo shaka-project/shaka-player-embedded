@@ -21,6 +21,7 @@
 #include <string>
 
 #include "shaka/media/demuxer.h"
+#include "shaka/media/streams.h"
 #include "src/debug/mutex.h"
 #include "src/debug/thread.h"
 #include "src/debug/thread_event.h"
@@ -30,9 +31,6 @@
 
 namespace shaka {
 namespace media {
-
-class Stream;
-
 
 /**
  * Handles the thread that demuxes input content.  This handles synchronizing
@@ -49,7 +47,7 @@ class DemuxerThread {
    * @param stream The stream to push frames to.
    */
   DemuxerThread(const std::string& mime, Demuxer::Client* client,
-                Stream* stream);
+                ElementaryStream* stream);
   ~DemuxerThread();
 
   NON_COPYABLE_OR_MOVABLE_TYPE(DemuxerThread);
@@ -92,7 +90,7 @@ class DemuxerThread {
   double window_end_;
   bool need_key_frame_;
 
-  Stream* stream_;
+  ElementaryStream* stream_;
 
   // Should be last so the thread starts after all the fields are initialized.
   Thread thread_;

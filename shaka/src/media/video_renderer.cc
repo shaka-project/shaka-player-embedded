@@ -18,7 +18,7 @@
 #include <cmath>
 #include <utility>
 
-#include "src/media/stream.h"
+#include "shaka/media/streams.h"
 
 namespace shaka {
 namespace media {
@@ -33,7 +33,8 @@ constexpr const double kMaxDelay = 1.0 / 15;
 
 }  // namespace
 
-VideoRenderer::VideoRenderer(std::function<double()> get_time, Stream* stream)
+VideoRenderer::VideoRenderer(std::function<double()> get_time,
+                             DecodedStream* stream)
     : mutex_("VideoRenderer"),
       stream_(stream),
       get_time_(std::move(get_time)),
@@ -50,7 +51,7 @@ std::shared_ptr<DecodedFrame> VideoRenderer::DrawFrame(int* dropped_frame_count,
 
   // Discard any old frames, except when seeking.
   if (!is_seeking_ && prev_time_ >= 0)
-    stream_->GetDecodedFrames()->Remove(0, prev_time_ - 0.2);
+    stream_->Remove(0, prev_time_ - 0.2);
 
   // TODO: Could this usage cause a deadlock?  If a remove() is started after
   // ideal_frame is locked, the remove() will block and getting next_frame
@@ -58,11 +59,9 @@ std::shared_ptr<DecodedFrame> VideoRenderer::DrawFrame(int* dropped_frame_count,
   const double time = get_time_();
   // If we are seeking, use the previous frame so we display the same frame
   // while the seek is happening.
-  auto ideal_frame =
-      is_seeking_ && prev_time_ >= 0
-          ? stream_->GetDecodedFrames()->GetFrame(prev_time_,
-                                                  FrameLocation::Near)
-          : stream_->GetDecodedFrames()->GetFrame(time, FrameLocation::Near);
+  auto ideal_frame = is_seeking_ && prev_time_ >= 0
+                         ? stream_->GetFrame(prev_time_, FrameLocation::Near)
+                         : stream_->GetFrame(time, FrameLocation::Near);
   if (!ideal_frame)
     return nullptr;
 
@@ -70,16 +69,15 @@ std::shared_ptr<DecodedFrame> VideoRenderer::DrawFrame(int* dropped_frame_count,
   // behind.  This makes playback smoother at the cost of being more complicated
   // and sacrificing AV sync.
 
-  auto next_frame = stream_->GetDecodedFrames()->GetFrame(ideal_frame->pts,
-                                                          FrameLocation::After);
+  auto next_frame = stream_->GetFrame(ideal_frame->pts, FrameLocation::After);
   const double total_delay = next_frame ? next_frame->pts - time : 0;
   *delay = std::max(std::min(total_delay, kMaxDelay), kMinDelay);
 
   *is_new_frame = prev_time_ != ideal_frame->pts;
   if (!is_seeking_) {
     if (prev_time_ >= 0) {
-      *dropped_frame_count = stream_->GetDecodedFrames()->CountFramesBetween(
-          prev_time_, ideal_frame->pts);
+      *dropped_frame_count =
+          stream_->CountFramesBetween(prev_time_, ideal_frame->pts);
     }
     prev_time_ = ideal_frame->pts;
   }
@@ -100,8 +98,8 @@ void VideoRenderer::OnSeekDone() {
   // keeping the newly decoded frames.  Don't discard too close to current time
   // since we might discard frames that were just decoded.
   const double time = get_time_();
-  stream_->GetDecodedFrames()->Remove(0, time - 1);
-  stream_->GetDecodedFrames()->Remove(time + 1, HUGE_VAL);
+  stream_->Remove(0, time - 1);
+  stream_->Remove(time + 1, HUGE_VAL);
 }
 
 }  // namespace media

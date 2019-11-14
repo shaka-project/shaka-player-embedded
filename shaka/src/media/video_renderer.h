@@ -18,6 +18,7 @@
 #include <functional>
 #include <memory>
 
+#include "shaka/media/streams.h"
 #include "src/debug/mutex.h"
 #include "src/media/renderer.h"
 #include "src/util/macros.h"
@@ -25,14 +26,12 @@
 namespace shaka {
 namespace media {
 
-class Stream;
-
 /**
  * Defines a renderer that draws video frames to the screen.
  */
 class VideoRenderer : public Renderer {
  public:
-  VideoRenderer(std::function<double()> get_time, Stream* stream);
+  VideoRenderer(std::function<double()> get_time, DecodedStream* stream);
   ~VideoRenderer() override;
 
   NON_COPYABLE_OR_MOVABLE_TYPE(VideoRenderer);
@@ -45,7 +44,7 @@ class VideoRenderer : public Renderer {
 
  private:
   Mutex mutex_;
-  Stream* const stream_;
+  DecodedStream* const stream_;
   const std::function<double()> get_time_;
   double prev_time_;
   bool is_seeking_;

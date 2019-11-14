@@ -20,11 +20,11 @@
 #include <functional>
 
 #include "shaka/media/frames.h"
+#include "shaka/media/streams.h"
 #include "src/debug/mutex.h"
 #include "src/debug/thread.h"
 #include "src/debug/thread_event.h"
 #include "src/media/renderer.h"
-#include "src/media/stream.h"
 #include "src/util/macros.h"
 
 struct SwrContext;
@@ -38,7 +38,8 @@ namespace media {
 class AudioRenderer : public Renderer {
  public:
   AudioRenderer(std::function<double()> get_time,
-                std::function<double()> get_playback_rate, Stream* stream);
+                std::function<double()> get_playback_rate,
+                DecodedStream* stream);
   ~AudioRenderer() override;
 
   // TODO: Allow setting different output device.
@@ -60,7 +61,7 @@ class AudioRenderer : public Renderer {
 
   const std::function<double()> get_time_;
   const std::function<double()> get_playback_rate_;
-  Stream* const stream_;
+  DecodedStream* const stream_;
 
   mutable Mutex mutex_;
   ThreadEvent<void> on_reset_;

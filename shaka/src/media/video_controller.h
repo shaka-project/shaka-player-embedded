@@ -24,6 +24,7 @@
 #include "shaka/eme/implementation.h"
 #include "shaka/media/demuxer.h"
 #include "shaka/media/frames.h"
+#include "shaka/media/streams.h"
 #include "src/debug/mutex.h"
 #include "src/mapping/byte_buffer.h"
 #include "src/mapping/struct.h"
@@ -33,7 +34,6 @@
 #include "src/media/pipeline_manager.h"
 #include "src/media/pipeline_monitor.h"
 #include "src/media/renderer.h"
-#include "src/media/stream.h"
 #include "src/media/types.h"
 #include "src/util/macros.h"
 
@@ -144,7 +144,8 @@ class VideoController : Demuxer::Client {
 
     void OnSeekDone();
 
-    Stream stream;
+    ElementaryStream encoded_frames;
+    DecodedStream decoded_frames;
     DecoderThread decoder;
     DemuxerThread demuxer;
     std::unique_ptr<Renderer> renderer;

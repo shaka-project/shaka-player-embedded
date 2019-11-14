@@ -23,7 +23,6 @@
 
 #include "src/core/js_manager_impl.h"
 #include "src/media/media_utils.h"
-#include "src/media/stream.h"
 
 namespace shaka {
 namespace media {
@@ -44,7 +43,7 @@ std::string ShortContainerName(const std::string& mime) {
 }  // namespace
 
 DemuxerThread::DemuxerThread(const std::string& mime, Demuxer::Client* client,
-                             Stream* stream)
+                             ElementaryStream* stream)
     : mutex_("DemuxerThread"),
       new_data_("New demuxed data"),
       client_(client),
@@ -129,7 +128,7 @@ void DemuxerThread::ThreadMain() {
           continue;
         }
       }
-      stream_->GetDemuxedFrames()->AddFrame(frame);
+      stream_->AddFrame(frame);
     }
     CallOnComplete(Status::Success);
     new_data_.ResetAndWaitWhileUnlocked(lock);

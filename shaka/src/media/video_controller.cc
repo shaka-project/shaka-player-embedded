@@ -32,9 +32,9 @@ namespace media {
 
 namespace {
 
-std::string FormatSize(const StreamBase* buffer) {
+std::string FormatSize(const StreamBase& buffer) {
   const char* kSuffixes[] = {"", " KB", " MB", " GB", " TB"};
-  size_t size = buffer->EstimateSize();
+  size_t size = buffer.EstimateSize();
   for (const char* suffix : kSuffixes) {
     if (size < 3 * 1024)
       return std::to_string(size) + suffix;
@@ -43,9 +43,9 @@ std::string FormatSize(const StreamBase* buffer) {
   LOG(FATAL) << "Size too large to print.";
 }
 
-std::string FormatBuffered(const StreamBase* buffer) {
+std::string FormatBuffered(const StreamBase& buffer) {
   std::string ret;
-  for (auto& range : buffer->GetBufferedRanges()) {
+  for (auto& range : buffer.GetBufferedRanges()) {
     if (!ret.empty())
       ret += ", ";
     ret += util::StringPrintf("%.2f - %.2f", range.start, range.end);
@@ -55,7 +55,7 @@ std::string FormatBuffered(const StreamBase* buffer) {
 
 Renderer* CreateRenderer(SourceType source, std::function<double()> get_time,
                          std::function<double()> get_playback_rate,
-                         Stream* stream) {
+                         DecodedStream* stream) {
   switch (source) {
     case SourceType::Audio:
       return new AudioRenderer(std::move(get_time),
@@ -229,7 +229,7 @@ bool VideoController::Remove(SourceType type, double start, double end) {
     return false;
   }
 
-  source->stream.GetDemuxedFrames()->Remove(start, end);
+  source->encoded_frames.Remove(start, end);
   return true;
 }
 
@@ -238,7 +238,7 @@ void VideoController::EndOfStream() {
   {
     util::shared_lock<SharedMutex> lock(mutex_);
     for (auto& pair : sources_) {
-      auto buffered = pair.second->stream.GetBufferedRanges();
+      auto buffered = pair.second->encoded_frames.GetBufferedRanges();
       // Use the maximum duration of any stream as the total media duration.
       // See: https://w3c.github.io/media-source/#end-of-stream-algorithm
       if (!buffered.empty())
@@ -255,12 +255,12 @@ BufferedRanges VideoController::GetBufferedRanges(SourceType type) const {
     std::vector<BufferedRanges> sources;
     sources.reserve(sources_.size());
     for (auto& pair : sources_)
-      sources.push_back(pair.second->stream.GetBufferedRanges());
+      sources.push_back(pair.second->encoded_frames.GetBufferedRanges());
     return IntersectionOfBufferedRanges(sources);
   }
 
   const Source* source = GetSource(type);
-  return source ? source->stream.GetBufferedRanges() : BufferedRanges();
+  return source ? source->encoded_frames.GetBufferedRanges() : BufferedRanges();
 }
 
 void VideoController::Reset() {
@@ -294,11 +294,11 @@ void VideoController::DebugDumpStats() const {
   for (auto& pair : sources_) {
     printf("  Buffer (%s):\n", to_string(pair.first).c_str());
     printf("    Demuxed (%s): %s\n",
-           FormatSize(pair.second->stream.GetDemuxedFrames()).c_str(),
-           FormatBuffered(pair.second->stream.GetDemuxedFrames()).c_str());
+           FormatSize(pair.second->encoded_frames).c_str(),
+           FormatBuffered(pair.second->encoded_frames).c_str());
     printf("    Decoded (%s): %s\n",
-           FormatSize(pair.second->stream.GetDecodedFrames()).c_str(),
-           FormatBuffered(pair.second->stream.GetDecodedFrames()).c_str());
+           FormatSize(pair.second->decoded_frames).c_str(),
+           FormatBuffered(pair.second->decoded_frames).c_str());
   }
 }
 
@@ -346,8 +346,7 @@ BufferedRanges VideoController::GetDecodedRanges() const {
   std::vector<BufferedRanges> sources;
   sources.reserve(sources_.size());
   for (auto& pair : sources_) {
-    sources.push_back(
-        pair.second->stream.GetDecodedFrames()->GetBufferedRanges());
+    sources.push_back(pair.second->decoded_frames.GetBufferedRanges());
   }
   return IntersectionOfBufferedRanges(sources);
 }
@@ -370,10 +369,10 @@ VideoController::Source::Source(SourceType source_type,
                                 std::function<void(Status)> on_error)
     : decoder(get_time, std::bind(&VideoController::Source::OnSeekDone, this),
               std::move(on_waiting_for_key), std::move(on_error), pipeline,
-              &stream),
-      demuxer(mime, demuxer_client, &stream),
+              &encoded_frames, &decoded_frames),
+      demuxer(mime, demuxer_client, &encoded_frames),
       renderer(CreateRenderer(source_type, get_time,
-                              std::move(get_playback_rate), &stream)),
+                              std::move(get_playback_rate), &decoded_frames)),
       ready(false) {}
 
 VideoController::Source::~Source() {}

@@ -636,8 +636,6 @@ source_set("internal_sources") {
     "shaka/src/media/renderer.cc",
     "shaka/src/media/renderer.h",
     "shaka/src/media/renderer_new.cc",
-    "shaka/src/media/stream.cc",
-    "shaka/src/media/stream.h",
     "shaka/src/media/stream_info.cc",
     "shaka/src/media/streams.cc",
     "shaka/src/media/types.cc",

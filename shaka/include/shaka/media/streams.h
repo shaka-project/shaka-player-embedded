@@ -171,14 +171,12 @@ class SHAKA_EXPORT StreamBase {
  *
  * This type is internally thread-safe.
  *
- * TODO(modmaker): Rename to Stream once internal type is removed.
- *
  * @ingroup media
  */
 template <typename T, bool OrderByDts>
-class SHAKA_EXPORT StreamNew : public StreamBase {
+class SHAKA_EXPORT Stream : public StreamBase {
  public:
-  StreamNew() : StreamBase(OrderByDts) {}
+  Stream() : StreamBase(OrderByDts) {}
 
   /** @see StreamBase::AddFrameInternal */
   void AddFrame(std::shared_ptr<T> frame) {
@@ -194,8 +192,8 @@ class SHAKA_EXPORT StreamNew : public StreamBase {
 };
 
 
-using ElementaryStream = StreamNew<EncodedFrame, true>;
-using DecodedStream = StreamNew<DecodedFrame, false>;
+using ElementaryStream = Stream<EncodedFrame, true>;
+using DecodedStream = Stream<DecodedFrame, false>;
 
 }  // namespace media
 }  // namespace shaka

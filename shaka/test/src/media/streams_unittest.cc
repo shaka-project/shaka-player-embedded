@@ -28,7 +28,7 @@ std::shared_ptr<BaseFrame> MakeFrame(double start, double end,
   return std::shared_ptr<BaseFrame>(ret);
 }
 
-using StreamType = StreamNew<BaseFrame, true>;
+using StreamType = Stream<BaseFrame, true>;
 
 }  // namespace
 

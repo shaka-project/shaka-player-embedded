@@ -14,6 +14,7 @@
 
 #include "src/media/decoder_thread.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <memory>
@@ -22,10 +23,11 @@
 
 #include "src/media/ffmpeg/ffmpeg_decoder.h"
 #include "src/media/pipeline_manager.h"
-#include "src/media/stream.h"
 
 namespace shaka {
 namespace media {
+
+namespace {
 
 /** The number of seconds to keep decoded ahead of the playhead. */
 constexpr const double kDecodeBufferSize = 1;
@@ -33,13 +35,32 @@ constexpr const double kDecodeBufferSize = 1;
 /** The number of seconds gap before we assume we are at the end. */
 constexpr const double kEndDelta = 0.1;
 
+double DecodedAheadOf(StreamBase* stream, double time) {
+  for (auto& range : stream->GetBufferedRanges()) {
+    if (range.end > time) {
+      if (range.start < time + StreamBase::kMaxGapSize) {
+        return range.end - std::max(time, range.start);
+      }
+
+      // The ranges are sorted, so avoid looking at the remaining elements.
+      break;
+    }
+  }
+  return 0;
+}
+
+}  // namespace
+
 DecoderThread::DecoderThread(std::function<double()> get_time,
                              std::function<void()> seek_done,
                              std::function<void()> on_waiting_for_key,
                              std::function<void(Status)> on_error,
-                             PipelineManager* pipeline, Stream* stream)
+                             PipelineManager* pipeline,
+                             ElementaryStream* encoded_frames,
+                             DecodedStream* decoded_frames)
     : pipeline_(pipeline),
-      stream_(stream),
+      encoded_frames_(encoded_frames),
+      decoded_frames_(decoded_frames),
       decoder_(new ffmpeg::FFmpegDecoder),
       get_time_(std::move(get_time)),
       seek_done_(std::move(seek_done)),
@@ -80,14 +101,13 @@ void DecoderThread::ThreadMain() {
     std::shared_ptr<EncodedFrame> frame;
     if (std::isnan(last_time)) {
       decoder_->ResetDecoder();
-      frame = stream_->GetDemuxedFrames()->GetFrame(
-          cur_time, FrameLocation::KeyFrameBefore);
+      frame =
+          encoded_frames_->GetFrame(cur_time, FrameLocation::KeyFrameBefore);
     } else {
-      frame = stream_->GetDemuxedFrames()->GetFrame(last_time,
-                                                    FrameLocation::After);
+      frame = encoded_frames_->GetFrame(last_time, FrameLocation::After);
     }
 
-    if (stream_->DecodedAheadOf(cur_time) > kDecodeBufferSize) {
+    if (DecodedAheadOf(decoded_frames_, cur_time) > kDecodeBufferSize) {
       std::this_thread::sleep_for(std::chrono::milliseconds(25));
       continue;
     }
@@ -124,7 +144,7 @@ void DecoderThread::ThreadMain() {
     raised_waiting_event_ = false;
     const double last_pts = decoded.empty() ? -1 : decoded.back()->pts;
     for (auto& decoded_frame : decoded) {
-      stream_->GetDecodedFrames()->AddFrame(decoded_frame);
+      decoded_frames_->AddFrame(decoded_frame);
     }
 
     if (frame) {
