@@ -19,7 +19,7 @@
 
 #include "../macros.h"
 #include "decoder.h"
-#include "media_player.h"
+#include "proxy_media_player.h"
 #include "renderer.h"
 
 namespace shaka {
@@ -32,7 +32,7 @@ namespace media {
  *
  * @ingroup media
  */
-class SHAKA_EXPORT DefaultMediaPlayer final : public MediaPlayer {
+class SHAKA_EXPORT DefaultMediaPlayer final : public ProxyMediaPlayer {
  public:
   /**
    * Creates a new DefaultMediaPlayer instance that uses the given objects to
@@ -61,41 +61,11 @@ class SHAKA_EXPORT DefaultMediaPlayer final : public MediaPlayer {
 
   MediaCapabilitiesInfo DecodingInfo(
       const MediaDecodingConfiguration& config) const override;
-  VideoPlaybackQualityNew VideoPlaybackQuality() const override;
-  void AddClient(Client* client) override;
-  void RemoveClient(Client* client) override;
-  std::vector<BufferedRange> GetBuffered() const override;
-  VideoReadyState ReadyState() const override;
-  VideoPlaybackState PlaybackState() const override;
-
-  bool SetVideoFillMode(VideoFillMode mode) override;
-  uint32_t Height() const override;
-  uint32_t Width() const override;
-  double Volume() const override;
-  void SetVolume(double volume) override;
-  bool Muted() const override;
-  void SetMuted(bool muted) override;
-
-  void Play() override;
-  void Pause() override;
-  double CurrentTime() const override;
-  void SetCurrentTime(double time) override;
-  double Duration() const override;
-  void SetDuration(double duration) override;
-  double PlaybackRate() const override;
-  void SetPlaybackRate(double rate) override;
-
-  bool AttachSource(const std::string& src) override;
-  bool AttachMse() override;
-  bool AddMseBuffer(const std::string& mime, bool is_video,
-                    const ElementaryStream* stream) override;
-  void LoadedMetaData(double duration) override;
-  void MseEndOfStream() override;
-  bool SetEmeImplementation(const std::string& key_system,
-                            eme::Implementation* implementation) override;
-  void Detach() override;
 
  private:
+  MediaPlayer* CreateMse() override;
+  MediaPlayer* CreateSource(const std::string& src) override;
+
   class Impl;
   std::unique_ptr<Impl> impl_;
 };

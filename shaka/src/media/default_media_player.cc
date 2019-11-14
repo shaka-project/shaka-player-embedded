@@ -30,71 +30,13 @@ MediaCapabilitiesInfo DefaultMediaPlayer::DecodingInfo(
     const MediaDecodingConfiguration& config) const {
   return MediaCapabilitiesInfo();
 }
-VideoPlaybackQualityNew DefaultMediaPlayer::VideoPlaybackQuality() const {
-  return VideoPlaybackQualityNew();
-}
-void DefaultMediaPlayer::AddClient(Client* client) {}
-void DefaultMediaPlayer::RemoveClient(Client* client) {}
-std::vector<BufferedRange> DefaultMediaPlayer::GetBuffered() const {
-  return {};
-}
-VideoReadyState DefaultMediaPlayer::ReadyState() const {
-  return VideoReadyState::NotAttached;
-}
-VideoPlaybackState DefaultMediaPlayer::PlaybackState() const {
-  return VideoPlaybackState::Detached;
-}
 
-bool DefaultMediaPlayer::SetVideoFillMode(VideoFillMode mode) {
-  return false;
+MediaPlayer* DefaultMediaPlayer::CreateMse() {
+  return nullptr;
 }
-uint32_t DefaultMediaPlayer::Width() const {
-  return 0;
+MediaPlayer* DefaultMediaPlayer::CreateSource(const std::string& src) {
+  return nullptr;
 }
-uint32_t DefaultMediaPlayer::Height() const {
-  return 0;
-}
-double DefaultMediaPlayer::Volume() const {
-  return 0;
-}
-void DefaultMediaPlayer::SetVolume(double volume) {}
-bool DefaultMediaPlayer::Muted() const {
-  return false;
-}
-void DefaultMediaPlayer::SetMuted(bool muted) {}
-
-void DefaultMediaPlayer::Play() {}
-void DefaultMediaPlayer::Pause() {}
-double DefaultMediaPlayer::CurrentTime() const {
-  return 0;
-}
-void DefaultMediaPlayer::SetCurrentTime(double time) {}
-double DefaultMediaPlayer::Duration() const {
-  return 0;
-}
-void DefaultMediaPlayer::SetDuration(double duration) {}
-double DefaultMediaPlayer::PlaybackRate() const {
-  return 0;
-}
-void DefaultMediaPlayer::SetPlaybackRate(double rate) {}
-
-bool DefaultMediaPlayer::AttachSource(const std::string& src) {
-  return false;
-}
-bool DefaultMediaPlayer::AttachMse() {
-  return false;
-}
-bool DefaultMediaPlayer::AddMseBuffer(const std::string& mime, bool is_video,
-                                      const ElementaryStream* stream) {
-  return false;
-}
-void DefaultMediaPlayer::MseEndOfStream() {}
-void DefaultMediaPlayer::LoadedMetaData(double duration) {}
-bool DefaultMediaPlayer::SetEmeImplementation(
-    const std::string& key_system, eme::Implementation* implementation) {
-  return false;
-}
-void DefaultMediaPlayer::Detach() {}
 
 }  // namespace media
 }  // namespace shaka
