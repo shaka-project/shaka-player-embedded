@@ -604,8 +604,6 @@ source_set("internal_sources") {
     "shaka/src/mapping/struct.cc",
     "shaka/src/mapping/struct.h",
     "shaka/src/mapping/weak_js_ptr.h",
-    "shaka/src/media/audio_renderer.cc",
-    "shaka/src/media/audio_renderer.h",
     "shaka/src/media/decoder.cc",
     "shaka/src/media/decoder_thread.cc",
     "shaka/src/media/decoder_thread.h",
@@ -624,6 +622,8 @@ source_set("internal_sources") {
     "shaka/src/media/frame_converter.cc",
     "shaka/src/media/frame_converter.h",
     "shaka/src/media/frames.cc",
+    "shaka/src/media/ios/ios_video_renderer.cc",
+    "shaka/src/media/ios/ios_video_renderer.h",
     "shaka/src/media/media_capabilities.cc",
     "shaka/src/media/media_player.cc",
     "shaka/src/media/media_utils.cc",
@@ -634,16 +634,12 @@ source_set("internal_sources") {
     "shaka/src/media/pipeline_monitor.h",
     "shaka/src/media/proxy_media_player.cc",
     "shaka/src/media/renderer.cc",
-    "shaka/src/media/renderer.h",
-    "shaka/src/media/renderer_new.cc",
     "shaka/src/media/stream_info.cc",
     "shaka/src/media/streams.cc",
     "shaka/src/media/types.cc",
     "shaka/src/media/types.h",
     "shaka/src/media/video_controller.cc",
     "shaka/src/media/video_controller.h",
-    "shaka/src/media/video_renderer.cc",
-    "shaka/src/media/video_renderer.h",
     "shaka/src/memory/heap_tracer.cc",
     "shaka/src/memory/heap_tracer.h",
     "shaka/src/memory/object_tracker.cc",
@@ -691,6 +687,12 @@ source_set("internal_sources") {
     sources += [
       "shaka/src/media/hardware_support.cc",
       "shaka/src/media/hardware_support.h",
+    ]
+  }
+  if (sdl_utils || is_ios) {
+    sources += [
+      "shaka/src/media/video_renderer_common.cc",
+      "shaka/src/media/video_renderer_common.h",
     ]
   }
   if (sdl_utils) {
@@ -1218,7 +1220,6 @@ test("tests") {
     "shaka/test/src/media/media_utils_unittest.cc",
     "shaka/test/src/media/pipeline_manager_unittest.cc",
     "shaka/test/src/media/pipeline_monitor_unittest.cc",
-    "shaka/test/src/media/video_renderer_unittest.cc",
     "shaka/test/src/memory/heap_tracer_unittest.cc",
     "shaka/test/src/memory/object_tracker_integration.cc",
     "shaka/test/src/memory/object_tracker_unittest.cc",
@@ -1242,6 +1243,10 @@ test("tests") {
     sources += [ "shaka/test/src/test/media_files_ios.cc" ]
   } else {
     sources += [ "shaka/test/src/test/media_files_other.cc" ]
+  }
+
+  if (sdl_utils || is_ios) {
+    sources += [ "shaka/test/src/media/video_renderer_common_unittest.cc" ]
   }
 
   deps = [

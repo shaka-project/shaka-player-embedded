@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "shaka/media/renderer.h"
 #include "shaka/optional.h"
 #include "shaka/video.h"
 #include "src/core/ref_ptr.h"
@@ -50,7 +51,9 @@ class HTMLVideoElement : public dom::Element {
   DECLARE_TYPE_INFO(HTMLVideoElement);
 
  public:
-  explicit HTMLVideoElement(RefPtr<dom::Document> document);
+  HTMLVideoElement(RefPtr<dom::Document> document,
+                   media::VideoRenderer* video_renderer,
+                   media::AudioRenderer* audio_renderer);
 
   void Trace(memory::HeapTracer* tracer) const override;
 
@@ -108,6 +111,8 @@ class HTMLVideoElement : public dom::Element {
   void ThreadMain();
 
   Member<MediaSource> media_source_;
+  media::VideoRenderer* video_renderer_;
+  media::AudioRenderer* audio_renderer_;
   media::PipelineStatus pipeline_status_;
   double volume_;
   bool will_play_;

@@ -19,8 +19,8 @@ namespace media {
 
 class DefaultMediaPlayer::Impl {};
 
-DefaultMediaPlayer::DefaultMediaPlayer(VideoRendererNew* video_renderer,
-                                       AudioRendererNew* audio_renderer) {}
+DefaultMediaPlayer::DefaultMediaPlayer(VideoRenderer* video_renderer,
+                                       AudioRenderer* audio_renderer) {}
 DefaultMediaPlayer::~DefaultMediaPlayer() {}
 
 void DefaultMediaPlayer::SetDecoders(Decoder* video_decoder,

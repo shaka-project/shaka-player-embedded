@@ -14,42 +14,151 @@
 
 #include "shaka/media/sdl_video_renderer.h"
 
+#include <atomic>
+
+#include "shaka/optional.h"
+#include "shaka/sdl_frame_drawer.h"
+#include "shaka/utils.h"
+#include "src/debug/mutex.h"
+#include "src/debug/thread.h"
+#include "src/media/video_renderer_common.h"
+#include "src/util/clock.h"
+#include "src/util/macros.h"
+#include "src/util/utils.h"
+
 namespace shaka {
 namespace media {
 
-class SdlManualVideoRenderer::Impl {};
+class SdlManualVideoRenderer::Impl : public VideoRendererCommon {
+ public:
+  explicit Impl(SDL_Renderer* renderer)
+      : mutex_("SdlManualVideoRenderer"), renderer_(renderer) {
+    sdl_drawer_.SetRenderer(renderer);
+  }
 
-SdlManualVideoRenderer::SdlManualVideoRenderer(SDL_Renderer* renderer) {}
+  void SetRenderer(SDL_Renderer* renderer) {
+    std::unique_lock<Mutex> lock(mutex_);
+    sdl_drawer_.SetRenderer(renderer);
+    renderer_ = renderer;
+  }
+
+  SDL_Renderer* GetRenderer() const {
+    std::unique_lock<Mutex> lock(mutex_);
+    return renderer_;
+  }
+
+  double Render(SDL_Rect* region) {
+    std::shared_ptr<DecodedFrame> frame;
+    const double delay = GetCurrentFrame(&frame);
+
+    std::unique_lock<Mutex> lock(mutex_);
+    if (frame && renderer_) {
+      SDL_Texture* texture = sdl_drawer_.Draw(frame);
+      if (texture) {
+        ShakaRect region_shaka;
+        if (region) {
+          region_shaka = {region->x, region->y, region->w, region->h};
+        } else {
+          int w = frame->width;
+          int h = frame->height;
+          SDL_GetRendererOutputSize(renderer_, &w, &h);
+          region_shaka.x = region_shaka.y = 0;
+          region_shaka.w = w;
+          region_shaka.h = h;
+        }
+
+        ShakaRect src, dest;
+        ShakaRect frame_region = {0, 0, frame->width, frame->height};
+        FitVideoToRegion(frame_region, region_shaka, fill_mode(), &src, &dest);
+        SDL_Rect src_sdl = {src.x, src.y, src.w, src.h};
+        SDL_Rect dest_sdl = {dest.x, dest.y, dest.w, dest.h};
+        SDL_RenderCopy(renderer_, texture, &src_sdl, &dest_sdl);
+      }
+    }
+
+    return delay;
+  }
+
+ private:
+  mutable Mutex mutex_;
+  SdlFrameDrawer sdl_drawer_;
+  SDL_Renderer* renderer_;
+};
+
+class SdlThreadVideoRenderer::Impl {
+ public:
+  Impl(SdlThreadVideoRenderer* renderer, optional<SDL_Rect> region)
+      : renderer_(renderer),
+        region_(region),
+        shutdown_(false),
+        thread_("SdlThreadVideo", std::bind(&Impl::ThreadMain, this)) {}
+  ~Impl() {
+    shutdown_.store(true, std::memory_order_relaxed);
+    thread_.join();
+  }
+
+  NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
+
+ private:
+  void ThreadMain() {
+    while (!shutdown_.load(std::memory_order_relaxed)) {
+      SDL_Rect region = region_.value_or(SDL_Rect());
+      const double delay =
+          renderer_->Render(region_.has_value() ? &region : nullptr);
+      SDL_RenderPresent(renderer_->GetRenderer());
+
+      util::Clock::Instance.SleepSeconds(delay);
+    }
+  }
+
+  SdlThreadVideoRenderer* renderer_;
+  optional<SDL_Rect> region_;
+  std::atomic<bool> shutdown_;
+  Thread thread_;
+};
+
+
+SdlManualVideoRenderer::SdlManualVideoRenderer(SDL_Renderer* renderer)
+    : impl_(new Impl(renderer)) {}
 SdlManualVideoRenderer::~SdlManualVideoRenderer() {}
 
-void SdlManualVideoRenderer::SetRenderer(SDL_Renderer* renderer) {}
+void SdlManualVideoRenderer::SetRenderer(SDL_Renderer* renderer) {
+  impl_->SetRenderer(renderer);
+}
 SDL_Renderer* SdlManualVideoRenderer::GetRenderer() const {
-  return nullptr;
+  return impl_->GetRenderer();
 }
 
 double SdlManualVideoRenderer::Render(SDL_Rect* region) {
-  return 0;
+  return impl_->Render(region);
 }
 
-void SdlManualVideoRenderer::OnSeek() {}
+void SdlManualVideoRenderer::OnSeek() {
+  impl_->OnSeek();
+}
 
-void SdlManualVideoRenderer::SetPlayer(const MediaPlayer* player) {}
-void SdlManualVideoRenderer::Attach(const DecodedStream* stream) {}
-void SdlManualVideoRenderer::Detach() {}
-
+void SdlManualVideoRenderer::SetPlayer(const MediaPlayer* player) {
+  impl_->SetPlayer(player);
+}
+void SdlManualVideoRenderer::Attach(const DecodedStream* stream) {
+  impl_->Attach(stream);
+}
+void SdlManualVideoRenderer::Detach() {
+  impl_->Detach();
+}
 VideoPlaybackQualityNew SdlManualVideoRenderer::VideoPlaybackQuality() const {
-  return VideoPlaybackQualityNew();
+  return impl_->VideoPlaybackQuality();
 }
 bool SdlManualVideoRenderer::SetVideoFillMode(VideoFillMode mode) {
-  return false;
+  return impl_->SetVideoFillMode(mode);
 }
 
 
-class SdlThreadVideoRenderer::Impl {};
-
-SdlThreadVideoRenderer::SdlThreadVideoRenderer(SDL_Renderer* renderer) {}
+SdlThreadVideoRenderer::SdlThreadVideoRenderer(SDL_Renderer* renderer)
+    : SdlManualVideoRenderer(renderer), impl_(new Impl(this, nullopt)) {}
 SdlThreadVideoRenderer::SdlThreadVideoRenderer(SDL_Renderer* renderer,
-                                               SDL_Rect region) {}
+                                               SDL_Rect region)
+    : SdlManualVideoRenderer(renderer), impl_(new Impl(this, region)) {}
 SdlThreadVideoRenderer::~SdlThreadVideoRenderer() {}
 
 }  // namespace media

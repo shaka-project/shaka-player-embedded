@@ -57,13 +57,14 @@ Video::~Video() {}
 
 Video& Video::operator=(Video&&) = default;
 
-void Video::Initialize(Client* client) {
+void Video::Initialize(Client* client, media::VideoRenderer* video_renderer,
+                       media::AudioRenderer* audio_renderer) {
   // This can be called immediately after the JsManager constructor.  Since the
   // Environment might not be setup yet, run this in an internal task so we know
   // it is ready.
-  const auto callback = [this, client]() {
-    impl_->inner =
-        new js::mse::HTMLVideoElement(js::dom::Document::GetGlobalDocument());
+  const auto callback = [=]() {
+    impl_->inner = new js::mse::HTMLVideoElement(
+        js::dom::Document::GetGlobalDocument(), video_renderer, audio_renderer);
 
     if (client) {
       impl_->inner->SetCppEventListener(js::EventType::Playing,
@@ -83,14 +84,6 @@ void Video::Initialize(Client* client) {
       ->AddInternalTask(TaskPriority::Internal, "Video init",
                         PlainCallbackTask(callback))
       ->GetValue();
-}
-
-std::shared_ptr<media::DecodedFrame> Video::DrawFrame(double* delay) {
-  DCHECK(impl_->inner) << "Must call Initialize.";
-  RefPtr<js::mse::MediaSource> source = impl_->inner->GetMediaSource();
-  if (!source)
-    return nullptr;
-  return source->GetController()->DrawFrame(delay);
 }
 
 

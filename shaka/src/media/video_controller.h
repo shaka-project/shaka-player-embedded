@@ -25,6 +25,8 @@
 #include "shaka/media/decoder.h"
 #include "shaka/media/demuxer.h"
 #include "shaka/media/frames.h"
+#include "shaka/media/media_player.h"
+#include "shaka/media/renderer.h"
 #include "shaka/media/streams.h"
 #include "src/debug/mutex.h"
 #include "src/mapping/byte_buffer.h"
@@ -34,7 +36,6 @@
 #include "src/media/media_utils.h"
 #include "src/media/pipeline_manager.h"
 #include "src/media/pipeline_monitor.h"
-#include "src/media/renderer.h"
 #include "src/media/types.h"
 #include "src/util/macros.h"
 
@@ -82,13 +83,11 @@ class VideoController : Demuxer::Client {
   }
   //@}
 
-  /** Sets the volume of the audio. */
-  void SetVolume(double volume);
-
-  /** Draws the current video frame onto a texture and returns it. */
-  std::shared_ptr<DecodedFrame> DrawFrame(double* delay);
   /** Sets the CDM implementation used to decrypt media. */
   void SetCdm(eme::Implementation* cdm);
+
+  void SetRenderers(VideoRenderer* video_renderer,
+                    AudioRenderer* audio_renderer);
 
   Status AddSource(const std::string& mime_type, SourceType* source_type);
   /**
@@ -138,7 +137,6 @@ class VideoController : Demuxer::Client {
         Demuxer::Client* demuxer_client,
         const std::string& mime, std::function<void()> on_waiting_for_key,
         std::function<double()> get_time,
-        std::function<double()> get_playback_rate,
         std::function<void(Status)> on_error);
     ~Source() override;
 
@@ -156,7 +154,7 @@ class VideoController : Demuxer::Client {
     std::unique_ptr<Decoder> decoder;
     DecoderThread decoder_thread;
     DemuxerThread demuxer;
-    std::unique_ptr<Renderer> renderer;
+    Renderer* renderer;
     bool ready;
 
     PipelineManager* pipeline;
@@ -179,6 +177,7 @@ class VideoController : Demuxer::Client {
                    const uint8_t* data, size_t data_size) override;
 
   mutable SharedMutex mutex_;
+  std::unique_ptr<MediaPlayer> fake_media_player_;
   std::unordered_map<SourceType, std::unique_ptr<Source>> sources_;
   std::function<void(SourceType, Status)> on_error_;
   std::function<void()> on_waiting_for_key_;
@@ -188,7 +187,8 @@ class VideoController : Demuxer::Client {
   PipelineMonitor monitor_;
   VideoPlaybackQuality quality_info_;
   eme::Implementation* cdm_;
-  double volume_;
+  VideoRenderer* video_renderer_;
+  AudioRenderer* audio_renderer_;
   size_t init_count_;
 };
 

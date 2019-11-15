@@ -34,7 +34,7 @@ namespace media {
  *
  * @ingroup media
  */
-class SHAKA_EXPORT SdlManualVideoRenderer : public VideoRendererNew {
+class SHAKA_EXPORT SdlManualVideoRenderer : public VideoRenderer {
  public:
   /**
    * Creates a new renderer that renders using the given renderer object.

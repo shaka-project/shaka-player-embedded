@@ -67,7 +67,7 @@ RefPtr<Element> Document::DocumentElement() const {
 RefPtr<Element> Document::CreateElement(const std::string& name) {
   if (name == "video") {
     // This should only be used in Shaka Player integration tests.
-    return new mse::HTMLVideoElement(this);
+    return new mse::HTMLVideoElement(this, nullptr, nullptr);
   }
   return new Element(this, name, nullopt, nullopt);
 }

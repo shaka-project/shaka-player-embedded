@@ -42,8 +42,8 @@ class SHAKA_EXPORT DefaultMediaPlayer final : public ProxyMediaPlayer {
    * @param video_renderer The renderer used to draw video frames.
    * @param audio_renderer The renderer used to play audio frames.
    */
-  DefaultMediaPlayer(VideoRendererNew* video_renderer,
-                     AudioRendererNew* audio_renderer);
+  DefaultMediaPlayer(VideoRenderer* video_renderer,
+                     AudioRenderer* audio_renderer);
   ~DefaultMediaPlayer() override;
 
   /**

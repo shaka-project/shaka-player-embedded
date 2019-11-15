@@ -31,7 +31,7 @@ namespace media {
  *
  * @ingroup media
  */
-class SHAKA_EXPORT SdlAudioRenderer final : public AudioRendererNew {
+class SHAKA_EXPORT SdlAudioRenderer final : public AudioRenderer {
  public:
   SdlAudioRenderer(const std::string& device_name);
   ~SdlAudioRenderer() override;

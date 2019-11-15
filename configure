@@ -721,6 +721,8 @@ def _ParseArgs(args):
   if os.path.abspath(os.getcwd()) == os.path.abspath(ROOT_DIR):
     parser.error("In-tree builds aren't supported; create another directory")
 
+  if parsed_args.sdl_utils is False and is_ios:
+    parser.error('Cannot disable SDL utils on iOS')
   if parsed_args.sdl_utils is False and parsed_args.enable_demo and not is_ios:
     parser.error('Cannot disable SDL utils with the default demo; disable it '
                  'with --disable-demo.')
@@ -737,7 +739,7 @@ def _ParseArgs(args):
   if parsed_args.js_engine is None:
     parsed_args.js_engine = 'jsc' if is_ios else 'v8'
 
-  if not is_ios and parsed_args.sdl_utils is None:
+  if parsed_args.sdl_utils is None:
     parsed_args.sdl_utils = True
 
   if parsed_args.ios_sdl_demo:

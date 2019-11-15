@@ -22,10 +22,8 @@
 #include <vector>
 
 #include "src/core/js_manager_impl.h"
-#include "src/media/audio_renderer.h"
 #include "src/media/ffmpeg/ffmpeg_decoder.h"
 #include "src/media/media_utils.h"
-#include "src/media/video_renderer.h"
 #include "src/util/clock.h"
 
 namespace shaka {
@@ -52,20 +50,6 @@ std::string FormatBuffered(const StreamBase& buffer) {
     ret += util::StringPrintf("%.2f - %.2f", range.start, range.end);
   }
   return "[" + ret + "]";
-}
-
-Renderer* CreateRenderer(SourceType source, std::function<double()> get_time,
-                         std::function<double()> get_playback_rate,
-                         DecodedStream* stream) {
-  switch (source) {
-    case SourceType::Audio:
-      return new AudioRenderer(std::move(get_time),
-                               std::move(get_playback_rate), stream);
-    case SourceType::Video:
-      return new VideoRenderer(std::move(get_time), stream);
-    default:
-      LOG(FATAL) << "Unknown source type: " << source;
-  }
 }
 
 /**
@@ -96,6 +80,120 @@ class EncryptedInitDataTask : public memory::Traceable {
   ByteBuffer buffer_;
 };
 
+/**
+ * A fake MediaPlayer implementation that forwards some calls to
+ * VideoController.  This exists temporarily as we migrate the Renderers to the
+ * new API.
+ */
+class FakeMediaPlayer : public MediaPlayer {
+ public:
+  explicit FakeMediaPlayer(VideoController* controller)
+      : controller_(controller) {}
+
+  MediaCapabilitiesInfo DecodingInfo(
+      const MediaDecodingConfiguration& config) const override {
+    LOG(FATAL) << "Not implemented";
+  }
+  VideoPlaybackQualityNew VideoPlaybackQuality() const override {
+    LOG(FATAL) << "Not implemented";
+  }
+  void AddClient(Client* client) override {}
+  void RemoveClient(Client* client) override {}
+  std::vector<BufferedRange> GetBuffered() const override {
+    LOG(FATAL) << "Not implemented";
+  }
+  VideoReadyState ReadyState() const override {
+    LOG(FATAL) << "Not implemented";
+  }
+  VideoPlaybackState PlaybackState() const override {
+    const auto status = controller_->GetPipelineManager()->GetPipelineStatus();
+    switch (status) {
+      case PipelineStatus::Initializing:
+      case PipelineStatus::Errored:
+        return VideoPlaybackState::Initializing;
+      case PipelineStatus::Playing:
+        return VideoPlaybackState::Playing;
+      case PipelineStatus::Paused:
+        return VideoPlaybackState::Paused;
+      case PipelineStatus::SeekingPlay:
+      case PipelineStatus::SeekingPause:
+        return VideoPlaybackState::Seeking;
+      case PipelineStatus::Stalled:
+        return VideoPlaybackState::Buffering;
+      case PipelineStatus::Ended:
+        return VideoPlaybackState::Ended;
+    }
+  }
+
+  bool SetVideoFillMode(VideoFillMode mode) override {
+    LOG(FATAL) << "Not implemented";
+  }
+  uint32_t Width() const override {
+    LOG(FATAL) << "Not implemented";
+  }
+  uint32_t Height() const override {
+    LOG(FATAL) << "Not implemented";
+  }
+  double Volume() const override {
+    LOG(FATAL) << "Not implemented";
+  }
+  void SetVolume(double volume) override {
+    LOG(FATAL) << "Not implemented";
+  }
+  bool Muted() const override {
+    LOG(FATAL) << "Not implemented";
+  }
+  void SetMuted(bool muted) override {
+    LOG(FATAL) << "Not implemented";
+  }
+
+  void Play() override {
+    LOG(FATAL) << "Not implemented";
+  }
+  void Pause() override {
+    LOG(FATAL) << "Not implemented";
+  }
+  double CurrentTime() const override {
+    return controller_->GetPipelineManager()->GetCurrentTime();
+  }
+  void SetCurrentTime(double time) override {
+    LOG(FATAL) << "Not implemented";
+  }
+  double Duration() const override {
+    return controller_->GetPipelineManager()->GetDuration();
+  }
+  void SetDuration(double duration) override {
+    LOG(FATAL) << "Not implemented";
+  }
+  double PlaybackRate() const override {
+    return controller_->GetPipelineManager()->GetPlaybackRate();
+  }
+  void SetPlaybackRate(double rate) override {
+    LOG(FATAL) << "Not implemented";
+  }
+
+  bool AttachSource(const std::string& src) override {
+    return false;
+  }
+  bool AttachMse() override {
+    return false;
+  }
+  bool AddMseBuffer(const std::string& mime, bool is_video,
+                    const ElementaryStream* stream) override {
+    return false;
+  }
+  void LoadedMetaData(double duration) override {}
+  void MseEndOfStream() override {}
+  bool SetEmeImplementation(const std::string& key_system,
+                            eme::Implementation* implementation) override {
+    return false;
+  }
+  void Detach() override {}
+
+ private:
+  VideoController* controller_;
+};
+
 }  // namespace
 
 VideoController::VideoController(
@@ -106,6 +204,7 @@ VideoController::VideoController(
     std::function<void(MediaReadyState)> on_ready_state_changed,
     std::function<void(PipelineStatus)> on_pipeline_changed)
     : mutex_("VideoController"),
+      fake_media_player_(new FakeMediaPlayer(this)),
       on_error_(std::move(on_error)),
       on_waiting_for_key_(std::move(on_waiting_for_key)),
       on_encrypted_init_data_(std::move(on_encrypted_init_data)),
@@ -118,6 +217,8 @@ VideoController::VideoController(
                MainThreadCallback(std::move(on_ready_state_changed)),
                &util::Clock::Instance, &pipeline_),
       cdm_(nullptr),
+      video_renderer_(nullptr),
+      audio_renderer_(nullptr),
       init_count_(0) {
   Reset();
 }
@@ -126,48 +227,12 @@ VideoController::~VideoController() {
   util::shared_lock<SharedMutex> lock(mutex_);
   for (const auto& source : sources_) {
     source.second->demuxer.Stop();
+    if (source.second->renderer) {
+      source.second->renderer->Detach();
+      source.second->renderer->SetPlayer(nullptr);
+    }
   }
   monitor_.Stop();
-}
-
-void VideoController::SetVolume(double volume) {
-  std::unique_lock<SharedMutex> lock(mutex_);
-  volume_ = volume;
-  Source* source = GetSource(SourceType::Audio);
-  if (source && source->renderer)
-    static_cast<AudioRenderer*>(source->renderer.get())->SetVolume(volume);
-}
-
-std::shared_ptr<DecodedFrame> VideoController::DrawFrame(double* delay) {
-  std::unique_lock<SharedMutex> lock(mutex_);
-  Source* source = GetSource(SourceType::Video);
-  if (!source || !source->renderer)
-    return nullptr;
-
-  int dropped_frame_count = 0;
-  bool is_new_frame = false;
-  auto ret =
-      source->renderer->DrawFrame(&dropped_frame_count, &is_new_frame, delay);
-  quality_info_.droppedVideoFrames += dropped_frame_count;
-  quality_info_.totalVideoFrames += dropped_frame_count;
-  if (is_new_frame)
-    quality_info_.totalVideoFrames++;
-
-#ifndef NDEBUG
-  static uint64_t last_print_time = 0;
-  static uint64_t last_dropped_frame_count = 0;
-  const uint64_t cur_time = util::Clock::Instance.GetMonotonicTime();
-  if (quality_info_.droppedVideoFrames != last_dropped_frame_count &&
-      cur_time - last_print_time > 250) {
-    const int delta_frames =
-        quality_info_.droppedVideoFrames - last_dropped_frame_count;
-    LOG(INFO) << "Dropped " << delta_frames << " frames.";
-    last_print_time = cur_time;
-    last_dropped_frame_count = quality_info_.droppedVideoFrames;
-  }
-#endif
-
-  return ret;
 }
 
 void VideoController::SetCdm(eme::Implementation* cdm) {
@@ -175,6 +240,27 @@ void VideoController::SetCdm(eme::Implementation* cdm) {
   cdm_ = cdm;
   for (auto& pair : sources_) {
     pair.second->decoder_thread.SetCdm(cdm);
+  }
+}
+
+void VideoController::SetRenderers(VideoRenderer* video_renderer,
+                                   AudioRenderer* audio_renderer) {
+  std::unique_lock<SharedMutex> lock(mutex_);
+  video_renderer_ = video_renderer;
+  audio_renderer_ = audio_renderer;
+  video_renderer->SetPlayer(fake_media_player_.get());
+  audio_renderer->SetPlayer(fake_media_player_.get());
+
+  Source* video = GetSource(SourceType::Video);
+  if (video) {
+    video->renderer = video_renderer;
+    video_renderer->Attach(&video->decoded_frames);
+  }
+
+  Source* audio = GetSource(SourceType::Audio);
+  if (audio) {
+    audio->renderer = audio_renderer;
+    audio_renderer->Attach(&audio->decoded_frames);
   }
 }
 
@@ -194,13 +280,16 @@ Status VideoController::AddSource(const std::string& mime_type,
       new Source(*source_type, &pipeline_, this, mime_type,
                  MainThreadCallback(on_waiting_for_key_),
                  std::bind(&PipelineManager::GetCurrentTime, &pipeline_),
-                 std::bind(&VideoController::GetPlaybackRate, this),
                  std::bind(&VideoController::OnError, this, *source_type, _1)));
-  if (source->renderer) {
-    if (*source_type == SourceType::Audio)
-      static_cast<AudioRenderer*>(source->renderer.get())->SetVolume(volume_);
-  }
   source->decoder_thread.SetCdm(cdm_);
+  if (*source_type == SourceType::Video && video_renderer_) {
+    source->renderer = video_renderer_;
+    video_renderer_->Attach(&source->decoded_frames);
+  } else if (*source_type == SourceType::Audio && audio_renderer_) {
+    source->renderer = audio_renderer_;
+    audio_renderer_->Attach(&source->decoded_frames);
+  }
+
   sources_.emplace(*source_type, std::move(source));
   return Status::Success;
 }
@@ -269,6 +358,10 @@ void VideoController::Reset() {
     for (auto& source : sources_) {
       source.second->demuxer.Stop();
       source.second->decoder_thread.Detach();
+      if (source.second->renderer) {
+        source.second->renderer->Detach();
+        source.second->renderer->SetPlayer(nullptr);
+      }
     }
   }
 
@@ -365,13 +458,11 @@ VideoController::Source::Source(SourceType source_type,
                                 const std::string& mime,
                                 std::function<void()> on_waiting_for_key,
                                 std::function<double()> get_time,
-                                std::function<double()> get_playback_rate,
                                 std::function<void(Status)> on_error)
     : decoder(new ffmpeg::FFmpegDecoder),
       decoder_thread(this, &decoded_frames),
       demuxer(mime, demuxer_client, &encoded_frames),
-      renderer(CreateRenderer(source_type, get_time,
-                              std::move(get_playback_rate), &decoded_frames)),
+      renderer(nullptr),
       ready(false),
       pipeline(pipeline),
       get_time(get_time),
@@ -395,10 +486,7 @@ void VideoController::Source::OnWaitingForKey() {
   on_waiting_for_key();
 }
 
-void VideoController::Source::OnSeekDone() {
-  if (renderer)
-    renderer->OnSeekDone();
-}
+void VideoController::Source::OnSeekDone() {}
 
 void VideoController::Source::OnError() {
   on_error(Status::UnknownError);

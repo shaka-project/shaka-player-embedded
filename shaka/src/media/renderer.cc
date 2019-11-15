@@ -1,4 +1,4 @@
-// Copyright 2017 Google LLC
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/media/renderer.h"
+#include "shaka/media/renderer.h"
 
 namespace shaka {
 namespace media {
 
-std::shared_ptr<DecodedFrame> Renderer::DrawFrame(
-    int* /* dropped_frame_count */, bool* /* is_new_frame */,
-    double* /* delay */) {
-  return nullptr;
-}
-
-void Renderer::OnSeek() {}
-
-void Renderer::OnSeekDone() {}
+Renderer::Renderer() {}
+Renderer::~Renderer() {}
 
 }  // namespace media
 }  // namespace shaka

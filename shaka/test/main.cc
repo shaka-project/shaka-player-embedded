@@ -105,12 +105,6 @@ int RunTests(int argc, char** argv) {
 
 }  // namespace shaka
 
-#if defined(OS_IOS) && !defined(SHAKA_SDL_UTILS)
-// SDL defines |main| so it can wrap it and handle startup.  If we don't have
-// the SDL utils, then we need to define out own entry point here.
-#  undef main
-#endif
-
 int main(int argc, char** argv) {
   const int code = shaka::RunTests(argc, argv);
   if (code == 0)

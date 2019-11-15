@@ -32,19 +32,17 @@ namespace media {
  * handled by the DefaultMediaPlayer.  Methods on this object can be called from
  * any thread.
  *
- * TODO(modmaker): Rename to Renderer once old type is removed.
- *
  * @ingroup media
  */
-class SHAKA_EXPORT RendererNew {
+class SHAKA_EXPORT Renderer {
  public:
-  RendererNew();
-  RendererNew(const RendererNew&) = delete;
-  RendererNew(RendererNew&&) = delete;
-  virtual ~RendererNew();
+  Renderer();
+  Renderer(const Renderer&) = delete;
+  Renderer(Renderer&&) = delete;
+  virtual ~Renderer();
 
-  RendererNew& operator=(const RendererNew&) = delete;
-  RendererNew& operator=(RendererNew&&) = delete;
+  Renderer& operator=(const Renderer&) = delete;
+  Renderer& operator=(Renderer&&) = delete;
 
   /** Called when a seek begins. */
   virtual void OnSeek() = 0;
@@ -78,7 +76,7 @@ class SHAKA_EXPORT RendererNew {
  * Defines a Renderer that handles audio rendering.
  * @ingroup media
  */
-class SHAKA_EXPORT AudioRendererNew : public RendererNew {
+class SHAKA_EXPORT AudioRenderer : public Renderer {
  public:
   /** @return The current volume [0, 1]. */
   virtual double Volume() const = 0;
@@ -97,7 +95,7 @@ class SHAKA_EXPORT AudioRendererNew : public RendererNew {
  * Defines a Renderer that handles video rendering.
  * @ingroup media
  */
-class SHAKA_EXPORT VideoRendererNew : public RendererNew {
+class SHAKA_EXPORT VideoRenderer : public Renderer {
  public:
   /** @see MediaPlayer::VideoPlaybackQuality */
   virtual VideoPlaybackQualityNew VideoPlaybackQuality() const = 0;

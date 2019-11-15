@@ -77,13 +77,16 @@ class SdlFrameDrawer::Impl {
     texture_formats_.clear();
     renderer_ = renderer;
 
-    SDL_RendererInfo info;
-    if (SDL_GetRendererInfo(renderer, &info) == 0) {
-      texture_formats_.insert(info.texture_formats,
-                              info.texture_formats + info.num_texture_formats);
-    }
-    if (texture_formats_.empty()) {
-      LOG(ERROR) << "No supported texture formats";
+    if (renderer) {
+      SDL_RendererInfo info;
+      if (SDL_GetRendererInfo(renderer, &info) == 0) {
+        texture_formats_.insert(
+            info.texture_formats,
+            info.texture_formats + info.num_texture_formats);
+      }
+      if (texture_formats_.empty()) {
+        LOG(ERROR) << "No supported texture formats";
+      }
     }
   }
 

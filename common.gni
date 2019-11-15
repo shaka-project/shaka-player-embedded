@@ -20,7 +20,7 @@ import("//build/config/sysroot.gni")
 
 declare_args() {
   # Whether to include SDL utilities in the library.
-  sdl_utils = !is_ios
+  sdl_utils = true
   # Whether to enable support for hardware decoders.
   enable_hardware_decode = true
 }

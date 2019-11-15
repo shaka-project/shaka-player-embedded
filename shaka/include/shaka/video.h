@@ -22,6 +22,7 @@
 #include "js_manager.h"
 #include "macros.h"
 #include "media/frames.h"
+#include "media/renderer.h"
 #include "shaka_config.h"
 #include "text_track.h"
 
@@ -105,21 +106,12 @@ class SHAKA_EXPORT Video final {
    * methods are called and before passing to Player.Initialize.
    *
    * @param client The client object that listens to events.
+   * @param video_renderer The Renderer used to draw video frames.
+   * @param audio_renderer The Renderer used to draw audio frames.
    */
-  void Initialize(Client* client = nullptr);
-
-  /**
-   * Draws the current video frame onto a texture and returns it.  This
-   * can be called on any thread, but cannot be called at the same time on
-   * multiple threads.  The texture will be the same size of the video to avoid
-   * resizing.  Resizing and adding black bars is the job of the app.
-   *
-   * @param delay [OUT] Optional, if given, will hold the delay (in seconds)
-   *   until the next frame should be rendered.
-   * @return The texture holding the video frame, or an invalid frame if nothing
-   *   is ready.
-   */
-  std::shared_ptr<media::DecodedFrame> DrawFrame(double* delay);
+  void Initialize(Client* client = nullptr,
+                  media::VideoRenderer* video_renderer = nullptr,
+                  media::AudioRenderer* audio_renderer = nullptr);
 
 
   /** @return The duration of the video, or 0 if nothing is loaded. */

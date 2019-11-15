@@ -26,12 +26,16 @@ namespace shaka {
 namespace js {
 namespace mse {
 
-HTMLVideoElement::HTMLVideoElement(RefPtr<dom::Document> document)
+HTMLVideoElement::HTMLVideoElement(RefPtr<dom::Document> document,
+                                   media::VideoRenderer* video_renderer,
+                                   media::AudioRenderer* audio_renderer)
     : dom::Element(document, "video", nullopt, nullopt),
       ready_state(media::HAVE_NOTHING),
       autoplay(false),
       loop(false),
       default_muted(false),
+      video_renderer_(video_renderer),
+      audio_renderer_(audio_renderer),
       pipeline_status_(media::PipelineStatus::Initializing),
       volume_(1),
       will_play_(false),
@@ -245,7 +249,8 @@ ExceptionOr<void> HTMLVideoElement::SetSource(const std::string& src) {
   media_source_ = MediaSource::FindMediaSource(src);
   if (media_source_) {
     media_source_->OpenMediaSource(this);
-    media_source_->GetController()->SetVolume(is_muted_ ? 0 : volume_);
+    media_source_->GetController()->SetRenderers(video_renderer_,
+                                                 audio_renderer_);
     if (autoplay || will_play_)
       media_source_->GetController()->GetPipelineManager()->Play();
   } else {
@@ -293,17 +298,15 @@ void HTMLVideoElement::SetPlaybackRate(double rate) {
 }
 
 bool HTMLVideoElement::Muted() const {
-  return is_muted_;
+  return audio_renderer_->Muted();
 }
 
 void HTMLVideoElement::SetMuted(bool muted) {
-  is_muted_ = muted;
-  if (media_source_)
-    media_source_->GetController()->SetVolume(muted ? 0 : volume_);
+  audio_renderer_->SetMuted(muted);
 }
 
 double HTMLVideoElement::Volume() const {
-  return volume_;
+  return audio_renderer_->Volume();
 }
 
 void HTMLVideoElement::SetVolume(double volume) {
@@ -318,10 +321,7 @@ ExceptionOr<void> HTMLVideoElement::SetVolumeHelper(double volume) {
             "The volume provided (%f) is outside the range [0, 1].", volume));
   }
 
-  volume_ = volume;
-  if (media_source_)
-    media_source_->GetController()->SetVolume(is_muted_ ? 0 : volume_);
-
+  audio_renderer_->SetVolume(volume);
   return {};
 }
 

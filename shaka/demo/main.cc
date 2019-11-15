@@ -33,14 +33,14 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <shaka/js_manager.h>
+#include <shaka/media/sdl_audio_renderer.h>
+#include <shaka/media/sdl_video_renderer.h>
 #include <shaka/player.h>
-#include <shaka/sdl_frame_drawer.h>
 #include <shaka/utils.h>
 #include <shaka/video.h>
 
 using shaka::JsManager;
 using shaka::Player;
-using shaka::SdlFrameDrawer;
 using shaka::Video;
 
 #ifndef SHAKA_SDL_UTILS
@@ -72,6 +72,7 @@ class DemoApp : shaka::Player::Client {
   DemoApp(const char* exe_name)
       : window_(nullptr),
         renderer_(nullptr),
+        audio_renderer_(""),
         js_engine_(GetOptions(exe_name)),
         video_(&js_engine_),
         player_(&js_engine_) {}
@@ -126,13 +127,13 @@ class DemoApp : shaka::Player::Client {
       LOG(ERROR) << "Error getting renderer: " << SDL_GetError();
       return false;
     }
-    drawer_.SetRenderer(renderer_);
+    video_renderer_.SetRenderer(renderer_);
 
     return true;
   }
 
   bool InitializePlayer(bool is_muted) {
-    video_.Initialize();
+    video_.Initialize(nullptr, &video_renderer_, &audio_renderer_);
     if (is_muted)
       video_.SetMuted(true);
 
@@ -164,23 +165,7 @@ class DemoApp : shaka::Player::Client {
       if (SDL_PollEvent(&ev) && ev.type == SDL_QUIT)
         break;
 
-      SDL_RenderClear(renderer_);
-
-      double delay = 1.0 / 60;
-      auto frame = video_.DrawFrame(&delay);
-      SDL_Texture* texture = drawer_.Draw(frame);
-      if (texture) {
-        const int video_width = frame->width;
-        const int video_height = frame->height;
-
-        int win_width, win_height;
-        SDL_GetWindowSize(window_, &win_width, &win_height);
-        shaka::ShakaRect rect = shaka::FitVideoToWindow(
-            video_width, video_height, win_width, win_height);
-        SDL_Rect sdl_rect = {
-            .x = rect.x, .y = rect.y, .w = rect.w, .h = rect.h};
-        SDL_RenderCopy(renderer_, texture, nullptr, &sdl_rect);
-      }
+      const double delay = video_renderer_.Render();
       SDL_RenderPresent(renderer_);
 
       SDL_Delay(delay * 1000);
@@ -204,10 +189,11 @@ class DemoApp : shaka::Player::Client {
   SDL_Window* window_;
   SDL_Renderer* renderer_;
 
+  shaka::media::SdlAudioRenderer audio_renderer_;
+  shaka::media::SdlManualVideoRenderer video_renderer_;
   JsManager js_engine_;
   Video video_;
   Player player_;
-  SdlFrameDrawer drawer_;
 };
 
 }  // namespace

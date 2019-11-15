@@ -26,7 +26,6 @@ namespace shaka {
 namespace {
 
 void ThreadMain(const std::string& name, std::function<void()> callback) {
-  DCHECK_LT(name.size(), 16u) << "Name too long: " << name;
 #if defined(OS_MAC) || defined(OS_IOS)
   pthread_setname_np(name.c_str());
 #elif defined(OS_POSIX)
@@ -45,6 +44,7 @@ void ThreadMain(const std::string& name, std::function<void()> callback) {
 
 Thread::Thread(const std::string& name, std::function<void()> callback)
     : name_(name), thread_(&ThreadMain, name, std::move(callback)) {
+  DCHECK_LT(name.size(), 16u) << "Name too long: " << name;
 #ifdef DEBUG_DEADLOCKS
   original_id_ = thread_.get_id();
   WaitingTracker::AddThread(this);
