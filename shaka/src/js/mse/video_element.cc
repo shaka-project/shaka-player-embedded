@@ -313,10 +313,9 @@ void HTMLVideoElement::SetVolume(double volume) {
 ExceptionOr<void> HTMLVideoElement::SetVolumeHelper(double volume) {
   if (volume < 0 || volume > 1) {
     return JsError::DOMException(
-      IndexSizeError,
-      util::StringPrintf(
-        "The volume provided (%f) is outside the range [0, 1].",
-        volume));
+        IndexSizeError,
+        util::StringPrintf(
+            "The volume provided (%f) is outside the range [0, 1].", volume));
   }
 
   volume_ = volume;
@@ -399,9 +398,9 @@ HTMLVideoElementFactory::HTMLVideoElementFactory() {
   AddGenericProperty("playbackRate", &HTMLVideoElement::PlaybackRate,
                      &HTMLVideoElement::SetPlaybackRate);
   AddGenericProperty("volume", &HTMLVideoElement::Volume,
-                               &HTMLVideoElement::SetVolumeHelper);
+                     &HTMLVideoElement::SetVolumeHelper);
   AddGenericProperty("muted", &HTMLVideoElement::Muted,
-                              &HTMLVideoElement::SetMuted);
+                     &HTMLVideoElement::SetMuted);
 
   AddMemberFunction("load", &HTMLVideoElement::Load);
   AddMemberFunction("play", &HTMLVideoElement::Play);

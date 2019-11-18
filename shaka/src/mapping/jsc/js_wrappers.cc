@@ -265,8 +265,7 @@ ReturnVal<JsValue> ParseJsonString(const std::string& json) {
 
 ReturnVal<JsString> JsStringFromUtf8(const uint8_t* data, size_t size) {
   util::CFRef<CFStringRef> cf_str(CFStringCreateWithBytes(
-      nullptr, data, size,
-      kCFStringEncodingUTF8, false));
+      nullptr, data, size, kCFStringEncodingUTF8, false));
   return JSStringCreateWithCFString(cf_str);
 }
 

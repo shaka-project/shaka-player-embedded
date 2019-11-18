@@ -275,7 +275,8 @@ ReturnVal<JsString> JsStringFromUtf8(const std::string& str) {
 }
 
 ReturnVal<JsString> JsStringFromUtf8(const uint8_t* data, size_t size) {
-  return v8::String::NewFromUtf8(GetIsolate(), reinterpret_cast<const char*>(data),
+  return v8::String::NewFromUtf8(GetIsolate(),
+                                 reinterpret_cast<const char*>(data),
                                  v8::NewStringType::kNormal, size)
       .ToLocalChecked();
 }
