@@ -60,7 +60,8 @@ DemuxerThread::DemuxerThread(const std::string& mime, Demuxer::Client* client,
               std::bind(&DemuxerThread::ThreadMain, this)) {}
 
 DemuxerThread::~DemuxerThread() {
-  CHECK(!thread_.joinable()) << "Need to call Stop() before destroying";
+  if (thread_.joinable())
+    Stop();
 }
 
 void DemuxerThread::Stop() {

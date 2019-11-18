@@ -15,11 +15,17 @@
 #ifndef SHAKA_EMBEDDED_JS_MSE_SOURCE_BUFFER_H_
 #define SHAKA_EMBEDDED_JS_MSE_SOURCE_BUFFER_H_
 
+#include <string>
+
+#include "shaka/media/demuxer.h"
+#include "shaka/media/media_player.h"
+#include "shaka/media/streams.h"
 #include "src/core/member.h"
 #include "src/js/events/event_target.h"
 #include "src/mapping/byte_buffer.h"
 #include "src/mapping/enum.h"
 #include "src/mapping/exception_or.h"
+#include "src/media/demuxer_thread.h"
 #include "src/media/types.h"
 
 namespace shaka {
@@ -38,17 +44,19 @@ class SourceBuffer : public events::EventTarget {
   DECLARE_TYPE_INFO(SourceBuffer);
 
  public:
-  SourceBuffer(RefPtr<MediaSource> media_source, media::SourceType type);
+  SourceBuffer(const std::string& mime, RefPtr<MediaSource> media_source);
 
   void Trace(memory::HeapTracer* tracer) const override;
+
+  bool Attach(const std::string& mime, media::MediaPlayer* player,
+              bool is_video);
+  void Detach();
 
   ExceptionOr<void> AppendBuffer(ByteBuffer data);
   void Abort();
   ExceptionOr<void> Remove(double start, double end);
 
-  /** Called when the MediaSource gets detached. */
-  void CloseMediaSource();
-
+  media::BufferedRanges GetBufferedRanges() const;
   ExceptionOr<RefPtr<TimeRanges>> GetBuffered() const;
 
   double TimestampOffset() const;
@@ -71,13 +79,14 @@ class SourceBuffer : public events::EventTarget {
   /** Called when an append operation completes. */
   void OnAppendComplete(media::Status status);
 
+  media::ElementaryStream frames_;
+  media::DemuxerThread demuxer_;
+
+  Member<MediaSource> media_source_;
+  ByteBuffer append_buffer_;
   double timestamp_offset_;
   double append_window_start_;
   double append_window_end_;
-
-  Member<MediaSource> media_source_;
-  media::SourceType type_;
-  ByteBuffer append_buffer_;
 };
 
 class SourceBufferFactory

@@ -641,8 +641,6 @@ source_set("internal_sources") {
     "shaka/src/media/text_track_public.cc",
     "shaka/src/media/types.cc",
     "shaka/src/media/types.h",
-    "shaka/src/media/video_controller.cc",
-    "shaka/src/media/video_controller.h",
     "shaka/src/media/vtt_cue_public.cc",
     "shaka/src/memory/heap_tracer.cc",
     "shaka/src/memory/heap_tracer.h",
@@ -658,7 +656,6 @@ source_set("internal_sources") {
     "shaka/src/public/player.cc",
     "shaka/src/public/shaka_utils.cc",
     "shaka/src/public/storage.cc",
-    "shaka/src/public/video.cc",
     "shaka/src/util/buffer_reader.cc",
     "shaka/src/util/buffer_reader.h",
     "shaka/src/util/clock.cc",
@@ -886,7 +883,6 @@ if (is_mac || is_ios) {
       "shaka/include/shaka/storage.h",
       "shaka/include/shaka/utils.h",
       "shaka/include/shaka/variant.h",
-      "shaka/include/shaka/video.h",
 
       # Objective-C headers
       "$root_gen_dir/shaka/manifest_objc.h",

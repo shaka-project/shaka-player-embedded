@@ -43,7 +43,8 @@ class ContainerNode : public Node {
 
   std::vector<RefPtr<Element>> GetElementsByTagName(
       const std::string& name) const;
-  ExceptionOr<RefPtr<Element>> QuerySelector(const std::string& query) const;
+  virtual ExceptionOr<RefPtr<Element>> QuerySelector(
+      const std::string& query) const;
 };
 
 class ContainerNodeFactory : public BackingObjectFactory<ContainerNode, Node> {

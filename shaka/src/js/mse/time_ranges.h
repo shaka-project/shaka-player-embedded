@@ -18,7 +18,7 @@
 #include "src/mapping/backing_object.h"
 #include "src/mapping/backing_object_factory.h"
 #include "src/mapping/exception_or.h"
-#include "src/media/video_controller.h"
+#include "src/media/types.h"
 
 namespace shaka {
 namespace js {

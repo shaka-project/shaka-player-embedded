@@ -17,12 +17,12 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "shaka/media/media_player.h"
-#include "shaka/media/renderer.h"
 #include "shaka/optional.h"
-#include "shaka/video.h"
 #include "src/core/ref_ptr.h"
 #include "src/js/dom/element.h"
 #include "src/js/eme/media_keys.h"
@@ -48,22 +48,18 @@ enum class CanPlayTypeEnum {
   PROBABLY,
 };
 
-class HTMLVideoElement : public dom::Element {
+class HTMLVideoElement : public dom::Element, media::MediaPlayer::Client {
   DECLARE_TYPE_INFO(HTMLVideoElement);
 
  public:
   HTMLVideoElement(RefPtr<dom::Document> document,
-                   media::VideoRenderer* video_renderer,
-                   media::AudioRenderer* audio_renderer);
+                   media::MediaPlayer* player);
 
   void Trace(memory::HeapTracer* tracer) const override;
 
-  void OnReadyStateChanged(media::VideoReadyState new_ready_state);
-  void OnPipelineStatusChanged(media::PipelineStatus status);
-  void OnMediaError(media::SourceType source, media::Status status);
+  void Detach();
 
-  RefPtr<MediaSource> GetMediaSource() const;
-  std::vector<std::shared_ptr<shaka::media::TextTrack>> PublicTextTracks();
+  static RefPtr<HTMLVideoElement> AnyVideoElement();
 
   // Encrypted media extensions
   Promise SetMediaKeys(RefPtr<eme::MediaKeys> media_keys);
@@ -72,52 +68,60 @@ class HTMLVideoElement : public dom::Element {
   Listener on_waiting_for_key;
 
   // HTMLMediaElement members.
-  void Load();
+  ExceptionOr<void> Load();
   CanPlayTypeEnum CanPlayType(const std::string& type);
 
-  media::VideoReadyState ready_state;
   bool autoplay;
   bool loop;
   bool default_muted;
-  std::vector<Member<TextTrack>> text_tracks;
   RefPtr<MediaError> error;
 
-  media::VideoPlaybackQuality GetVideoPlaybackQuality() const;
+  std::vector<RefPtr<TextTrack>> text_tracks() const;
+  media::VideoReadyState GetReadyState() const;
+  ExceptionOr<media::VideoPlaybackQuality> GetVideoPlaybackQuality() const;
   RefPtr<TimeRanges> Buffered() const;
   RefPtr<TimeRanges> Seekable() const;
   std::string Source() const;
   ExceptionOr<void> SetSource(const std::string& src);
   double CurrentTime() const;
-  void SetCurrentTime(double time);
+  ExceptionOr<void> SetCurrentTime(double time);
   double Duration() const;
   double PlaybackRate() const;
-  void SetPlaybackRate(double rate);
+  ExceptionOr<void> SetPlaybackRate(double rate);
   bool Muted() const;
-  void SetMuted(bool muted);
+  ExceptionOr<void> SetMuted(bool muted);
   double Volume() const;
-  void SetVolume(double volume);
-  ExceptionOr<void> SetVolumeHelper(double volume);
+  ExceptionOr<void> SetVolume(double volume);
 
   bool Paused() const;
   bool Seeking() const;
   bool Ended() const;
 
-  void Play();
-  void Pause();
-  RefPtr<TextTrack> AddTextTrack(media::TextTrackKind kind,
-                                 optional<std::string> label,
-                                 optional<std::string> language);
+  ExceptionOr<void> Play();
+  ExceptionOr<void> Pause();
+  ExceptionOr<RefPtr<TextTrack>> AddTextTrack(media::TextTrackKind kind,
+                                              optional<std::string> label,
+                                              optional<std::string> language);
 
  private:
+  void OnReadyStateChanged(media::VideoReadyState old_state,
+                           media::VideoReadyState new_state) override;
+  void OnPlaybackStateChanged(media::VideoPlaybackState old_state,
+                              media::VideoPlaybackState new_state) override;
+  void OnError(const std::string& error) override;
+  void OnPlay() override;
+  void OnSeeking() override;
+  void OnWaitingForKey() override;
+
   Member<MediaSource> media_source_;
-  std::vector<std::shared_ptr<shaka::media::TextTrack>> public_text_tracks_;
-  media::VideoRenderer* video_renderer_;
-  media::AudioRenderer* audio_renderer_;
-  media::PipelineStatus pipeline_status_;
-  double volume_;
-  bool will_play_;
-  bool is_muted_;
+  media::MediaPlayer* player_;
   const util::Clock* const clock_;
+  std::string src_;
+
+  mutable std::unordered_map<std::shared_ptr<shaka::media::TextTrack>,
+                             Member<TextTrack>>
+      text_track_cache_;
+  static std::unordered_set<HTMLVideoElement*> g_video_elements_;
 };
 
 class HTMLVideoElementFactory

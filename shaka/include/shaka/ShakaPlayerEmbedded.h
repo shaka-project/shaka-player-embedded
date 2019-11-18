@@ -48,7 +48,6 @@
 #  include "track.h"
 #  include "utils.h"
 #  include "variant.h"
-#  include "video.h"
 
 #  include "eme/configuration.h"
 #  include "eme/data.h"

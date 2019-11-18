@@ -15,17 +15,20 @@
 #include "src/js/mse/text_track.h"
 
 #include "src/js/js_error.h"
+#include "src/js/mse/video_element.h"
 
 namespace shaka {
 namespace js {
 namespace mse {
 
-TextTrack::TextTrack(std::shared_ptr<shaka::media::TextTrack> track)
+TextTrack::TextTrack(RefPtr<const HTMLVideoElement> video,
+                     std::shared_ptr<shaka::media::TextTrack> track)
     : kind(track->kind),
       label(track->label),
       language(track->language),
       id(track->id),
       mutex_("TextTrack"),
+      video_(video),
       track_(track) {
   track->AddClient(this);
 }
@@ -40,6 +43,7 @@ void TextTrack::Trace(memory::HeapTracer* tracer) const {
   std::unique_lock<Mutex> lock(mutex_);
   for (auto& pair : cues_)
     tracer->Trace(&pair.second);
+  tracer->Trace(&video_);
 }
 
 std::vector<RefPtr<VTTCue>> TextTrack::cues() const {

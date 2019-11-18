@@ -25,7 +25,7 @@ namespace eme {
 MediaKeys::MediaKeys(ImplementationFactory* factory,
                      const std::string& key_system,
                      const MediaKeySystemConfiguration& config)
-    : helper_(key_system, this), factory_(factory) {
+    : key_system(key_system), helper_(key_system, this), factory_(factory) {
   std::vector<std::string> audio_robustness, video_robustness;
 
   for (auto& item : config.audioCapabilities) {

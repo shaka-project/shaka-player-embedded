@@ -61,6 +61,8 @@ class MediaKeys : public BackingObject {
     return implementation_;
   }
 
+  const std::string key_system;
+
  private:
   mutable std::mutex mutex_;
   // TODO: These should be weak pointers.

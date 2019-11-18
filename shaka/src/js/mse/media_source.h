@@ -18,6 +18,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "shaka/media/demuxer.h"
 #include "shaka/media/media_player.h"
 #include "shaka/optional.h"
 #include "src/core/member.h"
@@ -27,7 +28,6 @@
 #include "src/mapping/enum.h"
 #include "src/mapping/exception_or.h"
 #include "src/media/types.h"
-#include "src/media/video_controller.h"
 
 namespace shaka {
 namespace js {
@@ -43,7 +43,7 @@ enum class MediaSourceReadyState {
   ENDED,
 };
 
-class MediaSource : public events::EventTarget {
+class MediaSource : public events::EventTarget, public media::Demuxer::Client {
   DECLARE_TYPE_INFO(MediaSource);
 
  public:
@@ -56,10 +56,6 @@ class MediaSource : public events::EventTarget {
   static bool IsTypeSupported(const std::string& mime_type);
   static RefPtr<MediaSource> FindMediaSource(const std::string& url);
 
-  media::VideoController* GetController() {
-    return &controller_;
-  }
-
   void Trace(memory::HeapTracer* tracer) const override;
 
   ExceptionOr<RefPtr<SourceBuffer>> AddSourceBuffer(const std::string& type);
@@ -70,7 +66,8 @@ class MediaSource : public events::EventTarget {
 
 
   /** Called when this MediaSource gets attached to a video element. */
-  void OpenMediaSource(RefPtr<HTMLVideoElement> video);
+  void OpenMediaSource(RefPtr<HTMLVideoElement> video,
+                       media::MediaPlayer* player);
   /** Called when the media source gets detached. */
   void CloseMediaSource();
 
@@ -83,21 +80,15 @@ class MediaSource : public events::EventTarget {
   const std::string url;
 
  private:
-  /** Called when the media's ready-state changes. */
-  void OnReadyStateChanged(media::VideoReadyState ready_state);
-  /** Called when the media pipeline status changes. */
-  void OnPipelineStatusChanged(media::PipelineStatus status);
-  /** Called when a media error occurs. */
-  void OnMediaError(media::SourceType source, media::Status error);
-  /** Called when the media pipeline is waiting for an EME key. */
-  void OnWaitingForKey();
-  /** Called when we get new encrypted initialization data. */
-  void OnEncrypted(shaka::eme::MediaKeyInitDataType init_data_type,
-                   ByteBuffer init_data);
+  void OnLoadedMetaData(double duration) override;
+  void OnEncrypted(::shaka::eme::MediaKeyInitDataType type, const uint8_t* data,
+                   size_t size) override;
 
-  std::unordered_map<media::SourceType, Member<SourceBuffer>> source_buffers_;
-  media::VideoController controller_;
-  Member<HTMLVideoElement> video_element_;
+  Member<SourceBuffer> audio_buffer_;
+  Member<SourceBuffer> video_buffer_;
+  Member<HTMLVideoElement> video_;
+  media::MediaPlayer* player_;
+  bool got_loaded_metadata_;
 
   // A map of every MediaSource object created.  These are not traced so they
   // are weak pointers.  Once a MediaSource gets destroyed, it will be removed

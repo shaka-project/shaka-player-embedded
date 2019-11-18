@@ -33,15 +33,16 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <shaka/js_manager.h>
+#include <shaka/media/default_media_player.h>
 #include <shaka/media/sdl_audio_renderer.h>
 #include <shaka/media/sdl_video_renderer.h>
 #include <shaka/player.h>
+#include <shaka/shaka_config.h>
 #include <shaka/utils.h>
-#include <shaka/video.h>
 
 using shaka::JsManager;
 using shaka::Player;
-using shaka::Video;
+using shaka::media::DefaultMediaPlayer;
 
 #ifndef SHAKA_SDL_UTILS
 #  error "This demo requires SDL utils"
@@ -73,8 +74,8 @@ class DemoApp : shaka::Player::Client {
       : window_(nullptr),
         renderer_(nullptr),
         audio_renderer_(""),
+        default_media_player_(&video_renderer_, &audio_renderer_),
         js_engine_(GetOptions(exe_name)),
-        video_(&js_engine_),
         player_(&js_engine_) {}
 
   ~DemoApp() override {
@@ -133,11 +134,10 @@ class DemoApp : shaka::Player::Client {
   }
 
   bool InitializePlayer(bool is_muted) {
-    video_.Initialize(nullptr, &video_renderer_, &audio_renderer_);
     if (is_muted)
-      video_.SetMuted(true);
+      default_media_player_.SetMuted(true);
 
-    const auto init_results = player_.Initialize(&video_, this);
+    const auto init_results = player_.Initialize(this, &default_media_player_);
     if (init_results.has_error()) {
       LOG(ERROR) << "Error in initialize: " << init_results.error();
       return false;
@@ -155,7 +155,7 @@ class DemoApp : shaka::Player::Client {
       return false;
     }
 
-    video_.Play();
+    default_media_player_.Play();
     return true;
   }
 
@@ -191,8 +191,8 @@ class DemoApp : shaka::Player::Client {
 
   shaka::media::SdlAudioRenderer audio_renderer_;
   shaka::media::SdlManualVideoRenderer video_renderer_;
+  DefaultMediaPlayer default_media_player_;
   JsManager js_engine_;
-  Video video_;
   Player player_;
 };
 

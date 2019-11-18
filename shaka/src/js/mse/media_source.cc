@@ -16,10 +16,13 @@
 
 #include <glog/logging.h>
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <utility>
+#include <vector>
 
+#include "shaka/media/demuxer.h"
 #include "src/js/events/event.h"
 #include "src/js/events/event_names.h"
 #include "src/js/events/media_encrypted_event.h"
@@ -67,11 +70,8 @@ END_ALLOW_COMPLEX_STATICS
 MediaSource::MediaSource()
     : ready_state(MediaSourceReadyState::CLOSED),
       url(RandomUrl()),
-      controller_(std::bind(&MediaSource::OnMediaError, this, _1, _2),
-                  std::bind(&MediaSource::OnWaitingForKey, this),
-                  std::bind(&MediaSource::OnEncrypted, this, _1, _2),
-                  std::bind(&MediaSource::OnReadyStateChanged, this, _1),
-                  std::bind(&MediaSource::OnPipelineStatusChanged, this, _1)) {
+      player_(nullptr),
+      got_loaded_metadata_(false) {
   AddListenerField(EventType::SourceOpen, &on_source_open);
   AddListenerField(EventType::SourceEnded, &on_source_ended);
   AddListenerField(EventType::SourceClose, &on_source_close);
@@ -105,28 +105,57 @@ RefPtr<MediaSource> MediaSource::FindMediaSource(const std::string& url) {
 
 void MediaSource::Trace(memory::HeapTracer* tracer) const {
   EventTarget::Trace(tracer);
-  for (auto& pair : source_buffers_)
-    tracer->Trace(&pair.second);
-  tracer->Trace(&video_element_);
+  tracer->Trace(&audio_buffer_);
+  tracer->Trace(&video_buffer_);
+  tracer->Trace(&video_);
 }
 
 ExceptionOr<RefPtr<SourceBuffer>> MediaSource::AddSourceBuffer(
     const std::string& type) {
-  media::SourceType source_type;
-  const media::Status status = controller_.AddSource(type, &source_type);
-  if (status == media::Status::NotSupported) {
+  if (ready_state != MediaSourceReadyState::OPEN) {
+    return JsError::DOMException(
+        InvalidStateError,
+        R"(Cannot call addSourceBuffer() unless MediaSource is "open".)");
+  }
+  DCHECK(player_);
+
+  std::string unused_type;
+  std::string unused_subtype;
+  std::unordered_map<std::string, std::string> params;
+  if (!media::ParseMimeType(type, &unused_type, &unused_subtype, &params)) {
+    return JsError::DOMException(
+        NotSupportedError,
+        "The given type ('" + type + "') is not a valid MIME type.");
+  }
+  const std::string codecs = params[media::kCodecMimeParam];
+
+  auto* factory = media::DemuxerFactory::GetFactory();
+  if (!factory) {
+    return JsError::DOMException(NotSupportedError,
+                                 "No Demuxer implementation provided");
+  }
+  if (!factory->IsTypeSupported(type) || codecs.empty() ||
+      codecs.find(',') != std::string::npos) {
     return JsError::DOMException(
         NotSupportedError, "The given type ('" + type + "') is unsupported.");
   }
-  if (status == media::Status::NotAllowed) {
-    return JsError::DOMException(
-        NotSupportedError, "Cannot add any additional SourceBuffer objects.");
+
+  const bool is_video = factory->IsCodecVideo(codecs);
+  RefPtr<SourceBuffer> ret = new SourceBuffer(type, this);
+  RefPtr<SourceBuffer> existing = is_video ? video_buffer_ : audio_buffer_;
+  if (!existing.empty()) {
+    return JsError::DOMException(QuotaExceededError,
+                                 "Invalid SourceBuffer configuration");
   }
 
-  CHECK(status == media::Status::Success);
-  DCHECK_EQ(0u, source_buffers_.count(source_type));
-  DCHECK_NE(source_type, media::SourceType::Unknown);
-  return (source_buffers_[source_type] = new SourceBuffer(this, source_type));
+  if (!ret->Attach(type, player_, is_video)) {
+    return JsError::DOMException(UnknownError, "Error attaching SourceBuffer");
+  }
+  if (is_video)
+    video_buffer_ = ret;
+  else
+    audio_buffer_ = ret;
+  return ret;
 }
 
 ExceptionOr<void> MediaSource::EndOfStream(optional<std::string> error) {
@@ -135,12 +164,11 @@ ExceptionOr<void> MediaSource::EndOfStream(optional<std::string> error) {
         InvalidStateError,
         R"(Cannot call endOfStream() unless MediaSource is "open".)");
   }
-  for (auto& pair : source_buffers_) {
-    if (pair.second->updating) {
-      return JsError::DOMException(
-          InvalidStateError,
-          "Cannot call endOfStream() when a SourceBuffer is updating.");
-    }
+  if ((video_buffer_ && video_buffer_->updating) ||
+      (audio_buffer_ && audio_buffer_->updating)) {
+    return JsError::DOMException(
+        InvalidStateError,
+        "Cannot call endOfStream() when a SourceBuffer is updating.");
   }
   if (error.has_value()) {
     return JsError::DOMException(
@@ -150,12 +178,13 @@ ExceptionOr<void> MediaSource::EndOfStream(optional<std::string> error) {
 
   ready_state = MediaSourceReadyState::ENDED;
   ScheduleEvent<events::Event>(EventType::SourceEnded);
-  controller_.EndOfStream();
+
+  player_->MseEndOfStream();
   return {};
 }
 
 double MediaSource::GetDuration() const {
-  return controller_.GetPipelineManager()->GetDuration();
+  return player_ ? player_->Duration() : NAN;
 }
 
 ExceptionOr<void> MediaSource::SetDuration(double duration) {
@@ -166,23 +195,25 @@ ExceptionOr<void> MediaSource::SetDuration(double duration) {
         InvalidStateError,
         R"(Cannot change duration unless MediaSource is "open".)");
   }
-  for (auto& pair : source_buffers_) {
-    if (pair.second->updating) {
-      return JsError::DOMException(
-          InvalidStateError,
-          "Cannot change duration when a SourceBuffer is updating.");
-    }
+  if ((video_buffer_ && video_buffer_->updating) ||
+      (audio_buffer_ && audio_buffer_->updating)) {
+    return JsError::DOMException(
+        InvalidStateError,
+        "Cannot change duration when a SourceBuffer is updating.");
   }
 
-  controller_.GetPipelineManager()->SetDuration(duration);
+  DCHECK(player_);
+  player_->SetDuration(duration);
   return {};
 }
 
-void MediaSource::OpenMediaSource(RefPtr<HTMLVideoElement> video) {
+void MediaSource::OpenMediaSource(RefPtr<HTMLVideoElement> video,
+                                  media::MediaPlayer* player) {
   DCHECK(ready_state == MediaSourceReadyState::CLOSED)
       << "MediaSource already attached to a <video> element.";
   ready_state = MediaSourceReadyState::OPEN;
-  video_element_ = video;
+  video_ = video;
+  player_ = player;
   ScheduleEvent<events::Event>(EventType::SourceOpen);
 }
 
@@ -191,45 +222,41 @@ void MediaSource::CloseMediaSource() {
       << "MediaSource not attached to a <video> element.";
 
   ready_state = MediaSourceReadyState::CLOSED;
-  video_element_.reset();
-  controller_.Reset();
+  video_ = nullptr;
+  player_ = nullptr;
 
-  for (auto& pair : source_buffers_) {
-    pair.second->CloseMediaSource();
+  if (video_buffer_) {
+    video_buffer_->Detach();
+    video_buffer_.reset();
   }
-  source_buffers_.clear();
+  if (audio_buffer_) {
+    audio_buffer_->Detach();
+    audio_buffer_.reset();
+  }
 
   ScheduleEvent<events::Event>(EventType::SourceClose);
 }
 
-void MediaSource::OnReadyStateChanged(media::VideoReadyState ready_state) {
-  if (video_element_) {
-    if (ready_state == media::VideoReadyState::NotAttached)
-      ready_state = media::VideoReadyState::HaveNothing;
-    video_element_->OnReadyStateChanged(ready_state);
+void MediaSource::OnLoadedMetaData(double duration) {
+  bool raise;
+  if (got_loaded_metadata_) {
+    // We only get this event once per buffer; so if this is called a second
+    // time, we must have two buffers.
+    raise = true;
+  } else {
+    // Raise if we only have one buffer.
+    raise = video_buffer_.empty() != audio_buffer_.empty();
   }
+  if (raise && player_)
+    player_->LoadedMetaData(duration);
+  got_loaded_metadata_ = true;
 }
 
-void MediaSource::OnPipelineStatusChanged(media::PipelineStatus status) {
-  if (video_element_)
-    video_element_->OnPipelineStatusChanged(status);
-}
-
-void MediaSource::OnMediaError(media::SourceType source, media::Status error) {
-  if (video_element_)
-    video_element_->OnMediaError(source, error);
-}
-
-void MediaSource::OnWaitingForKey() {
-  if (video_element_)
-    video_element_->ScheduleEvent<events::Event>(EventType::WaitingForKey);
-}
-
-void MediaSource::OnEncrypted(eme::MediaKeyInitDataType init_data_type,
-                              ByteBuffer init_data) {
-  if (video_element_) {
-    video_element_->ScheduleEvent<events::MediaEncryptedEvent>(
-        EventType::Encrypted, init_data_type, std::move(init_data));
+void MediaSource::OnEncrypted(eme::MediaKeyInitDataType type,
+                              const uint8_t* data, size_t size) {
+  if (video_) {
+    video_->ScheduleEvent<events::MediaEncryptedEvent>(
+        EventType::Encrypted, type, ByteBuffer(data, size));
   }
 }
 

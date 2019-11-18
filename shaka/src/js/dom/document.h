@@ -60,6 +60,9 @@ class Document : public ContainerNode {
 
   RefPtr<Element> DocumentElement() const;
 
+  ExceptionOr<RefPtr<Element>> QuerySelector(
+      const std::string& query) const override;
+
   RefPtr<Element> CreateElement(const std::string& name);
   RefPtr<Comment> CreateComment(const std::string& data);
   RefPtr<Text> CreateTextNode(const std::string& data);

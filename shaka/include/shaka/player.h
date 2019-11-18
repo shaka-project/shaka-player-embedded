@@ -26,10 +26,10 @@
 #include "js_manager.h"
 #include "macros.h"
 #include "manifest.h"
+#include "media/media_player.h"
 #include "player_externs.h"
 #include "stats.h"
 #include "track.h"
-#include "video.h"
 
 namespace shaka {
 
@@ -128,18 +128,17 @@ class SHAKA_EXPORT Player final {
 
 
   /**
-   * Initializes the Player instance to play video from the given element. This
-   * must be called once before any other method.
+   * Initializes the Player instance.  This must be called once before any other
+   * method.
    *
-   * This is given a callback for asynchronous errors.  This callback will be
-   * invoked on a background thread.  This thread is also the JavaScript event
-   * loop, so it is important not to block the call for long.  This also means
-   * you cannot make calls on Player or Video since it would deadlock.
+   * This can be given a MediaPlayer to attach to immediately.  If not given,
+   * you need to call Attach before loading content.
    *
-   * @param video The video element to output to.
    * @param client The client that handles asynchronous events.
+   * @param player The MediaPlayer that controls playback.
    */
-  AsyncResults<void> Initialize(Video* video, Client* client);
+  AsyncResults<void> Initialize(Client* client,
+                                media::MediaPlayer* player = nullptr);
 
   /**
    * Destroys the contained Player instance.  This is called automatically in

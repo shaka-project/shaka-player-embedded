@@ -19,10 +19,10 @@
 #include <utility>
 
 #include "shaka/js_manager.h"
+#include "shaka/media/default_media_player.h"
 #include "shaka/media/sdl_audio_renderer.h"
 #include "shaka/player.h"
 #include "shaka/utils.h"
-#include "shaka/video.h"
 
 #include "src/js/manifest+Internal.h"
 #include "src/js/player_externs+Internal.h"
@@ -43,7 +43,7 @@ BEGIN_ALLOW_COMPLEX_STATICS
 static std::weak_ptr<shaka::JsManager> gJsEngine;
 END_ALLOW_COMPLEX_STATICS
 
-class NativeClient final : public shaka::Player::Client, public shaka::Video::Client {
+class NativeClient final : public shaka::Player::Client, public shaka::media::MediaPlayer::Client {
  public:
   NativeClient() {}
 
@@ -56,26 +56,40 @@ class NativeClient final : public shaka::Player::Client, public shaka::Video::Cl
     shaka::util::DispatchObjcEvent(_client, @selector(onPlayerBufferingChange:), is_buffering);
   }
 
-  void OnPlaying() override {
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerPlayingEvent));
+
+  void OnReadyStateChanged(shaka::media::VideoReadyState old_state,
+                           shaka::media::VideoReadyState new_state) override {}
+
+  void OnPlaybackStateChanged(shaka::media::VideoPlaybackState old_state,
+                              shaka::media::VideoPlaybackState new_state) override {
+    switch (new_state) {
+      case shaka::media::VideoPlaybackState::Paused:
+        shaka::util::DispatchObjcEvent(_client, @selector(onPlayerPauseEvent));
+        break;
+      case shaka::media::VideoPlaybackState::Playing:
+        shaka::util::DispatchObjcEvent(_client, @selector(onPlayerPlayingEvent));
+        break;
+      case shaka::media::VideoPlaybackState::Ended:
+        shaka::util::DispatchObjcEvent(_client, @selector(onPlayerEndedEvent));
+        break;
+      default:
+        break;
+    }
+    if (old_state == shaka::media::VideoPlaybackState::Seeking)
+      shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekedEvent));
   }
 
-  void OnPause() override {
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerPauseEvent));
+  void OnError(const std::string &error) override {
+    OnError(shaka::Error(error));
   }
 
-  void OnEnded() override {
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerEndedEvent));
-  }
-
+  void OnPlay() override {}
 
   void OnSeeking() override {
     shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekingEvent));
   }
 
-  void OnSeeked() override {
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekedEvent));
-  }
+  void OnWaitingForKey() override {}
 
 
   void SetClient(id<ShakaPlayerClient> client) {
@@ -106,7 +120,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   shaka::media::ios::IosVideoRenderer _video_renderer;
   shaka::media::SdlAudioRenderer *_audio_renderer;
 
-  shaka::Video *_video;
+  shaka::media::DefaultMediaPlayer *_media_player;
   shaka::Player *_player;
   NSTimer *_renderLoopTimer;
   NSTimer *_textLoopTimer;
@@ -150,7 +164,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 - (void)dealloc {
   delete _player;
-  delete _video;
+  delete _media_player;
   delete _audio_renderer;
 }
 
@@ -179,15 +193,13 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
   // Create JS objects.
   _engine = ShakaGetGlobalEngine();
-  _video = new shaka::Video(_engine.get());
-  _player = new shaka::Player(_engine.get());
   _audio_renderer = new shaka::media::SdlAudioRenderer("");
-
-  // Set up video.
-  _video->Initialize(&_client, &_video_renderer, _audio_renderer);
+  _media_player = new shaka::media::DefaultMediaPlayer(&_video_renderer, _audio_renderer);
+  _media_player->AddClient(&_client);
 
   // Set up player.
-  const auto initResults = _player->Initialize(_video, &_client);
+  _player = new shaka::Player(_engine.get());
+  const auto initResults = _player->Initialize(&_client, _media_player);
   if (initResults.has_error()) {
     _client.OnError(initResults.error());
     return NO;
@@ -243,7 +255,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 }
 
 - (void)remakeTextCues:(BOOL)sizeChanged {
-  auto text_tracks = _video->TextTracks();
+  auto text_tracks = _media_player->TextTracks();
   auto activeCues = text_tracks[0]->active_cues(self.currentTime);
 
   if (sizeChanged) {
@@ -334,72 +346,75 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 - (void)play {
   [self checkInitialized];
-  _video->Play();
+  _media_player->Play();
 }
 
 - (void)pause {
   [self checkInitialized];
-  _video->Pause();
+  _media_player->Pause();
 }
 
 - (BOOL)paused {
   [self checkInitialized];
-  return _video->Paused();
+  auto state = _media_player->PlaybackState();
+  return state == shaka::media::VideoPlaybackState::Initializing ||
+         state == shaka::media::VideoPlaybackState::Paused ||
+         state == shaka::media::VideoPlaybackState::Ended;
 }
 
 - (BOOL)ended {
   [self checkInitialized];
-  return _video->Ended();
+  return _media_player->PlaybackState() == shaka::media::VideoPlaybackState::Ended;
 }
 
 - (BOOL)seeking {
   [self checkInitialized];
-  return _video->Seeking();
+  return _media_player->PlaybackState() == shaka::media::VideoPlaybackState::Seeking;
 }
 
 - (double)duration {
   [self checkInitialized];
-  return _video->Duration();
+  return _media_player->Duration();
 }
 
 - (double)playbackRate {
   [self checkInitialized];
-  return _video->PlaybackRate();
+  return _media_player->PlaybackRate();
 }
 
 - (void)setPlaybackRate:(double)rate {
   [self checkInitialized];
-  _video->SetPlaybackRate(rate);
+  _media_player->SetPlaybackRate(rate);
 }
 
 - (double)currentTime {
   [self checkInitialized];
-  return _video->CurrentTime();
+  return _media_player->CurrentTime();
 }
 
 - (void)setCurrentTime:(double)time {
   [self checkInitialized];
-  _video->SetCurrentTime(time);
+  _media_player->SetCurrentTime(time);
 }
 
 - (double)volume {
   [self checkInitialized];
-  return _video->Volume();
+  return _media_player->Volume();
 }
 
 - (void)setVolume:(double)volume {
   [self checkInitialized];
-  _video->SetVolume(volume);
+  _media_player->SetVolume(volume);
 }
 
 - (BOOL)muted {
   [self checkInitialized];
-  return _video->Muted();
+  return _media_player->Muted();
 }
 
 - (void)setMuted:(BOOL)muted {
   [self checkInitialized];
-  _video->SetMuted(muted);
+  _media_player->SetMuted(muted);
 }
 
 

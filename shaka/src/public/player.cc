@@ -19,6 +19,7 @@
 #include "shaka/version.h"
 #include "src/core/js_manager_impl.h"
 #include "src/core/js_object_wrapper.h"
+#include "src/js/dom/document.h"
 #include "src/js/manifest.h"
 #include "src/js/mse/video_element.h"
 #include "src/js/player_externs.h"
@@ -84,12 +85,14 @@ class Player::Impl : public JsObjectWrapper {
   ~Impl() {
     if (object_)
       CallMethod<void>("destroy").wait();
+    if (video_)
+      video_->Detach();
   }
 
   NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
-  Converter<void>::future_type Initialize(js::mse::HTMLVideoElement* video,
-                                          Client* client) {
+  Converter<void>::future_type Initialize(Client* client,
+                                          media::MediaPlayer* player) {
     // This function can be called immediately after the JsManager
     // constructor.  Since the Environment might not be setup yet, run this in
     // an internal task so we know it is ready.
@@ -106,8 +109,14 @@ class Player::Impl : public JsObjectWrapper {
           UnsafeJsCast<JsFunction>(player_ctor);
 
       LocalVar<JsValue> result_or_except;
-      LocalVar<JsValue> args[] = {video->JsThis()};
-      if (!InvokeConstructor(player_ctor_func, 1, args, &result_or_except)) {
+      std::vector<LocalVar<JsValue>> args;
+      if (player) {
+        video_ = new js::mse::HTMLVideoElement(
+            js::dom::Document::GetGlobalDocument(), player);
+        args.emplace_back(video_->JsThis());
+      }
+      if (!InvokeConstructor(player_ctor_func, args.size(), args.data(),
+                             &result_or_except)) {
         return ConvertError(result_or_except);
       }
 
@@ -194,6 +203,9 @@ class Player::Impl : public JsObjectWrapper {
 #undef ATTACH
     return {};
   }
+
+ private:
+  RefPtr<js::mse::HTMLVideoElement> video_;
 };
 
 Player::Client::Client() {}
@@ -234,8 +246,9 @@ AsyncResults<std::string> Player::GetPlayerVersion(JsManager* engine) {
 }
 
 
-AsyncResults<void> Player::Initialize(Video* video, Client* client) {
-  return impl_->Initialize(video->GetJavaScriptObject(), client);
+AsyncResults<void> Player::Initialize(Client* client,
+                                      media::MediaPlayer* player) {
+  return impl_->Initialize(client, player);
 }
 
 AsyncResults<void> Player::Destroy() {

@@ -83,7 +83,7 @@ class BackingObject : public memory::Traceable {
    * Gets the JavaScript object that represents this instance.  It is only
    * valid to call this method on the Event thread.
    */
-  ReturnVal<JsValue> JsThis();
+  ReturnVal<JsValue> JsThis() const;
 
   /** Sets the JavaScript instance that represents this object. */
   void SetJsThis(Handle<JsObject> this_);

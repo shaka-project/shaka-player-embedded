@@ -28,15 +28,15 @@ namespace shaka {
 namespace js {
 namespace mse {
 
-SourceBuffer::SourceBuffer(RefPtr<MediaSource> media_source,
-                           media::SourceType type)
+SourceBuffer::SourceBuffer(const std::string& mime,
+                           RefPtr<MediaSource> media_source)
     : mode(AppendMode::SEGMENTS),
       updating(false),
+      demuxer_(mime, media_source.get(), &frames_),
+      media_source_(media_source),
       timestamp_offset_(0),
       append_window_start_(0),
-      append_window_end_(HUGE_VAL /* Infinity */),
-      media_source_(media_source),
-      type_(type) {
+      append_window_end_(HUGE_VAL /* Infinity */) {
   AddListenerField(EventType::UpdateStart, &on_update_start);
   AddListenerField(EventType::Update, &on_update);
   AddListenerField(EventType::UpdateEnd, &on_update_end);
@@ -54,6 +54,16 @@ void SourceBuffer::Trace(memory::HeapTracer* tracer) const {
   tracer->Trace(&media_source_);
 }
 
+bool SourceBuffer::Attach(const std::string& mime, media::MediaPlayer* player,
+                          bool is_video) {
+  return player->AddMseBuffer(mime, is_video, &frames_);
+}
+
+void SourceBuffer::Detach() {
+  demuxer_.Stop();
+  media_source_ = nullptr;
+}
+
 ExceptionOr<void> SourceBuffer::AppendBuffer(ByteBuffer data) {
   if (!media_source_) {
     return JsError::DOMException(
@@ -69,15 +79,11 @@ ExceptionOr<void> SourceBuffer::AppendBuffer(ByteBuffer data) {
     media_source_->ScheduleEvent<events::Event>(EventType::SourceOpen);
   }
 
-  using namespace std::placeholders;  // NOLINT
   append_buffer_ = std::move(data);
-  if (!media_source_->GetController()->AppendData(
-          type_, timestamp_offset_, append_window_start_, append_window_end_,
-          append_buffer_.data(), append_buffer_.size(),
-          std::bind(&SourceBuffer::OnAppendComplete, this, _1))) {
-    return JsError::DOMException(
-        InvalidStateError, "Unable to find source type " + to_string(type_));
-  }
+  demuxer_.AppendData(
+      timestamp_offset_, append_window_start_, append_window_end_,
+      append_buffer_.data(), append_buffer_.size(),
+      std::bind(&SourceBuffer::OnAppendComplete, this, std::placeholders::_1));
 
   updating = true;
   return {};
@@ -98,17 +104,14 @@ ExceptionOr<void> SourceBuffer::Remove(double start, double end) {
   }
 
   // TODO: Consider running this on a background thread.
-  if (!media_source_->GetController()->Remove(type_, start, end)) {
-    return JsError::DOMException(
-        InvalidStateError, "Unable to find source type " + to_string(type_));
-  }
+  frames_.Remove(start, end);
 
   ScheduleEvent<events::Event>(EventType::UpdateEnd);
   return {};
 }
 
-void SourceBuffer::CloseMediaSource() {
-  media_source_ = nullptr;
+media::BufferedRanges SourceBuffer::GetBufferedRanges() const {
+  return frames_.GetBufferedRanges();
 }
 
 ExceptionOr<RefPtr<TimeRanges>> SourceBuffer::GetBuffered() const {
@@ -117,8 +120,7 @@ ExceptionOr<RefPtr<TimeRanges>> SourceBuffer::GetBuffered() const {
         InvalidStateError,
         "SourceBuffer is detached from the <video> element.");
   }
-  return new TimeRanges(
-      media_source_->GetController()->GetBufferedRanges(type_));
+  return new TimeRanges(frames_.GetBufferedRanges());
 }
 
 double SourceBuffer::TimestampOffset() const {

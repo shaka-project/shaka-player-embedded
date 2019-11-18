@@ -36,18 +36,7 @@ bool IsPersistentSessionType(MediaKeySessionType type) {
 }
 
 bool SupportsContentType(const std::string& content_type) {
-  media::SourceType unused_type;
-  std::string container;
-  std::string unused_codec;
-  if (!ParseMimeAndCheckSupported(content_type, &unused_type, &container,
-                                  &unused_codec)) {
-    return false;
-  }
-  // FFmpeg demuxer only exposes encryption info for MP4 and WebM.
-  if (container != "mp4" && container != "webm")
-    return false;
-
-  return true;
+  return mse::MediaSource::IsTypeSupported(content_type);
 }
 
 bool GetSupportedConfiguration(

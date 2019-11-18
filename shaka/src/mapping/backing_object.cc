@@ -56,13 +56,13 @@ bool BackingObject::DerivedFrom(const std::string& base) {
   return factory()->DerivedFrom(base);
 }
 
-ReturnVal<JsValue> BackingObject::JsThis() {
+ReturnVal<JsValue> BackingObject::JsThis() const {
   // This allows a wrapper to be deleted or this object to be created in C++
   // where |js_this_| is initially empty.
   if (js_this_.empty()) {
     // NOTE: WrapInstance will call the JavaScript constructor which will call
     // SetJsThis, so no need to use the return value.
-    factory()->WrapInstance(this);
+    factory()->WrapInstance(const_cast<BackingObject*>(this));
     DCHECK(!js_this_.empty());
   }
   return js_this_.value();
