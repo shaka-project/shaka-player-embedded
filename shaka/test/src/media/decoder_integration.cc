@@ -25,8 +25,8 @@ extern "C" {
 #include "src/eme/clearkey_implementation.h"
 #include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
 #include "src/media/ffmpeg/ffmpeg_decoder.h"
-#include "src/media/frame_converter.h"
 #include "src/media/media_utils.h"
+#include "src/test/frame_converter.h"
 #include "src/test/media_files.h"
 #include "src/util/crypto.h"
 
@@ -96,19 +96,10 @@ void DecodeFramesAndCheckHashes(
               MediaStatus::Success);
 
     for (auto& decoded : decoded_frames) {
-      // TODO(modmaker): Avoid using FFmpeg-specific classes.
-      auto* cast_frame =
-          static_cast<ffmpeg::FFmpegDecodedFrame*>(decoded.get());
-      const uint8_t* const* data = cast_frame->data.data();
-      std::vector<int> linesize_vec{cast_frame->linesize.begin(),
-                                    cast_frame->linesize.end()};
-      const int* linesize = linesize_vec.data();
-      if (cast_frame->raw_frame()->format != AV_PIX_FMT_ARGB) {
-        ASSERT_TRUE(converter.ConvertFrame(cast_frame->raw_frame(), &data,
-                                           &linesize, AV_PIX_FMT_ARGB));
-      }
-
-      results += GetFrameHash(data[0], linesize[0] * cast_frame->height) + "\n";
+      const uint8_t* data;
+      size_t size;
+      ASSERT_TRUE(converter.ConvertFrame(decoded, &data, &size));
+      results += GetFrameHash(data, size) + "\n";
     }
   }
 

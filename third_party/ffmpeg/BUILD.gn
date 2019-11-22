@@ -15,10 +15,6 @@
 import("//common.gni")
 
 declare_args() {
-  # Whether to include swscale to convert pixel formats that aren't natively
-  # supported by the platform.
-  include_swscale = true
-
   ffmpeg_format_files = []
   ffmpeg_codec_files = []
   ffmpeg_util_files = []
@@ -59,9 +55,6 @@ config("external_config") {
   ]
 
   defines = []
-  if (include_swscale) {
-    defines += [ "HAS_SWSCALE" ]
-  }
   if (enable_hardware_decode) {
     defines += [ "ENABLE_HARDWARE_DECODE" ]
     if (force_hardware_decode) {
@@ -103,9 +96,17 @@ framework_library("ffmpeg_libs") {
     ":swresample",
   ]
 
-  if (include_swscale) {
-    deps += [ ":swscale" ]
-  }
+  public_configs = [ ":external_config" ]
+}
+
+framework_library("swscale") {
+  output_name = "FFmpeg-Swscale"
+  info_plist_target = ":gen_info_plist"
+
+  deps = [
+    ":libavutil",
+    ":swscale_internal",
+  ]
 
   public_configs = [ ":external_config" ]
 }
@@ -240,7 +241,7 @@ ffmpeg_part("libavutil") {
   sources = ffmpeg_util_files
 }
 
-ffmpeg_part("swscale") {
+ffmpeg_part("swscale_internal") {
   sources = ffmpeg_swscale_files
 }
 

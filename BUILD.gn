@@ -619,8 +619,6 @@ source_set("internal_sources") {
     "shaka/src/media/ffmpeg/ffmpeg_demuxer.h",
     "shaka/src/media/ffmpeg/ffmpeg_encoded_frame.cc",
     "shaka/src/media/ffmpeg/ffmpeg_encoded_frame.h",
-    "shaka/src/media/frame_converter.cc",
-    "shaka/src/media/frame_converter.h",
     "shaka/src/media/frames.cc",
     "shaka/src/media/ios/ios_video_renderer.cc",
     "shaka/src/media/ios/ios_video_renderer.h",
@@ -1228,6 +1226,8 @@ test("tests") {
     "shaka/test/src/util/file_system_unittest.cc",
     "shaka/test/src/util/shared_lock_unittest.cc",
     "shaka/test/src/util/utils_unittest.cc",
+    "shaka/test/src/test/frame_converter.cc",
+    "shaka/test/src/test/frame_converter.h",
     "shaka/test/src/test/js_test_fixture.cc",
     "shaka/test/src/test/js_test_fixture.h",
     "shaka/test/src/test/media_files.h",
@@ -1257,6 +1257,7 @@ test("tests") {
     "//testing/gmock:gmock",
     "//testing/gtest:gtest",
     "//third_party/ffmpeg:ffmpeg_libs",
+    "//third_party/ffmpeg:swscale",
     "//third_party/gflags:gflags",
     "//third_party/glog:glog",
     "//third_party/sdl2:sdl2",
@@ -1267,6 +1268,7 @@ test("tests") {
     deps += [
       ":scripts_bundle",
       "//third_party/ffmpeg:ffmpeg_libs_framework+bundle",
+      "//third_party/ffmpeg:swscale_framework+bundle",
     ]
   }
 
