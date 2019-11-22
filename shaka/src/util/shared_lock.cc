@@ -14,17 +14,30 @@
 
 #include "src/util/shared_lock.h"
 
+#include <glog/logging.h>
+
 namespace shaka {
 namespace util {
 
-shared_mutex::shared_mutex() {}
+shared_mutex::shared_mutex() {
+#ifdef USE_PTHREAD
+  CHECK_EQ(pthread_rwlock_init(&lock_, nullptr), 0);
+#endif
+}
 
 shared_mutex::~shared_mutex() {
+#ifdef USE_PTHREAD
+  CHECK_EQ(pthread_rwlock_destroy(&lock_), 0);
+#else
   DCHECK(!is_exclusive_) << "Trying to destroy a locked mutex";
   DCHECK_EQ(0, shared_count_) << "Trying to destroy a locked mutex";
+#endif
 }
 
 void shared_mutex::unlock() {
+#ifdef USE_PTHREAD
+  CHECK_EQ(pthread_rwlock_unlock(&lock_), 0);
+#else
   {
     std::unique_lock<std::mutex> lock(mutex_);
     DCHECK(is_exclusive_) << "Trying to unlock an already unlocked mutex";
@@ -32,9 +45,13 @@ void shared_mutex::unlock() {
     is_exclusive_ = false;
   }
   signal_.notify_all();
+#endif
 }
 
 void shared_mutex::unlock_shared() {
+#ifdef USE_PTHREAD
+  CHECK_EQ(pthread_rwlock_unlock(&lock_), 0);
+#else
   {
     std::unique_lock<std::mutex> lock(mutex_);
     DCHECK(!is_exclusive_) << "Cannot hold unique lock with shared lock";
@@ -42,9 +59,16 @@ void shared_mutex::unlock_shared() {
     shared_count_--;
   }
   signal_.notify_all();
+#endif
 }
 
 bool shared_mutex::maybe_try_lock(bool only_try) {
+#ifdef USE_PTHREAD
+  const int code = only_try ? pthread_rwlock_trywrlock(&lock_)
+                            : pthread_rwlock_wrlock(&lock_);
+  CHECK(code == 0 || code == EBUSY);
+  return code == 0;
+#else
   // Note this lock is only held transitively, so it shouldn't block for long.
   std::unique_lock<std::mutex> lock(mutex_);
   while (is_exclusive_ || shared_count_ > 0) {
@@ -56,9 +80,16 @@ bool shared_mutex::maybe_try_lock(bool only_try) {
   is_exclusive_ = true;
   is_exclusive_waiting_ = false;
   return true;
+#endif
 }
 
 bool shared_mutex::maybe_try_lock_shared(bool only_try) {
+#ifdef USE_PTHREAD
+  const int code = only_try ? pthread_rwlock_tryrdlock(&lock_)
+                            : pthread_rwlock_rdlock(&lock_);
+  CHECK(code == 0 || code == EBUSY);
+  return code == 0;
+#else
   // Note this lock is only held transitively, so it shouldn't block for long.
   std::unique_lock<std::mutex> lock(mutex_);
 
@@ -71,6 +102,7 @@ bool shared_mutex::maybe_try_lock_shared(bool only_try) {
   }
   shared_count_++;
   return true;
+#endif
 }
 
 }  // namespace util

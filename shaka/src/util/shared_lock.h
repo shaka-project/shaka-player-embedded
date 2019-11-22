@@ -15,10 +15,13 @@
 #ifndef SHAKA_EMBEDDED_UTIL_SHARED_LOCK_H_
 #define SHAKA_EMBEDDED_UTIL_SHARED_LOCK_H_
 
-#include <condition_variable>
-#include <mutex>
-#include <thread>
-#include <unordered_set>
+#ifdef USE_PTHREAD
+#  include <pthread.h>
+#else
+#  include <condition_variable>
+#  include <mutex>
+#endif
+
 #include <utility>
 
 #include "src/util/macros.h"
@@ -89,11 +92,15 @@ class shared_mutex {
   bool maybe_try_lock(bool only_try);
   bool maybe_try_lock_shared(bool only_try);
 
+#ifdef USE_PTHREAD
+  pthread_rwlock_t lock_;
+#else
   std::mutex mutex_;
   std::condition_variable signal_;
   uint32_t shared_count_ = 0;
   bool is_exclusive_ = false;
   bool is_exclusive_waiting_ = false;
+#endif
 };
 
 

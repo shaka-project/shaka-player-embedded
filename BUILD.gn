@@ -157,6 +157,7 @@ config("internal_config") {
   defines = [
     "PLATFORM=\"" + os + " " + current_cpu + "\"",
     "BUILDING_SHAKA",
+    "USE_PTHREAD",
   ]
 
   if (is_posix) {

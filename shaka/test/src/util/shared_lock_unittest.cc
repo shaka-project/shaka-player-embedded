@@ -18,8 +18,9 @@
 
 #include <algorithm>
 #include <atomic>
-#include <condition_variable>
 #include <mutex>
+#include <thread>
+#include <vector>
 
 #include "src/test/test_utils.h"
 
