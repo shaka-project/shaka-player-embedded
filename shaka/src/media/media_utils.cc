@@ -23,6 +23,7 @@ extern "C" {
 
 #include <algorithm>
 #include <type_traits>
+#include <utility>
 
 #include "src/media/hardware_support.h"
 #include "src/util/macros.h"
@@ -72,19 +73,23 @@ bool ParseMimeType(const std::string& source, std::string* type,
   const auto type_end = source.find('/');
   if (type_end == std::string::npos)
     return false;
-  *type = util::TrimAsciiWhitespace(substr_end(source, 0, type_end));
-  if (!IsToken(*type))
+  std::string type_tmp =
+      util::TrimAsciiWhitespace(substr_end(source, 0, type_end));
+  if (!IsToken(type_tmp))
     return false;
+  if (type)
+    *type = std::move(type_tmp);
 
   // Extract subtype.
   const auto subtype_end = source.find(';', type_end);
-  *subtype =
+  std::string subtype_tmp =
       util::TrimAsciiWhitespace(substr_end(source, type_end + 1, subtype_end));
-  if (!IsToken(*subtype))
+  if (!IsToken(subtype_tmp))
     return false;
+  if (subtype)
+    *subtype = std::move(subtype_tmp);
 
   // Extract parameters.
-  params->clear();
   auto param_end = subtype_end;
   while (param_end != std::string::npos) {
     const auto name_end = source.find('=', param_end);
@@ -120,7 +125,8 @@ bool ParseMimeType(const std::string& source, std::string* type,
       if (!IsToken(value))
         return false;
     }
-    params->emplace(util::ToAsciiLower(param_name), value);
+    if (params)
+      params->emplace(util::ToAsciiLower(param_name), value);
   }
 
   return true;

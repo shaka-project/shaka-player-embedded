@@ -62,10 +62,8 @@ const AVCodec* FindCodec(const std::string& codec_name) {
 }
 
 std::string GetCodecFromMime(const std::string& mime) {
-  std::string unused_type;
-  std::string unused_subtype;
   std::unordered_map<std::string, std::string> params;
-  if (!ParseMimeType(mime, &unused_type, &unused_subtype, &params))
+  if (!ParseMimeType(mime, nullptr, nullptr, &params))
     return "";
   auto it = params.find(kCodecMimeParam);
   return it != params.end() ? it->second : "";

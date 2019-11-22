@@ -30,10 +30,8 @@ namespace media {
 namespace {
 
 std::string ShortContainerName(const std::string& mime) {
-  std::string unused_type;
   std::string subtype;
-  std::unordered_map<std::string, std::string> unused_params;
-  if (!ParseMimeType(mime, &unused_type, &subtype, &unused_params))
+  if (!ParseMimeType(mime, nullptr, &subtype, nullptr))
     return "";
 
   DCHECK_LT(subtype.size(), 8u) << "Container needs a short name";

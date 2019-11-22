@@ -43,10 +43,8 @@ void LogError(int code) {
 }
 
 std::string GetCodec(const std::string& mime, AVCodecID codec) {
-  std::string unused_type;
-  std::string unused_subtype;
   std::unordered_map<std::string, std::string> params;
-  CHECK(ParseMimeType(mime, &unused_type, &unused_subtype, &params));
+  CHECK(ParseMimeType(mime, nullptr, nullptr, &params));
   if (params.count(kCodecMimeParam) > 0)
     return params.at(kCodecMimeParam);
   else
@@ -105,10 +103,8 @@ std::vector<uint8_t> CreatePssh(AVEncryptionInitInfo* info) {
 }
 
 bool ParseAndCheckSupport(const std::string& mime, std::string* container) {
-  std::string unused_type;
   std::string subtype;
-  std::unordered_map<std::string, std::string> unused_params;
-  if (!ParseMimeType(mime, &unused_type, &subtype, &unused_params))
+  if (!ParseMimeType(mime, nullptr, &subtype, nullptr))
     return false;
 
   std::string normalized = NormalizeContainer(subtype);

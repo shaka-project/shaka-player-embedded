@@ -119,10 +119,8 @@ ExceptionOr<RefPtr<SourceBuffer>> MediaSource::AddSourceBuffer(
   }
   DCHECK(player_);
 
-  std::string unused_type;
-  std::string unused_subtype;
   std::unordered_map<std::string, std::string> params;
-  if (!media::ParseMimeType(type, &unused_type, &unused_subtype, &params)) {
+  if (!media::ParseMimeType(type, nullptr, nullptr, &params)) {
     return JsError::DOMException(
         NotSupportedError,
         "The given type ('" + type + "') is not a valid MIME type.");

@@ -47,6 +47,7 @@ TEST(MediaUtilsTest, ParseMimeType) {
   EXPECT_EQ("mp4", subtype);
   EXPECT_EQ(0u, params.size());
 
+  params.clear();
   ASSERT_TRUE(ParseMimeType("audio/mp2t; codecs = \"foo bar\"", &type, &subtype,
                             &params));
   EXPECT_EQ("audio", type);
@@ -54,6 +55,7 @@ TEST(MediaUtilsTest, ParseMimeType) {
   ASSERT_EQ(1u, params.size());
   EXPECT_EQ("foo bar", params["codecs"]);
 
+  params.clear();
   ASSERT_TRUE(ParseMimeType("text/vtt; encoding=UTF-8; codecs=stpp", &type,
                             &subtype, &params));
   EXPECT_EQ("text", type);
@@ -92,6 +94,9 @@ TEST(MediaUtilsTest, ParseMimeType) {
   BadMimeTest("video/audio;key=\"");        // No end of quoted string.
   BadMimeTest("video/audio;key=\"\" foo");  // Chars after end of quoted string.
   BadMimeTest("video/audio;key=\"\"foo; k=v");
+
+  ASSERT_TRUE(ParseMimeType("text/vtt; encoding=UTF-8; codecs=stpp", nullptr,
+                            nullptr, nullptr));
 }
 
 
