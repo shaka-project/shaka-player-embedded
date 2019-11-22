@@ -14,18 +14,11 @@
 
 #include "src/media/media_utils.h"
 
-#include <glog/logging.h>
-
-extern "C" {
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-}
-
 #include <algorithm>
+#include <cstdlib>
 #include <type_traits>
 #include <utility>
 
-#include "src/media/hardware_support.h"
 #include "src/util/macros.h"
 
 namespace shaka {
@@ -132,62 +125,6 @@ bool ParseMimeType(const std::string& source, std::string* type,
   return true;
 }
 
-bool IsTypeSupported(const std::string& container, const std::string& codecs,
-                     int width, int height) {  // NOLINT(misc-unused-parameters)
-  if (codecs.find(',') != std::string::npos) {
-    VLOG(1) << "Multiplexed streams not supported.";
-    return false;
-  }
-
-  const std::string norm_container = NormalizeContainer(container);
-  if (!av_find_input_format(norm_container.c_str())) {
-    VLOG(1) << "Container '" << norm_container << "' (normalized from '"
-            << container << "') is not supported";
-    return false;
-  }
-
-  const std::string norm_codec = NormalizeCodec(codecs);
-  if (!codecs.empty() && !avcodec_find_decoder_by_name(norm_codec.c_str())) {
-    VLOG(1) << "Codec '" << norm_codec << "' (normalized from '" << codecs
-            << "') is not supported";
-    return false;
-  }
-
-#ifdef FORCE_HARDWARE_DECODE
-  if (!DoesHardwareSupportCodec(codecs, width, height)) {
-    VLOG(1) << "Codec '" << codecs << "' isn't supported by the hardware.";
-    return false;
-  }
-#endif
-
-  return true;
-}
-
-bool ParseMimeAndCheckSupported(const std::string& mime_type,
-                                SourceType* source_type, std::string* container,
-                                std::string* codec) {
-  std::string type;
-  std::unordered_map<std::string, std::string> params;
-  if (!ParseMimeType(mime_type, &type, container, &params))
-    return false;
-  const long width = atol(params["width"].c_str());    // NOLINT
-  const long height = atol(params["height"].c_str());  // NOLINT
-  if (!IsTypeSupported(*container, params[kCodecMimeParam], width, height))
-    return false;
-
-  if (type == "video") {
-    *source_type = SourceType::Video;
-  } else if (type == "audio") {
-    *source_type = SourceType::Audio;
-  } else {
-    VLOG(1) << "Non-audio/video MIME given '" << mime_type << "'";
-    return false;
-  }
-
-  *codec = params[kCodecMimeParam];
-  return true;
-}
-
 std::string NormalizeContainer(const std::string& container) {
   for (const auto& entry : kContainerMap)
     if (container == entry.source)
@@ -231,6 +168,28 @@ BufferedRanges IntersectionOfBufferedRanges(
   }
 
   return accumulated;
+}
+
+MediaDecodingConfiguration ConvertMimeToDecodingConfiguration(
+    const std::string& mime_type, MediaDecodingType type) {
+  media::MediaDecodingConfiguration info;
+  info.type = type;
+  info.audio.content_type = info.video.content_type = mime_type;
+
+  std::unordered_map<std::string, std::string> params;
+  if (ParseMimeType(mime_type, nullptr, nullptr, &params)) {
+    info.video.width = std::atol(params["width"].c_str());
+    info.video.height = std::atol(params["height"].c_str());
+    info.video.framerate = std::atof(params["framerate"].c_str());
+
+    info.audio.channels =
+        static_cast<uint16_t>(std::atoi(params["channels"].c_str()));
+
+    info.audio.bitrate = info.video.bitrate =
+        std::atoll(params["bitrate"].c_str());
+  }
+
+  return info;
 }
 
 }  // namespace media

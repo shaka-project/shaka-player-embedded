@@ -182,9 +182,8 @@ class DecoderDecryptIntegration : public testing::TestWithParam<const char*> {
 
 TEST_P(DecoderDecryptIntegration, CanDecryptFrames) {
   const std::string container = EndsWith(GetParam(), ".webm") ? "webm" : "mp4";
-  const std::string codec =
-      EndsWith(GetParam(), ".webm") ? "vp9" : "avc1.42c01e";
-  if (!IsTypeSupported(container, codec, 0, 0)) {
+  auto* factory = DemuxerFactory::GetFactory();
+  if (!factory || !factory->IsTypeSupported(container)) {
     LOG(WARNING) << "Skipping test since we don't have support for the media.";
     return;
   }

@@ -27,6 +27,9 @@
 #include <string>
 
 #include "shaka/js_manager.h"
+#include "shaka/media/default_media_player.h"
+#include "shaka/media/media_player.h"
+#include "shaka/media/renderer.h"
 #include "src/core/js_manager_impl.h"
 #include "src/mapping/callback.h"
 #include "src/mapping/register_member.h"
@@ -46,6 +49,30 @@ DEFINE_bool(no_colors, false, "Don't print colors in test output.");
 DEFINE_string(v8_flags, "", "Pass the given flags to V8.");
 #endif
 
+class DummyRenderer : public media::VideoRenderer, public media::AudioRenderer {
+ public:
+  void OnSeek() override {}
+  void SetPlayer(const media::MediaPlayer* player) override {}
+  void Attach(const media::DecodedStream* stream) override {}
+  void Detach() override {}
+
+  double Volume() const override {
+    return 0;
+  }
+  void SetVolume(double volume) override {}
+  bool Muted() const override {
+    return false;
+  }
+  void SetMuted(bool muted) override {}
+
+  media::VideoPlaybackQualityNew VideoPlaybackQuality() const override {
+    return media::VideoPlaybackQualityNew();
+  }
+  bool SetVideoFillMode(media::VideoFillMode mode) override {
+    return false;
+  }
+};
+
 int RunTests(int argc, char** argv) {
 #ifdef OS_IOS
   const std::string dynamic_data_dir = std::string(getenv("HOME")) + "/Library";
@@ -54,6 +81,11 @@ int RunTests(int argc, char** argv) {
   const std::string dynamic_data_dir = util::FileSystem::DirName(argv[0]);
   const std::string static_data_dir = dynamic_data_dir;
 #endif
+
+  // Setup a dummy MediaPlayer instance that is used for support checking.
+  DummyRenderer renderer;
+  media::DefaultMediaPlayer player(&renderer, &renderer);
+  media::MediaPlayer::SetMediaPlayerForSupportChecks(&player);
 
   // Init gflags.
   gflags::ParseCommandLineFlags(&argc, &argv, true);

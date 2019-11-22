@@ -260,6 +260,28 @@ class SHAKA_EXPORT MediaPlayer {
   MediaPlayer& operator=(MediaPlayer&&) = delete;
 
   /**
+   * Sets the global MediaPlayer instance that is used to determine if content
+   * can be played.  This is used by MediaSource.isTypeSupported to determine
+   * if content can be played.
+   *
+   * This allows setting a special instance for these static support checks for
+   * when a "current" MediaPlayer cannot be determined.  This can be set to
+   * nullptr to not use it anymore.
+   *
+   * If a value isn't given here, we'll use an arbitrary MediaPlayer instance
+   * that was given to some Player instance.  We'll only use alive instances,
+   * but we may use a different one than what will ultimately play the content.
+   *
+   * @param player The MediaPlayer instance to use; only the DecodingInfo method
+   *   will be called.
+   */
+  static void SetMediaPlayerForSupportChecks(const MediaPlayer* player);
+
+  /** @return The last value passed to SetMediaPlayerForSupportChecks. */
+  static const MediaPlayer* GetMediaPlayerForSupportChecks();
+
+
+  /**
    * Checks whether the given content can be played.  In general, for MSE
    * playback, this shouldn't check whether it can be demuxed, this should only
    * check whether the streams can be decoded.  The Demuxer should handle

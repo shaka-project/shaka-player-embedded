@@ -60,6 +60,7 @@ class HTMLVideoElement : public dom::Element, media::MediaPlayer::Client {
   void Detach();
 
   static RefPtr<HTMLVideoElement> AnyVideoElement();
+  static media::MediaPlayer* AnyMediaPlayer();
 
   // Encrypted media extensions
   Promise SetMediaKeys(RefPtr<eme::MediaKeys> media_keys);

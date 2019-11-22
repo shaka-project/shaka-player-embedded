@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "shaka/media/media_capabilities.h"
 #include "src/js/js_error.h"
 #include "src/media/types.h"
 #include "src/util/utils.h"
@@ -44,22 +45,6 @@ bool ParseMimeType(const std::string& source, std::string* type,
                    std::string* subtype,
                    std::unordered_map<std::string, std::string>* params);
 
-/** @return Whether the given container and codec are supported. */
-bool IsTypeSupported(const std::string& container, const std::string& codecs,
-                     int width, int height);
-
-/**
- * Parses the given MIME type and checks whether it is supported.
- * @param mime_type The MIME type to parse.
- * @param source_type [OUT] Where to put the MIME's source type.
- * @param container [OUT] Where to put the MIME's media container type.
- * @param codec [OUT] Where to put the MIME's media codec type.
- * @return True on success, false on parse error or unsupported.
- */
-bool ParseMimeAndCheckSupported(const std::string& mime_type,
-                                SourceType* source_type, std::string* container,
-                                std::string* codec);
-
 /** @return The container converted to the name FFmpeg expects. */
 std::string NormalizeContainer(const std::string& container);
 
@@ -75,6 +60,13 @@ std::string NormalizeCodec(const std::string& codec);
  */
 BufferedRanges IntersectionOfBufferedRanges(
     const std::vector<BufferedRanges>& sources);
+
+/**
+ * Converts a MIME type to a MediaDecodingConfiguration that is usable with the
+ * media capabilities API.
+ */
+MediaDecodingConfiguration ConvertMimeToDecodingConfiguration(
+    const std::string& mime_type, MediaDecodingType type);
 
 }  // namespace media
 }  // namespace shaka

@@ -14,8 +14,16 @@
 
 #include "shaka/media/media_player.h"
 
+#include <atomic>
+
 namespace shaka {
 namespace media {
+
+namespace {
+
+std::atomic<const MediaPlayer*> player_{nullptr};
+
+}  // namespace
 
 MediaPlayer::Client::Client() {}
 MediaPlayer::Client::~Client() {}
@@ -23,6 +31,14 @@ MediaPlayer::Client::~Client() {}
 
 MediaPlayer::MediaPlayer() {}
 MediaPlayer::~MediaPlayer() {}
+
+void MediaPlayer::SetMediaPlayerForSupportChecks(const MediaPlayer* player) {
+  player_.store(player, std::memory_order_relaxed);
+}
+
+const MediaPlayer* MediaPlayer::GetMediaPlayerForSupportChecks() {
+  return player_.load(std::memory_order_relaxed);
+}
 
 }  // namespace media
 }  // namespace shaka

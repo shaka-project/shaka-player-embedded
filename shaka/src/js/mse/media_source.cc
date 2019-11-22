@@ -89,11 +89,18 @@ MediaSource::~MediaSource() {
 
 // static
 bool MediaSource::IsTypeSupported(const std::string& mime_type) {
-  std::string container;
-  std::string codec;
-  media::SourceType source_type;
-  return ParseMimeAndCheckSupported(mime_type, &source_type, &container,
-                                    &codec);
+  auto* player = media::MediaPlayer::GetMediaPlayerForSupportChecks();
+  if (!player)
+    player = HTMLVideoElement::AnyMediaPlayer();
+  if (!player) {
+    LOG(ERROR) << "Unable to find a MediaPlayer instance to query";
+    return false;
+  }
+
+  auto info = ConvertMimeToDecodingConfiguration(
+      mime_type, media::MediaDecodingType::MediaSource);
+  auto support = player->DecodingInfo(info);
+  return support.supported;
 }
 
 // static

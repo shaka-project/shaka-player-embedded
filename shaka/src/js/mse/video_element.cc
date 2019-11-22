@@ -21,6 +21,7 @@
 #include "src/js/js_error.h"
 #include "src/js/mse/media_source.h"
 #include "src/js/mse/time_ranges.h"
+#include "src/media/media_utils.h"
 #include "src/util/macros.h"
 #include "src/util/utils.h"
 
@@ -65,6 +66,12 @@ HTMLVideoElement::~HTMLVideoElement() {
 
 RefPtr<HTMLVideoElement> HTMLVideoElement::AnyVideoElement() {
   return *g_video_elements_.begin();
+}
+
+media::MediaPlayer* HTMLVideoElement::AnyMediaPlayer() {
+  if (g_video_elements_.empty())
+    return nullptr;
+  return (*g_video_elements_.begin())->player_;
 }
 
 void HTMLVideoElement::Trace(memory::HeapTracer* tracer) const {
@@ -112,9 +119,15 @@ ExceptionOr<void> HTMLVideoElement::Load() {
 }
 
 CanPlayTypeEnum HTMLVideoElement::CanPlayType(const std::string& type) {
-  if (!MediaSource::IsTypeSupported(type))
+  auto info =
+      ConvertMimeToDecodingConfiguration(type, media::MediaDecodingType::File);
+
+  auto support = player_->DecodingInfo(info);
+  if (!support.supported)
     return CanPlayTypeEnum::EMPTY;
-  return CanPlayTypeEnum::MAYBE;
+  else if (!support.smooth)
+    return CanPlayTypeEnum::MAYBE;
+  return CanPlayTypeEnum::PROBABLY;
 }
 
 std::vector<RefPtr<TextTrack>> HTMLVideoElement::text_tracks() const {

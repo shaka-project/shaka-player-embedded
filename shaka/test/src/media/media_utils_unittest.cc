@@ -173,5 +173,38 @@ TEST(MediaUtilsTest, IntersectionOfBufferedRanges) {
   }
 }
 
+TEST(MediaUtilsTest, ConvertMimeToDecodingConfiguration) {
+  {
+    auto config = ConvertMimeToDecodingConfiguration("video/mp4",
+                                                     MediaDecodingType::File);
+    EXPECT_EQ(config.type, MediaDecodingType::File);
+    EXPECT_EQ(config.audio.content_type, "video/mp4");
+    EXPECT_EQ(config.video.content_type, "video/mp4");
+
+    EXPECT_EQ(config.video.width, 0);
+    EXPECT_EQ(config.video.height, 0);
+    EXPECT_EQ(config.video.framerate, 0);
+    EXPECT_EQ(config.audio.channels, 0);
+    EXPECT_EQ(config.audio.bitrate, 0);
+  }
+
+  {
+    const std::string mime =
+        "video/mp4; codecs=\"avc1\"; width=200; height=100; "
+        "framerate=\"0.0333\"; channels=6; bitrate=2000";
+    auto config =
+        ConvertMimeToDecodingConfiguration(mime, MediaDecodingType::File);
+    EXPECT_EQ(config.type, MediaDecodingType::File);
+    EXPECT_EQ(config.audio.content_type, mime);
+    EXPECT_EQ(config.video.content_type, mime);
+
+    EXPECT_EQ(config.video.width, 200);
+    EXPECT_EQ(config.video.height, 100);
+    EXPECT_NEAR(config.video.framerate, 0.0333, 0.0001);
+    EXPECT_EQ(config.audio.channels, 6);
+    EXPECT_EQ(config.audio.bitrate, 2000);
+  }
+}
+
 }  // namespace media
 }  // namespace shaka

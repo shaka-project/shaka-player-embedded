@@ -101,8 +101,9 @@ MediaCapabilitiesInfo FFmpegDecoder::DecodingInfo(
 
   const std::string codec = GetCodecFromMime(
       has_video ? config.video.content_type : config.audio.content_type);
+  // If codec isn't given, assume supported but not hardware accelerated.
 #ifdef FORCE_HARDWARE_DECODE
-  if (has_video) {
+  if (!codec.empty() && has_video) {
     const bool supported = DoesHardwareSupportCodec(codec, config.video.width,
                                                     config.video.height);
     ret.supported = ret.power_efficient = ret.smooth = supported;
@@ -111,7 +112,7 @@ MediaCapabilitiesInfo FFmpegDecoder::DecodingInfo(
 #endif
 
   auto* c = FindCodec(NormalizeCodec(codec));
-  ret.supported = c != nullptr;
+  ret.supported = codec.empty() || c != nullptr;
   ret.power_efficient = ret.smooth = c && c->wrapper_name;
   return ret;
 }
