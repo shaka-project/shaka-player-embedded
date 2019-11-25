@@ -23,8 +23,9 @@ extern "C" {
 #include "shaka/media/demuxer.h"
 #include "shaka/media/frames.h"
 #include "src/eme/clearkey_implementation.h"
-#include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
-#include "src/media/ffmpeg/ffmpeg_decoder.h"
+#if defined(HAS_FFMPEG_DECODER)
+#  include "src/media/ffmpeg/ffmpeg_decoder.h"
+#endif
 #include "src/media/media_utils.h"
 #include "src/test/frame_converter.h"
 #include "src/test/media_files.h"
@@ -108,7 +109,11 @@ void DecodeFramesAndCheckHashes(
 }
 
 std::unique_ptr<Decoder> MakeDecoder() {
+#if defined(HAS_FFMPEG_DECODER)
   return std::unique_ptr<Decoder>(new ffmpeg::FFmpegDecoder);
+#else
+#  error "Must specify custom decoder"
+#endif
 }
 
 }  // namespace

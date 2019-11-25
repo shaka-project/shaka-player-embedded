@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <SDL2/SDL.h>
+#ifndef OS_IOS
+#  include <SDL2/SDL.h>
+#endif
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>

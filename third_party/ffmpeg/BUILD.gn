@@ -92,9 +92,13 @@ framework_library("ffmpeg_libs") {
     ":libavcodec",
     ":libavformat",
     ":libavutil",
-    # TODO: Consider making libavresample optional?
-    ":swresample",
   ]
+  if (sdl_audio) {
+    deps += [
+      # TODO: Consider making libavresample optional?
+      ":swresample",
+    ]
+  }
 
   public_configs = [ ":external_config" ]
 }

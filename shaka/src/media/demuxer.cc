@@ -18,7 +18,9 @@
 
 #include <atomic>
 
-#include "src/media/ffmpeg/ffmpeg_demuxer.h"
+#ifdef HAS_DEMUXER
+#  include "src/media/ffmpeg/ffmpeg_demuxer.h"
+#endif
 #include "src/util/macros.h"
 
 namespace shaka {
@@ -49,9 +51,13 @@ const DemuxerFactory* DemuxerFactory::GetFactory() {
   if (ret)
     return ret;
 
+#ifdef HAS_DEMUXER
   static ffmpeg::FFmpegDemuxerFactory* factory =
       new ffmpeg::FFmpegDemuxerFactory;
   return factory;
+#else
+  return nullptr;
+#endif
 }
 
 void DemuxerFactory::SetFactory(const DemuxerFactory* func) {

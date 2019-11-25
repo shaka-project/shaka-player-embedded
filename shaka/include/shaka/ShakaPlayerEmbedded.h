@@ -40,7 +40,7 @@
 #  include "optional.h"
 #  include "player.h"
 #  include "player_externs.h"
-#  ifdef SHAKA_SDL_UTILS
+#  ifdef SHAKA_SDL_VIDEO
 #    include "sdl_frame_drawer.h"
 #  endif
 #  include "stats.h"
@@ -58,15 +58,19 @@
 #  include "eme/implementation_registry.h"
 
 #  include "media/decoder.h"
-#  include "media/default_media_player.h"
+#  ifdef SHAKA_DEFAULT_MEDIA_PLAYER
+#    include "media/default_media_player.h"
+#  endif
 #  include "media/demuxer.h"
 #  include "media/frames.h"
 #  include "media/media_capabilities.h"
 #  include "media/media_player.h"
 #  include "media/proxy_media_player.h"
 #  include "media/renderer.h"
-#  ifdef SHAKA_SDL_UTILS
+#  ifdef SHAKA_SDL_AUDIO
 #    include "media/sdl_audio_renderer.h"
+#  endif
+#  ifdef SHAKA_SDL_VIDEO
 #    include "media/sdl_video_renderer.h"
 #  endif
 #  include "media/stream_info.h"

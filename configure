@@ -298,7 +298,7 @@ def _RunSdlConfigure(src_dir, dest_dir, cpu, target_os, sysroot, parsed_args):
   ]
   if platform.uname()[0] != 'Darwin':
     extra_flags += ['--disable-file']
-  if not parsed_args.sdl_utils:
+  if not parsed_args.sdl_video:
     extra_flags += [
         # When using native textures, disable video output too.  We should only
         # have audio components now.
@@ -341,15 +341,18 @@ def _ConvertFFmpegFlags(parsed_args):
 
   containers = _Split(parsed_args.containers_)
   codecs = _Split(parsed_args.codecs_)
-  flags = ['--enable-demuxer=' + demuxer for demuxer in containers]
-  flags += ['--enable-parser=' + codec for codec in codecs]
-  flags += ['--enable-decoder=' + codec for codec in codecs]
-  flags += ['--enable-decoder=' + codec
-            for codec in _Split(parsed_args.extra_decoders_)]
-  flags += ['--enable-hwaccel=' + codec
-            for codec in _Split(parsed_args.hwaccels_)]
-  if 'mov' in containers and 'mpeg4video' not in codecs:
-    flags += ['--enable-parser=mpeg4video']
+  flags = []
+  if parsed_args.has_demuxer:
+    flags += ['--enable-demuxer=' + demuxer for demuxer in containers]
+    flags += ['--enable-parser=' + codec for codec in codecs]
+    if 'mov' in containers and 'mpeg4video' not in codecs:
+      flags += ['--enable-parser=mpeg4video']
+  if parsed_args.decoder == 'ffmpeg':
+    flags += ['--enable-decoder=' + codec for codec in codecs]
+    flags += ['--enable-decoder=' + codec
+              for codec in _Split(parsed_args.extra_decoders_)]
+    flags += ['--enable-hwaccel=' + codec
+              for codec in _Split(parsed_args.hwaccels_)]
 
   if parsed_args.is_debug:
     flags += [
@@ -619,29 +622,32 @@ def _CreateArgParser():
       '--jsc', action='store_const', dest='js_engine', const='jsc',
       help='Use JavaScriptCore (Safari) as the JavaScript engine.')
 
-  media_parser = parser.add_argument_group(
-      'Media Options',
+  ffmpeg_parser = parser.add_argument_group(
+      'FFmpeg Options',
       description='These settings are passed directly to FFmpeg, so see '
                   'their documentation for\nsupported values.')
-  media_parser.add_argument(
+  ffmpeg_parser.add_argument(
       '--containers', dest='containers_', metavar='CONTAINERS', default=None,
       help='A comma separated list of media containers to support.')
-  media_parser.add_argument(
+  ffmpeg_parser.add_argument(
       '--codecs', dest='codecs_', metavar='CODECS', default=None,
       help='A comma separated list of media codecs to support.')
   # TODO: Test with other hardware decoders/accelerators.
-  media_parser.add_argument(
+  ffmpeg_parser.add_argument(
       '--extra-decoders', dest='extra_decoders_', metavar='EXTRA_DECODERS',
       default='h264_cuvid,hevc_cuvid,vp8_cuvid,vp9_cuvid,aac_at,ac3_at',
       help='A comma separated list of extra decoders to use.  These should be '
            'used for hardware decoders (e.g. "h264_cuvid"), "plain" codecs '
            'should be in --codecs.  Any unsupported values are removed.')
-  media_parser.add_argument(
+  ffmpeg_parser.add_argument(
       '--hwaccels', dest='hwaccels_', metavar='HWACCELS',
       default='h264_nvdec,h264_videotoolbox,hevc_nvdec,hevc_videotoolbox,'
               'vp8_nvdec,vp9_nvdec',
       help='A comma separated list of hardware acelerators to use.  Any '
            'unsupported values are removed.')
+
+
+  media_parser = parser.add_argument_group('Media Options')
   media_parser.add_argument(
       '--disable-hardware-decode', dest='enable_hardware_decode',
       action='store_false', help='Disable hardware accelerated decode.')
@@ -653,6 +659,22 @@ def _CreateArgParser():
       '--no-force-hardware-decode', dest='force_hardware_decode',
       action='store_const', const=False,
       help="Don't force hardware-decoding on iOS.")
+  media_parser.add_argument(
+      '--no-demuxer', dest='has_demuxer',
+      action='store_false',
+      help="Don't include the default, FFmpeg-based demuxer.")
+  media_parser.add_argument(
+      '--no-decoder', dest='decoder',
+      action='store_const', const='none',
+      help="Don't include the default decoder.")
+  media_parser.add_argument(
+      '--ffmpeg-decoder', dest='decoder',
+      action='store_const', const='ffmpeg',
+      help="On iOS, use the FFmpeg-based decoder instead of the iOS one.")
+  media_parser.add_argument(
+      '--no-media-player', dest='has_media_player',
+      action='store_false',
+      help="Don't include the default MediaPlayer implementation.")
 
   sanitizer = parser.add_argument_group('Sanitizers')
   sanitizer.add_argument(
@@ -673,11 +695,17 @@ def _CreateArgParser():
       '--ios', action='store_const', dest='target_os', const='ios',
       help='Build for iOS devices (only available on Mac).')
   extra_parser.add_argument(
-      '--sdl-utils', action='store_const', dest='sdl_utils', const=True,
-      help='Include SDL utilities in the Library.')
+      '--sdl-audio', action='store_const', dest='sdl_audio', const=True,
+      help='Include the SdlAudioRenderer in the Library.')
   extra_parser.add_argument(
-      '--no-sdl-utils', action='store_const', dest='sdl_utils', const=False,
-      help="Don't include SDL utilities in the Library.")
+      '--no-sdl-audio', action='store_const', dest='sdl_audio', const=False,
+      help="Don't include the SdlAudioRenderer in the Library.")
+  extra_parser.add_argument(
+      '--sdl-video', action='store_const', dest='sdl_video', const=True,
+      help='Include the Sdl*VideoRenderer in the Library.')
+  extra_parser.add_argument(
+      '--no-sdl-video', action='store_const', dest='sdl_video', const=False,
+      help="Don't include the Sdl*VideoRenderer in the Library.")
   extra_parser.add_argument(
       '--ios-sdl-demo', action='store_const', dest='ios_sdl_demo', const=True,
       help='Use SDL for the iOS demo app.')
@@ -721,15 +749,24 @@ def _ParseArgs(args):
   if os.path.abspath(os.getcwd()) == os.path.abspath(ROOT_DIR):
     parser.error("In-tree builds aren't supported; create another directory")
 
-  if parsed_args.sdl_utils is False and is_ios:
-    parser.error('Cannot disable SDL utils on iOS')
-  if parsed_args.sdl_utils is False and parsed_args.enable_demo and not is_ios:
+  if ((parsed_args.sdl_audio is False or parsed_args.sdl_video is False) and
+      parsed_args.enable_demo and not is_ios):
     parser.error('Cannot disable SDL utils with the default demo; disable it '
                  'with --disable-demo.')
-  if parsed_args.sdl_utils is False and parsed_args.ios_sdl_demo:
-    parser.error('Cannot pass both --ios-sdl-demo and --no-sdl-utils')
+  if parsed_args.sdl_audio is False and is_ios:
+    parser.error('Cannot use --no-sdl-audio on iOS')
+  if ((parsed_args.sdl_audio is False or parsed_args.sdl_video is False) and
+      parsed_args.ios_sdl_demo):
+    parser.error(
+        'Cannot pass both --ios-sdl-demo and --no-sdl-audio/--no-sdl-video')
   if not parsed_args.enable_demo and parsed_args.ios_sdl_demo:
     parser.error('Cannot pass both --disable-demo and --ios-sdl-demo')
+  if not parsed_args.has_media_player and (parsed_args.decoder is not None and
+                                           parsed_args.decoder != 'none'):
+    parser.error('Cannot pass --no-media-player and --ffmpeg-decoder')
+  if not parsed_args.has_media_player and (parsed_args.enable_demo or
+                                           parsed_args.ios_sdl_demo):
+    parser.error('Cannot build SDL demo with --no-media-player')
 
   if parsed_args.cc_wrapper and (parsed_args.is_asan or parsed_args.is_tsan or
                                  parsed_args.is_ubsan):
@@ -739,11 +776,10 @@ def _ParseArgs(args):
   if parsed_args.js_engine is None:
     parsed_args.js_engine = 'jsc' if is_ios else 'v8'
 
-  if parsed_args.sdl_utils is None:
-    parsed_args.sdl_utils = True
-
-  if parsed_args.ios_sdl_demo:
-    parsed_args.sdl_utils = True
+  if parsed_args.sdl_audio is None:
+    parsed_args.sdl_audio = True
+  if parsed_args.sdl_video is None:
+    parsed_args.sdl_video = not is_ios or parsed_args.ios_sdl_demo
 
   if parsed_args.is_ubsan:
     parsed_args.is_ubsan_null = True
@@ -767,6 +803,14 @@ def _ParseArgs(args):
       parsed_args.codecs_ = 'h264,hevc,aac'
     else:
       parsed_args.codecs_ = 'h264,hevc,vp8,vp9,aac,aac_latm,ac3,opus,vorbis'
+
+  if not parsed_args.has_media_player:
+    parsed_args.decoder = 'none'
+    parsed_args.sdl_audio = False
+    parsed_args.sdl_video = False
+
+  if not parsed_args.decoder:
+    parsed_args.decoder = 'ffmpeg'
 
   return parsed_args
 

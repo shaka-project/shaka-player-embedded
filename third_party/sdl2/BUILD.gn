@@ -90,10 +90,6 @@ config("source_internal_config") {
         "OpenGLES.framework",
         "UIKit.framework",
       ]
-      if (sdl_utils) {
-        # TODO: See why this isn't being set in ./configure.
-        defines += [ "SDL_VIDEO_DRIVER_UIKIT" ]
-      }
     }
   }
 }

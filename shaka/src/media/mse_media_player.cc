@@ -17,7 +17,9 @@
 #include <algorithm>
 #include <functional>
 
-#include "src/media/ffmpeg/ffmpeg_decoder.h"
+#ifdef HAS_FFMPEG_DECODER
+#  include "src/media/ffmpeg/ffmpeg_decoder.h"
+#endif
 #include "src/media/media_utils.h"
 
 namespace shaka {
@@ -386,7 +388,11 @@ void MseMediaPlayer::OnWaitingForKey() {
 
 
 MseMediaPlayer::Source::Source(MseMediaPlayer* player)
+#ifdef HAS_FFMPEG_DECODER
     : default_decoder_(new ffmpeg::FFmpegDecoder),
+#else
+    : default_decoder_(nullptr),
+#endif
       decoder_thread_(player, &decoded_frames_),
       input_(nullptr),
       decoder_(nullptr) {

@@ -40,13 +40,16 @@
 #include <shaka/shaka_config.h>
 #include <shaka/utils.h>
 
+#if !defined(SHAKA_SDL_AUDIO) || !defined(SHAKA_SDL_VIDEO)
+#  error "This demo requires SDL utils"
+#endif
+#ifndef SHAKA_DEFAULT_MEDIA_PLAYER
+#  error "This demo requires the DefaultMediaPlayer"
+#endif
+
 using shaka::JsManager;
 using shaka::Player;
 using shaka::media::DefaultMediaPlayer;
-
-#ifndef SHAKA_SDL_UTILS
-#  error "This demo requires SDL utils"
-#endif
 
 namespace {
 

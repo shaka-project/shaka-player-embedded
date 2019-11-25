@@ -50,6 +50,15 @@ declare_args() {
   enable_demo = true
   # Whether to build the tests.
   enable_tests = true
+
+  # The kind of decoder to use.  Can be "ffmpeg", or "none".
+  decoder = "ffmpeg"
+
+  # Whether to include the default demuxer.
+  has_demuxer = true
+
+  # Whether to include the default MediaPlayer.
+  has_media_player = true
 }
 
 eme_implementations += [ "shaka/src/eme/clearkey.json" ]
@@ -70,6 +79,8 @@ assert(js_engine == "v8" || js_engine == "jsc", "Invalid JavaScript engine")
 assert(!(js_engine == "v8" && is_ios), "Cannot use V8 on iOS")
 assert(!(js_engine == "jsc"  && !(is_ios || is_mac)),
        "Can only use JSC on Mac and iOS")
+
+assert(decoder == "ffmpeg" || decoder == "none", "Unknown value for 'decoder'")
 
 
 config("internal_config") {
@@ -161,6 +172,12 @@ config("internal_config") {
 
   if (debug_deadlocks) {
     defines += [ "DEBUG_DEADLOCKS" ]
+  }
+  if (decoder == "ffmpeg") {
+    defines += [ "HAS_FFMPEG_DECODER" ]
+  }
+  if (has_demuxer) {
+    defines += [ "HAS_DEMUXER" ]
   }
 
   if (js_engine == "v8") {
@@ -296,12 +313,18 @@ source_set("eme_plugins") {
     # Because plugins can use internal headers, it requires the protobuf.
     ":indexeddb-proto",
     "//third_party/curl:libcurl",
-    "//third_party/ffmpeg:ffmpeg_libs",
     "//third_party/glog:glog",
     "//third_party/libxml:libxml",
-    "//third_party/sdl2:sdl2",
     "//third_party/zlib:zlib",
   ]
+  if (decoder == "ffmpeg" || has_demuxer || sdl_audio) {
+    deps += [ "//third_party/ffmpeg:ffmpeg_libs" ]
+  }
+  if (sdl_audio || sdl_video) {
+    deps += [
+      "//third_party/sdl2:sdl2",
+    ]
+  }
 
   libs = []
   if (js_engine == "v8") {
@@ -350,8 +373,14 @@ action("gen_config_h") {
     "--output",
     rebase_path(outputs[0], root_build_dir),
   ]
-  if (sdl_utils) {
-    args += [ "--sdl-utils" ]
+  if (sdl_audio) {
+    args += [ "--sdl-audio" ]
+  }
+  if (sdl_video) {
+    args += [ "--sdl-video" ]
+  }
+  if (has_media_player) {
+    args += [ "--media-player" ]
   }
 }
 
@@ -605,20 +634,9 @@ source_set("internal_sources") {
     "shaka/src/mapping/struct.h",
     "shaka/src/mapping/weak_js_ptr.h",
     "shaka/src/media/decoder.cc",
-    "shaka/src/media/decoder_thread.cc",
-    "shaka/src/media/decoder_thread.h",
-    "shaka/src/media/default_media_player.cc",
     "shaka/src/media/demuxer.cc",
     "shaka/src/media/demuxer_thread.cc",
     "shaka/src/media/demuxer_thread.h",
-    "shaka/src/media/ffmpeg/ffmpeg_decoded_frame.cc",
-    "shaka/src/media/ffmpeg/ffmpeg_decoded_frame.h",
-    "shaka/src/media/ffmpeg/ffmpeg_decoder.cc",
-    "shaka/src/media/ffmpeg/ffmpeg_decoder.h",
-    "shaka/src/media/ffmpeg/ffmpeg_demuxer.cc",
-    "shaka/src/media/ffmpeg/ffmpeg_demuxer.h",
-    "shaka/src/media/ffmpeg/ffmpeg_encoded_frame.cc",
-    "shaka/src/media/ffmpeg/ffmpeg_encoded_frame.h",
     "shaka/src/media/frames.cc",
     "shaka/src/media/ios/ios_video_renderer.cc",
     "shaka/src/media/ios/ios_video_renderer.h",
@@ -626,12 +644,6 @@ source_set("internal_sources") {
     "shaka/src/media/media_player.cc",
     "shaka/src/media/media_utils.cc",
     "shaka/src/media/media_utils.h",
-    "shaka/src/media/mse_media_player.cc",
-    "shaka/src/media/mse_media_player.h",
-    "shaka/src/media/pipeline_manager.cc",
-    "shaka/src/media/pipeline_manager.h",
-    "shaka/src/media/pipeline_monitor.cc",
-    "shaka/src/media/pipeline_monitor.h",
     "shaka/src/media/proxy_media_player.cc",
     "shaka/src/media/renderer.cc",
     "shaka/src/media/stream_info.cc",
@@ -686,15 +698,19 @@ source_set("internal_sources") {
       "shaka/src/media/hardware_support.h",
     ]
   }
-  if (sdl_utils || is_ios) {
+  if (sdl_video|| is_ios) {
     sources += [
       "shaka/src/media/video_renderer_common.cc",
       "shaka/src/media/video_renderer_common.h",
     ]
   }
-  if (sdl_utils) {
+  if (sdl_audio) {
     sources += [
       "shaka/src/media/sdl_audio_renderer.cc",
+    ]
+  }
+  if (sdl_video) {
+    sources += [
       "shaka/src/media/sdl_video_renderer.cc",
       "shaka/src/public/sdl_frame_drawer.cc",
     ]
@@ -705,6 +721,35 @@ source_set("internal_sources") {
       "shaka/src/public/ShakaPlayerView.mm",
     ]
   }
+  if (decoder == "ffmpeg") {
+    sources += [
+      "shaka/src/media/ffmpeg/ffmpeg_decoded_frame.cc",
+      "shaka/src/media/ffmpeg/ffmpeg_decoded_frame.h",
+      "shaka/src/media/ffmpeg/ffmpeg_decoder.cc",
+      "shaka/src/media/ffmpeg/ffmpeg_decoder.h",
+    ]
+  }
+  if (has_demuxer) {
+    sources += [
+      "shaka/src/media/ffmpeg/ffmpeg_demuxer.cc",
+      "shaka/src/media/ffmpeg/ffmpeg_demuxer.h",
+      "shaka/src/media/ffmpeg/ffmpeg_encoded_frame.cc",
+      "shaka/src/media/ffmpeg/ffmpeg_encoded_frame.h",
+    ]
+  }
+  if (has_media_player) {
+    sources += [
+      "shaka/src/media/decoder_thread.cc",
+      "shaka/src/media/decoder_thread.h",
+      "shaka/src/media/default_media_player.cc",
+      "shaka/src/media/mse_media_player.cc",
+      "shaka/src/media/mse_media_player.h",
+      "shaka/src/media/pipeline_manager.cc",
+      "shaka/src/media/pipeline_manager.h",
+      "shaka/src/media/pipeline_monitor.cc",
+      "shaka/src/media/pipeline_monitor.h",
+    ]
+  }
 
   deps = [
     ":eme_plugins",
@@ -713,16 +758,23 @@ source_set("internal_sources") {
     ":gen_exposed_idl",
     ":indexeddb-proto",
     "//third_party/curl:libcurl",
-    "//third_party/ffmpeg:ffmpeg_libs",
     "//third_party/libxml:libxml",
     "//third_party/zlib:zlib",
   ]
   libs = ["sqlite3"]
 
+  if (decoder == "ffmpeg" || has_demuxer || sdl_audio) {
+    deps += [ "//third_party/ffmpeg:ffmpeg_libs" ]
+  }
+
   public_deps = [
     "//third_party/glog:glog",
-    "//third_party/sdl2:sdl2",
   ]
+  if (sdl_video || sdl_audio) {
+    public_deps += [
+      "//third_party/sdl2:sdl2",
+    ]
+  }
 
   if (is_ios || is_mac) {
     libs += [
@@ -865,7 +917,6 @@ if (is_mac || is_ios) {
       "shaka/include/shaka/js_manager.h",
       "shaka/include/shaka/macros.h",
       "shaka/include/shaka/media/decoder.h",
-      "shaka/include/shaka/media/default_media_player.h",
       "shaka/include/shaka/media/demuxer.h",
       "shaka/include/shaka/media/frames.h",
       "shaka/include/shaka/media/media_capabilities.h",
@@ -894,13 +945,23 @@ if (is_mac || is_ios) {
     ]
     sources += get_target_outputs(":gen_config_h")
     sources += get_target_outputs(":gen_version_h")
-    if (sdl_utils) {
+    if (sdl_audio) {
       sources += [
         "shaka/include/shaka/media/sdl_audio_renderer.h",
+      ]
+    }
+    if (sdl_video) {
+      sources += [
         "shaka/include/shaka/media/sdl_video_renderer.h",
         "shaka/include/shaka/sdl_frame_drawer.h",
       ]
     }
+    if (has_media_player) {
+      sources += [
+        "shaka/include/shaka/media/default_media_player.h",
+      ]
+    }
+
     if (is_mac) {
       outputs = [
         "{{bundle_root_dir}}/Versions/A/Headers/{{source_file_part}}",
@@ -1210,12 +1271,8 @@ test("tests") {
     "shaka/test/src/debug/integration.cc",
     "shaka/test/src/eme/clearkey_implementation_unittest.cc",
     "shaka/test/src/js/idb/sqlite_unittest.cc",
-    "shaka/test/src/media/decoder_integration.cc",
-    "shaka/test/src/media/demuxer_unittest.cc",
     "shaka/test/src/media/streams_unittest.cc",
     "shaka/test/src/media/media_utils_unittest.cc",
-    "shaka/test/src/media/pipeline_manager_unittest.cc",
-    "shaka/test/src/media/pipeline_monitor_unittest.cc",
     "shaka/test/src/memory/heap_tracer_unittest.cc",
     "shaka/test/src/memory/object_tracker_integration.cc",
     "shaka/test/src/memory/object_tracker_unittest.cc",
@@ -1236,6 +1293,22 @@ test("tests") {
     "shaka/test/main.cc",
   ]
   sources += get_target_outputs(":gen_js_tests")
+  if (decoder != "none") {
+    sources += [
+      "shaka/test/src/media/decoder_integration.cc",
+    ]
+  }
+  if (has_demuxer) {
+    sources += [
+      "shaka/test/src/media/demuxer_unittest.cc",
+    ]
+  }
+  if (has_media_player) {
+    sources += [
+      "shaka/test/src/media/pipeline_manager_unittest.cc",
+      "shaka/test/src/media/pipeline_monitor_unittest.cc",
+    ]
+  }
 
   if (is_ios) {
     sources += [ "shaka/test/src/test/media_files_ios.cc" ]
@@ -1243,7 +1316,7 @@ test("tests") {
     sources += [ "shaka/test/src/test/media_files_other.cc" ]
   }
 
-  if (sdl_utils || is_ios) {
+  if (sdl_video || is_ios) {
     sources += [ "shaka/test/src/media/video_renderer_common_unittest.cc" ]
   }
 
@@ -1260,9 +1333,13 @@ test("tests") {
     "//third_party/ffmpeg:swscale",
     "//third_party/gflags:gflags",
     "//third_party/glog:glog",
-    "//third_party/sdl2:sdl2",
     "//third_party/zlib:zlib",
   ]
+  if (sdl_audio || sdl_video) {
+    deps += [
+      "//third_party/sdl2:sdl2",
+    ]
+  }
 
   if (is_ios) {
     deps += [

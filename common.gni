@@ -19,8 +19,10 @@ if (is_ios) {
 import("//build/config/sysroot.gni")
 
 declare_args() {
-  # Whether to include SDL utilities in the library.
-  sdl_utils = true
+  # Whether to include Sdl*VideoRenderer.
+  sdl_video = true
+  # Whether to include SdlAudioRenderer.
+  sdl_audio = true
   # Whether to enable support for hardware decoders.
   enable_hardware_decode = true
 }
