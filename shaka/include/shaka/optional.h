@@ -190,10 +190,13 @@ class optional {
 
   union {
     T value_;
-    void* dummy_;
+    char dummy_;
   };
   bool has_value_;
 };
+static_assert(sizeof(optional<char>) == 2, "Optional too big");
+static_assert(alignof(optional<char>) == alignof(char),
+              "Optional bad alignment");
 
 
 // Note that "no value" < "has value" for any value.
