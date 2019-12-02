@@ -26,6 +26,7 @@ namespace js {
   DEFINE_EVENT(ReadyStateChange, "readystatechange")     \
   /** Media events */                                    \
   DEFINE_EVENT(CanPlay, "canplay")                       \
+  DEFINE_EVENT(CanPlayThrough, "canplaythrough")         \
   DEFINE_EVENT(LoadedMetaData, "loadedmetadata")         \
   DEFINE_EVENT(LoadedData, "loadeddata")                 \
   DEFINE_EVENT(Waiting, "waiting")                       \

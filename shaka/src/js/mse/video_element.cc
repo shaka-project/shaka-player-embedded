@@ -72,10 +72,15 @@ void HTMLVideoElement::OnReadyStateChanged(
       new_ready_state >= media::VideoReadyState::HaveCurrentData) {
     ScheduleEvent<events::Event>(EventType::LoadedData);
   }
-  if (ready_state < media::VideoReadyState::HaveEnoughData &&
-      new_ready_state >= media::VideoReadyState::HaveEnoughData) {
+  if (ready_state < media::VideoReadyState::HaveFutureData &&
+      new_ready_state >= media::VideoReadyState::HaveFutureData) {
     ScheduleEvent<events::Event>(EventType::CanPlay);
   }
+  if (ready_state < media::VideoReadyState::HaveEnoughData &&
+      new_ready_state >= media::VideoReadyState::HaveEnoughData) {
+    ScheduleEvent<events::Event>(EventType::CanPlayThrough);
+  }
+
   if (ready_state >= media::VideoReadyState::HaveFutureData &&
       new_ready_state < media::VideoReadyState::HaveFutureData &&
       new_ready_state != media::VideoReadyState::HaveNothing) {
