@@ -20,67 +20,152 @@ namespace shaka {
 namespace js {
 
 VTTCue::VTTCue(double start_time, double end_time, const std::string& text)
-    : shaka::VTTCue(start_time, end_time, text) {}
+    : cue_(new shaka::media::VTTCue(start_time, end_time, text)) {}
 
-VTTCue::VTTCue(const shaka::VTTCue& pub) : shaka::VTTCue(pub) {}
+VTTCue::VTTCue(std::shared_ptr<shaka::media::VTTCue> pub) : cue_(pub) {}
 
 VTTCue::~VTTCue() {}
 
-variant<double, AutoKeyword> VTTCue::PositionJs() const {
-  const double ret = position();
+std::string VTTCue::id() const {
+  return cue_->id();
+}
+
+void VTTCue::SetId(const std::string& id) {
+  cue_->SetId(id);
+}
+
+double VTTCue::start_time() const {
+  return cue_->start_time();
+}
+
+void VTTCue::SetStartTime(double time) {
+  cue_->SetStartTime(time);
+}
+
+double VTTCue::end_time() const {
+  return cue_->end_time();
+}
+
+void VTTCue::SetEndTime(double time) {
+  cue_->SetEndTime(time);
+}
+
+bool VTTCue::pause_on_exit() const {
+  return cue_->pause_on_exit();
+}
+
+void VTTCue::SetPauseOnExit(bool pause) {
+  cue_->SetPauseOnExit(pause);
+}
+
+
+media::DirectionSetting VTTCue::vertical() const {
+  return cue_->vertical();
+}
+
+void VTTCue::SetVertical(media::DirectionSetting setting) {
+  cue_->SetVertical(setting);
+}
+
+bool VTTCue::snap_to_lines() const {
+  return cue_->snap_to_lines();
+}
+
+void VTTCue::SetSnapToLines(bool snap) {
+  cue_->SetSnapToLines(snap);
+}
+
+media::LineAlignSetting VTTCue::line_align() const {
+  return cue_->line_align();
+}
+
+void VTTCue::SetLineAlign(media::LineAlignSetting align) {
+  cue_->SetLineAlign(align);
+}
+
+variant<double, AutoKeyword> VTTCue::line() const {
+  const double ret = cue_->line();
   if (std::isnan(ret))
     return AutoKeyword::Auto;
 
   return ret;
 }
 
-void VTTCue::SetPositionJs(variant<double, AutoKeyword> value) {
+void VTTCue::SetLine(variant<double, AutoKeyword> value) {
   if (holds_alternative<double>(value))
-    SetPosition(get<double>(value));
+    cue_->SetLine(get<double>(value));
   else
-    SetPosition(NAN);
+    cue_->SetLine(NAN);
 }
 
-variant<double, AutoKeyword> VTTCue::LineJs() const {
-  const double ret = line();
+variant<double, AutoKeyword> VTTCue::position() const {
+  const double ret = cue_->position();
   if (std::isnan(ret))
     return AutoKeyword::Auto;
 
   return ret;
 }
 
-void VTTCue::SetLineJs(variant<double, AutoKeyword> value) {
+void VTTCue::SetPosition(variant<double, AutoKeyword> value) {
   if (holds_alternative<double>(value))
-    SetLine(get<double>(value));
+    cue_->SetPosition(get<double>(value));
   else
-    SetLine(NAN);
+    cue_->SetPosition(NAN);
+}
+
+media::PositionAlignSetting VTTCue::position_align() const {
+  return cue_->position_align();
+}
+
+void VTTCue::SetPositionAlign(media::PositionAlignSetting align) {
+  cue_->SetPositionAlign(align);
+}
+
+double VTTCue::size() const {
+  return cue_->size();
+}
+
+void VTTCue::SetSize(double size) {
+  cue_->SetSize(size);
+}
+
+media::AlignSetting VTTCue::align() const {
+  return cue_->align();
+}
+
+void VTTCue::SetAlign(media::AlignSetting align) {
+  cue_->SetAlign(align);
+}
+
+std::string VTTCue::text() const {
+  return cue_->text();
+}
+
+void VTTCue::SetText(const std::string& text) {
+  cue_->SetText(text);
 }
 
 
 VTTCueFactory::VTTCueFactory() {
   // TextTrackCue
-  AddGenericProperty<VTTCue>("id", &VTTCue::id, &VTTCue::SetId);
-  AddGenericProperty<VTTCue>("startTime", &VTTCue::startTime,
-                             &VTTCue::SetStartTime);
-  AddGenericProperty<VTTCue>("endTime", &VTTCue::endTime, &VTTCue::SetEndTime);
-  AddGenericProperty<VTTCue>("pauseOnExit", &VTTCue::pauseOnExit,
-                             &VTTCue::SetPauseOnExit);
+  AddGenericProperty("id", &VTTCue::id, &VTTCue::SetId);
+  AddGenericProperty("startTime", &VTTCue::start_time, &VTTCue::SetStartTime);
+  AddGenericProperty("endTime", &VTTCue::end_time, &VTTCue::SetEndTime);
+  AddGenericProperty("pauseOnExit", &VTTCue::pause_on_exit,
+                     &VTTCue::SetPauseOnExit);
 
   // VTTCue
-  AddGenericProperty<VTTCue>("vertical", &VTTCue::vertical,
-                             &VTTCue::SetVertical);
-  AddGenericProperty<VTTCue>("snapToLines", &VTTCue::snapToLines,
-                             &VTTCue::SetSnapToLines);
-  AddGenericProperty<VTTCue>("line", &VTTCue::LineJs, &VTTCue::SetLineJs);
-  AddGenericProperty<VTTCue>("lineAlign", &VTTCue::lineAlign,
-                             &VTTCue::SetLineAlign);
-  AddGenericProperty<VTTCue>("position", &VTTCue::PositionJs,
-                             &VTTCue::SetPositionJs);
-  AddGenericProperty<VTTCue>("positionAlign", &VTTCue::positionAlign,
-                             &VTTCue::SetPositionAlign);
-  AddGenericProperty<VTTCue>("size", &VTTCue::size, &VTTCue::SetSize);
-  AddGenericProperty<VTTCue>("align", &VTTCue::align, &VTTCue::SetAlign);
-  AddGenericProperty<VTTCue>("text", &VTTCue::text, &VTTCue::SetText);
+  AddGenericProperty("vertical", &VTTCue::vertical, &VTTCue::SetVertical);
+  AddGenericProperty("snapToLines", &VTTCue::snap_to_lines,
+                     &VTTCue::SetSnapToLines);
+  AddGenericProperty("line", &VTTCue::line, &VTTCue::SetLine);
+  AddGenericProperty("lineAlign", &VTTCue::line_align, &VTTCue::SetLineAlign);
+  AddGenericProperty("position", &VTTCue::position, &VTTCue::SetPosition);
+  AddGenericProperty("positionAlign", &VTTCue::position_align,
+                     &VTTCue::SetPositionAlign);
+  AddGenericProperty("size", &VTTCue::size, &VTTCue::SetSize);
+  AddGenericProperty("align", &VTTCue::align, &VTTCue::SetAlign);
+  AddGenericProperty("text", &VTTCue::text, &VTTCue::SetText);
 }
 
 }  // namespace js

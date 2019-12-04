@@ -124,6 +124,17 @@ class FakeMediaPlayer : public MediaPlayer {
         return VideoPlaybackState::Ended;
     }
   }
+  std::vector<std::shared_ptr<TextTrack>> TextTracks() override {
+    LOG(FATAL) << "Not implemented";
+  }
+  std::vector<std::shared_ptr<const TextTrack>> TextTracks() const override {
+    LOG(FATAL) << "Not implemented";
+  }
+  std::shared_ptr<TextTrack> AddTextTrack(
+      TextTrackKind kind, const std::string& label,
+      const std::string& language) override {
+    LOG(FATAL) << "Not implemented";
+  }
 
   bool SetVideoFillMode(VideoFillMode mode) override {
     LOG(FATAL) << "Not implemented";

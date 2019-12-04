@@ -111,20 +111,8 @@ void Video::SetMuted(bool muted) {
   impl_->CallInnerMethod(&JSVideo::SetMuted, muted);
 }
 
-std::vector<TextTrack> Video::TextTracks() {
-  std::vector<Member<js::mse::TextTrack>> original =
-      impl_->GetMemberVariable(&JSVideo::text_tracks);
-
-  // For each element in [begin, end), transform it using |callback| and
-  // insert the result at the back of |text_tracks|.
-  std::vector<TextTrack> text_tracks;
-  auto begin = original.begin();
-  auto end = original.end();
-  const auto callback = [](const Member<js::mse::TextTrack> track) {
-    return TextTrack(track);
-  };
-  std::transform(begin, end, std::back_inserter(text_tracks), callback);
-  return text_tracks;
+std::vector<std::shared_ptr<media::TextTrack>> Video::TextTracks() {
+  return impl_->CallInnerMethod(&JSVideo::PublicTextTracks);
 }
 
 double Video::Volume() const {

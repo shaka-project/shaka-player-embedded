@@ -14,53 +14,54 @@
 
 #include <cmath>
 
-#include "shaka/vtt_cue.h"
+#include "shaka/media/vtt_cue.h"
 
 namespace shaka {
+namespace media {
 
 VTTCue::VTTCue(double start_time, double end_time, const std::string& text)
-    : start_time_(start_time),
+    : text_(text),
+      start_time_(start_time),
       end_time_(end_time),
-      pause_on_exit_(false),
-      vertical_(DirectionSetting::Horizontal),
-      snap_to_lines_(true),
       line_(NAN),
-      line_align_(LineAlignSetting::Start),
       position_(NAN),
-      position_align_(PositionAlignSetting::Auto),
       size_(100),
+      vertical_(DirectionSetting::Horizontal),
+      line_align_(LineAlignSetting::Start),
+      position_align_(PositionAlignSetting::Auto),
       align_(AlignSetting::Center),
-      text_(text) {}
+      snap_to_lines_(true),
+      pause_on_exit_(false) {}
 
 VTTCue::VTTCue(const VTTCue& cue)
     : id_(cue.id_),
+      text_(cue.text_),
       start_time_(cue.start_time_),
       end_time_(cue.end_time_),
-      pause_on_exit_(cue.pause_on_exit_),
-      vertical_(cue.vertical_),
-      snap_to_lines_(cue.snap_to_lines_),
       line_(cue.line_),
-      line_align_(cue.line_align_),
       position_(cue.position_),
-      position_align_(cue.position_align_),
       size_(cue.size_),
+      vertical_(cue.vertical_),
+      line_align_(cue.line_align_),
+      position_align_(cue.position_align_),
       align_(cue.align_),
-      text_(cue.text_) {}
+      snap_to_lines_(cue.snap_to_lines_),
+      pause_on_exit_(cue.pause_on_exit_) {}
 
 VTTCue::VTTCue(VTTCue&& cue)
     : id_(std::move(cue.id_)),
+      text_(std::move(cue.text_)),
       start_time_(cue.start_time_),
       end_time_(cue.end_time_),
-      pause_on_exit_(cue.pause_on_exit_),
-      vertical_(cue.vertical_),
-      snap_to_lines_(cue.snap_to_lines_),
       line_(cue.line_),
-      line_align_(cue.line_align_),
       position_(cue.position_),
-      position_align_(cue.position_align_),
       size_(cue.size_),
+      vertical_(cue.vertical_),
+      line_align_(cue.line_align_),
+      position_align_(cue.position_align_),
       align_(cue.align_),
-      text_(std::move(cue.text_)) {}
+      snap_to_lines_(cue.snap_to_lines_),
+      pause_on_exit_(cue.pause_on_exit_) {}
 
 VTTCue::~VTTCue() {}
 
@@ -71,18 +72,18 @@ VTTCue& VTTCue::operator=(const VTTCue& cue) {
 
 VTTCue& VTTCue::operator=(VTTCue&& cue) {
   id_ = std::move(cue.id_);
+  text_ = std::move(cue.text_);
   start_time_ = cue.start_time_;
   end_time_ = cue.end_time_;
-  pause_on_exit_ = cue.pause_on_exit_;
-  vertical_ = cue.vertical_;
-  snap_to_lines_ = cue.snap_to_lines_;
   line_ = cue.line_;
-  line_align_ = cue.line_align_;
   position_ = cue.position_;
-  position_align_ = cue.position_align_;
   size_ = cue.size_;
+  vertical_ = cue.vertical_;
+  line_align_ = cue.line_align_;
+  position_align_ = cue.position_align_;
   align_ = cue.align_;
-  text_ = std::move(cue.text_);
+  pause_on_exit_ = cue.pause_on_exit_;
+  snap_to_lines_ = cue.snap_to_lines_;
   return *this;
 }
 
@@ -96,7 +97,7 @@ void VTTCue::SetId(const std::string& id) {
   id_ = id;
 }
 
-double VTTCue::startTime() const {
+double VTTCue::start_time() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return start_time_;
 }
@@ -106,7 +107,7 @@ void VTTCue::SetStartTime(double time) {
   start_time_ = time;
 }
 
-double VTTCue::endTime() const {
+double VTTCue::end_time() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return end_time_;
 }
@@ -116,7 +117,7 @@ void VTTCue::SetEndTime(double time) {
   end_time_ = time;
 }
 
-bool VTTCue::pauseOnExit() const {
+bool VTTCue::pause_on_exit() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return pause_on_exit_;
 }
@@ -136,7 +137,7 @@ void VTTCue::SetVertical(DirectionSetting setting) {
   vertical_ = setting;
 }
 
-bool VTTCue::snapToLines() const {
+bool VTTCue::snap_to_lines() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return snap_to_lines_;
 }
@@ -146,7 +147,7 @@ void VTTCue::SetSnapToLines(bool snap) {
   snap_to_lines_ = snap;
 }
 
-LineAlignSetting VTTCue::lineAlign() const {
+LineAlignSetting VTTCue::line_align() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return line_align_;
 }
@@ -176,7 +177,7 @@ void VTTCue::SetPosition(double position) {
   position_ = position;
 }
 
-PositionAlignSetting VTTCue::positionAlign() const {
+PositionAlignSetting VTTCue::position_align() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return position_align_;
 }
@@ -216,4 +217,5 @@ void VTTCue::SetText(const std::string& text) {
   text_ = text;
 }
 
+}  // namespace media
 }  // namespace shaka

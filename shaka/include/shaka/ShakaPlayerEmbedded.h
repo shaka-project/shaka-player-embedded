@@ -45,12 +45,10 @@
 #  endif
 #  include "stats.h"
 #  include "storage.h"
-#  include "text_track.h"
 #  include "track.h"
 #  include "utils.h"
 #  include "variant.h"
 #  include "video.h"
-#  include "vtt_cue.h"
 
 #  include "eme/configuration.h"
 #  include "eme/data.h"
@@ -74,4 +72,6 @@
 #  endif
 #  include "media/stream_info.h"
 #  include "media/streams.h"
+#  include "media/text_track.h"
+#  include "media/vtt_cue.h"
 #endif

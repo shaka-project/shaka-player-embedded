@@ -43,6 +43,11 @@ class SHAKA_EXPORT ProxyMediaPlayer : public MediaPlayer {
   std::vector<BufferedRange> GetBuffered() const override;
   VideoReadyState ReadyState() const override;
   VideoPlaybackState PlaybackState() const override;
+  std::vector<std::shared_ptr<TextTrack>> TextTracks() override;
+  std::vector<std::shared_ptr<const TextTrack>> TextTracks() const override;
+  std::shared_ptr<TextTrack> AddTextTrack(TextTrackKind kind,
+                                          const std::string& label,
+                                          const std::string& language) override;
 
   bool SetVideoFillMode(VideoFillMode mode) override;
   uint32_t Width() const override;

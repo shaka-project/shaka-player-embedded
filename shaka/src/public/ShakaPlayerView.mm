@@ -244,18 +244,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 - (void)remakeTextCues:(BOOL)sizeChanged {
   auto text_tracks = _video->TextTracks();
-  auto cues = text_tracks[0].cues();
-
-  // TODO: Once activeCues is implemented, use that instead.
-  // TODO: This could be more efficient if I take advantage of how the cues are
-  // guaranteed to be sorted, so I can safely stop once the cues overtake the
-  // time.
-  double time = self.currentTime;
-  auto callback = [time](shaka::VTTCue *cue) {
-    return cue->startTime() <= time && cue->endTime() > time;
-  };
-  std::vector<shaka::VTTCue *> activeCues;
-  std::copy_if(cues.begin(), cues.end(), std::back_inserter(activeCues), callback);
+  auto activeCues = text_tracks[0]->active_cues(self.currentTime);
 
   if (sizeChanged) {
     for (CALayer *layer in [_textLayer.sublayers copy])
@@ -270,8 +259,8 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   // Add layers for new cues.
   for (unsigned long i = 0; i < activeCues.size(); i++) {
     // Read the cues in inverse order, so the oldest cue is at the bottom.
-    shaka::VTTCue *cue = activeCues[activeCues.size() - i - 1];
-    if (_cues[[NSValue valueWithPointer:cue]] != nil)
+    std::shared_ptr<shaka::media::VTTCue> cue = activeCues[activeCues.size() - i - 1];
+    if (_cues[[NSValue valueWithPointer:cue.get()]] != nil)
       continue;
 
     NSString *cueText = [NSString stringWithUTF8String:cue->text().c_str()];
@@ -305,14 +294,16 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
       [_textLayer addSublayer:cueLayer];
       [layers addObject:cueLayer];
     }
-    [_cues setObject:layers forKey:[NSValue valueWithPointer:cue]];
+    [_cues setObject:layers forKey:[NSValue valueWithPointer:cue.get()]];
   }
 
   // Remove any existing cues that aren't active anymore.
-  std::unordered_set<shaka::VTTCue *> activeCuesSet{activeCues.begin(), activeCues.end()};
+  std::unordered_set<shaka::media::VTTCue *> activeCuesSet;
+  for (auto &cue : activeCues)
+    activeCuesSet.insert(cue.get());
   NSMutableSet<CALayer *> *expectedLayers = [[NSMutableSet alloc] init];
   for (NSValue *cue in [_cues allKeys]) {
-    if (activeCuesSet.count(reinterpret_cast<shaka::VTTCue *>([cue pointerValue])) == 0) {
+    if (activeCuesSet.count(reinterpret_cast<shaka::media::VTTCue *>([cue pointerValue])) == 0) {
       // Since the layers aren't added to "expectedLayers", they will be removed below.
       [_cues removeObjectForKey:cue];
     } else {

@@ -139,6 +139,23 @@ VideoPlaybackState MseMediaPlayer::PlaybackState() const {
   }
 }
 
+std::vector<std::shared_ptr<TextTrack>> MseMediaPlayer::TextTracks() {
+  // TextTrack usage should be done through DefaultMediaPlayer.
+  LOG(FATAL) << "Not implemented";
+}
+
+std::vector<std::shared_ptr<const TextTrack>> MseMediaPlayer::TextTracks()
+    const {
+  // TextTrack usage should be done through DefaultMediaPlayer.
+  LOG(FATAL) << "Not implemented";
+}
+
+std::shared_ptr<TextTrack> MseMediaPlayer::AddTextTrack(
+    TextTrackKind kind, const std::string& label, const std::string& language) {
+  // TextTrack usage should be done through DefaultMediaPlayer.
+  LOG(FATAL) << "Not implemented";
+}
+
 
 bool MseMediaPlayer::SetVideoFillMode(VideoFillMode mode) {
   return video_renderer_->SetVideoFillMode(mode);

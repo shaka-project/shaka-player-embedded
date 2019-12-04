@@ -50,6 +50,12 @@ class MockMediaPlayer : public MediaPlayer {
   MOCK_CONST_METHOD0(GetBuffered, std::vector<BufferedRange>());
   MOCK_CONST_METHOD0(ReadyState, VideoReadyState());
   MOCK_CONST_METHOD0(PlaybackState, VideoPlaybackState());
+  MOCK_METHOD0(TextTracks, std::vector<std::shared_ptr<TextTrack>>());
+  MOCK_CONST_METHOD0(TextTracks,
+                     std::vector<std::shared_ptr<const TextTrack>>());
+  MOCK_METHOD3(AddTextTrack,
+               std::shared_ptr<TextTrack>(TextTrackKind, const std::string&,
+                                          const std::string&));
   MOCK_METHOD1(SetVideoFillMode, bool(VideoFillMode));
   MOCK_CONST_METHOD0(Width, uint32_t());
   MOCK_CONST_METHOD0(Height, uint32_t());

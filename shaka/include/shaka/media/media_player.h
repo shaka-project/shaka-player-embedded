@@ -15,12 +15,15 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_MEDIA_PLAYER_H_
 #define SHAKA_EMBEDDED_MEDIA_MEDIA_PLAYER_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "../eme/implementation.h"
 #include "../macros.h"
 #include "media_capabilities.h"
 #include "streams.h"
+#include "text_track.h"
 
 namespace shaka {
 namespace media {
@@ -302,6 +305,25 @@ class SHAKA_EXPORT MediaPlayer {
 
   /** @return The current VideoPlaybackSate of the media. */
   virtual VideoPlaybackState PlaybackState() const = 0;
+
+  /** @return The current text tracks in the media. */
+  virtual std::vector<std::shared_ptr<TextTrack>> TextTracks() = 0;
+
+  /** @return The current text tracks in the media. */
+  virtual std::vector<std::shared_ptr<const TextTrack>> TextTracks() const = 0;
+
+  /**
+   * Adds a new text track to the player.  This can return nullptr if this
+   * isn't supported.
+   *
+   * @param kind The kind of the new track.
+   * @param label A string label for the track.
+   * @param language The language of the new track.
+   * @return The new track object, or nullptr on error or if unsupported.
+   */
+  virtual std::shared_ptr<TextTrack> AddTextTrack(
+      TextTrackKind kind, const std::string& label,
+      const std::string& language) = 0;
 
 
   /** @name Rendering */

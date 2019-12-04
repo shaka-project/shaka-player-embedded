@@ -15,36 +15,41 @@
 #ifndef SHAKA_EMBEDDED_JS_MSE_TEXT_TRACK_H_
 #define SHAKA_EMBEDDED_JS_MSE_TEXT_TRACK_H_
 
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "include/shaka/text_track.h"
+#include "shaka/media/text_track.h"
+#include "shaka/media/vtt_cue.h"
 #include "src/core/member.h"
 #include "src/core/ref_ptr.h"
 #include "src/js/events/event_target.h"
 #include "src/js/vtt_cue.h"
+#include "src/mapping/backing_object.h"
 #include "src/mapping/backing_object_factory.h"
 
 namespace shaka {
 namespace js {
 namespace mse {
 
-class TextTrack : public events::EventTarget {
+class TextTrack : public events::EventTarget, shaka::media::TextTrack::Client {
   DECLARE_TYPE_INFO(TextTrack);
 
  public:
-  TextTrack(TextTrackKind kind, const std::string& label,
-            const std::string& language);
+  explicit TextTrack(std::shared_ptr<shaka::media::TextTrack> track);
 
-  TextTrackKind kind;
-  std::string label;
-  std::string language;
-  std::string id;
+  void Trace(memory::HeapTracer* tracer) const override;
 
-  std::vector<Member<VTTCue>> cues;
+  const media::TextTrackKind kind;
+  const std::string label;
+  const std::string language;
+  const std::string id;
 
-  TextTrackMode mode() const;
-  void SetMode(TextTrackMode mode);
+  std::vector<RefPtr<VTTCue>> cues() const;
+
+  media::TextTrackMode mode() const;
+  void SetMode(media::TextTrackMode mode);
 
   // Technically this should accept a TextTrackCue, but we don't distinguish
   // between the types.
@@ -52,7 +57,12 @@ class TextTrack : public events::EventTarget {
   void RemoveCue(RefPtr<VTTCue> cue);
 
  private:
-  TextTrackMode mode_;
+  void OnCueAdded(std::shared_ptr<shaka::media::VTTCue> cue) override;
+  void OnCueRemoved(std::shared_ptr<shaka::media::VTTCue> cue) override;
+
+  mutable Mutex mutex_;
+  std::unordered_map<shaka::media::VTTCue*, Member<VTTCue>> cues_;
+  std::shared_ptr<shaka::media::TextTrack> track_;
 };
 
 class TextTrackFactory
@@ -65,7 +75,7 @@ class TextTrackFactory
 }  // namespace js
 }  // namespace shaka
 
-DEFINE_ENUM_MAPPING(shaka, TextTrackKind) {
+DEFINE_ENUM_MAPPING(shaka::media, TextTrackKind) {
   AddMapping(Enum::Subtitles, "subtitles");
   AddMapping(Enum::Captions, "captions");
   AddMapping(Enum::Descriptions, "descriptions");
@@ -73,7 +83,7 @@ DEFINE_ENUM_MAPPING(shaka, TextTrackKind) {
   AddMapping(Enum::Metadata, "metadata");
 }
 
-DEFINE_ENUM_MAPPING(shaka, TextTrackMode) {
+DEFINE_ENUM_MAPPING(shaka::media, TextTrackMode) {
   AddMapping(Enum::Disabled, "disabled");
   AddMapping(Enum::Hidden, "hidden");
   AddMapping(Enum::Showing, "showing");

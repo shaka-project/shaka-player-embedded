@@ -14,47 +14,81 @@
 
 #include "src/js/mse/text_track.h"
 
-#include <algorithm>
-
-#include "src/mapping/enum.h"
+#include "src/js/js_error.h"
 
 namespace shaka {
 namespace js {
 namespace mse {
 
-TextTrack::TextTrack(TextTrackKind kind, const std::string& label,
-                     const std::string& language)
-    : kind(kind),
-      label(label),
-      language(language),
-      mode_(TextTrackMode::Hidden) {}
+TextTrack::TextTrack(std::shared_ptr<shaka::media::TextTrack> track)
+    : kind(track->kind),
+      label(track->label),
+      language(track->language),
+      id(track->id),
+      mutex_("TextTrack"),
+      track_(track) {
+  track->AddClient(this);
+}
 
-TextTrack::~TextTrack() {}
+TextTrack::~TextTrack() {
+  track_->RemoveClient(this);
+}
+
+void TextTrack::Trace(memory::HeapTracer* tracer) const {
+  events::EventTarget::Trace(tracer);
+
+  std::unique_lock<Mutex> lock(mutex_);
+  for (auto& pair : cues_)
+    tracer->Trace(&pair.second);
+}
+
+std::vector<RefPtr<VTTCue>> TextTrack::cues() const {
+  std::unique_lock<Mutex> lock(mutex_);
+  std::vector<RefPtr<VTTCue>> ret;
+  ret.reserve(cues_.size());
+  for (auto& pair : cues_)
+    ret.emplace_back(pair.second);
+
+  return ret;
+}
+
+media::TextTrackMode TextTrack::mode() const {
+  return track_->mode();
+}
+
+void TextTrack::SetMode(media::TextTrackMode mode) {
+  track_->SetMode(mode);
+}
 
 
 void TextTrack::AddCue(RefPtr<VTTCue> cue) {
-  cues.emplace_back(cue);
+  // Don't add to |cues_| since we'll get an event for it anyway.
+  track_->AddCue(cue->GetPublic());
 }
 
 void TextTrack::RemoveCue(RefPtr<VTTCue> cue) {
-  cues.erase(std::remove(cues.begin(), cues.end(), cue), cues.end());
+  // Don't change to |cues_| since we'll get an event for it anyway.
+  track_->RemoveCue(cue->GetPublic());
 }
 
-TextTrackMode TextTrack::mode() const {
-  return mode_;
+void TextTrack::OnCueAdded(std::shared_ptr<shaka::media::VTTCue> cue) {
+  std::unique_lock<Mutex> lock(mutex_);
+  cues_.emplace(cue.get(), new VTTCue(cue));
 }
 
-void TextTrack::SetMode(TextTrackMode mode) {
-  mode_ = mode;
+void TextTrack::OnCueRemoved(std::shared_ptr<shaka::media::VTTCue> cue) {
+  std::unique_lock<Mutex> lock(mutex_);
+  cues_.erase(cue.get());
 }
+
 
 TextTrackFactory::TextTrackFactory() {
   AddReadOnlyProperty("kind", &TextTrack::kind);
   AddReadOnlyProperty("label", &TextTrack::label);
   AddReadOnlyProperty("language", &TextTrack::language);
   AddReadOnlyProperty("id", &TextTrack::id);
-  AddReadOnlyProperty("cues", &TextTrack::cues);
 
+  AddGenericProperty("cues", &TextTrack::cues);
   AddGenericProperty("mode", &TextTrack::mode, &TextTrack::SetMode);
 
   AddMemberFunction("addCue", &TextTrack::AddCue);

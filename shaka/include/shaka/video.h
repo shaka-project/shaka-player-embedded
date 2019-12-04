@@ -23,8 +23,8 @@
 #include "macros.h"
 #include "media/frames.h"
 #include "media/renderer.h"
+#include "media/text_track.h"
 #include "shaka_config.h"
-#include "text_track.h"
 
 namespace shaka {
 
@@ -133,7 +133,7 @@ class SHAKA_EXPORT Video final {
   void SetMuted(bool muted);
 
   /** @return The text tracks of the video. */
-  std::vector<TextTrack> TextTracks();
+  std::vector<std::shared_ptr<media::TextTrack>> TextTracks();
 
   /** @return The current volume of the audio. */
   double Volume() const;

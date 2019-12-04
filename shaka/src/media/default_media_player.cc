@@ -14,6 +14,10 @@
 
 #include "shaka/media/default_media_player.h"
 
+#include <vector>
+
+#include "shaka/media/text_track.h"
+#include "src/debug/mutex.h"
 #include "src/media/mse_media_player.h"
 
 namespace shaka {
@@ -22,9 +26,12 @@ namespace media {
 class DefaultMediaPlayer::Impl {
  public:
   Impl(VideoRenderer* video_renderer, AudioRenderer* audio_renderer)
-      : mse_player(video_renderer, audio_renderer) {}
+      : mutex("DefaultMediaPlayer"),
+        mse_player(video_renderer, audio_renderer) {}
 
+  Mutex mutex;
   MseMediaPlayer mse_player;
+  std::vector<std::shared_ptr<TextTrack>> text_tracks_;
 };
 
 DefaultMediaPlayer::DefaultMediaPlayer(VideoRenderer* video_renderer,
@@ -44,6 +51,26 @@ MediaCapabilitiesInfo DefaultMediaPlayer::DecodingInfo(
   else
     return impl_->mse_player.DecodingInfo(config);
 }
+
+
+std::vector<std::shared_ptr<TextTrack>> DefaultMediaPlayer::TextTracks() {
+  std::unique_lock<Mutex> lock(impl_->mutex);
+  return impl_->text_tracks_;
+}
+
+std::vector<std::shared_ptr<const TextTrack>> DefaultMediaPlayer::TextTracks()
+    const {
+  std::unique_lock<Mutex> lock(impl_->mutex);
+  return {impl_->text_tracks_.begin(), impl_->text_tracks_.end()};
+}
+
+std::shared_ptr<TextTrack> DefaultMediaPlayer::AddTextTrack(
+    TextTrackKind kind, const std::string& label, const std::string& language) {
+  std::unique_lock<Mutex> lock(impl_->mutex);
+  impl_->text_tracks_.emplace_back(new TextTrack(kind, label, language, ""));
+  return impl_->text_tracks_.back();
+}
+
 
 MediaPlayer* DefaultMediaPlayer::CreateMse() {
   if (!impl_->mse_player.AttachMse())

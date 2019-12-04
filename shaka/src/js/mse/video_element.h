@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_JS_MSE_VIDEO_ELEMENT_H_
 #define SHAKA_EMBEDDED_JS_MSE_VIDEO_ELEMENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -62,6 +63,7 @@ class HTMLVideoElement : public dom::Element {
   void OnMediaError(media::SourceType source, media::Status status);
 
   RefPtr<MediaSource> GetMediaSource() const;
+  std::vector<std::shared_ptr<shaka::media::TextTrack>> PublicTextTracks();
 
   // Encrypted media extensions
   Promise SetMediaKeys(RefPtr<eme::MediaKeys> media_keys);
@@ -102,12 +104,13 @@ class HTMLVideoElement : public dom::Element {
 
   void Play();
   void Pause();
-  RefPtr<TextTrack> AddTextTrack(TextTrackKind kind,
+  RefPtr<TextTrack> AddTextTrack(media::TextTrackKind kind,
                                  optional<std::string> label,
                                  optional<std::string> language);
 
  private:
   Member<MediaSource> media_source_;
+  std::vector<std::shared_ptr<shaka::media::TextTrack>> public_text_tracks_;
   media::VideoRenderer* video_renderer_;
   media::AudioRenderer* audio_renderer_;
   media::PipelineStatus pipeline_status_;

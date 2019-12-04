@@ -158,6 +158,11 @@ RefPtr<MediaSource> HTMLVideoElement::GetMediaSource() const {
   return media_source_;
 }
 
+std::vector<std::shared_ptr<shaka::media::TextTrack>>
+HTMLVideoElement::PublicTextTracks() {
+  return public_text_tracks_;
+}
+
 Promise HTMLVideoElement::SetMediaKeys(RefPtr<eme::MediaKeys> media_keys) {
   if (!media_keys && !media_source_)
     return Promise::Resolved();
@@ -333,10 +338,13 @@ void HTMLVideoElement::Pause() {
 }
 
 RefPtr<TextTrack> HTMLVideoElement::AddTextTrack(
-    TextTrackKind kind, optional<std::string> label,
+    media::TextTrackKind kind, optional<std::string> label,
     optional<std::string> language) {
-  RefPtr<TextTrack> ret =
-      new TextTrack(kind, label.value_or(""), language.value_or(""));
+  std::shared_ptr<shaka::media::TextTrack> pub(new shaka::media::TextTrack(
+      kind, label.value_or(""), language.value_or(""), ""));
+  public_text_tracks_.emplace_back(pub);
+
+  RefPtr<TextTrack> ret = new TextTrack(pub);
   text_tracks.emplace_back(ret);
   return ret;
 }
