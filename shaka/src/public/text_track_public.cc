@@ -41,27 +41,6 @@ TextTrack::TextTrack(TextTrack&&) = default;
 
 TextTrack::~TextTrack() {}
 
-void TextTrack::SetCueChangeEventListener(std::function<void()> callback) {
-  auto task = PlainCallbackTask([=]() {
-    impl_->inner->SetCppEventListener(js::EventType::CueChange, callback);
-  });
-  const std::string task_name = "TextTrack SetCueChangeEventListener";
-  JsManagerImpl::Instance()
-      ->MainThread()
-      ->AddInternalTask(TaskPriority::Internal, task_name, task)
-      ->GetValue();
-}
-
-void TextTrack::UnsetCueChangeEventListener() {
-  auto task = PlainCallbackTask(
-      [=]() { impl_->inner->UnsetCppEventListener(js::EventType::CueChange); });
-  const std::string task_name = "TextTrack UnsetCueChangeEventListener";
-  JsManagerImpl::Instance()
-      ->MainThread()
-      ->AddInternalTask(TaskPriority::Internal, task_name, task)
-      ->GetValue();
-}
-
 TextTrackKind TextTrack::kind() {
   return impl_->GetMemberVariable(&JSTextTrack::kind);
 }

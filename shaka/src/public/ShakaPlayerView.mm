@@ -14,6 +14,10 @@
 
 #import "shaka/ShakaPlayerView.h"
 
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+
 #include "shaka/js_manager.h"
 #include "shaka/media/sdl_audio_renderer.h"
 #include "shaka/player.h"
@@ -105,10 +109,12 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   shaka::Video *_video;
   shaka::Player *_player;
   NSTimer *_renderLoopTimer;
+  NSTimer *_textLoopTimer;
   CALayer *_imageLayer;
   CALayer *_textLayer;
-  BOOL _remakeTextLayer;
+
   std::shared_ptr<shaka::JsManager> _engine;
+  NSMutableDictionary<NSValue *, NSSet<CALayer *> *> *_cues;
 }
 
 @end
@@ -160,6 +166,8 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   // Disable default animations.
   _imageLayer.actions = @{@"position": [NSNull null], @"bounds": [NSNull null]};
 
+  _cues = [[NSMutableDictionary alloc] init];
+
   return YES;
 }
 
@@ -176,7 +184,6 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   _audio_renderer = new shaka::media::SdlAudioRenderer("");
 
   // Set up video.
-  _remakeTextLayer = NO;
   _video->Initialize(&_client, &_video_renderer, _audio_renderer);
 
   // Set up player.
@@ -218,26 +225,24 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
                                             static_cast<CGFloat>(src.h) / image_bounds.h);
       _imageLayer.frame = CGRectMake(dest.x, dest.y, dest.w, dest.h);
     }
-
-    if (self.closedCaptions) {
-      BOOL sizeChanged = _textLayer.frame.size.width != _imageLayer.frame.size.width ||
-                         _textLayer.frame.size.height != _imageLayer.frame.size.height;
-
-      _textLayer.hidden = NO;
-      _textLayer.frame = _imageLayer.frame;
-
-      if (_remakeTextLayer || sizeChanged) {
-        // Remake text cues, since either they changed or the size of the bounds changed.
-        [self remakeTextCues];
-        _remakeTextLayer = NO;
-      }
-    } else {
-      _textLayer.hidden = YES;
-    }
   }
 }
 
-- (void)remakeTextCues {
+- (void)textLoop:(NSTimer *)timer {
+  if (self.closedCaptions) {
+    BOOL sizeChanged = _textLayer.frame.size.width != _imageLayer.frame.size.width ||
+                       _textLayer.frame.size.height != _imageLayer.frame.size.height;
+
+    _textLayer.hidden = NO;
+    _textLayer.frame = _imageLayer.frame;
+
+    [self remakeTextCues:sizeChanged];
+  } else {
+    _textLayer.hidden = YES;
+  }
+}
+
+- (void)remakeTextCues:(BOOL)sizeChanged {
   auto text_tracks = _video->TextTracks();
   auto cues = text_tracks[0].cues();
 
@@ -249,28 +254,28 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   auto callback = [time](shaka::VTTCue *cue) {
     return cue->startTime() <= time && cue->endTime() > time;
   };
-  auto begin = cues.begin();
-  auto end = cues.end();
   std::vector<shaka::VTTCue *> activeCues;
-  std::copy_if(begin, end, std::back_inserter(activeCues), callback);
+  std::copy_if(cues.begin(), cues.end(), std::back_inserter(activeCues), callback);
 
-  // TODO: Try recycling old text layers which contain the correct text contents.
-  // This will make the layers do a move animation instead of a fade animation when appropriate,
-  // and also might be more performant.
-  for (CALayer *layer in [_textLayer.sublayers copy])
-    [layer removeFromSuperlayer];
+  if (sizeChanged) {
+    for (CALayer *layer in [_textLayer.sublayers copy])
+      [layer removeFromSuperlayer];
+    [_cues removeAllObjects];
+  }
 
   // Use the system font for body. The ensures that if the user changes their font size, it will use
   // that font size.
   UIFont *font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
 
-  // Create CATextLayers for cues.
-  NSMutableArray<CATextLayer *> *cueLayers = [NSMutableArray array];
+  // Add layers for new cues.
   for (unsigned long i = 0; i < activeCues.size(); i++) {
     // Read the cues in inverse order, so the oldest cue is at the bottom.
     shaka::VTTCue *cue = activeCues[activeCues.size() - i - 1];
-    NSString *cueText = [NSString stringWithUTF8String:cue->text().c_str()];
+    if (_cues[[NSValue valueWithPointer:cue]] != nil)
+      continue;
 
+    NSString *cueText = [NSString stringWithUTF8String:cue->text().c_str()];
+    NSMutableSet<CALayer *> *layers = [[NSMutableSet alloc] init];
     for (NSString *line in [cueText componentsSeparatedByString:@"\n"]) {
       CATextLayer *cueLayer = [[CATextLayer alloc] init];
       cueLayer.string = line;
@@ -297,16 +302,36 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
       CGFloat x = (_textLayer.bounds.size.width - width) * 0.5f;
       cueLayer.frame = CGRectMake(x, 0, width, height);
 
-      [cueLayers addObject:cueLayer];
       [_textLayer addSublayer:cueLayer];
+      [layers addObject:cueLayer];
+    }
+    [_cues setObject:layers forKey:[NSValue valueWithPointer:cue]];
+  }
+
+  // Remove any existing cues that aren't active anymore.
+  std::unordered_set<shaka::VTTCue *> activeCuesSet{activeCues.begin(), activeCues.end()};
+  NSMutableSet<CALayer *> *expectedLayers = [[NSMutableSet alloc] init];
+  for (NSValue *cue in [_cues allKeys]) {
+    if (activeCuesSet.count(reinterpret_cast<shaka::VTTCue *>([cue pointerValue])) == 0) {
+      // Since the layers aren't added to "expectedLayers", they will be removed below.
+      [_cues removeObjectForKey:cue];
+    } else {
+      NSSet<CALayer *> *layers = _cues[cue];
+      [expectedLayers unionSet:layers];
     }
   }
 
-  // Determine y positions for the CATextLayers.
+  // Remove any layers in the view that aren't associated with any cues.
+  for (CALayer *layer in [_textLayer.sublayers copy]) {
+    if (![expectedLayers containsObject:layer])
+      [layer removeFromSuperlayer];
+  }
+
+  // Move all the remaining layers to appear at the bottom of the screen.
   CGFloat y = _textLayer.bounds.size.height;
-  for (unsigned long i = 0; i < cueLayers.count; i++) {
+  for (auto i = _textLayer.sublayers.count; i > 0; i--) {
     // Read the cue layers in inverse order, since they are being drawn from the bottom up.
-    CATextLayer *cueLayer = cueLayers[cueLayers.count - i - 1];
+    CALayer *cueLayer = _textLayer.sublayers[i - 1];
 
     CGSize size = cueLayer.frame.size;
     y -= size.height;
@@ -541,30 +566,18 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
                                                     selector:renderLoopSelector
                                                     userInfo:nullptr
                                                      repeats:YES];
-
-  auto textTracks = _video->TextTracks();
-  if (!textTracks.empty()) {
-    _remakeTextLayer = YES;
-
-    // Make a weak reference to self, to avoid a retain cycle.
-    __weak ShakaPlayerView *weakSelf = self;
-
-    // TODO: maybe this should be handled in video or player?
-    auto onCueChange = [weakSelf]() {
-      // To avoid changing layers on a background thread, do the actual cue
-      // operations in the render loop.
-      __strong ShakaPlayerView *strongSelf = weakSelf;
-      if (strongSelf)
-        strongSelf->_remakeTextLayer = YES;
-    };
-    textTracks[0].SetCueChangeEventListener(onCueChange);
-  }
+  _textLoopTimer = [NSTimer scheduledTimerWithTimeInterval:0.25
+                                                    target:self
+                                                  selector:@selector(textLoop:)
+                                                  userInfo:nullptr
+                                                   repeats:YES];
 }
 
 - (void)unloadWithBlock:(ShakaPlayerAsyncBlock)block {
   [self checkInitialized];
   // Stop the render loop before acquiring the mutex, to avoid deadlocks.
   [_renderLoopTimer invalidate];
+  [_textLoopTimer invalidate];
 
   self->_imageLayer.contents = nil;
   for (CALayer *layer in [self->_textLayer.sublayers copy])

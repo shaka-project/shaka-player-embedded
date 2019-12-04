@@ -23,7 +23,6 @@
 #include "shaka/optional.h"
 #include "shaka/video.h"
 #include "src/core/ref_ptr.h"
-#include "src/debug/thread.h"
 #include "src/js/dom/element.h"
 #include "src/js/eme/media_keys.h"
 #include "src/js/mse/media_error.h"
@@ -61,7 +60,6 @@ class HTMLVideoElement : public dom::Element {
   void OnReadyStateChanged(media::VideoReadyState new_ready_state);
   void OnPipelineStatusChanged(media::PipelineStatus status);
   void OnMediaError(media::SourceType source, media::Status status);
-  void CheckForCueChange(double newTime, double oldTime);
 
   RefPtr<MediaSource> GetMediaSource() const;
 
@@ -109,8 +107,6 @@ class HTMLVideoElement : public dom::Element {
                                  optional<std::string> language);
 
  private:
-  void ThreadMain();
-
   Member<MediaSource> media_source_;
   media::VideoRenderer* video_renderer_;
   media::AudioRenderer* audio_renderer_;
@@ -119,8 +115,6 @@ class HTMLVideoElement : public dom::Element {
   bool will_play_;
   bool is_muted_;
   const util::Clock* const clock_;
-  std::atomic<bool> shutdown_;
-  Thread thread_;
 };
 
 class HTMLVideoElementFactory

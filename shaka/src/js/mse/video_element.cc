@@ -40,38 +40,19 @@ HTMLVideoElement::HTMLVideoElement(RefPtr<dom::Document> document,
       volume_(1),
       will_play_(false),
       is_muted_(false),
-      clock_(&util::Clock::Instance),
-      shutdown_(false),
-      thread_("VideoElement", std::bind(&HTMLVideoElement::ThreadMain, this)) {
+      clock_(&util::Clock::Instance) {
   AddListenerField(EventType::Encrypted, &on_encrypted);
   AddListenerField(EventType::WaitingForKey, &on_waiting_for_key);
 }
 
 // \cond Doxygen_Skip
-HTMLVideoElement::~HTMLVideoElement() {
-  shutdown_.store(true, std::memory_order_release);
-  thread_.join();
-}
+HTMLVideoElement::~HTMLVideoElement() {}
 // \endcond Doxygen_Skip
 
 void HTMLVideoElement::Trace(memory::HeapTracer* tracer) const {
   dom::Element::Trace(tracer);
   tracer->Trace(&text_tracks);
   tracer->Trace(&media_source_);
-}
-
-void HTMLVideoElement::ThreadMain() {
-  double lastTime = CurrentTime();
-  while (!shutdown_.load(std::memory_order_acquire)) {
-    const double time = CurrentTime();
-
-    if (pipeline_status_ == media::PipelineStatus::Playing) {
-      CheckForCueChange(time, lastTime);
-      lastTime = time;
-    }
-
-    clock_->SleepSeconds(0.25);
-  }
 }
 
 void HTMLVideoElement::OnReadyStateChanged(
@@ -164,12 +145,6 @@ void HTMLVideoElement::OnPipelineStatusChanged(media::PipelineStatus status) {
   }
 
   pipeline_status_ = status;
-}
-
-void HTMLVideoElement::CheckForCueChange(double newTime, double oldTime) {
-  for (const auto& text_track : text_tracks) {
-    text_track->CheckForCueChange(newTime, oldTime);
-  }
 }
 
 void HTMLVideoElement::OnMediaError(media::SourceType /* source */,

@@ -21,7 +21,6 @@
 #include "include/shaka/text_track.h"
 #include "src/core/member.h"
 #include "src/core/ref_ptr.h"
-#include "src/debug/mutex.h"
 #include "src/js/events/event_target.h"
 #include "src/js/vtt_cue.h"
 #include "src/mapping/backing_object_factory.h"
@@ -44,10 +43,6 @@ class TextTrack : public events::EventTarget {
 
   std::vector<Member<VTTCue>> cues;
 
-  Listener on_cue_change;
-
-  void CheckForCueChange(double newTime, double oldTime);
-
   TextTrackMode mode() const;
   void SetMode(TextTrackMode mode);
 
@@ -58,7 +53,6 @@ class TextTrack : public events::EventTarget {
 
  private:
   TextTrackMode mode_;
-  mutable Mutex mutex_;
 };
 
 class TextTrackFactory

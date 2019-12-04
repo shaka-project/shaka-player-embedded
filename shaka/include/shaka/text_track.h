@@ -15,7 +15,6 @@
 #ifndef SHAKA_EMBEDDED_TEXT_TRACK_H_
 #define SHAKA_EMBEDDED_TEXT_TRACK_H_
 
-#include <functional>
 #include <memory>
 #include <vector>
 
@@ -118,19 +117,6 @@ class SHAKA_EXPORT TextTrack final {
   TextTrackMode mode();
   /** Sets the mode of the text track. */
   void SetMode(TextTrackMode mode);
-
-  /**
-   * Adds an event listener to the text track, that listens for a cue change.
-   * There can only be one such listener per text track.
-   * This will be invoked on a background thread.
-   * @param callback The listener for the event.
-   */
-  void SetCueChangeEventListener(std::function<void()> callback);
-
-  /**
-   * Removes the cue change event listener from the text track.
-   */
-  void UnsetCueChangeEventListener();
 
   /**
    * @return A vector containing the list of cues in the text track.
