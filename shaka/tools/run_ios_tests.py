@@ -91,8 +91,14 @@ def _InstallApp(uuid, app_dir, is_booted):
 def _StartTests(uuid, log_path):
   """Launches the test app on the simulator."""
   subprocess.check_call(['xcrun', 'simctl', 'terminate', uuid, _APP_NAME])
+  env = os.environ.copy()
+  for k, v in os.environ.items():
+    if k.startswith('GTEST') or k.startswith('GLOG'):
+      env['SIMCTL_CHILD_' + k] = v
+
   subprocess.check_call(['xcrun', 'simctl', 'launch', '--stdout=' + log_path,
-                         '--stderr=' + log_path, uuid, _APP_NAME])
+                         '--stderr=' + log_path, uuid, _APP_NAME],
+                        env=env)
 
 
 def _PollLog(log_path):
