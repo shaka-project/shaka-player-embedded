@@ -24,7 +24,7 @@ namespace shaka {
 namespace media {
 
 PipelineManager::PipelineManager(
-    std::function<void(PipelineStatus)> on_status_changed,
+    std::function<void(VideoPlaybackState)> on_status_changed,
     std::function<void()> on_seek, const util::Clock* clock)
     : mutex_("PipelineManager"),
       on_status_changed_(std::move(on_status_changed)),
@@ -37,31 +37,31 @@ PipelineManager::~PipelineManager() {}
 
 void PipelineManager::Reset() {
   std::unique_lock<SharedMutex> lock(mutex_);
-  status_ = PipelineStatus::Initializing;
+  status_ = VideoPlaybackState::Initializing;
   prev_media_time_ = 0;
   prev_wall_time_ = clock_->GetMonotonicTime();
   playback_rate_ = 1;
   duration_ = NAN;
-  autoplay_ = false;
+  will_play_ = false;
 }
 
 void PipelineManager::DoneInitializing() {
-  PipelineStatus new_status;
+  VideoPlaybackState new_status;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
-    if (status_ == PipelineStatus::Errored)
+    if (status_ == VideoPlaybackState::Errored)
       return;
-    DCHECK_EQ(status_, PipelineStatus::Initializing);
-    if (autoplay_) {
-      new_status = status_ = PipelineStatus::Stalled;
+    DCHECK(status_ == VideoPlaybackState::Initializing);
+    if (will_play_) {
+      new_status = status_ = VideoPlaybackState::Buffering;
     } else {
-      new_status = status_ = PipelineStatus::Paused;
+      new_status = status_ = VideoPlaybackState::Paused;
     }
   }
   on_status_changed_(new_status);
 }
 
-PipelineStatus PipelineManager::GetPipelineStatus() const {
+VideoPlaybackState PipelineManager::GetPlaybackState() const {
   util::shared_lock<SharedMutex> lock(mutex_);
   return status_;
 }
@@ -72,7 +72,7 @@ double PipelineManager::GetDuration() const {
 }
 
 void PipelineManager::SetDuration(double duration) {
-  PipelineStatus new_status = PipelineStatus::Initializing;
+  VideoPlaybackState new_status = VideoPlaybackState::Initializing;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
     duration_ = duration;
@@ -87,16 +87,19 @@ void PipelineManager::SetDuration(double duration) {
 
       prev_media_time_ = duration;
       prev_wall_time_ = wall_time;
-      if (status_ == PipelineStatus::Playing ||
-          status_ == PipelineStatus::Stalled) {
-        new_status = status_ = PipelineStatus::SeekingPlay;
-      } else if (status_ == PipelineStatus::Paused ||
-                 status_ == PipelineStatus::Ended) {
-        new_status = status_ = PipelineStatus::SeekingPause;
+      if (status_ == VideoPlaybackState::Playing ||
+          status_ == VideoPlaybackState::Buffering ||
+          status_ == VideoPlaybackState::WaitingForKey) {
+        will_play_ = true;
+        new_status = status_ = VideoPlaybackState::Seeking;
+      } else if (status_ == VideoPlaybackState::Paused ||
+                 status_ == VideoPlaybackState::Ended) {
+        will_play_ = false;
+        new_status = status_ = VideoPlaybackState::Seeking;
       }
     }
   }
-  if (new_status != PipelineStatus::Initializing)
+  if (new_status != VideoPlaybackState::Initializing)
     on_status_changed_(new_status);
 }
 
@@ -106,11 +109,10 @@ double PipelineManager::GetCurrentTime() const {
 }
 
 void PipelineManager::SetCurrentTime(double time) {
-  PipelineStatus new_status = PipelineStatus::Initializing;
+  VideoPlaybackState new_status = VideoPlaybackState::Initializing;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
-    if (status_ != PipelineStatus::Initializing &&
-        status_ != PipelineStatus::Errored) {
+    if (status_ != VideoPlaybackState::Initializing) {
       {
         util::Unlocker<SharedMutex> unlock(&lock);
         on_seek_();
@@ -120,22 +122,23 @@ void PipelineManager::SetCurrentTime(double time) {
           std::isnan(duration_) ? time : std::min(duration_, time);
       prev_wall_time_ = clock_->GetMonotonicTime();
       switch (status_) {
-        case PipelineStatus::Playing:
-        case PipelineStatus::Stalled:
-        case PipelineStatus::SeekingPlay:
-          new_status = status_ = PipelineStatus::SeekingPlay;
+        case VideoPlaybackState::Playing:
+        case VideoPlaybackState::Buffering:
+        case VideoPlaybackState::WaitingForKey:
+          will_play_ = true;
+          new_status = status_ = VideoPlaybackState::Seeking;
           break;
-        case PipelineStatus::Paused:
-        case PipelineStatus::Ended:
-        case PipelineStatus::SeekingPause:
-          new_status = status_ = PipelineStatus::SeekingPause;
+        case VideoPlaybackState::Paused:
+        case VideoPlaybackState::Ended:
+          will_play_ = false;
+          new_status = status_ = VideoPlaybackState::Seeking;
           break;
         default:  // Ignore remaining enum values.
           break;
       }
     }
   }
-  if (new_status != PipelineStatus::Initializing)
+  if (new_status != VideoPlaybackState::Initializing)
     on_status_changed_(new_status);
 }
 
@@ -151,93 +154,90 @@ void PipelineManager::SetPlaybackRate(double rate) {
 }
 
 void PipelineManager::Play() {
-  PipelineStatus new_status = PipelineStatus::Initializing;
+  VideoPlaybackState new_status = VideoPlaybackState::Initializing;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
     SyncPoint();
-    if (status_ == PipelineStatus::Paused) {
+    will_play_ = true;
+    if (status_ == VideoPlaybackState::Paused) {
       // Assume we are stalled; we will transition to Playing quickly if not.
-      new_status = status_ = PipelineStatus::Stalled;
-    } else if (status_ == PipelineStatus::Ended) {
+      new_status = status_ = VideoPlaybackState::Buffering;
+    } else if (status_ == VideoPlaybackState::Ended) {
       {
         util::Unlocker<SharedMutex> unlock(&lock);
         on_seek_();
       }
 
       prev_media_time_ = 0;
-      new_status = status_ = PipelineStatus::SeekingPlay;
-    } else if (status_ == PipelineStatus::SeekingPause) {
-      new_status = status_ = PipelineStatus::SeekingPlay;
-    } else if (status_ == PipelineStatus::Initializing) {
-      autoplay_ = true;
+      new_status = status_ = VideoPlaybackState::Seeking;
     }
   }
-  if (new_status != PipelineStatus::Initializing)
+  if (new_status != VideoPlaybackState::Initializing)
     on_status_changed_(new_status);
 }
 
 void PipelineManager::Pause() {
-  PipelineStatus new_status = PipelineStatus::Initializing;
+  VideoPlaybackState new_status = VideoPlaybackState::Initializing;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
     SyncPoint();
-    if (status_ == PipelineStatus::Playing ||
-        status_ == PipelineStatus::Stalled) {
-      new_status = status_ = PipelineStatus::Paused;
-    } else if (status_ == PipelineStatus::SeekingPlay) {
-      new_status = status_ = PipelineStatus::SeekingPause;
-    } else if (status_ == PipelineStatus::Initializing) {
-      autoplay_ = false;
+    will_play_ = false;
+    if (status_ == VideoPlaybackState::Playing ||
+        status_ == VideoPlaybackState::Buffering ||
+        status_ == VideoPlaybackState::WaitingForKey) {
+      new_status = status_ = VideoPlaybackState::Paused;
     }
   }
-  if (new_status != PipelineStatus::Initializing)
+  if (new_status != VideoPlaybackState::Initializing)
     on_status_changed_(new_status);
 }
 
-void PipelineManager::Stalled() {
+void PipelineManager::Buffering() {
   bool status_changed = false;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
-    if (status_ == PipelineStatus::Playing) {
+    if (status_ == VideoPlaybackState::Playing) {
       SyncPoint();
-      status_ = PipelineStatus::Stalled;
+      status_ = VideoPlaybackState::Buffering;
       status_changed = true;
     }
   }
   if (status_changed)
-    on_status_changed_(PipelineStatus::Stalled);
+    on_status_changed_(VideoPlaybackState::Buffering);
 }
 
 void PipelineManager::CanPlay() {
-  PipelineStatus new_status = PipelineStatus::Initializing;
+  VideoPlaybackState new_status = VideoPlaybackState::Initializing;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
     SyncPoint();
-    if (status_ == PipelineStatus::Stalled ||
-        status_ == PipelineStatus::SeekingPlay) {
-      new_status = status_ = PipelineStatus::Playing;
-    } else if (status_ == PipelineStatus::SeekingPause) {
-      new_status = status_ = PipelineStatus::Paused;
+    if (status_ == VideoPlaybackState::Buffering ||
+        status_ == VideoPlaybackState::WaitingForKey ||
+        status_ == VideoPlaybackState::Seeking) {
+      if (will_play_)
+        new_status = status_ = VideoPlaybackState::Playing;
+      else
+        new_status = status_ = VideoPlaybackState::Paused;
     }
   }
-  if (new_status != PipelineStatus::Initializing)
+  if (new_status != VideoPlaybackState::Initializing)
     on_status_changed_(new_status);
 }
 
 void PipelineManager::OnEnded() {
-  PipelineStatus new_status = PipelineStatus::Initializing;
+  VideoPlaybackState new_status = VideoPlaybackState::Initializing;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
-    if (status_ != PipelineStatus::Ended &&
-        status_ != PipelineStatus::Errored) {
+    if (status_ != VideoPlaybackState::Ended &&
+        status_ != VideoPlaybackState::Errored) {
       const uint64_t wall_time = clock_->GetMonotonicTime();
       DCHECK(!std::isnan(duration_));
       prev_wall_time_ = wall_time;
       prev_media_time_ = duration_;
-      new_status = status_ = PipelineStatus::Ended;
+      new_status = status_ = VideoPlaybackState::Ended;
     }
   }
-  if (new_status != PipelineStatus::Initializing)
+  if (new_status != VideoPlaybackState::Initializing)
     on_status_changed_(new_status);
 }
 
@@ -245,18 +245,18 @@ void PipelineManager::OnError() {
   bool fire_event = false;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
-    if (status_ != PipelineStatus::Errored) {
+    if (status_ != VideoPlaybackState::Errored) {
       SyncPoint();
-      status_ = PipelineStatus::Errored;
+      status_ = VideoPlaybackState::Errored;
       fire_event = true;
     }
   }
   if (fire_event)
-    on_status_changed_(PipelineStatus::Errored);
+    on_status_changed_(VideoPlaybackState::Errored);
 }
 
 double PipelineManager::GetTimeFor(uint64_t wall_time) const {
-  if (status_ != PipelineStatus::Playing)
+  if (status_ != VideoPlaybackState::Playing)
     return prev_media_time_;
 
   const uint64_t wall_diff = wall_time - prev_wall_time_;

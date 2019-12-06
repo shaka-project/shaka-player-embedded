@@ -106,10 +106,10 @@ void PipelineMonitor::ThreadMain() {
       // forward without the correct frames.
       pipeline_->CanPlay();
     } else {
-      pipeline_->Stalled();
+      pipeline_->Buffering();
     }
 
-    if (pipeline_->GetPipelineStatus() == PipelineStatus::Initializing) {
+    if (pipeline_->GetPlaybackState() == VideoPlaybackState::Initializing) {
       ChangeReadyState(VideoReadyState::HaveNothing);
     } else if (can_play) {
       ChangeReadyState(VideoReadyState::HaveFutureData);

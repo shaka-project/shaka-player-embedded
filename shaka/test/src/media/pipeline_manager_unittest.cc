@@ -43,20 +43,20 @@ void IgnoreSeek() {}
 
 TEST(PipelineManagerTest, Initialization) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
 
-  EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+  EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
 
   PipelineManager pipeline(callback, &IgnoreSeek, &clock);
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Initializing);
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Initializing);
   pipeline.DoneInitializing();
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Paused);
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Paused);
 }
 
 TEST(PipelineManagerTest, CalculatesCurrentTime) {
   NiceMock<MockClock> clock;
-  NiceMock<MockFunction<void(PipelineStatus)>> client;
+  NiceMock<MockFunction<void(VideoPlaybackState)>> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
   MockFunction<void(int)> task;
 
@@ -103,20 +103,20 @@ TEST(PipelineManagerTest, CalculatesCurrentTime) {
 
 TEST(PipelineManagerTest, SeeksIfPastEndWhenSettingDuration) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
   MockFunction<void()> seek;
   auto on_seek = std::bind(&decltype(seek)::Call, &seek);
 
   {
     InSequence seq;
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPause)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPause)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Ended)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Ended)).Times(1);
   }
 
   PipelineManager pipeline(callback, on_seek, &clock);
@@ -127,18 +127,18 @@ TEST(PipelineManagerTest, SeeksIfPastEndWhenSettingDuration) {
   EXPECT_EQ(pipeline.GetCurrentTime(), 10);
   EXPECT_EQ(pipeline.GetDuration(), 10);
   pipeline.OnEnded();
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Ended);
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Ended);
 }
 
 TEST(PipelineManagerTest, DoesntChangeStatusAfterErrors) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
 
   {
     InSequence seq;
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Errored)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Errored)).Times(1);
   }
 
   PipelineManager pipeline(callback, &IgnoreSeek, &clock);
@@ -148,54 +148,54 @@ TEST(PipelineManagerTest, DoesntChangeStatusAfterErrors) {
   pipeline.CanPlay();
   pipeline.OnEnded();
   pipeline.Play();
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Errored);
-  pipeline.Stalled();
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Errored);
+  pipeline.Buffering();
   pipeline.Pause();
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Errored);
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Errored);
   pipeline.OnError();
 }
 
 
 TEST(PipelineManagerTest, PlayPauseStall) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
 
   {
     InSequence seq;
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Stalled)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Playing)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Stalled)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Buffering)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Playing)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Buffering)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
   }
 
   PipelineManager pipeline(callback, &IgnoreSeek, &clock);
   pipeline.DoneInitializing();
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Paused);
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Paused);
   pipeline.Play();
   pipeline.CanPlay();
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Playing);
-  pipeline.Stalled();
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Playing);
+  pipeline.Buffering();
   pipeline.Pause();
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Paused);
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Paused);
 }
 
 TEST(PipelineManagerTest, PlayingSeek) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
   MockFunction<void()> seek;
   auto on_seek = std::bind(&decltype(seek)::Call, &seek);
 
   {
     InSequence seq;
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Stalled)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Playing)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Buffering)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Playing)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPlay)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Playing)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Playing)).Times(1);
   }
 
   PipelineManager pipeline(callback, on_seek, &clock);
@@ -208,17 +208,17 @@ TEST(PipelineManagerTest, PlayingSeek) {
 
 TEST(PipelineManagerTest, PausedSeek) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
   MockFunction<void()> seek;
   auto on_seek = std::bind(&decltype(seek)::Call, &seek);
 
   {
     InSequence seq;
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPause)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
   }
 
   PipelineManager pipeline(callback, on_seek, &clock);
@@ -229,18 +229,17 @@ TEST(PipelineManagerTest, PausedSeek) {
 
 TEST(PipelineManagerTest, PlayingSeekPause) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
   MockFunction<void()> seek;
   auto on_seek = std::bind(&decltype(seek)::Call, &seek);
 
   {
     InSequence seq;
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPause)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPlay)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Playing)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Playing)).Times(1);
   }
 
   PipelineManager pipeline(callback, on_seek, &clock);
@@ -250,20 +249,20 @@ TEST(PipelineManagerTest, PlayingSeekPause) {
   pipeline.CanPlay();
 }
 
-TEST(PipelineManagerTest, StalledSeek) {
+TEST(PipelineManagerTest, Buffering) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
   MockFunction<void()> seek;
   auto on_seek = std::bind(&decltype(seek)::Call, &seek);
 
   {
     InSequence seq;
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Stalled)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Buffering)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPlay)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Playing)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Playing)).Times(1);
   }
 
   PipelineManager pipeline(callback, on_seek, &clock);
@@ -275,18 +274,17 @@ TEST(PipelineManagerTest, StalledSeek) {
 
 TEST(PipelineManagerTest, SeekFiresMultipleTimes) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
   MockFunction<void()> seek;
   auto on_seek = std::bind(&decltype(seek)::Call, &seek);
 
   {
     InSequence seq;
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPause)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPause)).Times(1);
   }
 
   PipelineManager pipeline(callback, on_seek, &clock);
@@ -298,14 +296,14 @@ TEST(PipelineManagerTest, SeekFiresMultipleTimes) {
 
 TEST(PipelineManagerTest, IgnoresSeeksBeforeStartup) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
   MockFunction<void()> seek;
   auto on_seek = std::bind(&decltype(seek)::Call, &seek);
 
   EXPECT_CALL(client, Call(_)).Times(0);
   EXPECT_CALL(seek, Call()).Times(0);
-  EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+  EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
 
   PipelineManager pipeline(callback, on_seek, &clock);
   pipeline.SetCurrentTime(50);
@@ -315,20 +313,20 @@ TEST(PipelineManagerTest, IgnoresSeeksBeforeStartup) {
 
 TEST(PipelineManagerTest, SeekAfterEnd) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
   MockFunction<void()> seek;
   auto on_seek = std::bind(&decltype(seek)::Call, &seek);
 
   {
     InSequence seq;
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPause)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Ended)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Ended)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPause)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
   }
 
   PipelineManager pipeline(callback, on_seek, &clock);
@@ -337,29 +335,29 @@ TEST(PipelineManagerTest, SeekAfterEnd) {
   pipeline.SetCurrentTime(12);
   EXPECT_EQ(pipeline.GetCurrentTime(), 10);
   pipeline.OnEnded();
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Ended);
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Ended);
   pipeline.SetCurrentTime(2);
   pipeline.CanPlay();
   EXPECT_EQ(pipeline.GetCurrentTime(), 2);
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Paused);
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Paused);
 }
 
 TEST(PipelineManagerTest, PlayAfterEnd) {
   NiceMock<MockClock> clock;
-  MockFunction<void(PipelineStatus)> client;
+  MockFunction<void(VideoPlaybackState)> client;
   auto callback = std::bind(&decltype(client)::Call, &client, _1);
   MockFunction<void()> seek;
   auto on_seek = std::bind(&decltype(seek)::Call, &seek);
 
   {
     InSequence seq;
-    EXPECT_CALL(client, Call(PipelineStatus::Paused)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Paused)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPause)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Ended)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Ended)).Times(1);
     EXPECT_CALL(seek, Call()).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::SeekingPlay)).Times(1);
-    EXPECT_CALL(client, Call(PipelineStatus::Playing)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Seeking)).Times(1);
+    EXPECT_CALL(client, Call(VideoPlaybackState::Playing)).Times(1);
   }
 
   PipelineManager pipeline(callback, on_seek, &clock);
@@ -368,11 +366,11 @@ TEST(PipelineManagerTest, PlayAfterEnd) {
   pipeline.SetCurrentTime(12);
   EXPECT_EQ(pipeline.GetCurrentTime(), 10);
   pipeline.OnEnded();
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Ended);
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Ended);
   pipeline.Play();
   pipeline.CanPlay();
   EXPECT_EQ(pipeline.GetCurrentTime(), 0);
-  EXPECT_EQ(pipeline.GetPipelineStatus(), PipelineStatus::Playing);
+  EXPECT_EQ(pipeline.GetPlaybackState(), VideoPlaybackState::Playing);
 }
 
 }  // namespace media

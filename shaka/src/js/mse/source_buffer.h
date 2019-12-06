@@ -77,7 +77,7 @@ class SourceBuffer : public events::EventTarget {
 
  private:
   /** Called when an append operation completes. */
-  void OnAppendComplete(media::Status status);
+  void OnAppendComplete(bool success);
 
   media::ElementaryStream frames_;
   media::DemuxerThread demuxer_;

@@ -71,7 +71,7 @@ void DemuxerThread::Stop() {
 void DemuxerThread::AppendData(double timestamp_offset, double window_start,
                                double window_end, const uint8_t* data,
                                size_t data_size,
-                               std::function<void(Status)> on_complete) {
+                               std::function<void(bool)> on_complete) {
   DCHECK(data);
   DCHECK_GT(data_size, 0u);
 
@@ -99,7 +99,7 @@ void DemuxerThread::ThreadMain() {
     if (!on_complete_ && !shutdown_) {
       new_data_.ResetAndWaitWhileUnlocked(lock);
     }
-    CallOnComplete(Status::UnknownError);
+    CallOnComplete(false);
     return;
   }
 
@@ -107,7 +107,7 @@ void DemuxerThread::ThreadMain() {
     std::unique_lock<Mutex> lock(mutex_);
     std::vector<std::shared_ptr<EncodedFrame>> frames;
     if (!demuxer_->Demux(timestamp_offset_, data_, data_size_, &frames)) {
-      CallOnComplete(Status::UnknownError);
+      CallOnComplete(false);
       break;
     }
 
@@ -129,18 +129,18 @@ void DemuxerThread::ThreadMain() {
       }
       stream_->AddFrame(frame);
     }
-    CallOnComplete(Status::Success);
+    CallOnComplete(true);
     new_data_.ResetAndWaitWhileUnlocked(lock);
   }
 }
 
-void DemuxerThread::CallOnComplete(Status status) {
+void DemuxerThread::CallOnComplete(bool success) {
   if (on_complete_) {
     // on_complete must be invoked on the event thread.
     JsManagerImpl::Instance()->MainThread()->AddInternalTask(
         TaskPriority::Internal, "Append done",
-        PlainCallbackTask(std::bind(on_complete_, status)));
-    on_complete_ = std::function<void(Status)>();
+        PlainCallbackTask(std::bind(on_complete_, success)));
+    on_complete_ = std::function<void(bool)>();
   }
 }
 

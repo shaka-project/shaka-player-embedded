@@ -114,7 +114,7 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
     Decoder* decoder_;
   };
 
-  void OnStatusChanged(PipelineStatus status);
+  void OnStatusChanged(VideoPlaybackState status);
   void ReadyStateChanged(VideoReadyState ready_state);
   void OnSeek();
   void OnError() override;
@@ -123,7 +123,7 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
   mutable SharedMutex mutex_;
   PipelineManager pipeline_manager_;
   PipelineMonitor pipeline_monitor_;
-  PipelineStatus old_status_;
+  VideoPlaybackState old_state_;
   VideoReadyState ready_state_;
 
   Source video_;

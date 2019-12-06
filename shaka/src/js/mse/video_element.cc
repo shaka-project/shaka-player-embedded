@@ -364,6 +364,7 @@ void HTMLVideoElement::OnPlaybackStateChanged(
       break;
 
     case media::VideoPlaybackState::Initializing:
+    case media::VideoPlaybackState::Errored:
       break;
     case media::VideoPlaybackState::Seeking:
       // We also get an OnSeeking callback, so raise event there.

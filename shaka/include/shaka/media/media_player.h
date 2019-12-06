@@ -153,6 +153,12 @@ enum class VideoPlaybackState : uint8_t {
    * reaching the duration of the video.
    */
   Ended,
+
+  /**
+   * The video has had a fatal error and cannot play.  Playback cannot recover
+   * from this state unless it is unloaded and new content is loaded.
+   */
+  Errored,
 };
 
 /**

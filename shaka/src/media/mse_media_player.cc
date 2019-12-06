@@ -37,7 +37,7 @@ MseMediaPlayer::MseMediaPlayer(VideoRenderer* video_renderer,
                         std::bind(&MseMediaPlayer::ReadyStateChanged, this,
                                   std::placeholders::_1),
                         &util::Clock::Instance, &pipeline_manager_),
-      old_status_(PipelineStatus::Initializing),
+      old_state_(VideoPlaybackState::Initializing),
       ready_state_(VideoReadyState::NotAttached),
       video_(this),
       audio_(this),
@@ -122,23 +122,7 @@ VideoReadyState MseMediaPlayer::ReadyState() const {
 }
 
 VideoPlaybackState MseMediaPlayer::PlaybackState() const {
-  const auto status = pipeline_manager_.GetPipelineStatus();
-  switch (status) {
-    case PipelineStatus::Initializing:
-    case PipelineStatus::Errored:
-      return VideoPlaybackState::Initializing;
-    case PipelineStatus::Playing:
-      return VideoPlaybackState::Playing;
-    case PipelineStatus::Paused:
-      return VideoPlaybackState::Paused;
-    case PipelineStatus::SeekingPlay:
-    case PipelineStatus::SeekingPause:
-      return VideoPlaybackState::Seeking;
-    case PipelineStatus::Stalled:
-      return VideoPlaybackState::Buffering;
-    case PipelineStatus::Ended:
-      return VideoPlaybackState::Ended;
-  }
+  return pipeline_manager_.GetPlaybackState();
 }
 
 std::vector<std::shared_ptr<TextTrack>> MseMediaPlayer::TextTracks() {
@@ -235,7 +219,7 @@ bool MseMediaPlayer::AttachSource(const std::string& src) {
 bool MseMediaPlayer::AttachMse() {
   {
     std::unique_lock<SharedMutex> lock(mutex_);
-    old_status_ = PipelineStatus::Initializing;
+    old_state_ = VideoPlaybackState::Initializing;
     ready_state_ = VideoReadyState::HaveNothing;
   }
 
@@ -305,50 +289,41 @@ void MseMediaPlayer::Detach() {
   ready_state_ = VideoReadyState::NotAttached;
 }
 
-void MseMediaPlayer::OnStatusChanged(PipelineStatus status) {
-  VideoPlaybackState old_state = PlaybackState();
-  PipelineStatus old_status;
+void MseMediaPlayer::OnStatusChanged(VideoPlaybackState state) {
+  VideoPlaybackState old_state;
   {
     std::unique_lock<SharedMutex> lock(mutex_);
-    old_status = old_status_;
-    old_status_ = status;
+    old_state = old_state_;
+    old_state_ = state;
   }
 
   util::shared_lock<SharedMutex> lock(mutex_);
 
-  if (status == old_status) {
-    // If we get another seeking status change, we still fire the 'seeking'
-    // event since the current time changed.
-    if (status == media::PipelineStatus::SeekingPlay ||
-        status == media::PipelineStatus::SeekingPause) {
-      for (auto* client : clients_)
-        client->OnSeeking();
-    }
+  if (state == old_state)
     return;
-  }
 
   for (auto* client : clients_)
-    client->OnPlaybackStateChanged(old_state, PlaybackState());
-  switch (status) {
-    case media::PipelineStatus::Initializing:
-    case media::PipelineStatus::Playing:
-      if (old_status == media::PipelineStatus::Paused) {
+    client->OnPlaybackStateChanged(old_state, state);
+  switch (state) {
+    case VideoPlaybackState::Initializing:
+    case VideoPlaybackState::Playing:
+      if (old_state == VideoPlaybackState::Paused) {
         for (auto* client : clients_)
           client->OnPlay();
       }
       break;
-    case media::PipelineStatus::SeekingPlay:
-    case media::PipelineStatus::SeekingPause:
-      for (auto* client : clients_)
-        client->OnSeeking();
-      break;
-    case media::PipelineStatus::Errored:
+    case VideoPlaybackState::Errored:
       for (auto* client : clients_)
         client->OnError("");
       break;
-    case media::PipelineStatus::Paused:
-    case media::PipelineStatus::Stalled:
-    case media::PipelineStatus::Ended:
+
+    case VideoPlaybackState::Seeking:
+      // Don't raise for seeking since we get a call to OnSeek.
+    case VideoPlaybackState::Paused:
+    case VideoPlaybackState::Buffering:
+    case VideoPlaybackState::WaitingForKey:
+    case VideoPlaybackState::Ended:
+    case VideoPlaybackState::Detached:
       break;
   }
 }
@@ -370,6 +345,12 @@ void MseMediaPlayer::OnSeek() {
   // Avoid holding the lock for interacting with the Renderers.
   audio_renderer_->OnSeek();
   video_renderer_->OnSeek();
+
+  {
+    util::shared_lock<SharedMutex> lock(mutex_);
+    for (auto* client : clients_)
+      client->OnSeeking();
+  }
 
   std::unique_lock<SharedMutex> lock(mutex_);
   video_.OnSeek();

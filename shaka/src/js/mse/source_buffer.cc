@@ -203,11 +203,12 @@ ExceptionOr<void> SourceBuffer::SetAppendWindowEnd(double window_end) {
   return {};
 }
 
-void SourceBuffer::OnAppendComplete(media::Status status) {
-  VLOG(1) << "Finish appending media segment: " << status;
+void SourceBuffer::OnAppendComplete(bool success) {
+  VLOG(1) << "Finish appending media segment: "
+          << (success ? "success" : "error");
   updating = false;
   append_buffer_.Clear();
-  if (status != media::Status::Success) {
+  if (!success) {
     Abort();
     ScheduleEvent<events::Event>(EventType::Error);
   }

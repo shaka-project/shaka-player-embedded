@@ -70,16 +70,16 @@ class DemuxerThread {
    */
   void AppendData(double timestamp_offset, double window_start,
                   double window_end, const uint8_t* data, size_t data_size,
-                  std::function<void(Status)> on_complete);
+                  std::function<void(bool)> on_complete);
 
  private:
   void ThreadMain();
-  void CallOnComplete(Status status);
+  void CallOnComplete(bool success);
 
   Mutex mutex_;
   std::unique_ptr<Demuxer> demuxer_;
   ThreadEvent<void> new_data_;
-  std::function<void(Status)> on_complete_;
+  std::function<void(bool)> on_complete_;
   Demuxer::Client* client_;
   std::string mime_;
   std::atomic<bool> shutdown_;

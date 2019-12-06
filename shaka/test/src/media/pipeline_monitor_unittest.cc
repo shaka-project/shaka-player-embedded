@@ -47,7 +47,7 @@ class MockPipelineManager : public PipelineManager {
       : PipelineManager({}, {}, clock) {}
 
   MOCK_METHOD0(DoneInitializing, void());
-  MOCK_CONST_METHOD0(GetPipelineStatus, PipelineStatus());
+  MOCK_CONST_METHOD0(GetPlaybackState, VideoPlaybackState());
   MOCK_CONST_METHOD0(GetDuration, double());
   MOCK_METHOD1(SetDuration, void(double));
   MOCK_CONST_METHOD0(GetCurrentTime, double());
@@ -56,7 +56,7 @@ class MockPipelineManager : public PipelineManager {
   MOCK_METHOD1(SetPlaybackRate, void(double));
   MOCK_METHOD0(Play, void());
   MOCK_METHOD0(Pause, void());
-  MOCK_METHOD0(Stalled, void());
+  MOCK_METHOD0(Buffering, void());
   MOCK_METHOD0(CanPlay, void());
   MOCK_METHOD0(OnEnded, void());
 };
@@ -75,8 +75,8 @@ TEST(PipelineMonitorTest, ChangesReadyState) {
 
   EXPECT_CALL(clock, GetMonotonicTime()).WillRepeatedly(Return(0));
   EXPECT_CALL(pipeline, GetDuration()).WillRepeatedly(Return(NAN));
-  EXPECT_CALL(pipeline, GetPipelineStatus())
-      .WillRepeatedly(Return(PipelineStatus::Paused));
+  EXPECT_CALL(pipeline, GetPlaybackState())
+      .WillRepeatedly(Return(VideoPlaybackState::Paused));
   {
 #define SET_BUFFERED_RANGE(start, end) \
   EXPECT_CALL(get_buffered, Call())    \
@@ -117,8 +117,8 @@ TEST(PipelineMonitorTest, ChangesPiplineStatuses) {
   MockFunction<BufferedRanges()> get_buffered;
   NiceMock<MockFunction<void(VideoReadyState)>> ready_state_changed;
 
-  EXPECT_CALL(pipeline, GetPipelineStatus())
-      .WillRepeatedly(Return(PipelineStatus::Paused));
+  EXPECT_CALL(pipeline, GetPlaybackState())
+      .WillRepeatedly(Return(VideoPlaybackState::Paused));
   EXPECT_CALL(pipeline, GetDuration()).WillRepeatedly(Return(10));
   EXPECT_CALL(get_buffered, Call())
       .WillRepeatedly(Return(BufferedRanges{{0, 4}, {6, 10}}));
@@ -139,7 +139,7 @@ TEST(PipelineMonitorTest, ChangesPiplineStatuses) {
     EXPECT_CALL(pipeline, GetCurrentTime())
         .InSequence(seq1, seq2)
         .WillRepeatedly(Return(5));
-    EXPECT_CALL(pipeline, Stalled()).Times(1).InSequence(seq1, seq2);
+    EXPECT_CALL(pipeline, Buffering()).Times(1).InSequence(seq1, seq2);
     EXPECT_CALL(pipeline, GetCurrentTime())
         .InSequence(seq1, seq2)
         .WillRepeatedly(Return(8));

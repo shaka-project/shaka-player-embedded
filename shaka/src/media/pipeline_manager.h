@@ -18,8 +18,8 @@
 #include <atomic>
 #include <thread>
 
+#include "shaka/media/media_player.h"
 #include "src/debug/mutex.h"
-#include "src/media/types.h"
 #include "src/util/clock.h"
 
 namespace shaka {
@@ -41,7 +41,7 @@ namespace media {
  */
 class PipelineManager {
  public:
-  PipelineManager(std::function<void(PipelineStatus)> on_status_changed,
+  PipelineManager(std::function<void(VideoPlaybackState)> on_status_changed,
                   std::function<void()> on_seek, const util::Clock* clock);
   virtual ~PipelineManager();
 
@@ -52,7 +52,7 @@ class PipelineManager {
   virtual void DoneInitializing();
 
   /** @return The current pipeline status. */
-  virtual PipelineStatus GetPipelineStatus() const;
+  virtual VideoPlaybackState GetPlaybackState() const;
 
   /** @return The current video duration. */
   virtual double GetDuration() const;
@@ -79,7 +79,7 @@ class PipelineManager {
   virtual void Pause();
 
   /** Called when the video stalls due to lack of content. */
-  virtual void Stalled();
+  virtual void Buffering();
 
   /** Called when the video has enough content to play forward. */
   virtual void CanPlay();
@@ -109,10 +109,10 @@ class PipelineManager {
   void SyncPoint();
 
   mutable SharedMutex mutex_;
-  const std::function<void(PipelineStatus)> on_status_changed_;
+  const std::function<void(VideoPlaybackState)> on_status_changed_;
   const std::function<void()> on_seek_;
   const util::Clock* const clock_;
-  PipelineStatus status_;
+  VideoPlaybackState status_;
 
   /** The media time at the last sync point. */
   double prev_media_time_;
@@ -120,7 +120,7 @@ class PipelineManager {
   uint64_t prev_wall_time_;
   double playback_rate_;
   double duration_;
-  bool autoplay_;
+  bool will_play_;
 };
 
 }  // namespace media
