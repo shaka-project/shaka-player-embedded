@@ -70,8 +70,9 @@ def _FindIosSimulator():
     for sim in value:
       if sim['state'] == 'Booted' and version >= _MIN_VERSION:
         return (sim['udid'], True)
-      if (not largest_version or version > largest_version and
-         sim['availability'] == '(available)'):
+      available = (
+          sim.get('availability') == '(available)' or sim.get('isAvailable'))
+      if not largest_version or version > largest_version and available:
         largest_version = version
         largest_uuid = sim['udid']
 
