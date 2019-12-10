@@ -29,11 +29,12 @@ v8::Isolate* GetIsolate() {
 }
 
 void PrintStackTrace(const v8::Local<v8::StackTrace>& stack) {
-  v8::HandleScope handle_scope(GetIsolate());
+  auto* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
   for (int i = 0; i < stack->GetFrameCount(); ++i) {
-    const v8::Local<v8::StackFrame> frame = stack->GetFrame(i);
-    const v8::String::Utf8Value name(frame->GetScriptName());
-    const v8::String::Utf8Value func(frame->GetFunctionName());
+    const v8::Local<v8::StackFrame> frame = stack->GetFrame(isolate, i);
+    const v8::String::Utf8Value name(isolate, frame->GetScriptName());
+    const v8::String::Utf8Value func(isolate, frame->GetFunctionName());
     const int row = frame->GetLineNumber();
     const int col = frame->GetColumn();
 
@@ -49,13 +50,13 @@ void OnUncaughtException(const v8::Local<v8::Value>& exception,
     return;
 
   // Print the exception and stack trace.
-  v8::String::Utf8Value err_str(exception);
+  v8::Isolate* isolate = GetIsolate();
+  v8::String::Utf8Value err_str(isolate, exception);
   if (in_promise)
     LOG(ERROR) << "Uncaught (in promise): " << *err_str;
   else
     LOG(ERROR) << "Uncaught:" << *err_str;
 
-  v8::Isolate* isolate = GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::StackTrace> stack = v8::Exception::GetStackTrace(exception);
   if (!stack.IsEmpty()) {

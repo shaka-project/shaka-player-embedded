@@ -5,6 +5,10 @@ Makefile
 .DS_Store
 *.xcworkspace
 
+/.cipd
+/cipd.lock
+/buildtools/
+
 /Doxyfile
 
 /third_party/boringssl/*

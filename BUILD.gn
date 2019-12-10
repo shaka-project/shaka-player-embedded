@@ -109,6 +109,7 @@ config("internal_config") {
     "-Wno-padded",  # Ok if types have padding
     # Ok if enum not handled; -Wswitch will warn if there is also not a default.
     "-Wno-switch-enum",
+    "-Wno-covered-switch-default",
     "-Wno-missing-noreturn",
     "-Wno-direct-ivar-access",  # Ok to access Obj-C properties directly
     "-Wno-over-aligned",
@@ -118,6 +119,7 @@ config("internal_config") {
     "-Wno-cstring-format-directive",
     "-Wno-deprecated",
     "-Wno-shadow",
+    "-Wno-shadow-field",
     "-Wno-shorten-64-to-32",
     "-Wno-sign-conversion",
     "-Wno-undefined-func-template",
@@ -163,7 +165,7 @@ config("internal_config") {
 
   if (js_engine == "v8") {
     defines += [ "USING_V8" ]
-    if (v8_use_snapshot && v8_use_external_startup_data) {
+    if (v8_use_external_startup_data) {
       defines += [ "V8_EMBEDDED_SNAPSHOT" ]
     }
   } else if (js_engine == "jsc") {
@@ -424,7 +426,7 @@ if (js_engine == "v8") {
     visibility = [ ":*" ]
 
     # Ensure the snapshot is built before this is run.
-    deps = [ "//v8:v8_maybe_snapshot" ]
+    deps = [ "//v8:v8" ]
 
     output_name = "$root_gen_dir/embedded_v8_snapshots.cc"
     outputs = [ output_name ]
@@ -763,7 +765,7 @@ source_set("internal_sources") {
       "//v8:v8_libplatform",
     ]
 
-    if (v8_use_snapshot && v8_use_external_startup_data) {
+    if (v8_use_external_startup_data) {
       sources += get_target_outputs(":embed_v8_snapshots")
       deps += [ ":embed_v8_snapshots" ]
     }
@@ -1014,7 +1016,7 @@ if (is_ios) {
       "--minimum-deployment-target", ios_deployment_target,
       rebase_path(_input_dir, root_build_dir),
     ]
-    script = "//build/toolchain/mac/compile_xcassets.py"
+    script = "//build/config/ios/compile_xcassets.py"
   }
   if (js_engine == "v8") {
     defines += [ "USING_V8" ]

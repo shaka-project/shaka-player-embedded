@@ -52,7 +52,7 @@ ReturnVal<JsValue> ToJsObject(double value) {
 
 ReturnVal<JsValue> ToJsObject(const std::string& value) {
 #ifdef USING_V8
-  return v8::StringObject::New(JsStringFromUtf8(value));
+  return v8::StringObject::New(GetIsolate(), JsStringFromUtf8(value));
 #elif defined(USING_JSC)
   LocalVar<JsValue> value_js = ToJsValue(value);
   JSValueRef arg = value_js;

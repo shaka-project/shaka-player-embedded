@@ -40,8 +40,6 @@ def _GenerateFile(output):
   """Generates a C++ file which embeds the snapshot files."""
   with open('snapshot_blob.bin', 'rb') as f:
     snapshot_data = f.read()
-  with open('natives_blob.bin', 'rb') as f:
-    natives_data = f.read()
 
   writer = embed_utils.CompressedCodeWriter(output)
   writer.Write('#include <v8.h>')
@@ -53,9 +51,6 @@ def _GenerateFile(output):
     with writer.Namespace():
       writer.CompressedVariable('snapshot', snapshot_data)
       writer.Write('v8::StartupData snapshot_startup_data;')
-      writer.Write()
-      writer.CompressedVariable('natives', natives_data)
-      writer.Write('v8::StartupData natives_startup_data;')
 
     writer.Write()
     writer.Write('void SetupV8Snapshots();')
@@ -64,10 +59,6 @@ def _GenerateFile(output):
       writer.Decompress('snapshot')
       _SetupStartupData(writer, 'snapshot')
       writer.Write('v8::V8::SetSnapshotDataBlob(&snapshot_startup_data);')
-      writer.Write()
-      writer.Decompress('natives')
-      _SetupStartupData(writer, 'natives')
-      writer.Write('v8::V8::SetNativesDataBlob(&natives_startup_data);')
 
 
 def main(args):

@@ -77,6 +77,7 @@ def _CheckLicense(_):
       '.gitignore',
       '.gitmodules',
       'LICENSE',
+      'LICENSE.chromium',
       'sample_xcode_project/LICENSE',
       'shaka/js/shaka-player.compiled.js',
       'shaka/js/shaka-player.compiled.debug.js',

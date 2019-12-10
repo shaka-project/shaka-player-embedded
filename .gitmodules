@@ -9,9 +9,6 @@
 [submodule "build"]
 	path = build
 	url = https://chromium.googlesource.com/chromium/src/build.git
-[submodule "buildtools"]
-	path = buildtools
-	url = https://chromium.googlesource.com/chromium/buildtools.git
 [submodule "testing"]
 	path = testing
 	url = https://chromium.googlesource.com/chromium/src/testing

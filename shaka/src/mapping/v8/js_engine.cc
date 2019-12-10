@@ -45,7 +45,7 @@ void InitializeV8IfNeeded() {
   SetupV8Snapshots();
 #endif
 
-  platform = v8::platform::CreateDefaultPlatform();
+  platform = v8::platform::NewDefaultPlatform().release();
   v8::V8::InitializePlatform(platform);
   v8::V8::Initialize();
 }

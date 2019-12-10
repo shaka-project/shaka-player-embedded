@@ -34,7 +34,7 @@ bool ByteString::TryConvert(Handle<JsValue> value) {
   if (value.IsEmpty() || !value->IsString())
     return false;
 
-  v8::String::Value value_raw(value);
+  v8::String::Value value_raw(GetIsolate(), value);
   const uint16_t* data = *value_raw;
   const size_t length = value_raw.length();
   if (length == 0 && value.As<v8::String>()->Length() != 0)

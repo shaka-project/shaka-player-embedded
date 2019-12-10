@@ -26,8 +26,8 @@ namespace shaka {
 namespace {
 
 JSClassDefinition wrapper_class_def = {
-    .className = "<pointer wrapper>",
     .version = 1,
+    .className = "<pointer wrapper>",
 };
 
 JSClassRef GetWrapperClass() {

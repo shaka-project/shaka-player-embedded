@@ -42,7 +42,6 @@ import sys
 
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
 DEFAULT_SETTINGS = {
-    'use_cxx11': True,
     # The embedded sysroot in V8 has bugs in <chrono> meaning we cannot use
     # <thread> or <condition_variable>.
     'use_sysroot': False,
@@ -50,16 +49,17 @@ DEFAULT_SETTINGS = {
     # Even though we don't compile Chromium, there is some global scripts that
     # try to find glib.  This ensures we can build without glib installed.
     'use_glib': False,
+    # TODO: Fix weak symbol warnings on iOS.
+    'fatal_linker_warnings': False,
 }
 PLATFORM_SPECIFIC_SETTINGS = {
     'darwin': {
         'enable_dsyms': True,
         'mac_deployment_target': '10.10.0',
+        'ios_deployment_target': '10.0',
     },
 }
 V8_SETTINGS = {
-    'v8_extra_library_files': [],
-    'v8_experimental_extra_library_files': [],
     # TODO: Building V8 in debug mode is currently broken.
     'v8_enable_debugging_features': False,
 }
@@ -141,7 +141,6 @@ class _MaybeUseCcache(argparse.Action):
 _REQUIRED_SUBMODULES = [
     'base/trace_event/common',
     'build',
-    'buildtools',
     'testing',
     'third_party/boringssl/src',
     'third_party/curl/src',
@@ -178,20 +177,10 @@ def _LoadSubmodules(has_v8):
 def _DownloadGn():
   """Downloads the GN binary from cloud storage."""
   logging.error('Downloading GN from cloud storage...')
-  platform_name = platform.uname()[0]
-  if platform_name == 'Linux':
-    path = 'buildtools/linux64/gn.sha1'
-  elif platform_name == 'Darwin':
-    path = 'buildtools/mac/gn.sha1'
-  elif platform_name == 'Windows' or 'CYGWIN' in platform_name:
-    path = 'buildtools/win/gn.exe.sha1'
-  else:
-    raise RuntimeError('Unknown platform type')
-
   # TODO: Consider an alternative that doesn't use depot_tools.  This would
   # allow us to only depend on ninja, which can be installed separately.
-  return _SilentRun('download_from_google_storage', '--no_auth', '--bucket',
-                    'chromium-gn', '-s', os.path.join(ROOT_DIR, path))
+  return _SilentRun('cipd', 'ensure', '-ensure-file',
+                    os.path.join(ROOT_DIR, 'cipd.ensure'), '-root', ROOT_DIR)
 
 
 def _ConstructGnArgs(parsed_args):
@@ -282,7 +271,7 @@ def _DownloadClang(*unused_args):
   # Note: On Win, this should run after win_toolchain, as it may use it.
   # This also needs to be one of the first _Steps so other steps can use clang.
   update = os.path.join(ROOT_DIR, 'tools', 'clang', 'scripts', 'update.py')
-  return _SilentRun(sys.executable, update, '--if-needed')
+  return _SilentRun(sys.executable, update)
 
 
 def _GetSdlPath(obj):

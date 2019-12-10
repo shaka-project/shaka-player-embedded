@@ -80,9 +80,9 @@ TEST(PipelineMonitorTest, ChangesReadyState) {
   {
 #define SET_BUFFERED_RANGE(start, end) \
   EXPECT_CALL(get_buffered, Call())    \
-      .WillRepeatedly(Return(BufferedRanges{{start, end}}));
+      .WillRepeatedly(Return(BufferedRanges{{start, end}}))
 #define SET_NOTHING_BUFFERED() \
-  EXPECT_CALL(get_buffered, Call()).WillRepeatedly(Return(BufferedRanges()));
+  EXPECT_CALL(get_buffered, Call()).WillRepeatedly(Return(BufferedRanges()))
     InSequence seq;
     SET_BUFFERED_RANGE(0, 10);
     EXPECT_CALL(ready_state_changed, Call(HAVE_FUTURE_DATA)).Times(1);

@@ -27,26 +27,24 @@ V8HeapTracer::V8HeapTracer() {}
 
 V8HeapTracer::~V8HeapTracer() {}
 
-void V8HeapTracer::AbortTracing() {
-  VLOG(2) << "GC run aborted";
-  ResetState();
-  fields_.clear();
+bool V8HeapTracer::IsTracingDone() {
+  return fields_.empty();
 }
 
-void V8HeapTracer::TracePrologue() {
+void V8HeapTracer::TracePrologue(TraceFlags /* flags */) {
   VLOG(2) << "GC run started";
   fields_ = ObjectTracker::Instance()->GetAliveObjects();
   BeginPass();
 }
 
-void V8HeapTracer::TraceEpilogue() {
+void V8HeapTracer::TraceEpilogue(TraceSummary* /* trace_summary */) {
   VLOG(2) << "GC run ended";
   CHECK(fields_.empty());
   ObjectTracker::Instance()->FreeDeadObjects(alive());
   ResetState();
 }
 
-void V8HeapTracer::EnterFinalPause() {}
+void V8HeapTracer::EnterFinalPause(EmbedderStackState stack_state) {}
 
 void V8HeapTracer::RegisterV8References(
     const std::vector<std::pair<void*, void*>>& internal_fields) {
@@ -56,8 +54,7 @@ void V8HeapTracer::RegisterV8References(
     fields_.insert(reinterpret_cast<Traceable*>(pair.first));
 }
 
-bool V8HeapTracer::AdvanceTracing(double /* deadline_ms */,
-                                  AdvanceTracingActions /* actions */) {
+bool V8HeapTracer::AdvanceTracing(double /* deadline_ms */) {
   VLOG(2) << "GC run step";
   util::Clock clock;
   const uint64_t start = clock.GetMonotonicTime();

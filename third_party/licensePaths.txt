@@ -1,5 +1,5 @@
 Shaka Player: ../LICENSE
-Chromium: ../buildtools/LICENSE
+Chromium: ../LICENSE.chromium
 curl: curl/LICENSE
 FFmpeg: ffmpeg/LICENSE
 gflags: gflags/LICENSE

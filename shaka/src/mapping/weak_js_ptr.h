@@ -21,6 +21,9 @@
 
 #include "src/mapping/js_wrappers.h"
 #include "src/memory/heap_tracer.h"
+#ifdef USING_V8
+#  include "src/memory/v8_heap_tracer.h"
+#endif
 
 namespace shaka {
 
@@ -49,42 +52,10 @@ class WeakJsPtr : public memory::Traceable {
     ResetInternal(other);
   }
 
-  WeakJsPtr(const WeakJsPtr& other) {
-    // Need to define an explicit copy-constructor since v8::Global is
-    // non-copyable.
-    ResetInternal(other.ptr_);
-  }
-
-  WeakJsPtr(WeakJsPtr&& other) {
-    // There are problems using the v8::Global<T> move constructor.  So just
-    // copy and clear the original.
-    ResetInternal(other.ptr_);
-    other.reset();
-  }
-
-  ~WeakJsPtr() override {
-#ifdef USING_V8
-    // V8 tracks the address of |ptr_| so it can reset it once the object is
-    // cleared.  We need to clear this so V8 doesn't modify other memory.
-    if (!empty()) {
-      DCHECK(ptr_.IsWeak());
-      ptr_.ClearWeak();
-    }
-#endif
-  }
-
-
-  WeakJsPtr& operator=(const WeakJsPtr& other) {
-    ResetInternal(other.ptr_);
-    return *this;
-  }
-  WeakJsPtr& operator=(WeakJsPtr&& other) {
-    // There are problems using the v8::Global<T> move constructor.  So just
-    // copy and clear the original.
-    ResetInternal(other.ptr_);
-    other.reset();
-    return *this;
-  }
+  WeakJsPtr(const WeakJsPtr& other) = default;
+  WeakJsPtr(WeakJsPtr&& other) = default;
+  WeakJsPtr& operator=(const WeakJsPtr& other) = default;
+  WeakJsPtr& operator=(WeakJsPtr&& other) = default;
 
   template <typename U = T>
   bool operator==(const WeakJsPtr<U>& other) const {
@@ -149,7 +120,10 @@ class WeakJsPtr : public memory::Traceable {
       CHECK(empty() || !handle()->IsNumber());
 #  endif
 
-      ptr_.RegisterExternalReference(GetIsolate());
+      static_assert(std::is_convertible<T, v8::Data>::value,
+                    "Can only store Data types");
+      auto* v8_trace = static_cast<memory::V8HeapTracer*>(tracer);
+      v8_trace->RegisterEmbedderReference(ptr_.template As<v8::Data>());
 #endif
     }
   }
@@ -166,18 +140,14 @@ class WeakJsPtr : public memory::Traceable {
     if (ptr_.IsEmpty() && other.IsEmpty())
       return;
 
-    // Mark the Global as weak so the object can be destroyed even though we
-    // hold a pointer.  If |this| is alive, the HeapTracer will call MarkAlive.
     ptr_.Reset(GetIsolate(), other);
-    if (!ptr_.IsEmpty())
-      ptr_.SetWeak();
 #else
     ptr_ = other;
 #endif
   }
 
 #if defined(USING_V8)
-  v8::Global<T> ptr_;
+  v8::TracedGlobal<T> ptr_;
 #elif defined(USING_JSC)
   Handle<T> ptr_;
 #endif

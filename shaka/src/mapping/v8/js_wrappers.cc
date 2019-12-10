@@ -206,7 +206,7 @@ std::string ConvertToString(Handle<JsValue> value) {
     return name.IsEmpty() || name->IsUndefined() ? "" : ConvertToString(name);
   }
 
-  v8::String::Utf8Value str(value);
+  v8::String::Utf8Value str(GetIsolate(), value);
   return std::string(*str, str.length());
 }
 

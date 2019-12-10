@@ -307,8 +307,8 @@ inline void InternalCallbackDataFinalize(JSObjectRef object) {
 }
 
 const JSClassDefinition kInternalCallbackDataDefinition = {
-    .className = "InternalCallbackData",
     .version = 1,
+    .className = "InternalCallbackData",
     .finalize = &InternalCallbackDataFinalize,
 };
 
