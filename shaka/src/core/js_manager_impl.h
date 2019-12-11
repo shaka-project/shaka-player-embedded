@@ -35,13 +35,10 @@
 
 namespace shaka {
 
-class JsManagerImpl : public memory::Traceable,
-                      public PseudoSingleton<JsManagerImpl> {
+class JsManagerImpl : public PseudoSingleton<JsManagerImpl> {
  public:
   explicit JsManagerImpl(const JsManager::StartupOptions& options);
-  ~JsManagerImpl() override;
-
-  void Trace(memory::HeapTracer* tracer) const override;
+  ~JsManagerImpl();
 
   TaskRunner* MainThread() {
     return &event_loop_;

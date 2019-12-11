@@ -14,7 +14,6 @@
 
 #include "src/memory/object_tracker.h"
 
-#include "src/core/js_manager_impl.h"
 #include "src/mapping/backing_object.h"
 #include "src/memory/heap_tracer.h"
 #include "src/util/clock.h"
@@ -68,8 +67,7 @@ void ObjectTracker::RemoveRef(const Traceable* object) {
 std::unordered_set<const Traceable*> ObjectTracker::GetAliveObjects() const {
   std::unique_lock<Mutex> lock(mutex_);
   std::unordered_set<const Traceable*> ret;
-  ret.reserve(objects_.size() + 1);
-  ret.insert(JsManagerImpl::InstanceOrNull());
+  ret.reserve(objects_.size());
   for (auto& pair : objects_) {
     if (pair.second != 0 || IsJsAlive(pair.first))
       ret.insert(pair.first);
@@ -129,8 +127,7 @@ uint32_t ObjectTracker::GetRefCount(Traceable* object) const {
 std::vector<const Traceable*> ObjectTracker::GetAllObjects() const {
   std::unique_lock<Mutex> lock(mutex_);
   std::vector<const Traceable*> ret;
-  ret.reserve(objects_.size() + 1);
-  ret.push_back(JsManagerImpl::InstanceOrNull());
+  ret.reserve(objects_.size());
   for (auto& pair : objects_)
     ret.push_back(pair.first);
   return ret;

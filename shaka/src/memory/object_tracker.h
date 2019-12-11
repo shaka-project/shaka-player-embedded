@@ -47,6 +47,9 @@ class Traceable;
  */
 class ObjectTracker final : public PseudoSingleton<ObjectTracker> {
  public:
+  ObjectTracker();
+  ~ObjectTracker();
+
   HeapTracer* heap_tracer() {
     return tracer_.get();
   }
@@ -76,12 +79,7 @@ class ObjectTracker final : public PseudoSingleton<ObjectTracker> {
   void Dispose();
 
  private:
-  ObjectTracker();
-  ~ObjectTracker();
-
-  friend JsManagerImpl;
   friend RefPtrTest;
-  friend class eme::ClearKeyImplementationTest;
   friend class HeapTracerTest;
   friend class ObjectTrackerIntegration;
   friend class ObjectTrackerTest;

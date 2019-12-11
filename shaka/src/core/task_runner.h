@@ -30,6 +30,7 @@
 #include "src/debug/thread.h"
 #include "src/debug/thread_event.h"
 #include "src/memory/heap_tracer.h"
+#include "src/memory/object_tracker.h"
 #include "src/util/clock.h"
 #include "src/util/utils.h"
 
@@ -92,7 +93,9 @@ class PendingTask : public PendingTaskBase {
               int id, bool loop)
       : PendingTaskBase(clock, priority, delay_ms, id, loop),
         callback(std::forward<Func>(callback)),
-        event(new ThreadEvent<Ret>(name)) {}
+        event(new ThreadEvent<Ret>(name)) {
+    memory::ObjectTracker::Instance()->RegisterObject(this);
+  }
 
   void Call() override {
     // If this were C++17, we could use if-constexpr:
@@ -203,17 +206,14 @@ impl::MemberCallbackTaskImpl<That, Member> MemberCallbackTask(That* that,
  * Schedules and manages tasks to be run on a worker thread.  This manages a
  * background thread to run the tasks.  It is safe to call all these methods
  * from any thread.
- *
- * This also tracks object lifetimes to make sure BackingObjects are not freed
- * after a callback has been scheduled.
  */
-class TaskRunner : public memory::Traceable {
+class TaskRunner {
  public:
   using RunLoop = std::function<void()>;
 
   TaskRunner(std::function<void(RunLoop)> wrapper, const util::Clock* clock,
              bool is_worker);
-  ~TaskRunner() override;
+  ~TaskRunner();
 
   /** @return Whether the background thread is running. */
   bool is_running() const {
@@ -235,8 +235,6 @@ class TaskRunner : public memory::Traceable {
 
   /** Blocks the calling thread until the worker has no more work to do. */
   void WaitUntilFinished();
-
-  void Trace(memory::HeapTracer* tracer) const override;
 
 
   /**
@@ -344,7 +342,7 @@ class TaskRunner : public memory::Traceable {
 
 
   // TODO: Consider a different data structure.
-  std::list<std::unique_ptr<impl::PendingTaskBase>> tasks_;
+  std::list<RefPtr<impl::PendingTaskBase>> tasks_;
 
   mutable Mutex mutex_;
   const util::Clock* clock_;

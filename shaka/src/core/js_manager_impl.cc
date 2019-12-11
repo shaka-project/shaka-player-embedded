@@ -32,10 +32,6 @@ JsManagerImpl::~JsManagerImpl() {
   Stop();
 }
 
-void JsManagerImpl::Trace(memory::HeapTracer* tracer) const {
-  tracer->Trace(&event_loop_);
-}
-
 std::string JsManagerImpl::GetPathForStaticFile(const std::string& file) const {
   return util::FileSystem::GetPathForStaticFile(
       startup_options_.static_data_dir,

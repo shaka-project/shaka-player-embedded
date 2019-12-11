@@ -18,9 +18,7 @@
 #include <gtest/gtest.h>
 
 #include "src/mapping/byte_buffer.h"
-#include "src/memory/object_tracker.h"
 #include "src/public/eme_promise_impl.h"
-#include "src/test/v8_test.h"
 
 namespace shaka {
 namespace eme {
@@ -63,7 +61,7 @@ using ::testing::StrictMock;
 
 // There are more tests in JavaScript: //shaka/test/tests/eme.js.
 
-class ClearKeyImplementationTest : public V8Test {
+class ClearKeyImplementationTest : public testing::Test {
  protected:
   class MockEmePromiseImpl : public EmePromise::Impl {
    public:
@@ -88,12 +86,6 @@ class ClearKeyImplementationTest : public V8Test {
     std::shared_ptr<EmePromise::Impl> impl(mock, noop);
     return EmePromise(impl);
   }
-
-  void TearDown() override {
-    tracker_.Dispose();
-  }
-
-  memory::ObjectTracker tracker_;
 };
 
 TEST_F(ClearKeyImplementationTest, Decrypt) {

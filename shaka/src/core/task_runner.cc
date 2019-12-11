@@ -91,14 +91,6 @@ void TaskRunner::WaitUntilFinished() {
   }
 }
 
-void TaskRunner::Trace(memory::HeapTracer* tracer) const {
-  std::unique_lock<Mutex> lock(mutex_);
-  for (auto& task : tasks_) {
-    DCHECK(task);
-    task->Trace(tracer);
-  }
-}
-
 void TaskRunner::CancelTimer(int id) {
   std::unique_lock<Mutex> lock(mutex_);
   for (auto& task : tasks_) {
