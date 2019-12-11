@@ -46,6 +46,9 @@ class JsManagerImpl : public PseudoSingleton<JsManagerImpl> {
   NetworkThread* NetworkThread() {
     return &network_thread_;
   }
+  memory::HeapTracer* HeapTracer() {
+    return &heap_tracer_;
+  }
 
   std::string GetPathForStaticFile(const std::string& file) const;
   std::string GetPathForDynamicFile(const std::string& file) const;
@@ -64,10 +67,12 @@ class JsManagerImpl : public PseudoSingleton<JsManagerImpl> {
  private:
   void EventThreadWrapper(TaskRunner::RunLoop run_loop);
 
-  memory::ObjectTracker tracker_;
 #ifdef USING_V8
-  memory::V8HeapTracer v8_heap_tracer_{tracker_.heap_tracer(), &tracker_};
+  memory::V8HeapTracer heap_tracer_;
+#else
+  memory::HeapTracer heap_tracer_;
 #endif
+  memory::ObjectTracker tracker_;
   JsManager::StartupOptions startup_options_;
 
   TaskRunner event_loop_;

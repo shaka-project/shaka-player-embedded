@@ -59,6 +59,7 @@ class TestObjectWithBackingChild : public TestObject {
 
 class HeapTracerTest : public testing::Test {
  public:
+  HeapTracerTest() : tracker(&heap_tracer) {}
   ~HeapTracerTest() override {
     tracker.UnregisterAllObjects();
   }
@@ -66,27 +67,27 @@ class HeapTracerTest : public testing::Test {
  protected:
   template <typename T, typename... Args>
   void ExpectAlive(T arg, Args... args) {
-    EXPECT_EQ(1u, tracker.heap_tracer()->alive().count(arg));
+    EXPECT_EQ(1u, heap_tracer.alive().count(arg));
     ExpectAlive(args...);
   }
   void ExpectAlive() {}
 
   template <typename T, typename... Args>
   void ExpectDead(T arg, Args... args) {
-    EXPECT_EQ(0u, tracker.heap_tracer()->alive().count(arg));
+    EXPECT_EQ(0u, heap_tracer.alive().count(arg));
     ExpectDead(args...);
   }
   void ExpectDead() {}
 
   void RunTracer(const std::unordered_set<const Traceable*>& ref_alive,
                  Traceable* root) {
-    HeapTracer* tracer = tracker.heap_tracer();
-    tracer->BeginPass();
-    tracer->Trace(root);
-    tracer->TraceCommon(ref_alive);
+    heap_tracer.BeginPass();
+    heap_tracer.Trace(root);
+    heap_tracer.TraceAll(ref_alive);
   }
 
   ObjectTracker::UnsetForTesting unset_;
+  HeapTracer heap_tracer;
   ObjectTracker tracker;
 };
 

@@ -23,37 +23,37 @@
 namespace shaka {
 namespace memory {
 
-V8HeapTracer::V8HeapTracer(HeapTracer* heap_tracer,
-                           ObjectTracker* object_tracker)
-    : heap_tracer_(heap_tracer), object_tracker_(object_tracker) {}
+V8HeapTracer::V8HeapTracer() {}
 
 V8HeapTracer::~V8HeapTracer() {}
 
 void V8HeapTracer::AbortTracing() {
   VLOG(2) << "GC run aborted";
-  heap_tracer_->ResetState();
+  ResetState();
   fields_.clear();
 }
 
 void V8HeapTracer::TracePrologue() {
   VLOG(2) << "GC run started";
-  DCHECK(fields_.empty());
-  heap_tracer_->BeginPass();
+  fields_ = ObjectTracker::Instance()->GetAliveObjects();
+  BeginPass();
 }
 
 void V8HeapTracer::TraceEpilogue() {
   VLOG(2) << "GC run ended";
   CHECK(fields_.empty());
-  object_tracker_->FreeDeadObjects(heap_tracer_->alive());
-  heap_tracer_->ResetState();
+  ObjectTracker::Instance()->FreeDeadObjects(alive());
+  ResetState();
 }
 
 void V8HeapTracer::EnterFinalPause() {}
 
 void V8HeapTracer::RegisterV8References(
-    const InternalFieldList& internal_fields) {
+    const std::vector<std::pair<void*, void*>>& internal_fields) {
   VLOG(2) << "GC add " << internal_fields.size() << " objects";
-  fields_.insert(fields_.end(), internal_fields.begin(), internal_fields.end());
+  fields_.reserve(fields_.size() + internal_fields.size());
+  for (const auto& pair : internal_fields)
+    fields_.insert(reinterpret_cast<Traceable*>(pair.first));
 }
 
 bool V8HeapTracer::AdvanceTracing(double /* deadline_ms */,
@@ -61,12 +61,9 @@ bool V8HeapTracer::AdvanceTracing(double /* deadline_ms */,
   VLOG(2) << "GC run step";
   util::Clock clock;
   const uint64_t start = clock.GetMonotonicTime();
-  for (auto& pair : fields_) {
-    heap_tracer_->Trace(reinterpret_cast<BackingObject*>(pair.first));
-  }
-  heap_tracer_->TraceCommon(object_tracker_->GetAliveObjects());
+  TraceAll(fields_);
 
-  VLOG(2) << "Tracing " << heap_tracer_->alive().size() << " objects took "
+  VLOG(2) << "Tracing " << fields_.size() << " objects took "
           << ((clock.GetMonotonicTime() - start) / 1000.0) << " seconds";
   fields_.clear();
   return false;

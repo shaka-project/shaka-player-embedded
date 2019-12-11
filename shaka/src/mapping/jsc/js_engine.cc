@@ -32,9 +32,9 @@ JsEngine::JsEngine()
   auto task = []() {
     VLOG(1) << "Begin GC run";
     auto* object_tracker = memory::ObjectTracker::Instance();
-    auto* heap_tracer = object_tracker->heap_tracer();
+    auto* heap_tracer = JsManagerImpl::Instance()->HeapTracer();
     heap_tracer->BeginPass();
-    heap_tracer->TraceCommon(object_tracker->GetAliveObjects());
+    heap_tracer->TraceAll(object_tracker->GetAliveObjects());
     object_tracker->FreeDeadObjects(heap_tracer->alive());
 
     // This will signal to JSC that we have just destroyed a lot of objects.

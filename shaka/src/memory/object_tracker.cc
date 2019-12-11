@@ -94,8 +94,8 @@ void ObjectTracker::FreeDeadObjects(
   DestroyObjects(to_delete, &lock);
 }
 
-ObjectTracker::ObjectTracker()
-    : tracer_(new HeapTracer()), mutex_("ObjectTracker") {}
+ObjectTracker::ObjectTracker(HeapTracer* tracer)
+    : mutex_("ObjectTracker"), tracer_(tracer) {}
 
 ObjectTracker::~ObjectTracker() {
   CHECK(objects_.empty());

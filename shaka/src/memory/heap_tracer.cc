@@ -49,7 +49,7 @@ void HeapTracer::BeginPass() {
   ResetState();
 }
 
-void HeapTracer::TraceCommon(
+void HeapTracer::TraceAll(
     const std::unordered_set<const Traceable*>& ref_alive) {
   {
     std::unique_lock<Mutex> lock(mutex_);

@@ -176,8 +176,8 @@ class ObjectTrackerIntegration
         v8::Isolate::kFullGarbageCollection);
   }
 
-  ObjectTracker tracker_;
-  V8HeapTracer v8_heap_tracer_{tracker_.heap_tracer(), &tracker_};
+  V8HeapTracer v8_heap_tracer_;
+  ObjectTracker tracker_{&v8_heap_tracer_};
   std::unique_ptr<TestObjectFactory> factory_;
 };
 

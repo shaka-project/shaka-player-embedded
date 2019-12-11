@@ -24,9 +24,11 @@
 
 #include "src/debug/mutex.h"
 #include "src/util/pseudo_singleton.h"
+#include "src/util/macros.h"
 #include "src/util/templates.h"
 
 namespace shaka {
+
 class JsManagerImpl;
 class RefPtrTest;
 
@@ -35,6 +37,7 @@ class ClearKeyImplementationTest;
 }  // namespace eme
 
 namespace memory {
+
 class HeapTracer;
 class Traceable;
 
@@ -47,12 +50,10 @@ class Traceable;
  */
 class ObjectTracker final : public PseudoSingleton<ObjectTracker> {
  public:
-  ObjectTracker();
+  explicit ObjectTracker(HeapTracer* tracer);
   ~ObjectTracker();
 
-  HeapTracer* heap_tracer() {
-    return tracer_.get();
-  }
+  NON_COPYABLE_OR_MOVABLE_TYPE(ObjectTracker);
 
   /** Registers the given object to be tracked. */
   void RegisterObject(Traceable* object);
@@ -96,17 +97,14 @@ class ObjectTracker final : public PseudoSingleton<ObjectTracker> {
   /** @return The number of references to the given object. */
   uint32_t GetRefCount(Traceable* object) const;
 
-  ObjectTracker(const ObjectTracker&) = delete;
-  ObjectTracker& operator=(const ObjectTracker&) = delete;
-
   /** Used in tests to get all managed objects. */
   std::vector<const Traceable*> GetAllObjects() const;
 
   void DestroyObjects(const std::unordered_set<Traceable*>& to_delete,
                       std::unique_lock<Mutex>* lock);
 
-  std::unique_ptr<HeapTracer> tracer_;
   mutable Mutex mutex_;
+  HeapTracer* tracer_;
   // A map of object pointer to ref count.
   std::unordered_map<Traceable*, uint32_t> objects_;
   std::unordered_map<Traceable*, uint64_t> last_alive_time_;

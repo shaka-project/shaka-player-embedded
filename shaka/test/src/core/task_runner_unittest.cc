@@ -250,7 +250,7 @@ TEST(TaskRunnerTest, TracesPendingEvents) {
   NiceMock<MockClock> clock;
   memory::HeapTracer tracer;
   memory::ObjectTracker::UnsetForTesting unset;
-  memory::ObjectTracker object_tracker;
+  memory::ObjectTracker object_tracker(&tracer);
 
   ON_CALL(clock, GetMonotonicTime()).WillByDefault(Return(0));
   {
@@ -265,9 +265,9 @@ TEST(TaskRunnerTest, TracesPendingEvents) {
   TaskRunner runner([](TaskRunner::RunLoop loop) { loop(); }, &clock, true);
   runner.AddTimer(5, MockTask(&watcher));
   util::Clock::Instance.SleepSeconds(0.001);
-  tracer.TraceCommon(object_tracker.GetAliveObjects());
+  tracer.TraceAll(object_tracker.GetAliveObjects());
   util::Clock::Instance.SleepSeconds(0.001);
-  tracer.TraceCommon(object_tracker.GetAliveObjects());
+  tracer.TraceAll(object_tracker.GetAliveObjects());
   util::Clock::Instance.SleepSeconds(0.001);
   runner.Stop();
 

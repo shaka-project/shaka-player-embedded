@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_MEMORY_V8_HEAP_TRACER_H_
 #define SHAKA_EMBEDDED_MEMORY_V8_HEAP_TRACER_H_
 
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -22,7 +23,6 @@
 
 namespace shaka {
 namespace memory {
-class ObjectTracker;
 
 /**
  * This wraps the normal HeapTracer in an interface that can be used by V8
@@ -58,11 +58,9 @@ class ObjectTracker;
  * After V8 has traced every object TraceEpilogue is called.  We use this to
  * free any object that is not marked as alive.
  */
-class V8HeapTracer : public v8::EmbedderHeapTracer {
-  using InternalFieldList = std::vector<std::pair<void*, void*>>;
-
+class V8HeapTracer : public v8::EmbedderHeapTracer, public HeapTracer {
  public:
-  V8HeapTracer(HeapTracer* heap_tracer, ObjectTracker* object_tracker);
+  V8HeapTracer();
   ~V8HeapTracer() override;
 
 
@@ -86,7 +84,8 @@ class V8HeapTracer : public v8::EmbedderHeapTracer {
    * internal field values of the wrapper object.  We should store the values
    * and process them only in AdvanceTracing.
    */
-  void RegisterV8References(const InternalFieldList& internal_fields) override;
+  void RegisterV8References(
+      const std::vector<std::pair<void*, void*>>& internal_fields) override;
 
   /**
    * Called by V8 to advance the GC run.  We should only take |deadline_ms|
@@ -96,9 +95,7 @@ class V8HeapTracer : public v8::EmbedderHeapTracer {
   bool AdvanceTracing(double deadline_ms, AdvanceTracingActions) override;
 
  private:
-  InternalFieldList fields_;
-  HeapTracer* heap_tracer_;
-  ObjectTracker* object_tracker_;
+  std::unordered_set<const Traceable*> fields_;
 };
 
 }  // namespace memory

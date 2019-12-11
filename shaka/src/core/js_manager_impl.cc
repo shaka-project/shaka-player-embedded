@@ -24,7 +24,8 @@ namespace shaka {
 using std::placeholders::_1;
 
 JsManagerImpl::JsManagerImpl(const JsManager::StartupOptions& options)
-    : startup_options_(options),
+    : tracker_(&heap_tracer_),
+      startup_options_(options),
       event_loop_(std::bind(&JsManagerImpl::EventThreadWrapper, this, _1),
                   &util::Clock::Instance, /* is_worker */ false) {}
 
@@ -78,7 +79,7 @@ void JsManagerImpl::EventThreadWrapper(TaskRunner::RunLoop run_loop) {
   {
     JsEngine::SetupContext setup;
 #ifdef USING_V8
-    engine.isolate()->SetEmbedderHeapTracer(&v8_heap_tracer_);
+    engine.isolate()->SetEmbedderHeapTracer(&heap_tracer_);
 #endif
 
     Environment env;

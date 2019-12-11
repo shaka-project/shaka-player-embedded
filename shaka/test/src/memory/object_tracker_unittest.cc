@@ -20,6 +20,7 @@
 
 #include "src/core/ref_ptr.h"
 #include "src/mapping/backing_object.h"
+#include "src/memory/heap_tracer.h"
 #include "src/util/utils.h"
 
 namespace shaka {
@@ -56,6 +57,8 @@ class TestObject : public BackingObject {
 
 class ObjectTrackerTest : public testing::Test {
  protected:
+  ObjectTrackerTest() : tracker(&heap_tracer) {}
+
   void ExpectNonZeroRefs(const Traceable* obj) {
     EXPECT_TRUE(util::contains(tracker.GetAliveObjects(), obj));
   }
@@ -68,6 +71,7 @@ class ObjectTrackerTest : public testing::Test {
   }
 
   ObjectTracker::UnsetForTesting unset_;
+  HeapTracer heap_tracer;
   ObjectTracker tracker;
 };
 

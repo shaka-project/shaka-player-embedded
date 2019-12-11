@@ -67,7 +67,8 @@ class RefPtrTest : public testing::Test {
   }
 
   memory::ObjectTracker::UnsetForTesting unset_;
-  memory::ObjectTracker tracker_;
+  memory::HeapTracer heap_tracer_;
+  memory::ObjectTracker tracker_{&heap_tracer_};
   Base base1_;
   Base base2_;
   Derived derived_;
