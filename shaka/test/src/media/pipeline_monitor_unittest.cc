@@ -71,7 +71,7 @@ TEST(PipelineMonitorTest, ChangesReadyState) {
   NiceMock<MockClock> clock;
   NiceMock<MockPipelineManager> pipeline(&clock);
   MockFunction<BufferedRanges()> get_buffered;
-  MockFunction<void(MediaReadyState)> ready_state_changed;
+  MockFunction<void(VideoReadyState)> ready_state_changed;
 
   EXPECT_CALL(clock, GetMonotonicTime()).WillRepeatedly(Return(0));
   EXPECT_CALL(pipeline, GetDuration()).WillRepeatedly(Return(NAN));
@@ -85,15 +85,20 @@ TEST(PipelineMonitorTest, ChangesReadyState) {
   EXPECT_CALL(get_buffered, Call()).WillRepeatedly(Return(BufferedRanges()))
     InSequence seq;
     SET_BUFFERED_RANGE(0, 10);
-    EXPECT_CALL(ready_state_changed, Call(HAVE_FUTURE_DATA)).Times(1);
+    EXPECT_CALL(ready_state_changed, Call(VideoReadyState::HaveFutureData))
+        .Times(1);
     SET_BUFFERED_RANGE(0, 0);
-    EXPECT_CALL(ready_state_changed, Call(HAVE_CURRENT_DATA)).Times(1);
+    EXPECT_CALL(ready_state_changed, Call(VideoReadyState::HaveCurrentData))
+        .Times(1);
     SET_BUFFERED_RANGE(0, 10);
-    EXPECT_CALL(ready_state_changed, Call(HAVE_FUTURE_DATA)).Times(1);
+    EXPECT_CALL(ready_state_changed, Call(VideoReadyState::HaveFutureData))
+        .Times(1);
     SET_NOTHING_BUFFERED();
-    EXPECT_CALL(ready_state_changed, Call(HAVE_METADATA)).Times(1);
+    EXPECT_CALL(ready_state_changed, Call(VideoReadyState::HaveMetadata))
+        .Times(1);
     SET_BUFFERED_RANGE(0, 0);
-    EXPECT_CALL(ready_state_changed, Call(HAVE_CURRENT_DATA)).Times(1);
+    EXPECT_CALL(ready_state_changed, Call(VideoReadyState::HaveCurrentData))
+        .Times(1);
 
     SET_BUFFERED_RANGE(0, 0);
 #undef SET_BUFFERED_RANGE
@@ -110,7 +115,7 @@ TEST(PipelineMonitorTest, ChangesPiplineStatuses) {
   NiceMock<MockClock> clock;
   StrictMock<MockPipelineManager> pipeline(&clock);
   MockFunction<BufferedRanges()> get_buffered;
-  NiceMock<MockFunction<void(MediaReadyState)>> ready_state_changed;
+  NiceMock<MockFunction<void(VideoReadyState)>> ready_state_changed;
 
   EXPECT_CALL(pipeline, GetPipelineStatus())
       .WillRepeatedly(Return(PipelineStatus::Paused));

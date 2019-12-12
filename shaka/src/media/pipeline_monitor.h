@@ -18,6 +18,7 @@
 #include <atomic>
 #include <functional>
 
+#include "shaka/media/media_player.h"
 #include "src/debug/thread.h"
 #include "src/media/pipeline_manager.h"
 #include "src/media/types.h"
@@ -35,7 +36,7 @@ class PipelineMonitor {
  public:
   PipelineMonitor(std::function<BufferedRanges()> get_buffered,
                   std::function<BufferedRanges()> get_decoded,
-                  std::function<void(MediaReadyState)> ready_state_changed,
+                  std::function<void(VideoReadyState)> ready_state_changed,
                   const util::Clock* clock, PipelineManager* pipeline);
   ~PipelineMonitor();
 
@@ -45,15 +46,15 @@ class PipelineMonitor {
  private:
   void ThreadMain();
 
-  void ChangeReadyState(MediaReadyState new_state);
+  void ChangeReadyState(VideoReadyState new_state);
 
   const std::function<BufferedRanges()> get_buffered_;
   const std::function<BufferedRanges()> get_decoded_;
-  const std::function<void(MediaReadyState)> ready_state_changed_;
+  const std::function<void(VideoReadyState)> ready_state_changed_;
   const util::Clock* const clock_;
   PipelineManager* const pipeline_;
   std::atomic<bool> shutdown_;
-  MediaReadyState ready_state_;
+  VideoReadyState ready_state_;
 
   Thread thread_;
 };

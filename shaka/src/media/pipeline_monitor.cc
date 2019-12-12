@@ -48,7 +48,7 @@ bool CanPlay(const BufferedRanges& ranges, double time, double duration) {
 PipelineMonitor::PipelineMonitor(
     std::function<BufferedRanges()> get_buffered,
     std::function<BufferedRanges()> get_decoded,
-    std::function<void(MediaReadyState)> ready_state_changed,
+    std::function<void(VideoReadyState)> ready_state_changed,
     const util::Clock* clock, PipelineManager* pipeline)
     : get_buffered_(std::move(get_buffered)),
       get_decoded_(std::move(get_decoded)),
@@ -56,7 +56,7 @@ PipelineMonitor::PipelineMonitor(
       clock_(clock),
       pipeline_(pipeline),
       shutdown_(false),
-      ready_state_(HAVE_NOTHING),
+      ready_state_(VideoReadyState::HaveNothing),
       thread_("PipelineMonitor",
               std::bind(&PipelineMonitor::ThreadMain, this)) {}
 
@@ -88,20 +88,20 @@ void PipelineMonitor::ThreadMain() {
     }
 
     if (pipeline_->GetPipelineStatus() == PipelineStatus::Initializing) {
-      ChangeReadyState(HAVE_NOTHING);
+      ChangeReadyState(VideoReadyState::HaveNothing);
     } else if (can_play) {
-      ChangeReadyState(HAVE_FUTURE_DATA);
+      ChangeReadyState(VideoReadyState::HaveFutureData);
     } else if (IsBufferedUntil(buffered, time, time, duration)) {
-      ChangeReadyState(HAVE_CURRENT_DATA);
+      ChangeReadyState(VideoReadyState::HaveCurrentData);
     } else {
-      ChangeReadyState(HAVE_METADATA);
+      ChangeReadyState(VideoReadyState::HaveMetadata);
     }
 
     clock_->SleepSeconds(0.01);
   }
 }
 
-void PipelineMonitor::ChangeReadyState(MediaReadyState new_state) {
+void PipelineMonitor::ChangeReadyState(VideoReadyState new_state) {
   if (ready_state_ != new_state) {
     ready_state_ = new_state;
     ready_state_changed_(new_state);

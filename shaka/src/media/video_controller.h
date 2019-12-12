@@ -69,7 +69,7 @@ class VideoController : Demuxer::Client {
                   std::function<void()> on_waiting_for_key,
                   std::function<void(eme::MediaKeyInitDataType, ByteBuffer)>
                       on_encrypted_init_data,
-                  std::function<void(MediaReadyState)> on_ready_state_changed,
+                  std::function<void(VideoReadyState)> on_ready_state_changed,
                   std::function<void(PipelineStatus)> on_pipeline_changed);
   ~VideoController() override;
 

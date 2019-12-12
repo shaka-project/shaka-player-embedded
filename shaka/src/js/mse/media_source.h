@@ -18,6 +18,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "shaka/media/media_player.h"
 #include "shaka/optional.h"
 #include "src/core/member.h"
 #include "src/core/ref_ptr.h"
@@ -83,7 +84,7 @@ class MediaSource : public events::EventTarget {
 
  private:
   /** Called when the media's ready-state changes. */
-  void OnReadyStateChanged(media::MediaReadyState ready_state);
+  void OnReadyStateChanged(media::VideoReadyState ready_state);
   /** Called when the media pipeline status changes. */
   void OnPipelineStatusChanged(media::PipelineStatus status);
   /** Called when a media error occurs. */

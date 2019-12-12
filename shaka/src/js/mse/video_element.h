@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "shaka/media/media_player.h"
 #include "shaka/media/renderer.h"
 #include "shaka/optional.h"
 #include "shaka/video.h"
@@ -57,7 +58,7 @@ class HTMLVideoElement : public dom::Element {
 
   void Trace(memory::HeapTracer* tracer) const override;
 
-  void OnReadyStateChanged(media::MediaReadyState new_ready_state);
+  void OnReadyStateChanged(media::VideoReadyState new_ready_state);
   void OnPipelineStatusChanged(media::PipelineStatus status);
   void OnMediaError(media::SourceType source, media::Status status);
   void CheckForCueChange(double newTime, double oldTime);
@@ -74,7 +75,7 @@ class HTMLVideoElement : public dom::Element {
   void Load();
   CanPlayTypeEnum CanPlayType(const std::string& type);
 
-  media::MediaReadyState ready_state;
+  media::VideoReadyState ready_state;
   bool autoplay;
   bool loop;
   bool default_muted;
@@ -132,7 +133,7 @@ class HTMLVideoElementFactory
 }  // namespace js
 }  // namespace shaka
 
-CONVERT_ENUM_AS_NUMBER(shaka::media, MediaReadyState);
+CONVERT_ENUM_AS_NUMBER(shaka::media, VideoReadyState);
 
 DEFINE_ENUM_MAPPING(shaka::js::mse, CanPlayTypeEnum) {
   AddMapping(Enum::EMPTY, "");

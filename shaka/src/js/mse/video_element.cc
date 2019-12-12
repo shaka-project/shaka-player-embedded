@@ -30,7 +30,7 @@ HTMLVideoElement::HTMLVideoElement(RefPtr<dom::Document> document,
                                    media::VideoRenderer* video_renderer,
                                    media::AudioRenderer* audio_renderer)
     : dom::Element(document, "video", nullopt, nullopt),
-      ready_state(media::HAVE_NOTHING),
+      ready_state(media::VideoReadyState::HaveNothing),
       autoplay(false),
       loop(false),
       default_muted(false),
@@ -75,27 +75,29 @@ void HTMLVideoElement::ThreadMain() {
 }
 
 void HTMLVideoElement::OnReadyStateChanged(
-    media::MediaReadyState new_ready_state) {
-  DCHECK(media_source_ ? new_ready_state != media::HAVE_NOTHING
-                       : new_ready_state == media::HAVE_NOTHING);
+    media::VideoReadyState new_ready_state) {
+  DCHECK(new_ready_state != media::VideoReadyState::NotAttached);
+  DCHECK(media_source_
+             ? new_ready_state != media::VideoReadyState::HaveNothing
+             : new_ready_state == media::VideoReadyState::HaveNothing);
   if (ready_state == new_ready_state)
     return;
 
-  if (ready_state < media::HAVE_METADATA &&
-      new_ready_state >= media::HAVE_METADATA) {
+  if (ready_state < media::VideoReadyState::HaveMetadata &&
+      new_ready_state >= media::VideoReadyState::HaveMetadata) {
     ScheduleEvent<events::Event>(EventType::LoadedMetaData);
   }
-  if (ready_state < media::HAVE_CURRENT_DATA &&
-      new_ready_state >= media::HAVE_CURRENT_DATA) {
+  if (ready_state < media::VideoReadyState::HaveCurrentData &&
+      new_ready_state >= media::VideoReadyState::HaveCurrentData) {
     ScheduleEvent<events::Event>(EventType::LoadedData);
   }
-  if (ready_state < media::HAVE_ENOUGH_DATA &&
-      new_ready_state >= media::HAVE_ENOUGH_DATA) {
+  if (ready_state < media::VideoReadyState::HaveEnoughData &&
+      new_ready_state >= media::VideoReadyState::HaveEnoughData) {
     ScheduleEvent<events::Event>(EventType::CanPlay);
   }
-  if (ready_state >= media::HAVE_FUTURE_DATA &&
-      new_ready_state < media::HAVE_FUTURE_DATA &&
-      new_ready_state != media::HAVE_NOTHING) {
+  if (ready_state >= media::VideoReadyState::HaveFutureData &&
+      new_ready_state < media::VideoReadyState::HaveFutureData &&
+      new_ready_state != media::VideoReadyState::HaveNothing) {
     ScheduleEvent<events::Event>(EventType::Waiting);
   }
 
@@ -201,7 +203,7 @@ void HTMLVideoElement::Load() {
   if (media_source_) {
     media_source_->CloseMediaSource();
     media_source_.reset();
-    OnReadyStateChanged(media::HAVE_NOTHING);
+    OnReadyStateChanged(media::VideoReadyState::HaveNothing);
     OnPipelineStatusChanged(media::PipelineStatus::Initializing);
     will_play_ = false;
   }
@@ -366,11 +368,11 @@ RefPtr<TextTrack> HTMLVideoElement::AddTextTrack(
 
 
 HTMLVideoElementFactory::HTMLVideoElementFactory() {
-  AddConstant("HAVE_NOTHING", media::HAVE_NOTHING);
-  AddConstant("HAVE_METADATA", media::HAVE_METADATA);
-  AddConstant("HAVE_CURRENT_DATA", media::HAVE_CURRENT_DATA);
-  AddConstant("HAVE_FUTURE_DATA", media::HAVE_FUTURE_DATA);
-  AddConstant("HAVE_ENOUGH_DATA", media::HAVE_ENOUGH_DATA);
+  AddConstant("HAVE_NOTHING", media::VideoReadyState::HaveNothing);
+  AddConstant("HAVE_METADATA", media::VideoReadyState::HaveMetadata);
+  AddConstant("HAVE_CURRENT_DATA", media::VideoReadyState::HaveCurrentData);
+  AddConstant("HAVE_FUTURE_DATA", media::VideoReadyState::HaveFutureData);
+  AddConstant("HAVE_ENOUGH_DATA", media::VideoReadyState::HaveEnoughData);
 
   AddListenerField(EventType::Encrypted, &HTMLVideoElement::on_encrypted);
   AddListenerField(EventType::WaitingForKey,

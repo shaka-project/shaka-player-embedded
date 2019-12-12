@@ -202,9 +202,12 @@ void MediaSource::CloseMediaSource() {
   ScheduleEvent<events::Event>(EventType::SourceClose);
 }
 
-void MediaSource::OnReadyStateChanged(media::MediaReadyState ready_state) {
-  if (video_element_)
+void MediaSource::OnReadyStateChanged(media::VideoReadyState ready_state) {
+  if (video_element_) {
+    if (ready_state == media::VideoReadyState::NotAttached)
+      ready_state = media::VideoReadyState::HaveNothing;
     video_element_->OnReadyStateChanged(ready_state);
+  }
 }
 
 void MediaSource::OnPipelineStatusChanged(media::PipelineStatus status) {
