@@ -30,7 +30,10 @@ namespace ffmpeg {
 
 namespace {
 
-#define LogError(code) LOG(ERROR) << "Error from FFmpeg: " << av_err2str(code)
+#define LogError(code, extra_info) \
+  LOG(ERROR) << (*(extra_info) =   \
+                     std::string("Error from FFmpeg: ") + av_err2str(code))
+#define ALLOC_ERROR_STR "Error allocating memory"
 
 const AVCodec* FindCodec(const std::string& codec_name) {
 #ifdef ENABLE_HARDWARE_DECODE
@@ -124,7 +127,8 @@ void FFmpegDecoder::ResetDecoder() {
 
 MediaStatus FFmpegDecoder::Decode(
     std::shared_ptr<EncodedFrame> input, const eme::Implementation* eme,
-    std::vector<std::shared_ptr<DecodedFrame>>* frames) {
+    std::vector<std::shared_ptr<DecodedFrame>>* frames,
+    std::string* extra_info) {
   std::unique_lock<Mutex> lock(mutex_);
   if (!input && !decoder_ctx_) {
     // If there isn't a decoder, there is nothing to flush.
@@ -138,14 +142,14 @@ MediaStatus FFmpegDecoder::Decode(
       if (decoder_ctx_) {
         const int send_code = avcodec_send_packet(decoder_ctx_, nullptr);
         if (send_code != 0) {
-          LogError(send_code);
+          LogError(send_code, extra_info);
           return MediaStatus::FatalError;
         }
-        if (!ReadFromDecoder(decoder_stream_info_, nullptr, frames))
+        if (!ReadFromDecoder(decoder_stream_info_, nullptr, frames, extra_info))
           return MediaStatus::FatalError;
       }
 
-      if (!InitializeDecoder(input->stream_info, true))
+      if (!InitializeDecoder(input->stream_info, true, extra_info))
         return MediaStatus::FatalError;
     }
 
@@ -158,21 +162,23 @@ MediaStatus FFmpegDecoder::Decode(
   util::Finally free_decrypted_packet(std::bind(&av_packet_unref, &packet));
   if (input && input->is_encrypted) {
     if (!eme) {
-      LOG(WARNING) << "No CDM given for encrypted frame";
+      LOG(WARNING) << (*extra_info = "No CDM given for encrypted frame");
       return MediaStatus::KeyNotFound;
     }
 
     int code = av_new_packet(&packet, input->data_size);
     if (code < 0) {
-      LogError(code);
+      LogError(code, extra_info);
       return MediaStatus::FatalError;
     }
 
     MediaStatus decrypt_status = input->Decrypt(eme, packet.data);
     if (decrypt_status == MediaStatus::KeyNotFound)
       return MediaStatus::KeyNotFound;
-    if (decrypt_status != MediaStatus::Success)
+    if (decrypt_status != MediaStatus::Success) {
+      *extra_info = "CDM returned error while decrypting frame";
       return MediaStatus::FatalError;
+    }
   } else if (input) {
     const double timescale = input->stream_info->time_scale;
     packet.pts = static_cast<int64_t>(input->pts / timescale);
@@ -193,12 +199,12 @@ MediaStatus FFmpegDecoder::Decode(
       avcodec_free_context(&decoder_ctx_);
       break;
     } else if (send_code != AVERROR(EAGAIN)) {
-      LogError(send_code);
+      LogError(send_code, extra_info);
       return MediaStatus::FatalError;
     }
 
     auto stream_info = input ? input->stream_info : decoder_stream_info_;
-    if (!ReadFromDecoder(stream_info, input, frames))
+    if (!ReadFromDecoder(stream_info, input, frames, extra_info))
       return MediaStatus::FatalError;
   }
 
@@ -226,7 +232,8 @@ AVPixelFormat FFmpegDecoder::GetPixelFormat(AVCodecContext* ctx,
 #endif
 
 bool FFmpegDecoder::InitializeDecoder(std::shared_ptr<const StreamInfo> info,
-                                      bool allow_hardware) {
+                                      bool allow_hardware,
+                                      std::string* extra_info) {
   const AVCodec* decoder =
       allow_hardware
           ? FindCodec(NormalizeCodec(info->codec))
@@ -241,8 +248,9 @@ bool FFmpegDecoder::InitializeDecoder(std::shared_ptr<const StreamInfo> info,
       if (!config) {
 #  ifdef FORCE_HARDWARE_DECODE
         if (!decoder->wrapper_name) {
-          LOG(DFATAL) << "No hardware-accelerators available for codec: "
-                      << info->codec;
+          *extra_info =
+              "No hardware-accelerators available for codec: " + info->codec;
+          LOG(DFATAL) << *extra_info;
           return false;
         }
 #  endif
@@ -265,13 +273,17 @@ bool FFmpegDecoder::InitializeDecoder(std::shared_ptr<const StreamInfo> info,
 
   avcodec_free_context(&decoder_ctx_);
   decoder_ctx_ = avcodec_alloc_context3(decoder);
-  if (!decoder_ctx_)
+  if (!decoder_ctx_) {
+    *extra_info = ALLOC_ERROR_STR;
     return false;
+  }
 
   if (!received_frame_) {
     received_frame_ = av_frame_alloc();
-    if (!received_frame_)
+    if (!received_frame_) {
+      *extra_info = ALLOC_ERROR_STR;
       return false;
+    }
   }
 
   decoder_ctx_->thread_count = 0;  // Default is 1; 0 means auto-detect.
@@ -283,8 +295,10 @@ bool FFmpegDecoder::InitializeDecoder(std::shared_ptr<const StreamInfo> info,
     av_freep(&decoder_ctx_->extradata);
     decoder_ctx_->extradata = reinterpret_cast<uint8_t*>(
         av_mallocz(info->extra_data.size() + AV_INPUT_BUFFER_PADDING_SIZE));
-    if (!decoder_ctx_->extradata)
+    if (!decoder_ctx_->extradata) {
+      *extra_info = ALLOC_ERROR_STR;
       return false;
+    }
     memcpy(decoder_ctx_->extradata, info->extra_data.data(),
            info->extra_data.size());
     decoder_ctx_->extradata_size = info->extra_data.size();
@@ -297,7 +311,7 @@ bool FFmpegDecoder::InitializeDecoder(std::shared_ptr<const StreamInfo> info,
     const int hw_device_code =
         av_hwdevice_ctx_create(&hw_device_ctx_, hw_type, nullptr, nullptr, 0);
     if (hw_device_code < 0) {
-      LogError(hw_device_code);
+      LogError(hw_device_code, extra_info);
       return false;
     }
     decoder_ctx_->get_format = &GetPixelFormat;
@@ -307,17 +321,19 @@ bool FFmpegDecoder::InitializeDecoder(std::shared_ptr<const StreamInfo> info,
 
   const int open_code = avcodec_open2(decoder_ctx_, decoder, nullptr);
   if (open_code < 0) {
-    if (open_code == AVERROR(ENOMEM))
+    if (open_code == AVERROR(ENOMEM)) {
+      *extra_info = ALLOC_ERROR_STR;
       return false;
+    }
 #if defined(ENABLE_HARDWARE_DECODE) && !defined(FORCE_HARDWARE_DECODE)
     if (allow_hardware) {
       LOG(WARNING) << "Failed to initialize hardware decoder, falling back "
                       "to software.";
-      return InitializeDecoder(info, false);
+      return InitializeDecoder(info, false, extra_info);
     }
 #endif
 
-    LogError(open_code);
+    LogError(open_code, extra_info);
     return false;
   }
 
@@ -328,13 +344,14 @@ bool FFmpegDecoder::InitializeDecoder(std::shared_ptr<const StreamInfo> info,
 bool FFmpegDecoder::ReadFromDecoder(
     std::shared_ptr<const StreamInfo> stream_info,
     std::shared_ptr<EncodedFrame> input,
-    std::vector<std::shared_ptr<DecodedFrame>>* decoded) {
+    std::vector<std::shared_ptr<DecodedFrame>>* decoded,
+    std::string* extra_info) {
   while (true) {
     const int code = avcodec_receive_frame(decoder_ctx_, received_frame_);
     if (code == AVERROR(EAGAIN) || code == AVERROR_EOF)
       return true;
     if (code < 0) {
-      LogError(code);
+      LogError(code, extra_info);
       return false;
     }
 
@@ -348,8 +365,10 @@ bool FFmpegDecoder::ReadFromDecoder(
     auto* new_frame = FFmpegDecodedFrame::CreateFrame(
         decoder_ctx_->codec_type == AVMEDIA_TYPE_VIDEO, received_frame_, time,
         input ? input->duration : 0);
-    if (!new_frame)
+    if (!new_frame) {
+      *extra_info = ALLOC_ERROR_STR;
       return false;
+    }
     decoded->emplace_back(new_frame);
   }
 }

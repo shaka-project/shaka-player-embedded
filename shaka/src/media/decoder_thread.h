@@ -15,6 +15,8 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_DECODER_THREAD_H_
 #define SHAKA_EMBEDDED_MEDIA_DECODER_THREAD_H_
 
+#include <string>
+
 #include "shaka/media/decoder.h"
 #include "shaka/media/streams.h"
 #include "src/debug/mutex.h"
@@ -46,7 +48,7 @@ class DecoderThread {
     virtual double Duration() const = 0;
     virtual void OnWaitingForKey() = 0;
 
-    virtual void OnError() = 0;
+    virtual void OnError(const std::string& error) = 0;
   };
 
   /**

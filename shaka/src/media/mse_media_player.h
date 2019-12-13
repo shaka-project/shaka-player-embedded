@@ -117,7 +117,7 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
   void OnStatusChanged(VideoPlaybackState status);
   void ReadyStateChanged(VideoReadyState ready_state);
   void OnSeek();
-  void OnError() override;
+  void OnError(const std::string& error) override;
   void OnWaitingForKey() override;
 
   mutable SharedMutex mutex_;

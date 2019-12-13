@@ -49,7 +49,8 @@ class FFmpegDecoder : public Decoder {
 
   MediaStatus Decode(
       std::shared_ptr<EncodedFrame> input, const eme::Implementation* eme,
-      std::vector<std::shared_ptr<DecodedFrame>>* frames) override;
+      std::vector<std::shared_ptr<DecodedFrame>>* frames,
+      std::string* extra_info) override;
 
  private:
 #ifdef ENABLE_HARDWARE_DECODE
@@ -58,10 +59,12 @@ class FFmpegDecoder : public Decoder {
 #endif
 
   bool InitializeDecoder(std::shared_ptr<const StreamInfo> info,
-                         bool allow_hardware);
+                         bool allow_hardware,
+                         std::string* extra_info);
   bool ReadFromDecoder(std::shared_ptr<const StreamInfo> stream_info,
                        std::shared_ptr<EncodedFrame> input,
-                       std::vector<std::shared_ptr<DecodedFrame>>* decoded);
+                       std::vector<std::shared_ptr<DecodedFrame>>* decoded,
+                       std::string* extra_info);
 
   Mutex mutex_;
   const std::string codec_;

@@ -312,13 +312,10 @@ void MseMediaPlayer::OnStatusChanged(VideoPlaybackState state) {
           client->OnPlay();
       }
       break;
-    case VideoPlaybackState::Errored:
-      for (auto* client : clients_)
-        client->OnError("");
-      break;
 
     case VideoPlaybackState::Seeking:
       // Don't raise for seeking since we get a call to OnSeek.
+    case VideoPlaybackState::Errored:
     case VideoPlaybackState::Paused:
     case VideoPlaybackState::Buffering:
     case VideoPlaybackState::WaitingForKey:
@@ -357,8 +354,12 @@ void MseMediaPlayer::OnSeek() {
   audio_.OnSeek();
 }
 
-void MseMediaPlayer::OnError() {
+void MseMediaPlayer::OnError(const std::string& error) {
   pipeline_manager_.OnError();
+
+  std::unique_lock<SharedMutex> lock(mutex_);
+  for (auto* client : clients_)
+    client->OnError(error);
 }
 
 void MseMediaPlayer::OnWaitingForKey() {

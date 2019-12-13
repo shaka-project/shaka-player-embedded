@@ -92,9 +92,11 @@ void DecodeFramesAndCheckHashes(
   // Run this loop one extra time to pass "nullptr" to flush the last frames.
   for (size_t i = 0; i <= input_frames.size(); i++) {
     auto frame = i < input_frames.size() ? input_frames[i] : nullptr;
+    std::string error;
     std::vector<std::shared_ptr<DecodedFrame>> decoded_frames;
-    ASSERT_EQ(decoder->Decode(frame, cdm, &decoded_frames),
-              MediaStatus::Success);
+    ASSERT_EQ(decoder->Decode(frame, cdm, &decoded_frames, &error),
+              MediaStatus::Success)
+        << error;
 
     for (auto& decoded : decoded_frames) {
       const uint8_t* data;
@@ -154,9 +156,11 @@ TEST_F(DecoderIntegration, CanDecodeWithAdaptation) {
         saw_second_stream = true;
     }
 
+    std::string error;
     std::vector<std::shared_ptr<DecodedFrame>> decoded_frames;
-    ASSERT_EQ(decoder->Decode(frame, nullptr, &decoded_frames),
-              MediaStatus::Success);
+    ASSERT_EQ(decoder->Decode(frame, nullptr, &decoded_frames, &error),
+              MediaStatus::Success)
+        << error;
   }
 
   EXPECT_TRUE(saw_first_stream);

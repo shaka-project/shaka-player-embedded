@@ -145,8 +145,10 @@ void DecoderThread::ThreadMain() {
       }
     }
 
+    std::string error;
     std::vector<std::shared_ptr<DecodedFrame>> decoded;
-    const MediaStatus decode_status = decoder_->Decode(frame, cdm_, &decoded);
+    const MediaStatus decode_status =
+        decoder_->Decode(frame, cdm_, &decoded, &error);
     if (decode_status == MediaStatus::KeyNotFound) {
       // If we don't have the required key, signal the <video> and wait.
       if (!raised_waiting_event_) {
@@ -160,7 +162,7 @@ void DecoderThread::ThreadMain() {
       continue;
     }
     if (decode_status != MediaStatus::Success) {
-      client_->OnError();
+      client_->OnError(error);
       break;
     }
 

@@ -72,11 +72,14 @@ class SHAKA_EXPORT Decoder {
    * @param eme The EME implementation used to decrypt frames, or nullptr if not
    *   using EME.
    * @param frames [OUT] Where to insert newly created frames.
+   * @param extra_info [OUT] If this returns FatalError, this argument will be
+   *   set to a description of what error happened.
    * @return The status of the decode operation.
    */
   virtual MediaStatus Decode(
       std::shared_ptr<EncodedFrame> input, const eme::Implementation* eme,
-      std::vector<std::shared_ptr<DecodedFrame>>* frames) = 0;
+      std::vector<std::shared_ptr<DecodedFrame>>* frames,
+      std::string* extra_info) = 0;
 };
 
 }  // namespace media
