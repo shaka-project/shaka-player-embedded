@@ -59,10 +59,6 @@ PLATFORM_SPECIFIC_SETTINGS = {
         'ios_deployment_target': '10.0',
     },
 }
-V8_SETTINGS = {
-    # TODO: Building V8 in debug mode is currently broken.
-    'v8_enable_debugging_features': False,
-}
 
 sys.path.append(os.path.join(ROOT_DIR, 'build'))
 sys.path.append(os.path.join(ROOT_DIR, 'shaka', 'tools'))
@@ -187,8 +183,6 @@ def _ConstructGnArgs(parsed_args):
   """Constructs a GN args list from the given parsed command-line arguments."""
   obj = DEFAULT_SETTINGS.copy()
   obj.update(PLATFORM_SPECIFIC_SETTINGS.get(sys.platform, {}))
-  if parsed_args.js_engine == 'v8':
-    obj.update(V8_SETTINGS)
   for k, v in vars(parsed_args).iteritems():
     if k[-1] != '_' and v is not None:
       obj[k] = v
