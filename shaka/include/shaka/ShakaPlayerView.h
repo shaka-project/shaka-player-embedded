@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_H_
 #define SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_H_
 
+#import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
@@ -131,6 +132,9 @@ SHAKA_EXPORT
  * client before calling other methods.
  */
 - (BOOL)setClient:(id<ShakaPlayerClient>)client;
+
+/** Sets how to resize the video frame within the view. */
+- (void)setVideoGravity:(AVLayerVideoGravity)videoGravity;
 
 
 /** Plays the video. */

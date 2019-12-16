@@ -207,6 +207,18 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   return YES;
 }
 
+- (void)setVideoGravity:(AVLayerVideoGravity)videoGravity {
+  if (videoGravity == AVLayerVideoGravityResize) {
+    _media_player->SetVideoFillMode(shaka::media::VideoFillMode::Stretch);
+  } else if (videoGravity == AVLayerVideoGravityResizeAspectFill) {
+    _media_player->SetVideoFillMode(shaka::media::VideoFillMode::Zoom);
+  } else if (videoGravity == AVLayerVideoGravityResizeAspect) {
+    _media_player->SetVideoFillMode(shaka::media::VideoFillMode::MaintainRatio);
+  } else {
+    [NSException raise:NSGenericException format:@"Invalid value for videoGravity"];
+  }
+}
+
 - (void)checkInitialized {
   if (!_engine) {
     [NSException raise:NSGenericException format:@"Must call setClient to initialize the object"];
