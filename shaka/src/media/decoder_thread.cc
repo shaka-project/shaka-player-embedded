@@ -91,6 +91,9 @@ void DecoderThread::OnSeek() {
   std::unique_lock<Mutex> lock(mutex_);
   last_frame_time_ = NAN;
   did_flush_ = false;
+  // Remove all the existing frames.  We'll decode them again anyway and this
+  // ensures we don't keep future frames forever when seeking backwards.
+  output_->Remove(0, INFINITY);
 }
 
 void DecoderThread::SetCdm(eme::Implementation* cdm) {
@@ -119,6 +122,16 @@ void DecoderThread::ThreadMain() {
     const double cur_time = client_->CurrentTime();
     double last_time = last_frame_time_;
 
+    if (DecodedAheadOf(output_, cur_time) > kDecodeBufferSize) {
+      util::Unlocker<Mutex> unlock(&lock);
+      util::Clock::Instance.SleepSeconds(0.025);
+      continue;
+    }
+
+    // Evict frames that are not near the current time.  This ensures we don't
+    // keep frames buffered forever.
+    output_->Remove(0, cur_time - kDecodeBufferSize);
+
     std::shared_ptr<EncodedFrame> frame;
     if (std::isnan(last_time)) {
       decoder_->ResetDecoder();
@@ -127,11 +140,6 @@ void DecoderThread::ThreadMain() {
       frame = input_->GetFrame(last_time, FrameLocation::After);
     }
 
-    if (DecodedAheadOf(output_, cur_time) > kDecodeBufferSize) {
-      util::Unlocker<Mutex> unlock(&lock);
-      util::Clock::Instance.SleepSeconds(0.025);
-      continue;
-    }
     if (!frame) {
       if (!std::isnan(last_time) &&
           last_time + kEndDelta >= client_->Duration() && !did_flush_) {
