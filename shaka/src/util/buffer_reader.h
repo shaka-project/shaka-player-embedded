@@ -24,6 +24,14 @@ namespace util {
 enum Endianness {
   kBigEndian,
   kLittleEndian,
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+  kHostOrder = kLittleEndian,
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  kHostOrder = kBigEndian,
+#else
+#  error "Invalid byte order"
+#endif
 };
 
 /**

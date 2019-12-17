@@ -19,13 +19,13 @@ extern "C" {
 #include <libavutil/encryption_info.h>
 }
 #include <glog/logging.h>
-#include <netinet/in.h>
 
 #include <algorithm>
 #include <unordered_map>
 
 #include "src/media/ffmpeg/ffmpeg_encoded_frame.h"
 #include "src/media/media_utils.h"
+#include "src/util/buffer_writer.h"
 
 // Special error code added by //third_party/ffmpeg/mov.patch
 #define AVERROR_SHAKA_RESET_DEMUXER (-123456)
@@ -75,30 +75,24 @@ std::vector<uint8_t> CreatePssh(AVEncryptionInitInfo* info) {
     pssh_size += 4 + info->num_key_ids * 16;
   }
 
-#define WRITE_INT(ptr, num) *reinterpret_cast<uint32_t*>(ptr) = htonl(num)
-
-  // TODO(modmaker): Use a BufferWriter utility instead.
   std::vector<uint8_t> pssh(pssh_size, 0);
-  uint8_t* ptr = pssh.data();
-  WRITE_INT(ptr, pssh_size);
-  WRITE_INT(ptr + 4, 0x70737368);  // 'pssh'
-  WRITE_INT(ptr + 8, info->num_key_ids ? 0x01000000 : 0);
-  std::memcpy(ptr + 12, info->system_id, 16);
-  ptr += 28;
+  util::BufferWriter writer(pssh.data(), pssh_size);
+
+  writer.Write<uint32_t>(pssh_size);
+  writer.WriteTag("pssh");
+  writer.Write<uint32_t>(info->num_key_ids ? 0x01000000 : 0);
+  writer.Write(info->system_id, 16);
   if (info->num_key_ids) {
-    WRITE_INT(ptr, info->num_key_ids);
-    ptr += 4;
+    writer.Write<uint32_t>(info->num_key_ids);
     for (uint32_t i = 0; i < info->num_key_ids; i++) {
-      std::memcpy(ptr, info->key_ids[i], 16);
-      ptr += 16;
+      writer.Write(info->key_ids[i], 16);
     }
   }
 
-  WRITE_INT(ptr, info->data_size);
-  std::memcpy(ptr + 4, info->data, info->data_size);
-  DCHECK_EQ(ptr + info->data_size + 4, pssh.data() + pssh_size);
+  writer.Write<uint32_t>(info->data_size);
+  writer.Write(info->data, info->data_size);
+  DCHECK(writer.empty());
 
-#undef WRITE_INT
   return pssh;
 }
 
