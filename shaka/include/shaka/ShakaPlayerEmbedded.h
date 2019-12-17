@@ -14,6 +14,7 @@
 
 // Include language-agnostic headers.
 #include "config_names.h"
+#include "macros.h"
 #include "shaka_config.h"
 #include "version.h"
 
@@ -36,6 +37,7 @@
 #  include "js_manager.h"
 #  include "manifest.h"
 #  include "offline_externs.h"
+#  include "optional.h"
 #  include "player.h"
 #  include "player_externs.h"
 #  ifdef SHAKA_SDL_UTILS
@@ -46,11 +48,13 @@
 #  include "text_track.h"
 #  include "track.h"
 #  include "utils.h"
+#  include "variant.h"
 #  include "video.h"
 #  include "vtt_cue.h"
 
 #  include "eme/configuration.h"
 #  include "eme/data.h"
+#  include "eme/eme_promise.h"
 #  include "eme/implementation.h"
 #  include "eme/implementation_factory.h"
 #  include "eme/implementation_helper.h"
@@ -62,10 +66,12 @@
 #  include "media/frames.h"
 #  include "media/media_capabilities.h"
 #  include "media/media_player.h"
+#  include "media/proxy_media_player.h"
 #  include "media/renderer.h"
 #  ifdef SHAKA_SDL_UTILS
 #    include "media/sdl_audio_renderer.h"
 #    include "media/sdl_video_renderer.h"
 #  endif
+#  include "media/stream_info.h"
 #  include "media/streams.h"
 #endif

@@ -70,7 +70,6 @@ def _GetBinary(bin_name, parsed_args):
 
 @_Check
 def _CheckLicense(_):
-  # TODO: Fix license errors.
   logging.info('Checking license headers for files...')
   ignore_files = [
       '.clang-format',
@@ -122,6 +121,46 @@ def _CheckLicense(_):
       logging.error('  %s', path)
 
   return 1 if has_bad_license else 0
+
+
+@_Check
+def _CheckUmbrellaHeader(_):
+  logging.info('Checking umbrella header includes everything...')
+  includes = {'ShakaPlayerEmbedded.h'}
+  umbrella = os.path.join(
+      ROOT_DIR, 'shaka', 'include', 'shaka', 'ShakaPlayerEmbedded.h')
+  with open(umbrella) as f:
+    for line in f:
+      match = re.match(r'#\s*(?:include|import) "([^"]+)"', line)
+      if match:
+        includes.add(match.group(1))
+      else:
+        # Header should only be #include, #if, and comments.
+        assert re.match(r'(//.*)?$|#\s*(end)?if', line), line
+
+  real_files = set()
+  base = os.path.join(ROOT_DIR, 'shaka', 'include', 'shaka')
+  for root, _, files in os.walk(base):
+    for f in files:
+      real_files.add(os.path.relpath(os.path.join(root, f), base))
+  # Add in generated headers.
+  real_files.update(
+      f for f in os.listdir(os.path.join('gen', 'shaka')) if f.endswith('.h'))
+
+  extra_includes = includes - real_files
+  if extra_includes:
+    logging.error('Extra include directives:')
+    for i in extra_includes:
+      logging.error('  %s', i)
+    return 1
+  missing_includes = real_files - includes
+  if missing_includes:
+    logging.error('Missing include directives:')
+    for i in missing_includes:
+      logging.error('  %s', i)
+    return 1
+
+  return 0
 
 
 @_Check
