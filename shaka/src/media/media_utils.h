@@ -18,6 +18,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "shaka/media/media_capabilities.h"
@@ -67,6 +68,9 @@ BufferedRanges IntersectionOfBufferedRanges(
  */
 MediaDecodingConfiguration ConvertMimeToDecodingConfiguration(
     const std::string& mime_type, MediaDecodingType type);
+
+/** @return the resolution of the screen. */
+std::pair<uint32_t, uint32_t> GetScreenResolution();
 
 }  // namespace media
 }  // namespace shaka

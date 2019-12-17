@@ -51,8 +51,8 @@ declare_args() {
   # Whether to build the tests.
   enable_tests = true
 
-  # The kind of decoder to use.  Can be "ffmpeg", or "none".
-  decoder = "ffmpeg"
+  # The kind of decoder to use.  Can be "ffmpeg", "ios", or "none".
+  decoder = ""
 
   # Whether to include the default demuxer.
   has_demuxer = true
@@ -80,7 +80,9 @@ assert(!(js_engine == "v8" && is_ios), "Cannot use V8 on iOS")
 assert(!(js_engine == "jsc"  && !(is_ios || is_mac)),
        "Can only use JSC on Mac and iOS")
 
-assert(decoder == "ffmpeg" || decoder == "none", "Unknown value for 'decoder'")
+assert(decoder != "ios" || is_ios, "Can only use iOS decoder on iOS")
+assert(decoder == "ffmpeg" || decoder == "ios" || decoder == "none",
+       "Unknown value for 'decoder'")
 
 
 config("internal_config") {
@@ -176,6 +178,8 @@ config("internal_config") {
   }
   if (decoder == "ffmpeg") {
     defines += [ "HAS_FFMPEG_DECODER" ]
+  } else if (decoder == "ios") {
+    defines += [ "HAS_IOS_DECODER" ]
   }
   if (has_demuxer) {
     defines += [ "HAS_DEMUXER" ]
@@ -704,12 +708,6 @@ source_set("internal_sources") {
 
   sources += get_target_outputs(":gen_exposed_idl")
 
-  if (force_hardware_decode) {
-    sources += [
-      "shaka/src/media/hardware_support.cc",
-      "shaka/src/media/hardware_support.h",
-    ]
-  }
   if (sdl_video|| is_ios) {
     sources += [
       "shaka/src/media/video_renderer_common.cc",
@@ -735,6 +733,7 @@ source_set("internal_sources") {
       "shaka/src/media/ios/av_media_track.mm",
       "shaka/src/media/ios/av_text_track.h",
       "shaka/src/media/ios/av_text_track.mm",
+      "shaka/src/media/media_utils_ios.mm",
       "shaka/src/public/net_objc.mm",
       "shaka/src/public/net_objc+Internal.h",
       "shaka/src/public/ShakaPlayer.mm",
@@ -748,6 +747,13 @@ source_set("internal_sources") {
       "shaka/src/media/ffmpeg/ffmpeg_decoded_frame.h",
       "shaka/src/media/ffmpeg/ffmpeg_decoder.cc",
       "shaka/src/media/ffmpeg/ffmpeg_decoder.h",
+    ]
+  } else if (decoder == "ios") {
+    sources += [
+      "shaka/src/media/ios/ios_decoded_frame.cc",
+      "shaka/src/media/ios/ios_decoded_frame.h",
+      "shaka/src/media/ios/ios_decoder.cc",
+      "shaka/src/media/ios/ios_decoder.h",
     ]
   }
   if (has_demuxer) {
@@ -1368,6 +1374,11 @@ test("tests") {
 
   if (sdl_video || is_ios) {
     sources += [ "shaka/test/src/media/video_renderer_common_unittest.cc" ]
+  }
+
+  if (is_mac || is_ios) {
+    # Tests use conversion functions from CoreVideo.
+    libs = ["CoreVideo.framework"]
   }
 
   deps = [

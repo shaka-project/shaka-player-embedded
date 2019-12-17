@@ -15,12 +15,10 @@
 #include "src/media/mse_media_player.h"
 
 #include <algorithm>
+#include <cmath>
 #include <functional>
 #include <thread>
 
-#ifdef HAS_FFMPEG_DECODER
-#  include "src/media/ffmpeg/ffmpeg_decoder.h"
-#endif
 #include "src/media/media_utils.h"
 #include "src/util/clock.h"
 #include "src/util/utils.h"
@@ -426,11 +424,7 @@ std::vector<BufferedRange> MseMediaPlayer::GetDecoded() const {
 
 
 MseMediaPlayer::Source::Source(MseMediaPlayer* player)
-#ifdef HAS_FFMPEG_DECODER
-    : default_decoder_(new ffmpeg::FFmpegDecoder),
-#else
-    : default_decoder_(nullptr),
-#endif
+    : default_decoder_(Decoder::CreateDefaultDecoder()),
       decoder_thread_(player, &decoded_frames_),
       input_(nullptr),
       decoder_(nullptr) {

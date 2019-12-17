@@ -406,7 +406,9 @@ bool FFmpegDemuxerFactory::IsTypeSupported(const std::string& mime_type) const {
 bool FFmpegDemuxerFactory::IsCodecVideo(const std::string& codec) const {
   std::string norm = NormalizeCodec(codec);
   auto* impl = avcodec_find_decoder_by_name(norm.c_str());
-  return impl && impl->type == AVMEDIA_TYPE_VIDEO;
+  if (impl)
+    return impl->type == AVMEDIA_TYPE_VIDEO;
+  return norm == "h264" || norm == "hevc" || norm == "vp8" || norm == "vp9";
 }
 
 std::unique_ptr<Demuxer> FFmpegDemuxerFactory::Create(

@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,30 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "shaka/media/decoder.h"
+#include "src/media/media_utils.h"
 
-#if defined(HAS_FFMPEG_DECODER)
-#  include "src/media/ffmpeg/ffmpeg_decoder.h"
-#elif defined(HAS_IOS_DECODER)
-#  include "src/media/ios/ios_decoder.h"
-#endif
+#import <UIKit/UIKit.h>
 
 namespace shaka {
 namespace media {
 
-// \cond Doxygen_Skip
-Decoder::Decoder() {}
-Decoder::~Decoder() {}
-// \endcond Doxygen_Skip
-
-std::unique_ptr<Decoder> Decoder::CreateDefaultDecoder() {
-#if defined(HAS_FFMPEG_DECODER)
-  return std::unique_ptr<Decoder>(new ffmpeg::FFmpegDecoder);
-#elif defined(HAS_IOS_DECODER)
-  return std::unique_ptr<Decoder>(new ios::IosDecoder);
-#else
-  return nullptr;
-#endif
+std::pair<uint32_t, uint32_t> GetScreenResolution() {
+  CGRect screenBounds = [[UIScreen mainScreen] bounds];
+  CGFloat screenScale = [[UIScreen mainScreen] scale];
+  return {static_cast<uint32_t>(screenBounds.size.width * screenScale),
+          static_cast<uint32_t>(screenBounds.size.height * screenScale)};
 }
 
 }  // namespace media

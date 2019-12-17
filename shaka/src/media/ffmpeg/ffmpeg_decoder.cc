@@ -20,7 +20,6 @@
 #include <unordered_map>
 
 #include "src/media/ffmpeg/ffmpeg_decoded_frame.h"
-#include "src/media/hardware_support.h"
 #include "src/media/media_utils.h"
 #include "src/util/utils.h"
 
@@ -105,15 +104,6 @@ MediaCapabilitiesInfo FFmpegDecoder::DecodingInfo(
   const std::string codec = GetCodecFromMime(
       has_video ? config.video.content_type : config.audio.content_type);
   // If codec isn't given, assume supported but not hardware accelerated.
-#ifdef FORCE_HARDWARE_DECODE
-  if (!codec.empty() && has_video) {
-    const bool supported = DoesHardwareSupportCodec(codec, config.video.width,
-                                                    config.video.height);
-    ret.supported = ret.power_efficient = ret.smooth = supported;
-    return ret;
-  }
-#endif
-
   auto* c = FindCodec(NormalizeCodec(codec));
   ret.supported = codec.empty() || c != nullptr;
   ret.power_efficient = ret.smooth = c && c->wrapper_name;

@@ -823,7 +823,7 @@ def _ParseArgs(args):
     parsed_args.sdl_video = False
 
   if not parsed_args.decoder:
-    parsed_args.decoder = 'ffmpeg'
+    parsed_args.decoder = 'ios' if is_ios else 'ffmpeg'
 
   return parsed_args
 

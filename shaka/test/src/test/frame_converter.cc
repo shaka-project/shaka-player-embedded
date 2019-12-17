@@ -20,6 +20,10 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
+#ifdef __APPLE__
+#  include <VideoToolbox/VideoToolbox.h>
+#endif
+
 namespace shaka {
 
 namespace {
@@ -29,11 +33,10 @@ int GetFFmpegFormat(variant<media::PixelFormat, media::SampleFormat> format) {
     case media::PixelFormat::YUV420P:
       return AV_PIX_FMT_YUV420P;
     case media::PixelFormat::NV12:
+    case media::PixelFormat::VideoToolbox:
       return AV_PIX_FMT_NV12;
     case media::PixelFormat::RGB24:
       return AV_PIX_FMT_RGB24;
-    case media::PixelFormat::VideoToolbox:
-      return AV_PIX_FMT_VIDEOTOOLBOX;
 
     default:
       return AV_PIX_FMT_NONE;
@@ -73,10 +76,45 @@ bool FrameConverter::ConvertFrame(std::shared_ptr<media::DecodedFrame> frame,
     return false;
   }
 
-  std::vector<int> linesize{frame->linesize.begin(), frame->linesize.end()};
-  sws_scale(sws_ctx_, frame->data.data(), linesize.data(), 0,
-            frame->stream_info->height, convert_frame_data_,
-            convert_frame_linesize_);
+  const uint8_t* frame_data[4]{};
+  int frame_linesize[4]{};
+  if (get<media::PixelFormat>(frame->format) ==
+      media::PixelFormat::VideoToolbox) {
+#ifdef __APPLE__
+    auto* pix_buf = reinterpret_cast<CVPixelBufferRef>(
+        const_cast<uint8_t*>(frame->data[0]));
+    if (CVPixelBufferLockBaseAddress(pix_buf, kCVPixelBufferLock_ReadOnly) != 0)
+      return false;
+
+    CHECK(CVPixelBufferIsPlanar(pix_buf));
+    for (size_t i = CVPixelBufferGetPlaneCount(pix_buf); i > 0; i--) {
+      frame_data[i - 1] = reinterpret_cast<const uint8_t*>(
+          CVPixelBufferGetBaseAddressOfPlane(pix_buf, i - 1));
+      frame_linesize[i - 1] =
+          CVPixelBufferGetBytesPerRowOfPlane(pix_buf, i - 1);
+    }
+#else
+    LOG(FATAL) << "Cannot use VideoToolbox on non-Apple platforms";
+#endif
+  } else {
+    CHECK_LE(frame->data.size(), 4);
+    for (size_t i = 0; i < frame->data.size(); i++) {
+      frame_data[i] = frame->data[i];
+      frame_linesize[i] = frame->linesize[i];
+    }
+  }
+
+  sws_scale(sws_ctx_, frame_data, frame_linesize, 0, frame->stream_info->height,
+            convert_frame_data_, convert_frame_linesize_);
+
+  if (get<media::PixelFormat>(frame->format) ==
+      media::PixelFormat::VideoToolbox) {
+#ifdef __APPLE__
+    auto* pix_buf = reinterpret_cast<CVPixelBufferRef>(
+        const_cast<uint8_t*>(frame->data[0]));
+    CVPixelBufferUnlockBaseAddress(pix_buf, kCVPixelBufferLock_ReadOnly);
+#endif
+  }
 
   *data = convert_frame_data_[0];
   *size = convert_frame_linesize_[0] * frame->stream_info->height;

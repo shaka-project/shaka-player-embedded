@@ -37,7 +37,7 @@ const StringMapping kContainerMap[] = {
 };
 const StringMapping kCodecMap[] = {
     {"avc1", "h264"}, {"avc3", "h264"}, {"hev1", "hevc"},
-    {"hvc1", "hevc"}, {"mp4a", "aac"},
+    {"hvc1", "hevc"}, {"vp09", "vp9"},  {"mp4a", "aac"},
 };
 
 constexpr const char* kWhitespaceCharacters = " \f\n\r\t\v";
@@ -191,6 +191,12 @@ MediaDecodingConfiguration ConvertMimeToDecodingConfiguration(
 
   return info;
 }
+
+#ifndef OS_IOS
+std::pair<uint32_t, uint32_t> GetScreenResolution() {
+  return {UINT32_MAX, UINT32_MAX};
+}
+#endif
 
 }  // namespace media
 }  // namespace shaka

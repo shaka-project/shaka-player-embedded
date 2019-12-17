@@ -74,6 +74,13 @@ class SHAKA_EXPORT Decoder {
       std::shared_ptr<EncodedFrame> input, const eme::Implementation* eme,
       std::vector<std::shared_ptr<DecodedFrame>>* frames,
       std::string* extra_info) = 0;
+
+
+  /**
+   * Creates a new instance of the built-in decoder.  This returns nullptr if
+   * the built-in decoder was removed from the build.
+   */
+  static std::unique_ptr<Decoder> CreateDefaultDecoder();
 };
 
 }  // namespace media
