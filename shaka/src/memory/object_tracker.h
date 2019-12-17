@@ -23,8 +23,8 @@
 #include <vector>
 
 #include "src/debug/mutex.h"
-#include "src/util/pseudo_singleton.h"
 #include "src/util/macros.h"
+#include "src/util/pseudo_singleton.h"
 #include "src/util/templates.h"
 
 namespace shaka {

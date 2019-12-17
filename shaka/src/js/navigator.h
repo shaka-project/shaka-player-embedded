@@ -19,10 +19,10 @@
 #include <vector>
 
 #include "shaka/version.h"
+#include "src/js/eme/media_key_system_configuration.h"
 #include "src/mapping/backing_object.h"
 #include "src/mapping/backing_object_factory.h"
 #include "src/mapping/promise.h"
-#include "src/js/eme/media_key_system_configuration.h"
 
 // #define PLATFORM      // Defined by BUILD.gn
 #define APP_NAME        "Netscape"

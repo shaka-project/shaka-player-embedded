@@ -25,9 +25,9 @@ extern "C" {
 
 #include "shaka/media/demuxer.h"
 #include "shaka/media/stream_info.h"
+#include "src/debug/mutex.h"
 #include "src/debug/thread.h"
 #include "src/debug/thread_event.h"
-#include "src/debug/mutex.h"
 
 namespace shaka {
 namespace media {

@@ -16,7 +16,7 @@
 #define SHAKA_EMBEDDED_MAPPING_JSC_JSC_UTILS_H_
 
 #include <JavaScriptCore/JavaScriptCore.h>
-#include <glog/logging.h>
+#include <glog/logging.h>  // NOLINT(build/include_alpha)
 
 #include <string>
 

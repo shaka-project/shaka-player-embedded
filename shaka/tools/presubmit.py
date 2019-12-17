@@ -184,7 +184,7 @@ def _CheckCppLint(_):
       # We don't have owners on all our TODOs.
       'readability/todo',
   ]
-  filter_ = '--filter=-' + ',-'.join(ignored_checks)
+  filter_ = '--filter=+,-' + ',-'.join(ignored_checks)
   # Filter out stdout so we only print the errors.
   with open(os.devnull, 'w') as f:
     return subprocess.call([lint, filter_] + files, stdout=f)

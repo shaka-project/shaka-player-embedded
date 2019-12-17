@@ -20,8 +20,8 @@
 
 #include "src/core/member.h"
 #include "src/core/ref_ptr.h"
-#include "src/mapping/exception_or.h"
 #include "src/js/dom/node.h"
+#include "src/mapping/exception_or.h"
 
 namespace shaka {
 namespace js {

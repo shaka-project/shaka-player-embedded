@@ -14,7 +14,7 @@
 
 #include <CommonCrypto/CommonCryptor.h>
 #include <Security/Security.h>
-#include <glog/logging.h>
+#include <glog/logging.h>  // NOLINT(build/include_alpha)
 
 #include "src/util/decryptor.h"
 
