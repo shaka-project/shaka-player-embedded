@@ -170,13 +170,21 @@ SHAKA_EXPORT size_t GetPlaneCount(variant<PixelFormat, SampleFormat> format,
  */
 class SHAKA_EXPORT BaseFrame {
  public:
-  BaseFrame(double pts, double dts, double duration, bool is_key_frame);
+  BaseFrame(std::shared_ptr<const StreamInfo> stream_info, double pts,
+            double dts, double duration, bool is_key_frame);
   BaseFrame(const BaseFrame&) = delete;
   BaseFrame(BaseFrame&&) = delete;
   virtual ~BaseFrame();
 
   BaseFrame& operator=(const BaseFrame&) = delete;
   BaseFrame& operator=(BaseFrame&&) = delete;
+
+  /**
+   * Contains the info describing the current stream this belongs to.  If two
+   * frames belong to the same stream, they must contain pointers to the same
+   * StreamInfo object.
+   */
+  const std::shared_ptr<const StreamInfo> stream_info;
 
   /** The absolute presentation timestamp, in seconds. */
   const double pts;
@@ -214,17 +222,10 @@ class SHAKA_EXPORT BaseFrame {
  */
 class SHAKA_EXPORT EncodedFrame : public BaseFrame {
  public:
-  EncodedFrame(double pts, double dts, double duration, bool is_key_frame,
-               std::shared_ptr<const StreamInfo> stream, const uint8_t* data,
+  EncodedFrame(std::shared_ptr<const StreamInfo> stream, double pts, double dts,
+               double duration, bool is_key_frame, const uint8_t* data,
                size_t data_size, double timestamp_offset, bool is_encrypted);
   ~EncodedFrame() override;
-
-  /**
-   * Contains the info describing the current stream this belongs to.  If two
-   * frames belong to the same stream, they must contain pointers to the same
-   * StreamInfo object.
-   */
-  const std::shared_ptr<const StreamInfo> stream_info;
 
   /**
    * The buffer that contains the frame data.  This may contain encrypted data.
@@ -262,27 +263,12 @@ class SHAKA_EXPORT EncodedFrame : public BaseFrame {
  */
 class SHAKA_EXPORT DecodedFrame : public BaseFrame {
  public:
-  DecodedFrame(double pts, double dts, double duration,
-               variant<PixelFormat, SampleFormat> format, uint32_t width,
-               uint32_t height, uint32_t channel_count, uint32_t sample_rate,
-               size_t sample_count, const std::vector<const uint8_t*>& data,
+  DecodedFrame(std::shared_ptr<const StreamInfo> stream_info, double pts,
+               double dts, double duration,
+               variant<PixelFormat, SampleFormat> format, size_t sample_count,
+               const std::vector<const uint8_t*>& data,
                const std::vector<size_t>& linesize);
   ~DecodedFrame() override;
-
-  /** If this is a video frame, this is the width, in pixels, of the frame. */
-  const uint32_t width;
-
-  /** If this is a video frame, this is the height, in pixels, of the frame. */
-  const uint32_t height;
-
-  /** If this is an audio frame, this is the number of channels. */
-  const uint32_t channel_count;
-
-  /**
-   * If this is an audio frame, this is the sample rate, in samples per second
-   * (Hz).
-   */
-  const uint32_t sample_rate;
 
   /**
    * If this is an audio frame, this is the number of samples (per channel) in

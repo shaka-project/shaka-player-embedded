@@ -24,6 +24,7 @@ extern "C" {
 #include <vector>
 
 #include "shaka/media/frames.h"
+#include "shaka/media/stream_info.h"
 #include "src/util/macros.h"
 
 namespace shaka {
@@ -35,8 +36,9 @@ class FFmpegDecodedFrame final : public DecodedFrame {
  public:
   ~FFmpegDecodedFrame() override;
 
-  static FFmpegDecodedFrame* CreateFrame(bool is_video, AVFrame* frame,
-                                         double time, double duration);
+  static FFmpegDecodedFrame* CreateFrame(
+      std::shared_ptr<const StreamInfo> stream, AVFrame* frame, double time,
+      double duration);
 
   NON_COPYABLE_OR_MOVABLE_TYPE(FFmpegDecodedFrame);
 
@@ -48,6 +50,7 @@ class FFmpegDecodedFrame final : public DecodedFrame {
 
  private:
   FFmpegDecodedFrame(AVFrame* frame, double pts, double dts, double duration,
+                     std::shared_ptr<const StreamInfo> stream,
                      variant<PixelFormat, SampleFormat> format,
                      const std::vector<const uint8_t*>& data,
                      const std::vector<size_t>& linesize);

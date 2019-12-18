@@ -351,7 +351,8 @@ bool FFmpegDemuxer::ReinitDemuxer() {
       mime_type_, expected_codec, params->codec_type == AVMEDIA_TYPE_VIDEO,
       {stream->time_base.num, stream->time_base.den},
       std::vector<uint8_t>{params->extradata,
-                           params->extradata + params->extradata_size}));
+                           params->extradata + params->extradata_size},
+      params->width, params->height, params->channels, params->sample_rate));
   return true;
 }
 

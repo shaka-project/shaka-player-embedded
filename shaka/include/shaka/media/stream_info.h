@@ -55,7 +55,9 @@ static_assert(std::is_pod<Rational>::value, "Rational should be POD");
 class SHAKA_EXPORT StreamInfo {
  public:
   StreamInfo(const std::string& mime, const std::string& codec, bool is_video,
-             Rational time_scale, const std::vector<uint8_t>& extra_data);
+             Rational time_scale, const std::vector<uint8_t>& extra_data,
+             uint32_t width, uint32_t height, uint32_t channel_count,
+             uint32_t sample_rate);
   StreamInfo(const StreamInfo&) = delete;
   StreamInfo(StreamInfo&&) = delete;
   virtual ~StreamInfo();
@@ -89,6 +91,21 @@ class SHAKA_EXPORT StreamInfo {
 
   /** True if this represents a video stream; false for audio streams. */
   const bool is_video;
+
+  /** If this is a video frame, this is the width, in pixels, of the frame. */
+  const uint32_t width;
+
+  /** If this is a video frame, this is the height, in pixels, of the frame. */
+  const uint32_t height;
+
+  /** If this is an audio frame, this is the number of channels. */
+  const uint32_t channel_count;
+
+  /**
+   * If this is an audio frame, this is the sample rate, in samples per second
+   * (Hz).
+   */
+  const uint32_t sample_rate;
 };
 
 }  // namespace media

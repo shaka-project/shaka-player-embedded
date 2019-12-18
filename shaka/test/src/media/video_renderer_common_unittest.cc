@@ -35,8 +35,8 @@ using testing::StrictMock;
 constexpr const double kMinDelay = 1.0 / 120;
 
 std::shared_ptr<DecodedFrame> MakeFrame(double start) {
-  auto* ret = new DecodedFrame(start, start, 0.01, PixelFormat::RGB24, 0, 0, 0,
-                               0, 0, {}, {});
+  auto* ret = new DecodedFrame(nullptr, start, start, 0.01, PixelFormat::RGB24,
+                               0, {}, {});
   return std::shared_ptr<DecodedFrame>(ret);
 }
 

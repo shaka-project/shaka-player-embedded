@@ -64,8 +64,13 @@ size_t GetPlaneCount(variant<PixelFormat, SampleFormat> format,
 }
 
 
-BaseFrame::BaseFrame(double pts, double dts, double duration, bool is_key_frame)
-    : pts(pts), dts(dts), duration(duration), is_key_frame(is_key_frame) {}
+BaseFrame::BaseFrame(std::shared_ptr<const StreamInfo> stream_info, double pts,
+                     double dts, double duration, bool is_key_frame)
+    : stream_info(stream_info),
+      pts(pts),
+      dts(dts),
+      duration(duration),
+      is_key_frame(is_key_frame) {}
 BaseFrame::~BaseFrame() {}
 
 size_t BaseFrame::EstimateSize() const {
@@ -73,13 +78,11 @@ size_t BaseFrame::EstimateSize() const {
 }
 
 
-EncodedFrame::EncodedFrame(double pts, double dts, double duration,
-                           bool is_key_frame,
-                           std::shared_ptr<const StreamInfo> stream,
+EncodedFrame::EncodedFrame(std::shared_ptr<const StreamInfo> stream, double pts,
+                           double dts, double duration, bool is_key_frame,
                            const uint8_t* data, size_t data_size,
                            double timestamp_offset, bool is_encrypted)
-    : BaseFrame(pts, dts, duration, is_key_frame),
-      stream_info(stream),
+    : BaseFrame(stream, pts, dts, duration, is_key_frame),
       data(data),
       data_size(data_size),
       timestamp_offset(timestamp_offset),
@@ -99,18 +102,13 @@ size_t EncodedFrame::EstimateSize() const {
 }
 
 
-DecodedFrame::DecodedFrame(double pts, double dts, double duration,
+DecodedFrame::DecodedFrame(std::shared_ptr<const StreamInfo> stream, double pts,
+                           double dts, double duration,
                            variant<PixelFormat, SampleFormat> format,
-                           uint32_t width, uint32_t height,
-                           uint32_t channel_count, uint32_t sample_rate,
                            size_t sample_count,
                            const std::vector<const uint8_t*>& data,
                            const std::vector<size_t>& linesize)
-    : BaseFrame(pts, dts, duration, true),
-      width(width),
-      height(height),
-      channel_count(channel_count),
-      sample_rate(sample_rate),
+    : BaseFrame(stream, pts, dts, duration, true),
       sample_count(sample_count),
       data(data),
       linesize(linesize),
@@ -121,7 +119,7 @@ size_t DecodedFrame::EstimateSize() const {
   size_t ret = sizeof(*this);
   for (size_t line : linesize) {
     if (holds_alternative<PixelFormat>(format))
-      ret += line * height;
+      ret += line * stream_info->height;
     else
       ret += line;
   }

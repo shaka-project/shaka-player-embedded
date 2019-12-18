@@ -152,7 +152,7 @@ uint32_t MseMediaPlayer::Height() const {
 
   util::shared_lock<SharedMutex> lock(mutex_);
   auto frame = video_.GetFrame(time);
-  return frame ? frame->height : 0;
+  return frame ? frame->stream_info->height : 0;
 }
 
 uint32_t MseMediaPlayer::Width() const {
@@ -160,7 +160,7 @@ uint32_t MseMediaPlayer::Width() const {
 
   util::shared_lock<SharedMutex> lock(mutex_);
   auto frame = video_.GetFrame(time);
-  return frame ? frame->width : 0;
+  return frame ? frame->stream_info->width : 0;
 }
 
 double MseMediaPlayer::Volume() const {

@@ -50,33 +50,36 @@ FrameConverter::~FrameConverter() {
 
 bool FrameConverter::ConvertFrame(std::shared_ptr<media::DecodedFrame> frame,
                                   const uint8_t** data, size_t* size) {
-  if (frame->width != convert_frame_width_ ||
-      frame->height != convert_frame_height_) {
+  if (frame->stream_info->width != convert_frame_width_ ||
+      frame->stream_info->height != convert_frame_height_) {
     av_freep(&convert_frame_data_[0]);
     if (av_image_alloc(convert_frame_data_, convert_frame_linesize_,
-                       frame->width, frame->height, AV_PIX_FMT_ARGB, 16) < 0) {
+                       frame->stream_info->width, frame->stream_info->height,
+                       AV_PIX_FMT_ARGB, 16) < 0) {
       LOG(ERROR) << "Error allocating frame for conversion";
       return false;
     }
-    convert_frame_width_ = frame->width;
-    convert_frame_height_ = frame->height;
+    convert_frame_width_ = frame->stream_info->width;
+    convert_frame_height_ = frame->stream_info->height;
   }
 
   sws_ctx_ = sws_getCachedContext(
-      sws_ctx_, frame->width, frame->height,
-      static_cast<AVPixelFormat>(GetFFmpegFormat(frame->format)), frame->width,
-      frame->height, AV_PIX_FMT_ARGB, 0, nullptr, nullptr, nullptr);
+      sws_ctx_, frame->stream_info->width, frame->stream_info->height,
+      static_cast<AVPixelFormat>(GetFFmpegFormat(frame->format)),
+      frame->stream_info->width, frame->stream_info->height, AV_PIX_FMT_ARGB, 0,
+      nullptr, nullptr, nullptr);
   if (!sws_ctx_) {
     LOG(ERROR) << "Error allocating conversion context";
     return false;
   }
 
   std::vector<int> linesize{frame->linesize.begin(), frame->linesize.end()};
-  sws_scale(sws_ctx_, frame->data.data(), linesize.data(), 0, frame->height,
-            convert_frame_data_, convert_frame_linesize_);
+  sws_scale(sws_ctx_, frame->data.data(), linesize.data(), 0,
+            frame->stream_info->height, convert_frame_data_,
+            convert_frame_linesize_);
 
   *data = convert_frame_data_[0];
-  *size = convert_frame_linesize_[0] * frame->height;
+  *size = convert_frame_linesize_[0] * frame->stream_info->height;
   return true;
 }
 

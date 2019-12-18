@@ -24,7 +24,7 @@ namespace {
 
 std::shared_ptr<BaseFrame> MakeFrame(double start, double end,
                                      bool is_key_frame = true) {
-  auto* ret = new BaseFrame(start, start, end - start, is_key_frame);
+  auto* ret = new BaseFrame(nullptr, start, start, end - start, is_key_frame);
   return std::shared_ptr<BaseFrame>(ret);
 }
 
@@ -182,7 +182,8 @@ TEST(StreamBaseTest, UsesPtsForBufferedRanges) {
   StreamType buffer;
 
   auto makeFrame = [](double dts, double pts) {
-    return std::unique_ptr<BaseFrame>(new BaseFrame(pts, dts, 1, true));
+    return std::unique_ptr<BaseFrame>(
+        new BaseFrame(nullptr, pts, dts, 1, true));
   };
 
   // Range 1: DTS (0, 1, 2), PTS (1, 0, 2)

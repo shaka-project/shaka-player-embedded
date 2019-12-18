@@ -59,8 +59,8 @@ class SdlManualVideoRenderer::Impl : public VideoRendererCommon {
         if (region) {
           region_shaka = {region->x, region->y, region->w, region->h};
         } else {
-          int w = frame->width;
-          int h = frame->height;
+          int w = frame->stream_info->width;
+          int h = frame->stream_info->height;
           SDL_GetRendererOutputSize(renderer_, &w, &h);
           region_shaka.x = region_shaka.y = 0;
           region_shaka.w = w;
@@ -68,7 +68,8 @@ class SdlManualVideoRenderer::Impl : public VideoRendererCommon {
         }
 
         ShakaRect src, dest;
-        ShakaRect frame_region = {0, 0, frame->width, frame->height};
+        ShakaRect frame_region = {0, 0, frame->stream_info->width,
+                                  frame->stream_info->height};
         FitVideoToRegion(frame_region, region_shaka, fill_mode(), &src, &dest);
         SDL_Rect src_sdl = {src.x, src.y, src.w, src.h};
         SDL_Rect dest_sdl = {dest.x, dest.y, dest.w, dest.h};

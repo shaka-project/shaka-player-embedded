@@ -21,12 +21,18 @@ namespace media {
 
 StreamInfo::StreamInfo(const std::string& mime, const std::string& codec,
                        bool is_video, Rational time_scale,
-                       const std::vector<uint8_t>& extra_data)
+                       const std::vector<uint8_t>& extra_data, uint32_t width,
+                       uint32_t height, uint32_t channel_count,
+                       uint32_t sample_rate)
     : mime_type(mime),
       codec(codec),
       time_scale(time_scale),
       extra_data(extra_data),
-      is_video(is_video) {}
+      is_video(is_video),
+      width(width),
+      height(height),
+      channel_count(channel_count),
+      sample_rate(sample_rate) {}
 StreamInfo::~StreamInfo() {}
 
 }  // namespace media

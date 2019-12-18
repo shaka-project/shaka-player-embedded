@@ -246,7 +246,7 @@ FFmpegEncodedFrame::FFmpegEncodedFrame(AVPacket* pkt, double pts, double dts,
                                        double duration, bool is_key_frame,
                                        std::shared_ptr<const StreamInfo> info,
                                        double timestamp_offset)
-    : EncodedFrame(pts, dts, duration, is_key_frame, info, pkt->data, pkt->size,
+    : EncodedFrame(info, pts, dts, duration, is_key_frame, pkt->data, pkt->size,
                    timestamp_offset, IsEncrypted(pkt)) {
   av_packet_move_ref(&packet_, pkt);
 }

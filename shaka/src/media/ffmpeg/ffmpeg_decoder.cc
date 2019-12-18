@@ -363,8 +363,7 @@ bool FFmpegDecoder::ReadFromDecoder(
                             ? input->pts
                             : timestamp * timescale + offset;
     auto* new_frame = FFmpegDecodedFrame::CreateFrame(
-        decoder_ctx_->codec_type == AVMEDIA_TYPE_VIDEO, received_frame_, time,
-        input ? input->duration : 0);
+        stream_info, received_frame_, time, input ? input->duration : 0);
     if (!new_frame) {
       *extra_info = ALLOC_ERROR_STR;
       return false;

@@ -103,11 +103,11 @@ bool MapFrameFormat(bool is_video, AVFrame* frame,
 
 FFmpegDecodedFrame::FFmpegDecodedFrame(
     AVFrame* frame, double pts, double dts, double duration,
+    std::shared_ptr<const StreamInfo> stream,
     variant<PixelFormat, SampleFormat> format,
     const std::vector<const uint8_t*>& data,
     const std::vector<size_t>& linesize)
-    : DecodedFrame(pts, dts, duration, format, frame->width, frame->height,
-                   frame->channels, frame->sample_rate, frame->nb_samples, data,
+    : DecodedFrame(stream, pts, dts, duration, format, frame->nb_samples, data,
                    linesize),
       frame_(frame) {}
 
@@ -117,22 +117,22 @@ FFmpegDecodedFrame::~FFmpegDecodedFrame() {
 }
 
 // static
-FFmpegDecodedFrame* FFmpegDecodedFrame::CreateFrame(bool is_video,
-                                                    AVFrame* frame, double time,
-                                                    double duration) {
+FFmpegDecodedFrame* FFmpegDecodedFrame::CreateFrame(
+    std::shared_ptr<const StreamInfo> info, AVFrame* frame, double time,
+    double duration) {
   variant<PixelFormat, SampleFormat> format;
-  if (!MapFrameFormat(is_video, frame, &format))
+  if (!MapFrameFormat(info->is_video, frame, &format))
     return nullptr;
 
   std::vector<const uint8_t*> data;
   std::vector<size_t> linesize;
-  if (is_video && get<PixelFormat>(format) == PixelFormat::VideoToolbox) {
+  if (info->is_video && get<PixelFormat>(format) == PixelFormat::VideoToolbox) {
     data.emplace_back(frame->data[3]);
     linesize.emplace_back(0);
   } else {
     const size_t count = GetPlaneCount(format, frame->channels);
     data.assign(frame->extended_data, frame->extended_data + count);
-    if (is_video) {
+    if (info->is_video) {
       DCHECK_LE(count, sizeof(frame->linesize) / sizeof(frame->linesize[0]));
       for (size_t i = 0; i < count; i++) {
         if (frame->linesize[i] < 0) {
@@ -151,8 +151,8 @@ FFmpegDecodedFrame* FFmpegDecodedFrame::CreateFrame(bool is_video,
   AVFrame* copy = av_frame_clone(frame);
   if (!copy)
     return nullptr;
-  return new (std::nothrow)
-      FFmpegDecodedFrame(copy, time, time, duration, format, data, linesize);
+  return new (std::nothrow) FFmpegDecodedFrame(copy, time, time, duration, info,
+                                               format, data, linesize);
 }
 
 size_t FFmpegDecodedFrame::EstimateSize() const {

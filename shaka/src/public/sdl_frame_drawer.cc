@@ -100,7 +100,8 @@ class SdlFrameDrawer::Impl {
       return nullptr;
     }
 
-    SDL_Texture* texture = GetTexture(sdl_pix_fmt, frame->width, frame->height);
+    SDL_Texture* texture = GetTexture(sdl_pix_fmt, frame->stream_info->width,
+                                      frame->stream_info->height);
     if (!texture)
       return nullptr;
 
@@ -136,7 +137,7 @@ class SdlFrameDrawer::Impl {
 
       if (static_cast<size_t>(pitch) == frame_linesize[0]) {
         // TODO: Sometimes there is a green bar at the bottom.
-        const size_t size0 = pitch * frame->height;
+        const size_t size0 = pitch * frame->stream_info->height;
         memcpy(pixels, frame_data[0], size0);
         memcpy(pixels + size0, frame_data[1], size0 / 2);
       } else {
@@ -144,13 +145,13 @@ class SdlFrameDrawer::Impl {
         // copying each line.
         DCHECK_GE(frame_linesize[0], pitch);
         const int min_width = std::min<size_t>(pitch, frame_linesize[0]);
-        for (uint32_t row = 0; row < frame->height; row++) {
+        for (uint32_t row = 0; row < frame->stream_info->height; row++) {
           uint8_t* dest = pixels + pitch * row;
           const uint8_t* src = frame_data[0] + frame_linesize[0] * row;
           memcpy(dest, src, min_width);
         }
-        for (uint32_t row = 0; row < frame->height / 2; row++) {
-          uint8_t* dest = pixels + pitch * (row + frame->height);
+        for (uint32_t row = 0; row < frame->stream_info->height / 2; row++) {
+          uint8_t* dest = pixels + pitch * (row + frame->stream_info->height);
           const uint8_t* src = frame_data[1] + frame_linesize[1] * row;
           memcpy(dest, src, min_width);
         }

@@ -67,8 +67,8 @@ CGImageRef IosVideoRenderer::Render() {
 
 CGImageRef IosVideoRenderer::RenderPackedFrame(
     std::shared_ptr<DecodedFrame> frame) {
-  const uint32_t width = frame->width;
-  const uint32_t height = frame->height;
+  const uint32_t width = frame->stream_info->width;
+  const uint32_t height = frame->stream_info->height;
   const size_t bytes_per_row = frame->linesize[0];
   CFIndex size = bytes_per_row * height;
 
@@ -119,14 +119,14 @@ CGImageRef IosVideoRenderer::RenderPlanarFrame(
     const OSType ios_pix_fmt = kCVPixelFormatType_420YpCbCr8Planar;
     auto* info = new FrameInfo;
     info->frame = frame;
-    info->widths[0] = frame->width;
-    info->widths[1] = info->widths[2] = frame->width / 2;
-    info->heights[0] = frame->height;
-    info->heights[1] = info->heights[2] = frame->height / 2;
+    info->widths[0] = frame->stream_info->width;
+    info->widths[1] = info->widths[2] = frame->stream_info->width / 2;
+    info->heights[0] = frame->stream_info->height;
+    info->heights[1] = info->heights[2] = frame->stream_info->height / 2;
 
     const auto status = CVPixelBufferCreateWithPlanarBytes(
-        nullptr, frame->width, frame->height, ios_pix_fmt, nullptr, 0,
-        frame->data.size(),
+        nullptr, frame->stream_info->width, frame->stream_info->height,
+        ios_pix_fmt, nullptr, 0, frame->data.size(),
         reinterpret_cast<void**>(const_cast<uint8_t**>(frame->data.data())),
         info->widths, info->heights,
         const_cast<size_t*>(frame->linesize.data()), &FreeFramePlanar, info,

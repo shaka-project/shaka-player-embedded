@@ -301,9 +301,10 @@ class SdlAudioRenderer::Impl {
     }
 
     memset(&audio_spec_, 0, sizeof(audio_spec_));
-    audio_spec_.freq = frame->sample_rate;
+    audio_spec_.freq = frame->stream_info->sample_rate;
     audio_spec_.format = SDLFormatFromShaka(frame->format);
-    audio_spec_.channels = static_cast<Uint8>(frame->channel_count);
+    audio_spec_.channels =
+        static_cast<Uint8>(frame->stream_info->channel_count);
     audio_spec_.samples = static_cast<Uint16>(frame->sample_count);
     audio_spec_.callback = &OnAudioCallback;
     audio_spec_.userdata = this;
@@ -325,14 +326,14 @@ class SdlAudioRenderer::Impl {
     const auto format = GetFFmpegFormat(frame->format);
     swr_ctx_ = swr_alloc_set_opts(
         swr_ctx_,
-        GetChannelLayout(obtained_audio_spec_.channels),  // out_ch_layout
-        av_sample_format,                                 // out_sample_fmt
-        obtained_audio_spec_.freq,                        // out_sample_rate
-        GetChannelLayout(frame->channel_count),           // in_ch_layout
-        static_cast<AVSampleFormat>(format),              // in_sample_fmt
-        frame->sample_rate,                               // in_sample_rate
-        0,                                                // log_offset,
-        nullptr);                                         // log_ctx
+        GetChannelLayout(obtained_audio_spec_.channels),      // out_ch_layout
+        av_sample_format,                                     // out_sample_fmt
+        obtained_audio_spec_.freq,                            // out_sample_rate
+        GetChannelLayout(frame->stream_info->channel_count),  // in_ch_layout
+        static_cast<AVSampleFormat>(format),                  // in_sample_fmt
+        frame->stream_info->sample_rate,                      // in_sample_rate
+        0,                                                    // log_offset,
+        nullptr);                                             // log_ctx
     if (!swr_ctx_) {
       LOG(ERROR) << "Unable to allocate swrescale context.";
       return false;
@@ -427,30 +428,35 @@ class SdlAudioRenderer::Impl {
       // sample rate or channel count, we can just use swresample to change
       // these.  If they are higher, we want to try to create a new device so we
       // get the benefits.
-      if (frame->sample_rate > static_cast<uint32_t>(audio_spec_.freq) ||
-          frame->channel_count > audio_spec_.channels ||
+      if (frame->stream_info->sample_rate >
+              static_cast<uint32_t>(audio_spec_.freq) ||
+          frame->stream_info->channel_count > audio_spec_.channels ||
           SDLFormatFromShaka(frame->format) != audio_spec_.format) {
         need_reset_ = true;
         on_reset_.SignalAll();
         break;
       }
-      if (frame->sample_rate != static_cast<uint32_t>(audio_spec_.freq)) {
-        av_opt_set_int(swr_ctx_, "in_sample_rate", frame->sample_rate, 0);
+      if (frame->stream_info->sample_rate !=
+          static_cast<uint32_t>(audio_spec_.freq)) {
+        av_opt_set_int(swr_ctx_, "in_sample_rate",
+                       frame->stream_info->sample_rate, 0);
         swr_init(swr_ctx_);
-        audio_spec_.freq = frame->sample_rate;
+        audio_spec_.freq = frame->stream_info->sample_rate;
       }
-      if (frame->channel_count != audio_spec_.channels) {
+      if (frame->stream_info->channel_count != audio_spec_.channels) {
         av_opt_set_int(swr_ctx_, "in_channel_layout",
-                       GetChannelLayout(frame->channel_count), 0);
+                       GetChannelLayout(frame->stream_info->channel_count), 0);
         swr_init(swr_ctx_);
-        audio_spec_.channels = static_cast<Uint8>(frame->channel_count);
+        audio_spec_.channels =
+            static_cast<Uint8>(frame->stream_info->channel_count);
       }
 
       // Assume the first byte in the array will be played "right-now", or at
       // |now_time|.  This is technically not correct, but the delay shouldn't
       // be noticeable.
-      const auto pts = static_cast<uint64_t>(
-          frame->pts * obtained_audio_spec_.freq * frame->sample_rate);
+      const auto pts =
+          static_cast<uint64_t>(frame->pts * obtained_audio_spec_.freq *
+                                frame->stream_info->sample_rate);
       // Swr will adjust the audio so the next sample will happen at |pts|.
       if (swr_next_pts(swr_ctx_, pts) < 0)
         break;
