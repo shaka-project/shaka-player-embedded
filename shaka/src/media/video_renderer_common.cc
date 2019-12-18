@@ -104,7 +104,7 @@ void VideoRendererCommon::Detach() {
   input_ = nullptr;
 }
 
-VideoPlaybackQualityNew VideoRendererCommon::VideoPlaybackQuality() const {
+VideoPlaybackQuality VideoRendererCommon::VideoPlaybackQuality() const {
   std::unique_lock<Mutex> lock(mutex_);
   return quality_;
 }

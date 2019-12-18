@@ -98,7 +98,7 @@ class SHAKA_EXPORT AudioRenderer : public Renderer {
 class SHAKA_EXPORT VideoRenderer : public Renderer {
  public:
   /** @see MediaPlayer::VideoPlaybackQuality */
-  virtual VideoPlaybackQualityNew VideoPlaybackQuality() const = 0;
+  virtual VideoPlaybackQuality VideoPlaybackQuality() const = 0;
 
   /** @see MediaPlayer::SetVideoFillMode */
   virtual bool SetVideoFillMode(VideoFillMode mode) = 0;

@@ -58,12 +58,12 @@ class ProxyMediaPlayer::Impl {
 ProxyMediaPlayer::ProxyMediaPlayer() : impl_(new Impl) {}
 ProxyMediaPlayer::~ProxyMediaPlayer() {}
 
-VideoPlaybackQualityNew ProxyMediaPlayer::VideoPlaybackQuality() const {
+VideoPlaybackQuality ProxyMediaPlayer::VideoPlaybackQuality() const {
   util::shared_lock<SharedMutex> lock(impl_->mutex);
   if (impl_->player)
     return impl_->player->VideoPlaybackQuality();
   else
-    return VideoPlaybackQualityNew();
+    return VideoPlaybackQuality();
 }
 
 void ProxyMediaPlayer::AddClient(Client* client) {

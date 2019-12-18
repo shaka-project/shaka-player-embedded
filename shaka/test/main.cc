@@ -67,8 +67,8 @@ class DummyRenderer : public media::VideoRenderer, public media::AudioRenderer {
   }
   void SetMuted(bool muted) override {}
 
-  media::VideoPlaybackQualityNew VideoPlaybackQuality() const override {
-    return media::VideoPlaybackQualityNew();
+  media::VideoPlaybackQuality VideoPlaybackQuality() const override {
+    return media::VideoPlaybackQuality();
   }
   bool SetVideoFillMode(media::VideoFillMode mode) override {
     return false;

@@ -42,6 +42,8 @@ BEGIN_ALLOW_COMPLEX_STATICS
 std::unordered_set<HTMLVideoElement*> HTMLVideoElement::g_video_elements_;
 END_ALLOW_COMPLEX_STATICS
 
+DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE(VideoPlaybackQuality);
+
 HTMLVideoElement::HTMLVideoElement(RefPtr<dom::Document> document,
                                    media::MediaPlayer* player)
     : dom::Element(document, "video", nullopt, nullopt),
@@ -159,12 +161,11 @@ media::VideoReadyState HTMLVideoElement::GetReadyState() const {
   return ret;
 }
 
-ExceptionOr<media::VideoPlaybackQuality>
-HTMLVideoElement::GetVideoPlaybackQuality() const {
+ExceptionOr<VideoPlaybackQuality> HTMLVideoElement::GetVideoPlaybackQuality()
+    const {
   CHECK_ATTACHED();
-
   auto temp = player_->VideoPlaybackQuality();
-  media::VideoPlaybackQuality ret;
+  VideoPlaybackQuality ret;
   ret.totalVideoFrames = temp.total_video_frames;
   ret.droppedVideoFrames = temp.dropped_video_frames;
   ret.corruptedVideoFrames = temp.corrupted_video_frames;

@@ -37,7 +37,7 @@ class SHAKA_EXPORT ProxyMediaPlayer : public MediaPlayer {
   ProxyMediaPlayer();
   ~ProxyMediaPlayer() override;
 
-  VideoPlaybackQualityNew VideoPlaybackQuality() const override;
+  struct VideoPlaybackQuality VideoPlaybackQuality() const override;
   void AddClient(Client* client) override;
   void RemoveClient(Client* client) override;
   std::vector<BufferedRange> GetBuffered() const override;

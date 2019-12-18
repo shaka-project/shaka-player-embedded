@@ -76,7 +76,7 @@ class SHAKA_EXPORT SdlManualVideoRenderer : public VideoRenderer {
   void Attach(const DecodedStream* stream) override;
   void Detach() override;
 
-  VideoPlaybackQualityNew VideoPlaybackQuality() const override;
+  struct VideoPlaybackQuality VideoPlaybackQuality() const override;
   bool SetVideoFillMode(VideoFillMode mode) override;
 
  private:

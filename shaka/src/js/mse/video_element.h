@@ -32,6 +32,7 @@
 #include "src/mapping/enum.h"
 #include "src/mapping/exception_or.h"
 #include "src/mapping/promise.h"
+#include "src/mapping/struct.h"
 #include "src/media/types.h"
 #include "src/util/clock.h"
 
@@ -46,6 +47,15 @@ enum class CanPlayTypeEnum {
   EMPTY,
   MAYBE,
   PROBABLY,
+};
+
+struct VideoPlaybackQuality : Struct {
+  DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE(VideoPlaybackQuality);
+
+  ADD_DICT_FIELD(creationTime, double);
+  ADD_DICT_FIELD(totalVideoFrames, uint64_t);
+  ADD_DICT_FIELD(droppedVideoFrames, uint64_t);
+  ADD_DICT_FIELD(corruptedVideoFrames, uint64_t);
 };
 
 class HTMLVideoElement : public dom::Element, media::MediaPlayer::Client {
@@ -79,7 +89,7 @@ class HTMLVideoElement : public dom::Element, media::MediaPlayer::Client {
 
   std::vector<RefPtr<TextTrack>> text_tracks() const;
   media::VideoReadyState GetReadyState() const;
-  ExceptionOr<media::VideoPlaybackQuality> GetVideoPlaybackQuality() const;
+  ExceptionOr<VideoPlaybackQuality> GetVideoPlaybackQuality() const;
   RefPtr<TimeRanges> Buffered() const;
   RefPtr<TimeRanges> Seekable() const;
   std::string Source() const;

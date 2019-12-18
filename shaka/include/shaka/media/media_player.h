@@ -159,7 +159,7 @@ enum class VideoPlaybackState : uint8_t {
  * Describes the current statistics about video playback quality.
  * @ingroup media
  */
-struct SHAKA_EXPORT VideoPlaybackQualityNew {
+struct SHAKA_EXPORT VideoPlaybackQuality {
   /** The total number of video frames played. */
   uint32_t total_video_frames;
 
@@ -301,7 +301,7 @@ class SHAKA_EXPORT MediaPlayer {
       const MediaDecodingConfiguration& config) const = 0;
 
   /** @return The current video playback statistics. */
-  virtual VideoPlaybackQualityNew VideoPlaybackQuality() const = 0;
+  virtual VideoPlaybackQuality VideoPlaybackQuality() const = 0;
 
   /**
    * Adds a new client listener.  The given object will be called when events

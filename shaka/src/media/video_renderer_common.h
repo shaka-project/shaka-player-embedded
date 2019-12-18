@@ -49,7 +49,7 @@ class VideoRendererCommon : public VideoRenderer {
   void Attach(const DecodedStream* stream) override;
   void Detach() override;
 
-  VideoPlaybackQualityNew VideoPlaybackQuality() const override;
+  struct VideoPlaybackQuality VideoPlaybackQuality() const override;
   bool SetVideoFillMode(VideoFillMode mode) override;
 
  private:
@@ -57,7 +57,7 @@ class VideoRendererCommon : public VideoRenderer {
 
   const MediaPlayer* player_;
   const DecodedStream* input_;
-  VideoPlaybackQualityNew quality_;
+  struct VideoPlaybackQuality quality_;
   std::atomic<VideoFillMode> fill_mode_;
   double prev_time_;
 };

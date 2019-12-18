@@ -146,7 +146,7 @@ void SdlManualVideoRenderer::Attach(const DecodedStream* stream) {
 void SdlManualVideoRenderer::Detach() {
   impl_->Detach();
 }
-VideoPlaybackQualityNew SdlManualVideoRenderer::VideoPlaybackQuality() const {
+VideoPlaybackQuality SdlManualVideoRenderer::VideoPlaybackQuality() const {
   return impl_->VideoPlaybackQuality();
 }
 bool SdlManualVideoRenderer::SetVideoFillMode(VideoFillMode mode) {

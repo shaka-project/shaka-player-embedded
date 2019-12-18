@@ -92,7 +92,7 @@ MediaCapabilitiesInfo MseMediaPlayer::DecodingInfo(
   return ret;
 }
 
-VideoPlaybackQualityNew MseMediaPlayer::VideoPlaybackQuality() const {
+VideoPlaybackQuality MseMediaPlayer::VideoPlaybackQuality() const {
   return video_renderer_->VideoPlaybackQuality();
 }
 

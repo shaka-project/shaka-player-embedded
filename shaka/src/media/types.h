@@ -139,16 +139,6 @@ DEFINE_ENUM_AND_TO_STRING(SourceType, DEFINE_ENUM_);
 DEFINE_ENUM_AND_TO_STRING(PipelineStatus, DEFINE_ENUM_);
 #undef DEFINE_ENUM_
 
-
-struct VideoPlaybackQuality : Struct {
-  DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE(VideoPlaybackQuality);
-
-  ADD_DICT_FIELD(creationTime, double);
-  ADD_DICT_FIELD(totalVideoFrames, uint64_t);
-  ADD_DICT_FIELD(droppedVideoFrames, uint64_t);
-  ADD_DICT_FIELD(corruptedVideoFrames, uint64_t);
-};
-
 using BufferedRanges = std::vector<BufferedRange>;
 
 std::ostream& operator<<(std::ostream& os, const BufferedRange& range);
