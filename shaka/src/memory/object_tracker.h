@@ -81,24 +81,13 @@ class ObjectTracker final : public PseudoSingleton<ObjectTracker> {
 
  private:
   friend RefPtrTest;
-  friend class HeapTracerTest;
-  friend class ObjectTrackerIntegration;
   friend class ObjectTrackerTest;
-
-  /**
-   * Used for testing when the objects being tracked exist on the stack.  This
-   * removes all tracked objects.
-   */
-  void UnregisterAllObjects();
 
   /** @return Whether the given object is alive in JavaScript. */
   bool IsJsAlive(Traceable* object) const;
 
   /** @return The number of references to the given object. */
   uint32_t GetRefCount(Traceable* object) const;
-
-  /** Used in tests to get all managed objects. */
-  std::vector<const Traceable*> GetAllObjects() const;
 
   void DestroyObjects(const std::unordered_set<Traceable*>& to_delete,
                       std::unique_lock<Mutex>* lock);

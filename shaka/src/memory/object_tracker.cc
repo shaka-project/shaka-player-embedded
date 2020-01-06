@@ -101,12 +101,6 @@ ObjectTracker::~ObjectTracker() {
   CHECK(objects_.empty());
 }
 
-void ObjectTracker::UnregisterAllObjects() {
-  std::unique_lock<Mutex> lock(mutex_);
-  last_alive_time_.clear();
-  objects_.clear();
-}
-
 bool ObjectTracker::IsJsAlive(Traceable* object) const {
   const uint64_t now = util::Clock::Instance.GetMonotonicTime();
   if (object->IsShortLived()) {
@@ -122,15 +116,6 @@ uint32_t ObjectTracker::GetRefCount(Traceable* object) const {
   std::unique_lock<Mutex> lock(mutex_);
   DCHECK_EQ(1u, objects_.count(object));
   return objects_.at(object);
-}
-
-std::vector<const Traceable*> ObjectTracker::GetAllObjects() const {
-  std::unique_lock<Mutex> lock(mutex_);
-  std::vector<const Traceable*> ret;
-  ret.reserve(objects_.size());
-  for (auto& pair : objects_)
-    ret.push_back(pair.first);
-  return ret;
 }
 
 void ObjectTracker::Dispose() {

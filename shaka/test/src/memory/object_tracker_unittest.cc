@@ -59,15 +59,13 @@ class ObjectTrackerTest : public testing::Test {
  protected:
   ObjectTrackerTest() : tracker(&heap_tracer) {}
 
-  void ExpectNonZeroRefs(const Traceable* obj) {
+  void ExpectNonZeroRefs(Traceable* obj) {
     EXPECT_TRUE(util::contains(tracker.GetAliveObjects(), obj));
+    EXPECT_GT(tracker.GetRefCount(obj), 0u);
   }
-  void ExpectZeroRefs(const Traceable* obj) {
+  void ExpectZeroRefs(Traceable* obj) {
     EXPECT_FALSE(util::contains(tracker.GetAliveObjects(), obj));
-    EXPECT_TRUE(util::contains(tracker.GetAllObjects(), obj));
-  }
-  void ExpectMissing(const Traceable* obj) {
-    EXPECT_FALSE(util::contains(tracker.GetAllObjects(), obj));
+    EXPECT_EQ(tracker.GetRefCount(obj), 0u);
   }
 
   ObjectTracker::UnsetForTesting unset_;
@@ -102,7 +100,6 @@ TEST_F(ObjectTrackerTest, BasicFlow) {
   js_alive.clear();
   tracker.FreeDeadObjects(js_alive);
   // The pointer is invalid at this point.
-  ExpectMissing(obj);
   EXPECT_TRUE(is_free);
 }
 
@@ -116,8 +113,6 @@ TEST_F(ObjectTrackerTest, Dispose) {
 
   tracker.Dispose();
 
-  ExpectMissing(obj1);
-  ExpectMissing(obj2);
   EXPECT_TRUE(is_free1);
   EXPECT_TRUE(is_free2);
 }

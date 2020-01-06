@@ -83,13 +83,13 @@ std::string TrimAsciiWhitespace(const std::string& source);
 
 std::string ToHexString(const uint8_t* data, size_t data_size);
 
-template <typename T>
-bool contains(const std::vector<T>& vec, const T& elem) {
-  return std::find(vec.begin(), vec.end(), elem) != vec.end();
+template <typename T, typename U>
+bool contains(const std::vector<T>& vec, U&& elem) {
+  return std::find(vec.begin(), vec.end(), std::forward<U>(elem)) != vec.end();
 }
-template <typename T>
-bool contains(const std::unordered_set<T>& set, const T& elem) {
-  return set.count(elem) != 0;
+template <typename T, typename U>
+bool contains(const std::unordered_set<T>& set, U&& elem) {
+  return set.count(std::forward<U>(elem)) != 0;
 }
 template <typename List, typename Elem>
 void RemoveElement(List* list, Elem&& elem) {

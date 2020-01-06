@@ -52,7 +52,7 @@ struct Derived : Base {};
 class RefPtrTest : public testing::Test {
  public:
   ~RefPtrTest() override {
-    tracker_.UnregisterAllObjects();
+    tracker_.Dispose();
   }
 
  protected:
@@ -61,32 +61,32 @@ class RefPtrTest : public testing::Test {
   }
 
   void ExpectEmptyTracker() {
-    EXPECT_EQ(0u, tracker_.GetRefCount(&base1_));
-    EXPECT_EQ(0u, tracker_.GetRefCount(&base2_));
-    EXPECT_EQ(0u, tracker_.GetRefCount(&derived_));
+    EXPECT_EQ(0u, tracker_.GetRefCount(base1_));
+    EXPECT_EQ(0u, tracker_.GetRefCount(base2_));
+    EXPECT_EQ(0u, tracker_.GetRefCount(derived_));
   }
 
   memory::ObjectTracker::UnsetForTesting unset_;
   memory::HeapTracer heap_tracer_;
   memory::ObjectTracker tracker_{&heap_tracer_};
-  Base base1_;
-  Base base2_;
-  Derived derived_;
+  Base* base1_ = new Base;
+  Base* base2_ = new Base;
+  Derived* derived_ = new Derived;
 };
 
 TEST_F(RefPtrTest, BasicFlow) {
   {
-    RefPtr<Base> ptr1(&base1_);
-    EXPECT_EQ(1u, GetRefCount(&base1_));
-    EXPECT_EQ(0u, GetRefCount(&base2_));
+    RefPtr<Base> ptr1(base1_);
+    EXPECT_EQ(1u, GetRefCount(base1_));
+    EXPECT_EQ(0u, GetRefCount(base2_));
 
-    ptr1 = &base2_;
-    EXPECT_EQ(0u, GetRefCount(&base1_));
-    EXPECT_EQ(1u, GetRefCount(&base2_));
+    ptr1 = base2_;
+    EXPECT_EQ(0u, GetRefCount(base1_));
+    EXPECT_EQ(1u, GetRefCount(base2_));
 
-    RefPtr<Base> ptr2(&base2_);
-    EXPECT_EQ(0u, GetRefCount(&base1_));
-    EXPECT_EQ(2u, GetRefCount(&base2_));
+    RefPtr<Base> ptr2(base2_);
+    EXPECT_EQ(0u, GetRefCount(base1_));
+    EXPECT_EQ(2u, GetRefCount(base2_));
   }
 
   ExpectEmptyTracker();
@@ -94,13 +94,13 @@ TEST_F(RefPtrTest, BasicFlow) {
 
 TEST_F(RefPtrTest, SupportsCopyAndMove) {
   {
-    RefPtr<Base> ptr1(&base1_);
+    RefPtr<Base> ptr1(base1_);
     RefPtr<Base> ptr2(ptr1);
     RefPtr<Base> ptr3;
     EXPECT_TRUE(ptr3.empty());
     ptr3 = ptr1;
-    EXPECT_EQ(3u, GetRefCount(&base1_));
-    EXPECT_EQ(0u, GetRefCount(&base2_));
+    EXPECT_EQ(3u, GetRefCount(base1_));
+    EXPECT_EQ(0u, GetRefCount(base2_));
     EXPECT_EQ(ptr1, ptr2);
     EXPECT_EQ(ptr1, ptr3);
 
@@ -108,24 +108,24 @@ TEST_F(RefPtrTest, SupportsCopyAndMove) {
     RefPtr<Base> ptr4(std::move(ptr2));
     EXPECT_TRUE(ptr2.empty());
     EXPECT_FALSE(ptr4.empty());
-    EXPECT_EQ(3u, GetRefCount(&base1_));
+    EXPECT_EQ(3u, GetRefCount(base1_));
     EXPECT_EQ(ptr1, ptr4);
     EXPECT_NE(ptr2, ptr4);
 
     ptr2 = std::move(ptr4);
     EXPECT_TRUE(ptr4.empty());
     EXPECT_FALSE(ptr2.empty());
-    EXPECT_EQ(3u, GetRefCount(&base1_));
+    EXPECT_EQ(3u, GetRefCount(base1_));
 
     ptr1 = ptr2;
-    EXPECT_EQ(3u, GetRefCount(&base1_));
+    EXPECT_EQ(3u, GetRefCount(base1_));
 
     ptr1 = nullptr;
-    EXPECT_EQ(2u, GetRefCount(&base1_));
+    EXPECT_EQ(2u, GetRefCount(base1_));
     EXPECT_TRUE(ptr1.empty());
 
     ptr2.reset();
-    EXPECT_EQ(1u, GetRefCount(&base1_));
+    EXPECT_EQ(1u, GetRefCount(base1_));
     EXPECT_TRUE(ptr2.empty());
     EXPECT_FALSE(ptr3.empty());
   }
@@ -150,62 +150,62 @@ TEST_F(RefPtrTest, SupportsCallingMethods) {
   };
 
   {
-    RefPtr<Base> ptr1(&base1_);
-    RefPtr<Base> ptr2(&base2_);
-    EXPECT_EQ(1u, GetRefCount(&base1_));
-    EXPECT_EQ(1u, GetRefCount(&base2_));
+    RefPtr<Base> ptr1(base1_);
+    RefPtr<Base> ptr2(base2_);
+    EXPECT_EQ(1u, GetRefCount(base1_));
+    EXPECT_EQ(1u, GetRefCount(base2_));
 
     VerifyMethodArguments(ptr1, std::move(ptr2));
 
     EXPECT_FALSE(ptr1.empty());
     EXPECT_TRUE(ptr2.empty());
-    EXPECT_EQ(1u, GetRefCount(&base1_));
-    EXPECT_EQ(0u, GetRefCount(&base2_));
+    EXPECT_EQ(1u, GetRefCount(base1_));
+    EXPECT_EQ(0u, GetRefCount(base2_));
   }
 
   ExpectEmptyTracker();
 }
 
 TEST_F(RefPtrTest, SupportsComparisons) {
-  RefPtr<Base> ptr1(&base1_);
+  RefPtr<Base> ptr1(base1_);
 
   EXPECT_FALSE(ptr1.empty());
-  EXPECT_TRUE(ptr1 == &base1_);
-  EXPECT_TRUE(&base1_ == ptr1);
-  EXPECT_FALSE(ptr1 != &base1_);
-  EXPECT_FALSE(&base1_ != ptr1);
-  EXPECT_FALSE(ptr1 == &base2_);
-  EXPECT_TRUE(ptr1 != &base2_);
-  EXPECT_FALSE(ptr1 == &derived_);
-  EXPECT_TRUE(ptr1 != &derived_);
+  EXPECT_TRUE(ptr1 == base1_);
+  EXPECT_TRUE(base1_ == ptr1);
+  EXPECT_FALSE(ptr1 != base1_);
+  EXPECT_FALSE(base1_ != ptr1);
+  EXPECT_FALSE(ptr1 == base2_);
+  EXPECT_TRUE(ptr1 != base2_);
+  EXPECT_FALSE(ptr1 == derived_);
+  EXPECT_TRUE(ptr1 != derived_);
   EXPECT_FALSE(ptr1 == nullptr);
   EXPECT_TRUE(ptr1 != nullptr);
   EXPECT_FALSE(nullptr == ptr1);
   EXPECT_TRUE(nullptr != ptr1);
 
-  ptr1 = &derived_;
+  ptr1 = derived_;
 
   EXPECT_FALSE(ptr1.empty());
-  EXPECT_FALSE(ptr1 == &base1_);
-  EXPECT_TRUE(ptr1 != &base1_);
-  EXPECT_TRUE(ptr1 == &derived_);
-  EXPECT_FALSE(ptr1 != &derived_);
+  EXPECT_FALSE(ptr1 == base1_);
+  EXPECT_TRUE(ptr1 != base1_);
+  EXPECT_TRUE(ptr1 == derived_);
+  EXPECT_FALSE(ptr1 != derived_);
   EXPECT_FALSE(ptr1 == nullptr);
   EXPECT_TRUE(ptr1 != nullptr);
 
   ptr1 = nullptr;
 
   EXPECT_TRUE(ptr1.empty());
-  EXPECT_FALSE(ptr1 == &base1_);
-  EXPECT_TRUE(ptr1 != &base1_);
-  EXPECT_FALSE(ptr1 == &derived_);
-  EXPECT_TRUE(ptr1 != &derived_);
+  EXPECT_FALSE(ptr1 == base1_);
+  EXPECT_TRUE(ptr1 != base1_);
+  EXPECT_FALSE(ptr1 == derived_);
+  EXPECT_TRUE(ptr1 != derived_);
   EXPECT_TRUE(ptr1 == nullptr);
   EXPECT_FALSE(ptr1 != nullptr);
 
-  Member<Base> mem1(&base1_);
-  Member<Derived> mem2(&derived_);
-  ptr1 = &base1_;
+  Member<Base> mem1(base1_);
+  Member<Derived> mem2(derived_);
+  ptr1 = base1_;
   EXPECT_TRUE(ptr1 == mem1);
   EXPECT_TRUE(mem1 == ptr1);
   EXPECT_FALSE(ptr1 == mem2);
@@ -218,48 +218,48 @@ TEST_F(RefPtrTest, SupportsComparisons) {
 
 TEST_F(RefPtrTest, InteractsWithMember) {
   {
-    RefPtr<Base> ptr1(&base1_);
+    RefPtr<Base> ptr1(base1_);
     Member<Base> mem1(ptr1);
     EXPECT_EQ(mem1, ptr1);
     EXPECT_EQ(ptr1, mem1);
 
     Member<Base> mem2(std::move(ptr1));
     EXPECT_TRUE(ptr1.empty());
-    EXPECT_TRUE(mem2 == &base1_);
+    EXPECT_TRUE(mem2 == base1_);
 
     ptr1 = mem1;
     EXPECT_FALSE(ptr1.empty());
-    EXPECT_EQ(ptr1, &base1_);
+    EXPECT_EQ(ptr1, base1_);
 
     ptr1.reset();
     ptr1 = std::move(mem1);
     EXPECT_TRUE(mem1.empty());
     EXPECT_FALSE(ptr1.empty());
-    EXPECT_EQ(ptr1, &base1_);
+    EXPECT_EQ(ptr1, base1_);
 
     RefPtr<Base> ptr2(std::move(mem2));
     EXPECT_TRUE(mem2.empty());
     EXPECT_FALSE(ptr2.empty());
-    EXPECT_EQ(ptr2, &base1_);
+    EXPECT_EQ(ptr2, base1_);
 
     mem2 = ptr1;
     EXPECT_FALSE(mem2.empty());
     EXPECT_FALSE(ptr1.empty());
-    EXPECT_EQ(mem2, &base1_);
+    EXPECT_EQ(mem2, base1_);
 
-    Member<Derived> mem3(&derived_);
+    Member<Derived> mem3(derived_);
     ptr1 = mem3;
     EXPECT_FALSE(ptr1.empty());
-    EXPECT_EQ(ptr1, &derived_);
+    EXPECT_EQ(ptr1, derived_);
 
     ptr1.reset();
     EXPECT_TRUE(ptr1.empty());
     ptr1 = std::move(mem3);
     EXPECT_TRUE(mem3.empty());
     EXPECT_FALSE(ptr1.empty());
-    EXPECT_EQ(ptr1, &derived_);
+    EXPECT_EQ(ptr1, derived_);
 
-    mem3 = &derived_;
+    mem3 = derived_;
     RefPtr<Base> ptr3(mem3);
     EXPECT_FALSE(ptr3.empty());
     EXPECT_EQ(ptr3, mem3);

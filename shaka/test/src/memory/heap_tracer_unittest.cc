@@ -61,7 +61,7 @@ class HeapTracerTest : public testing::Test {
  public:
   HeapTracerTest() : tracker(&heap_tracer) {}
   ~HeapTracerTest() override {
-    tracker.UnregisterAllObjects();
+    tracker.Dispose();
   }
 
  protected:
@@ -92,83 +92,95 @@ class HeapTracerTest : public testing::Test {
 };
 
 TEST_F(HeapTracerTest, BasicFlow) {
-  TestObject obj1;
-  TestObject obj2;
-  TestObject obj3;
-  TestObject obj4;
+  auto* obj1 = new TestObject;
+  auto* obj2 = new TestObject;
+  auto* obj3 = new TestObject;
+  auto* obj4 = new TestObject;
 
   // Ref-counted alive objects: obj1, obj4.
-  std::unordered_set<const Traceable*> ref_alive = {&obj1, &obj4};
+  std::unordered_set<const Traceable*> ref_alive = {obj1, obj4};
 
   // JavaScript alive objects: obj3.
-  RunTracer(ref_alive, &obj3);
+  RunTracer(ref_alive, obj3);
 
-  ExpectAlive(&obj1, &obj3, &obj4);
-  ExpectDead(&obj2);
+  ExpectAlive(obj1, obj3, obj4);
+  ExpectDead(obj2);
 }
 
 TEST_F(HeapTracerTest, TracesIndirectChildren) {
   // Root (alive) object.
-  TestObjectWithBackingChild root;
+  auto* root = new TestObjectWithBackingChild;
   // Indirect alive objects.
-  TestObjectWithBackingChild A, B, C, D, E, F, G;
-  root.member1 = &A;
-  root.member2 = &B;
-  root.member3 = &C;
-  A.member1 = &D;
-  A.member2 = &E;
-  B.member1 = &E;
-  C.member1 = &E;
-  C.member2 = &F;
-  E.member1 = &F;
-  E.member2 = &G;
+  auto* A = new TestObjectWithBackingChild;
+  auto* B = new TestObjectWithBackingChild;
+  auto* C = new TestObjectWithBackingChild;
+  auto* D = new TestObjectWithBackingChild;
+  auto* E = new TestObjectWithBackingChild;
+  auto* F = new TestObjectWithBackingChild;
+  auto* G = new TestObjectWithBackingChild;
+
+  root->member1 = A;
+  root->member2 = B;
+  root->member3 = C;
+  A->member1 = D;
+  A->member2 = E;
+  B->member1 = E;
+  C->member1 = E;
+  C->member2 = F;
+  E->member1 = F;
+  E->member2 = G;
   // Dead objects
-  TestObjectWithBackingChild H, I, J, K;
-  H.member1 = &C;
-  H.member2 = &J;
-  I.member1 = &A;
-  I.member2 = &D;
+  auto* H = new TestObjectWithBackingChild;
+  auto* I = new TestObjectWithBackingChild;
+  auto* J = new TestObjectWithBackingChild;
+  auto* K = new TestObjectWithBackingChild;
+  H->member1 = C;
+  H->member2 = J;
+  I->member1 = A;
+  I->member2 = D;
 
   // First test using JavaScript alive objects.
   std::unordered_set<const Traceable*> ref_alive;
-  RunTracer(ref_alive, &root);
+  RunTracer(ref_alive, root);
 
   // Check first test results.
-  ExpectAlive(&root, &A, &B, &C, &D, &E, &F, &G);
-  ExpectDead(&H, &I, &J, &K);
+  ExpectAlive(root, A, B, C, D, E, F, G);
+  ExpectDead(H, I, J, K);
 
   // Try again using ref-counted alive
-  ref_alive = {&root};
+  ref_alive = {root};
   RunTracer(ref_alive, nullptr);
 
   // Check results of second test.
-  ExpectAlive(&root, &A, &B, &C, &D, &E, &F, &G);
-  ExpectDead(&H, &I, &J, &K);
+  ExpectAlive(root, A, B, C, D, E, F, G);
+  ExpectDead(H, I, J, K);
 }
 
 TEST_F(HeapTracerTest, SupportsCircularReferences) {
   // Root (alive) object.
-  TestObjectWithBackingChild root;
+  auto* root = new TestObjectWithBackingChild;
   // Indirect alive objects.
-  TestObjectWithBackingChild A, B, C;
-  root.member1 = &A;
-  A.member1 = &B;
-  A.member2 = &C;
-  B.member1 = &root;
+  auto* A = new TestObjectWithBackingChild;
+  auto* B = new TestObjectWithBackingChild;
+  auto* C = new TestObjectWithBackingChild;
+  root->member1 = A;
+  A->member1 = B;
+  A->member2 = C;
+  B->member1 = root;
 
   // First test using JavaScript alive objects.
   std::unordered_set<const Traceable*> ref_alive;
-  RunTracer(ref_alive, &root);
+  RunTracer(ref_alive, root);
 
   // Check first test results.
-  ExpectAlive(&root, &A, &B, &C);
+  ExpectAlive(root, A, B, C);
 
   // Try again using ref-counted alive
-  ref_alive = {&root};
+  ref_alive = {root};
   RunTracer(ref_alive, nullptr);
 
   // Check results of second test.
-  ExpectAlive(&root, &A, &B, &C);
+  ExpectAlive(root, A, B, C);
 }
 
 }  // namespace memory
