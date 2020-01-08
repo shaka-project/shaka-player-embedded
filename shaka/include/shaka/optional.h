@@ -20,6 +20,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "macros.h"
+
 namespace shaka {
 
 // Note that we shouldn't use the C++17 type even if we are compiling with that
@@ -28,10 +30,10 @@ namespace shaka {
 // Otherwise using different types will cause subtle bugs.
 
 /** @see https://en.cppreference.com/w/cpp/utility/optional/nullopt_t */
-struct nullopt_t {
+struct SHAKA_EXPORT nullopt_t {
   explicit nullopt_t(int) {}
 };
-extern const nullopt_t nullopt;
+extern const SHAKA_EXPORT nullopt_t nullopt;
 
 template <class T>
 class optional;

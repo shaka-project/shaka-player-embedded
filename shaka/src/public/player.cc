@@ -33,7 +33,7 @@
 #include "src/util/utils.h"
 
 // Declared in version.h by generated code in //shaka/tools/version.py.
-SHAKA_EXPORT extern "C" const char* GetShakaEmbeddedVersion(void) {
+extern "C" const char* GetShakaEmbeddedVersion(void) {
   return SHAKA_VERSION_STR;
 }
 

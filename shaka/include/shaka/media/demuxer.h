@@ -122,7 +122,7 @@ class SHAKA_EXPORT Demuxer {
  * Defines a factory used to create Demuxer instances and to query supported
  * content types.
  */
-class DemuxerFactory {
+class SHAKA_EXPORT DemuxerFactory {
  public:
   DemuxerFactory();
   DemuxerFactory(const DemuxerFactory&) = delete;

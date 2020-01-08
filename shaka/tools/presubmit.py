@@ -164,6 +164,47 @@ def _CheckUmbrellaHeader(_):
 
 
 @_Check
+def _CheckExports(_):
+  logging.info('Checking correct classes are exported...')
+  has_error = False
+  for root, _, files in os.walk(os.path.join(ROOT_DIR, 'shaka', 'include')):
+    for name in files:
+      if not name.endswith('.h'):
+        continue
+      full_path = os.path.join(root, name)
+      with open(full_path, 'r') as f:
+        prev_line = ''
+        for i, line in enumerate(f):
+          if ((line.startswith('class') or line.startswith('struct')) and
+              'SHAKA_EXPORT' not in line and ';' not in line and
+              not prev_line.startswith('template')):
+            if not has_error:
+              has_error = True
+              logging.error('Public class not exported:')
+            rel = os.path.relpath(full_path, ROOT_DIR)
+            logging.error('  %s:%s', rel, i + 1)
+          prev_line = line
+  if has_error:
+    return 1
+
+  has_error = False
+  for root, _, files in os.walk(os.path.join(ROOT_DIR, 'shaka', 'src')):
+    for name in files:
+      if not any(name.endswith(e) for e in ['.h', '.cc', '.m', '.mm']):
+        continue
+      full_path = os.path.join(root, name)
+      with open(full_path, 'r') as f:
+        for i, line in enumerate(f):
+          if 'SHAKA_EXPORT' in line:
+            if not has_error:
+              has_error = True
+              logging.error('Private class exported:')
+            rel = os.path.relpath(full_path, ROOT_DIR)
+            logging.error('  %s:%s', rel, i + 1)
+  return 1 if has_error else 0
+
+
+@_Check
 def _CheckCppLint(_):
   logging.info('Checking cpplint...')
   utils.LoadSubmodule('third_party/styleguide/src')

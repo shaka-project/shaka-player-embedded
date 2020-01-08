@@ -123,6 +123,8 @@ def _GenVersion(output):
   assert revision >= 0 and revision <= _MAX_VERSION
   assert tag >= 0 and tag <= _MAX_VERSION
   writer = embed_utils.CodeWriter(output)
+  writer.Write('#include "macros.h"')
+  writer.Write()
   writer.Write('#define SHAKA_VERSION_MAJOR %dULL' % major)
   writer.Write('#define SHAKA_VERSION_MINOR %dULL' % minor)
   writer.Write('#define SHAKA_VERSION_REVISION %dULL' % revision)
@@ -139,7 +141,7 @@ def _GenVersion(output):
   writer.Write('#endif  // __cplusplus')
 
   writer.Write('/** @return The runtime version of the library. */')
-  writer.Write('const char* GetShakaEmbeddedVersion(void);')
+  writer.Write('SHAKA_EXPORT const char* GetShakaEmbeddedVersion(void);')
 
   writer.Write('#ifdef __cplusplus')
   writer.Write('}')

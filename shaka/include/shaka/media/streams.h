@@ -38,7 +38,7 @@ enum class FrameLocation : uint8_t {
 /**
  * A POD type that holds a range of buffered frames in a stream.
  */
-struct BufferedRange {
+struct SHAKA_EXPORT BufferedRange {
   BufferedRange() = default;
   BufferedRange(double start, double end) : start(start), end(end) {}
 

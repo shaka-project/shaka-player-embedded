@@ -159,7 +159,7 @@ enum class VideoPlaybackState : uint8_t {
  * Describes the current statistics about video playback quality.
  * @ingroup media
  */
-struct VideoPlaybackQualityNew {
+struct SHAKA_EXPORT VideoPlaybackQualityNew {
   /** The total number of video frames played. */
   uint32_t total_video_frames;
 

@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "shaka/eme/implementation.h"
-#include "shaka/macros.h"
 #include "shaka/media/decoder.h"
 #include "shaka/media/media_player.h"
 #include "shaka/media/renderer.h"
@@ -37,8 +36,7 @@ namespace media {
  * Defines the default MediaSource-based MediaPlayer.  This can only handle MSE
  * playback and uses custom playback tracking.
  */
-class SHAKA_EXPORT MseMediaPlayer final : public MediaPlayer,
-                                          DecoderThread::Client {
+class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
  public:
   MseMediaPlayer(VideoRenderer* video_renderer,
                  AudioRenderer* audio_renderer);
