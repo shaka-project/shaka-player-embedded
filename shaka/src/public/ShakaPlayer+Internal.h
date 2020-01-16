@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "shaka/js_manager.h"
+#include "shaka/media/default_media_player.h"
 #include "shaka/player.h"
 #include "src/media/ios/ios_video_renderer.h"
 
@@ -28,7 +29,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine();
 @interface ShakaPlayer(Internal)
 
 @property(atomic, readonly) shaka::Player* playerInstance;
-@property(atomic, readonly) shaka::media::MediaPlayer* mediaPlayer;
+@property(atomic, readonly) shaka::media::DefaultMediaPlayer* mediaPlayer;
 @property(atomic, readonly) shaka::media::ios::IosVideoRenderer* videoRenderer;
 
 @end

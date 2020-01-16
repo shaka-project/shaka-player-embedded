@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_SHAKA_PLAYER_H_
 #define SHAKA_EMBEDDED_SHAKA_PLAYER_H_
 
+#import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
 
 #include "error_objc.h"
@@ -167,6 +168,13 @@ SHAKA_EXPORT
 
 /** The buffered range of the current stream. */
 @property(atomic, readonly) ShakaBufferedInfo *bufferedInfo;
+
+/**
+ * Gets the current AVPlayer instance used to play src= content.  This is only valid after starting
+ * playback of src= content.  Use the client events to detect when src= content starts.  New
+ * playbacks will use a new instance.
+ */
+@property(atomic, readonly) AVPlayer *avPlayer;
 
 
 /** Return playback and adaptation stats. */

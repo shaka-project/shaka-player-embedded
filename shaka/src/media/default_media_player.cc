@@ -18,6 +18,9 @@
 
 #include "shaka/media/text_track.h"
 #include "src/debug/mutex.h"
+#ifdef OS_IOS
+#  include "src/media/ios/av_media_player.h"
+#endif
 #include "src/media/mse_media_player.h"
 
 namespace shaka {
@@ -28,9 +31,18 @@ class DefaultMediaPlayer::Impl {
   Impl(ClientList* clients, VideoRenderer* video_renderer,
        AudioRenderer* audio_renderer)
       : mutex("DefaultMediaPlayer"),
-        mse_player(clients, video_renderer, audio_renderer) {}
+#ifdef OS_IOS
+        av_player(clients),
+        playing_src_(false),
+#endif
+        mse_player(clients, video_renderer, audio_renderer) {
+  }
 
   Mutex mutex;
+#ifdef OS_IOS
+  ios::AvMediaPlayer av_player;
+  bool playing_src_;
+#endif
   MseMediaPlayer mse_player;
   std::vector<std::shared_ptr<TextTrack>> text_tracks_;
 };
@@ -45,40 +57,94 @@ void DefaultMediaPlayer::SetDecoders(Decoder* video_decoder,
   impl_->mse_player.SetDecoders(video_decoder, audio_decoder);
 }
 
+const void* DefaultMediaPlayer::GetIosView() {
+#ifdef OS_IOS
+  return impl_->av_player.GetIosView();
+#else
+  return nullptr;
+#endif
+}
+
+const void* DefaultMediaPlayer::GetAvPlayer() {
+#ifdef OS_IOS
+  return impl_->av_player.GetAvPlayer();
+#else
+  return nullptr;
+#endif
+}
+
 MediaCapabilitiesInfo DefaultMediaPlayer::DecodingInfo(
     const MediaDecodingConfiguration& config) const {
-  if (config.type == MediaDecodingType::File)
+  if (config.type == MediaDecodingType::File) {
+#ifdef OS_IOS
+    return impl_->av_player.DecodingInfo(config);
+#else
     return MediaCapabilitiesInfo();
-  else
+#endif
+  } else {
     return impl_->mse_player.DecodingInfo(config);
+  }
 }
 
 std::vector<std::shared_ptr<MediaTrack>> DefaultMediaPlayer::AudioTracks() {
+  std::unique_lock<Mutex> lock(impl_->mutex);
+#ifdef OS_IOS
+  if (impl_->playing_src_)
+    return impl_->av_player.AudioTracks();
+#endif
   return {};
 }
 
 std::vector<std::shared_ptr<const MediaTrack>> DefaultMediaPlayer::AudioTracks()
     const {
+  std::unique_lock<Mutex> lock(impl_->mutex);
+#ifdef OS_IOS
+  if (impl_->playing_src_) {
+    return const_cast<const ios::AvMediaPlayer&>(impl_->av_player)
+        .AudioTracks();
+  }
+#endif
   return {};
 }
 
 std::vector<std::shared_ptr<MediaTrack>> DefaultMediaPlayer::VideoTracks() {
+  std::unique_lock<Mutex> lock(impl_->mutex);
+#ifdef OS_IOS
+  if (impl_->playing_src_)
+    return impl_->av_player.VideoTracks();
+#endif
   return {};
 }
 
 std::vector<std::shared_ptr<const MediaTrack>> DefaultMediaPlayer::VideoTracks()
     const {
+  std::unique_lock<Mutex> lock(impl_->mutex);
+#ifdef OS_IOS
+  if (impl_->playing_src_) {
+    return const_cast<const ios::AvMediaPlayer&>(impl_->av_player)
+        .VideoTracks();
+  }
+#endif
   return {};
 }
 
 std::vector<std::shared_ptr<TextTrack>> DefaultMediaPlayer::TextTracks() {
   std::unique_lock<Mutex> lock(impl_->mutex);
+#ifdef OS_IOS
+  if (impl_->playing_src_)
+    return impl_->av_player.TextTracks();
+#endif
   return impl_->text_tracks_;
 }
 
 std::vector<std::shared_ptr<const TextTrack>> DefaultMediaPlayer::TextTracks()
     const {
   std::unique_lock<Mutex> lock(impl_->mutex);
+#ifdef OS_IOS
+  if (impl_->playing_src_) {
+    return const_cast<const ios::AvMediaPlayer&>(impl_->av_player).TextTracks();
+  }
+#endif
   return {impl_->text_tracks_.begin(), impl_->text_tracks_.end()};
 }
 
@@ -94,6 +160,13 @@ std::shared_ptr<TextTrack> DefaultMediaPlayer::AddTextTrack(
   return ret;
 }
 
+void DefaultMediaPlayer::Detach() {
+  ProxyMediaPlayer::Detach();
+#ifdef OS_IOS
+  impl_->playing_src_ = true;
+#endif
+}
+
 
 MediaPlayer* DefaultMediaPlayer::CreateMse() {
   if (!impl_->mse_player.AttachMse())
@@ -101,7 +174,14 @@ MediaPlayer* DefaultMediaPlayer::CreateMse() {
   return &impl_->mse_player;
 }
 MediaPlayer* DefaultMediaPlayer::CreateSource(const std::string& src) {
+#ifdef OS_IOS
+  if (!impl_->av_player.AttachSource(src))
+    return nullptr;
+  impl_->playing_src_ = true;
+  return &impl_->av_player;
+#else
   return nullptr;
+#endif
 }
 
 }  // namespace media

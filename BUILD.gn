@@ -729,6 +729,12 @@ source_set("internal_sources") {
       "shaka/src/public/ShakaPlayerStorage.mm",
       "shaka/src/public/ShakaPlayer.mm",
       "shaka/src/public/ShakaPlayerView.mm",
+      "shaka/src/media/ios/av_media_player.h",
+      "shaka/src/media/ios/av_media_player.mm",
+      "shaka/src/media/ios/av_media_track.h",
+      "shaka/src/media/ios/av_media_track.mm",
+      "shaka/src/media/ios/av_text_track.h",
+      "shaka/src/media/ios/av_text_track.mm",
     ]
   }
   if (decoder == "ffmpeg") {
@@ -799,6 +805,12 @@ source_set("internal_sources") {
       "shaka/src/util/darwin_utils.mm",
       "shaka/src/util/decryptor_darwin.cc",
     ]
+    if (is_ios) {
+      libs += [
+        "AVFoundation.framework",
+        "AVKit.framework",
+      ]
+    }
   } else {
     deps += [ "//third_party/boringssl:boringssl" ]
     sources += [

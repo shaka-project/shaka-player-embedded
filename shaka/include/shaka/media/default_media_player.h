@@ -59,6 +59,25 @@ class SHAKA_EXPORT DefaultMediaPlayer final : public ProxyMediaPlayer {
    */
   void SetDecoders(Decoder* video_decoder, Decoder* audio_decoder);
 
+  /**
+   * Gets the iOS CALayer that is used to draw native src= content.  The
+   * returned value has been retained and should use CFBridgingRelease to
+   * change to an Objective-C object.
+   *
+   * @return A CALayer object used to draw src= content.
+   */
+  const void* GetIosView();
+
+  /**
+   * Gets the iOS AVPlayer used to play the current src= content.  This has been
+   * retained and should use CFBridgingRelease to change to an objective-C
+   * object.
+   *
+   * @see ShakaPlayerView::avPlayer
+   */
+  const void* GetAvPlayer();
+
+
   MediaCapabilitiesInfo DecodingInfo(
       const MediaDecodingConfiguration& config) const override;
 
@@ -71,6 +90,8 @@ class SHAKA_EXPORT DefaultMediaPlayer final : public ProxyMediaPlayer {
   std::shared_ptr<TextTrack> AddTextTrack(TextTrackKind kind,
                                           const std::string& label,
                                           const std::string& language) override;
+
+  void Detach() override;
 
  private:
   MediaPlayer* CreateMse() override;

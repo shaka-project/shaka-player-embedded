@@ -290,6 +290,10 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   }
 }
 
+- (AVPlayer *)avPlayer {
+  return static_cast<AVPlayer *>(CFBridgingRelease(_media_player->GetAvPlayer()));
+}
+
 
 - (ShakaStats *)getStats {
   auto results = _player->GetStats();
@@ -495,7 +499,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   return _player.get();
 }
 
-- (shaka::media::MediaPlayer *)mediaPlayer {
+- (shaka::media::DefaultMediaPlayer *)mediaPlayer {
   return _media_player.get();
 }
 

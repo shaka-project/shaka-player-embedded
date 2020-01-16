@@ -24,6 +24,7 @@
   NSTimer *_textLoopTimer;
   CALayer *_imageLayer;
   CALayer *_textLayer;
+  CALayer *_avPlayerLayer;
   ShakaPlayer *_player;
   shaka::media::VideoFillMode _gravity;
 
@@ -68,7 +69,8 @@
 
     _gravity = shaka::media::VideoFillMode::MaintainRatio;
     _cues = [[NSMutableDictionary alloc] init];
-    _player = player;
+
+    [self setPlayer:player];
   }
   return self;
 }
@@ -78,9 +80,18 @@
 }
 
 - (void)setPlayer:(ShakaPlayer *)player {
+  if (_avPlayerLayer) {
+    [_avPlayerLayer removeFromSuperlayer];
+    _avPlayerLayer = nil;
+  }
+
   _player = player;
-  if (_player)
+  if (_player) {
     _player.mediaPlayer->SetVideoFillMode(_gravity);
+
+    _avPlayerLayer = static_cast<CALayer *>(CFBridgingRelease(player.mediaPlayer->GetIosView()));
+    [self.layer addSublayer:_avPlayerLayer];
+  }
 }
 
 - (void)setVideoGravity:(AVLayerVideoGravity)videoGravity {
@@ -125,6 +136,12 @@
         static_cast<CGFloat>(src.w) / image_bounds.w, static_cast<CGFloat>(src.h) / image_bounds.h);
     _imageLayer.frame = CGRectMake(dest.x, dest.y, dest.w, dest.h);
   }
+}
+
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  if (_avPlayerLayer)
+    _avPlayerLayer.frame = self.bounds;
 }
 
 - (void)textLoop:(NSTimer *)timer {

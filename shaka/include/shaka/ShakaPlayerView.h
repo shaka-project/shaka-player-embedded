@@ -16,7 +16,6 @@
 #define SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_H_
 
 #import <AVFoundation/AVFoundation.h>
-#import <AVFoundation/AVFoundation.h>
 #import <UIKit/UIKit.h>
 
 #include "ShakaPlayer.h"

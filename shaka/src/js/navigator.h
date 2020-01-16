@@ -30,7 +30,12 @@
 #define APP_VERSION     "5.0"
 #define PRODUCT         "Gecko"
 #define PRODUCT_SUB     "20030107"
-#define VENDOR          "Shaka-Player-Embedded"
+#ifdef OS_IOS
+// Include "Apple" so Shaka Player thinks it's Apple to favor native HLS.
+#  define VENDOR        "Shaka-Player-Embedded (like Apple)"
+#else
+#  define VENDOR        "Shaka-Player-Embedded"
+#endif
 #define VENDOR_SUB      SHAKA_VERSION_STR
 #define USER_AGENT \
   APP_CODE_NAME "/" APP_VERSION " (" PLATFORM ") " VENDOR "/" VENDOR_SUB
