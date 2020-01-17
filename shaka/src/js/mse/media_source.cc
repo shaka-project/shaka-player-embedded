@@ -26,8 +26,9 @@
 #include "src/js/events/event.h"
 #include "src/js/events/event_names.h"
 #include "src/js/events/media_encrypted_event.h"
+#include "src/js/mse/media_element.h"
 #include "src/js/mse/source_buffer.h"
-#include "src/js/mse/video_element.h"
+#include "src/js/mse/video_element_2.h"
 #include "src/media/media_utils.h"
 #include "src/util/macros.h"
 
@@ -212,7 +213,7 @@ ExceptionOr<void> MediaSource::SetDuration(double duration) {
   return {};
 }
 
-void MediaSource::OpenMediaSource(RefPtr<HTMLVideoElement> video,
+void MediaSource::OpenMediaSource(RefPtr<HTMLMediaElement> video,
                                   media::MediaPlayer* player) {
   DCHECK(ready_state == MediaSourceReadyState::CLOSED)
       << "MediaSource already attached to a <video> element.";

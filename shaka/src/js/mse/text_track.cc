@@ -15,13 +15,13 @@
 #include "src/js/mse/text_track.h"
 
 #include "src/js/js_error.h"
-#include "src/js/mse/video_element.h"
+#include "src/js/mse/video_element_2.h"
 
 namespace shaka {
 namespace js {
 namespace mse {
 
-TextTrack::TextTrack(RefPtr<const HTMLVideoElement> video,
+TextTrack::TextTrack(RefPtr<const HTMLMediaElement> video,
                      std::shared_ptr<shaka::media::TextTrack> track)
     : kind(track->kind),
       label(track->label),

@@ -33,7 +33,7 @@ namespace shaka {
 namespace js {
 namespace mse {
 
-class HTMLVideoElement;
+class HTMLMediaElement;
 class SourceBuffer;
 
 
@@ -66,7 +66,7 @@ class MediaSource : public events::EventTarget, public media::Demuxer::Client {
 
 
   /** Called when this MediaSource gets attached to a video element. */
-  void OpenMediaSource(RefPtr<HTMLVideoElement> video,
+  void OpenMediaSource(RefPtr<HTMLMediaElement> video,
                        media::MediaPlayer* player);
   /** Called when the media source gets detached. */
   void CloseMediaSource();
@@ -86,7 +86,7 @@ class MediaSource : public events::EventTarget, public media::Demuxer::Client {
 
   Member<SourceBuffer> audio_buffer_;
   Member<SourceBuffer> video_buffer_;
-  Member<HTMLVideoElement> video_;
+  Member<HTMLMediaElement> video_;
   media::MediaPlayer* player_;
   bool got_loaded_metadata_;
 

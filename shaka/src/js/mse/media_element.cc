@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/js/mse/video_element.h"
+#include "src/js/mse/media_element.h"
 
 #include <cmath>
 
@@ -38,15 +38,10 @@ namespace mse {
   else                   \
     return NOT_ATTACHED_ERROR
 
-BEGIN_ALLOW_COMPLEX_STATICS
-std::unordered_set<HTMLVideoElement*> HTMLVideoElement::g_video_elements_;
-END_ALLOW_COMPLEX_STATICS
-
-DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE(VideoPlaybackQuality);
-
-HTMLVideoElement::HTMLVideoElement(RefPtr<dom::Document> document,
+HTMLMediaElement::HTMLMediaElement(RefPtr<dom::Document> document,
+                                   const std::string& name,
                                    media::MediaPlayer* player)
-    : dom::Element(document, "video", nullopt, nullopt),
+    : dom::Element(document, name, nullopt, nullopt),
       autoplay(false),
       loop(false),
       default_muted(false),
@@ -55,28 +50,16 @@ HTMLVideoElement::HTMLVideoElement(RefPtr<dom::Document> document,
   AddListenerField(EventType::Encrypted, &on_encrypted);
   AddListenerField(EventType::WaitingForKey, &on_waiting_for_key);
   player_->AddClient(this);
-  g_video_elements_.insert(this);
 }
 
 // \cond Doxygen_Skip
-HTMLVideoElement::~HTMLVideoElement() {
+HTMLMediaElement::~HTMLMediaElement() {
   if (player_)
     Detach();
-  g_video_elements_.erase(this);
 }
 // \endcond Doxygen_Skip
 
-RefPtr<HTMLVideoElement> HTMLVideoElement::AnyVideoElement() {
-  return *g_video_elements_.begin();
-}
-
-media::MediaPlayer* HTMLVideoElement::AnyMediaPlayer() {
-  if (g_video_elements_.empty())
-    return nullptr;
-  return (*g_video_elements_.begin())->player_;
-}
-
-void HTMLVideoElement::Trace(memory::HeapTracer* tracer) const {
+void HTMLMediaElement::Trace(memory::HeapTracer* tracer) const {
   dom::Element::Trace(tracer);
   tracer->Trace(&media_source_);
   for (auto& pair : text_track_cache_) {
@@ -84,13 +67,13 @@ void HTMLVideoElement::Trace(memory::HeapTracer* tracer) const {
   }
 }
 
-void HTMLVideoElement::Detach() {
+void HTMLMediaElement::Detach() {
   player_->RemoveClient(this);
   player_ = nullptr;
 }
 
 
-Promise HTMLVideoElement::SetMediaKeys(RefPtr<eme::MediaKeys> media_keys) {
+Promise HTMLMediaElement::SetMediaKeys(RefPtr<eme::MediaKeys> media_keys) {
   if (!player_)
     return Promise::Rejected(NOT_ATTACHED_ERROR);
   if (!media_keys && !media_source_)
@@ -103,7 +86,7 @@ Promise HTMLVideoElement::SetMediaKeys(RefPtr<eme::MediaKeys> media_keys) {
   return Promise::Resolved();
 }
 
-ExceptionOr<void> HTMLVideoElement::Load() {
+ExceptionOr<void> HTMLMediaElement::Load() {
   CHECK_ATTACHED();
   error = nullptr;
 
@@ -120,7 +103,7 @@ ExceptionOr<void> HTMLVideoElement::Load() {
   return {};
 }
 
-CanPlayTypeEnum HTMLVideoElement::CanPlayType(const std::string& type) {
+CanPlayTypeEnum HTMLMediaElement::CanPlayType(const std::string& type) {
   auto info =
       ConvertMimeToDecodingConfiguration(type, media::MediaDecodingType::File);
 
@@ -132,7 +115,7 @@ CanPlayTypeEnum HTMLVideoElement::CanPlayType(const std::string& type) {
   return CanPlayTypeEnum::PROBABLY;
 }
 
-std::vector<RefPtr<TextTrack>> HTMLVideoElement::text_tracks() const {
+RefPtr<TextTrackList> HTMLMediaElement::text_tracks() const {
   if (!player_)
     return {};
 
@@ -148,10 +131,10 @@ std::vector<RefPtr<TextTrack>> HTMLVideoElement::text_tracks() const {
       ret.emplace_back(pair.first->second);
     }
   }
-  return ret;
+  return new TextTrackList(ret);
 }
 
-media::VideoReadyState HTMLVideoElement::GetReadyState() const {
+media::VideoReadyState HTMLMediaElement::GetReadyState() const {
   if (!player_)
     return media::VideoReadyState::HaveNothing;
 
@@ -161,23 +144,12 @@ media::VideoReadyState HTMLVideoElement::GetReadyState() const {
   return ret;
 }
 
-ExceptionOr<VideoPlaybackQuality> HTMLVideoElement::GetVideoPlaybackQuality()
-    const {
-  CHECK_ATTACHED();
-  auto temp = player_->VideoPlaybackQuality();
-  VideoPlaybackQuality ret;
-  ret.totalVideoFrames = temp.total_video_frames;
-  ret.droppedVideoFrames = temp.dropped_video_frames;
-  ret.corruptedVideoFrames = temp.corrupted_video_frames;
-  return ret;
-}
-
-RefPtr<TimeRanges> HTMLVideoElement::Buffered() const {
+RefPtr<TimeRanges> HTMLMediaElement::Buffered() const {
   return new TimeRanges(player_ ? player_->GetBuffered()
                                 : std::vector<media::BufferedRange>{});
 }
 
-RefPtr<TimeRanges> HTMLVideoElement::Seekable() const {
+RefPtr<TimeRanges> HTMLMediaElement::Seekable() const {
   const double duration = Duration();
   media::BufferedRanges ranges;
   if (std::isfinite(duration))
@@ -185,11 +157,11 @@ RefPtr<TimeRanges> HTMLVideoElement::Seekable() const {
   return new TimeRanges(ranges);
 }
 
-std::string HTMLVideoElement::Source() const {
+std::string HTMLMediaElement::Source() const {
   return media_source_ ? media_source_->url : src_;
 }
 
-ExceptionOr<void> HTMLVideoElement::SetSource(const std::string& src) {
+ExceptionOr<void> HTMLMediaElement::SetSource(const std::string& src) {
   // Unload any previous MediaSource objects.
   RETURN_IF_ERROR(Load());
 
@@ -217,45 +189,45 @@ ExceptionOr<void> HTMLVideoElement::SetSource(const std::string& src) {
   return {};
 }
 
-double HTMLVideoElement::CurrentTime() const {
+double HTMLMediaElement::CurrentTime() const {
   return player_ ? player_->CurrentTime() : 0;
 }
 
-ExceptionOr<void> HTMLVideoElement::SetCurrentTime(double time) {
+ExceptionOr<void> HTMLMediaElement::SetCurrentTime(double time) {
   CHECK_ATTACHED();
   player_->SetCurrentTime(time);
   return {};
 }
 
-double HTMLVideoElement::Duration() const {
+double HTMLMediaElement::Duration() const {
   return player_ ? player_->Duration() : 0;
 }
 
-double HTMLVideoElement::PlaybackRate() const {
+double HTMLMediaElement::PlaybackRate() const {
   return player_ ? player_->PlaybackRate() : 0;
 }
 
-ExceptionOr<void> HTMLVideoElement::SetPlaybackRate(double rate) {
+ExceptionOr<void> HTMLMediaElement::SetPlaybackRate(double rate) {
   CHECK_ATTACHED();
   player_->SetPlaybackRate(rate);
   return {};
 }
 
-bool HTMLVideoElement::Muted() const {
+bool HTMLMediaElement::Muted() const {
   return player_ && player_->Muted();
 }
 
-ExceptionOr<void> HTMLVideoElement::SetMuted(bool muted) {
+ExceptionOr<void> HTMLMediaElement::SetMuted(bool muted) {
   CHECK_ATTACHED();
   player_->SetMuted(muted);
   return {};
 }
 
-double HTMLVideoElement::Volume() const {
+double HTMLMediaElement::Volume() const {
   return player_ ? player_->Volume() : 0;
 }
 
-ExceptionOr<void> HTMLVideoElement::SetVolume(double volume) {
+ExceptionOr<void> HTMLMediaElement::SetVolume(double volume) {
   CHECK_ATTACHED();
   if (volume < 0 || volume > 1) {
     return JsError::DOMException(
@@ -268,7 +240,7 @@ ExceptionOr<void> HTMLVideoElement::SetVolume(double volume) {
   return {};
 }
 
-bool HTMLVideoElement::Paused() const {
+bool HTMLMediaElement::Paused() const {
   if (!player_)
     return false;
 
@@ -278,29 +250,29 @@ bool HTMLVideoElement::Paused() const {
          state == media::VideoPlaybackState::Ended;
 }
 
-bool HTMLVideoElement::Seeking() const {
+bool HTMLMediaElement::Seeking() const {
   return player_ &&
          player_->PlaybackState() == media::VideoPlaybackState::Seeking;
 }
 
-bool HTMLVideoElement::Ended() const {
+bool HTMLMediaElement::Ended() const {
   return player_ &&
          player_->PlaybackState() == media::VideoPlaybackState::Ended;
 }
 
-ExceptionOr<void> HTMLVideoElement::Play() {
+ExceptionOr<void> HTMLMediaElement::Play() {
   CHECK_ATTACHED();
   player_->Play();
   return {};
 }
 
-ExceptionOr<void> HTMLVideoElement::Pause() {
+ExceptionOr<void> HTMLMediaElement::Pause() {
   CHECK_ATTACHED();
   player_->Pause();
   return {};
 }
 
-ExceptionOr<RefPtr<TextTrack>> HTMLVideoElement::AddTextTrack(
+ExceptionOr<RefPtr<TextTrack>> HTMLMediaElement::AddTextTrack(
     media::TextTrackKind kind, optional<std::string> label,
     optional<std::string> language) {
   CHECK_ATTACHED();
@@ -316,7 +288,7 @@ ExceptionOr<RefPtr<TextTrack>> HTMLVideoElement::AddTextTrack(
   return ret;
 }
 
-void HTMLVideoElement::OnReadyStateChanged(media::VideoReadyState old_state,
+void HTMLMediaElement::OnReadyStateChanged(media::VideoReadyState old_state,
                                            media::VideoReadyState new_state) {
   if (old_state < media::VideoReadyState::HaveMetadata &&
       new_state >= media::VideoReadyState::HaveMetadata) {
@@ -344,7 +316,7 @@ void HTMLVideoElement::OnReadyStateChanged(media::VideoReadyState old_state,
   ScheduleEvent<events::Event>(EventType::ReadyStateChange);
 }
 
-void HTMLVideoElement::OnPlaybackStateChanged(
+void HTMLMediaElement::OnPlaybackStateChanged(
     media::VideoPlaybackState old_state, media::VideoPlaybackState new_state) {
   switch (new_state) {
     case media::VideoPlaybackState::Detached:
@@ -377,7 +349,7 @@ void HTMLVideoElement::OnPlaybackStateChanged(
     ScheduleEvent<events::Event>(EventType::Seeked);
 }
 
-void HTMLVideoElement::OnError(const std::string& error) {
+void HTMLMediaElement::OnError(const std::string& error) {
   if (!this->error) {
     if (error.empty())
       this->error = new MediaError(MEDIA_ERR_DECODE, "Unknown media error");
@@ -387,64 +359,62 @@ void HTMLVideoElement::OnError(const std::string& error) {
   ScheduleEvent<events::Event>(EventType::Error);
 }
 
-void HTMLVideoElement::OnPlay() {
+void HTMLMediaElement::OnPlay() {
   ScheduleEvent<events::Event>(EventType::Play);
 }
 
-void HTMLVideoElement::OnSeeking() {
+void HTMLMediaElement::OnSeeking() {
   ScheduleEvent<events::Event>(EventType::Seeking);
 }
 
-void HTMLVideoElement::OnWaitingForKey() {
+void HTMLMediaElement::OnWaitingForKey() {
   ScheduleEvent<events::Event>(EventType::WaitingForKey);
 }
 
 
-HTMLVideoElementFactory::HTMLVideoElementFactory() {
+HTMLMediaElementFactory::HTMLMediaElementFactory() {
   AddConstant("HAVE_NOTHING", media::VideoReadyState::HaveNothing);
   AddConstant("HAVE_METADATA", media::VideoReadyState::HaveMetadata);
   AddConstant("HAVE_CURRENT_DATA", media::VideoReadyState::HaveCurrentData);
   AddConstant("HAVE_FUTURE_DATA", media::VideoReadyState::HaveFutureData);
   AddConstant("HAVE_ENOUGH_DATA", media::VideoReadyState::HaveEnoughData);
 
-  AddListenerField(EventType::Encrypted, &HTMLVideoElement::on_encrypted);
+  AddListenerField(EventType::Encrypted, &HTMLMediaElement::on_encrypted);
   AddListenerField(EventType::WaitingForKey,
-                   &HTMLVideoElement::on_waiting_for_key);
+                   &HTMLMediaElement::on_waiting_for_key);
 
-  AddReadWriteProperty("autoplay", &HTMLVideoElement::autoplay);
-  AddReadWriteProperty("loop", &HTMLVideoElement::loop);
-  AddReadWriteProperty("defaultMuted", &HTMLVideoElement::default_muted);
-  AddReadOnlyProperty("mediaKeys", &HTMLVideoElement::media_keys);
-  AddReadOnlyProperty("error", &HTMLVideoElement::error);
+  AddReadWriteProperty("autoplay", &HTMLMediaElement::autoplay);
+  AddReadWriteProperty("loop", &HTMLMediaElement::loop);
+  AddReadWriteProperty("defaultMuted", &HTMLMediaElement::default_muted);
+  AddReadOnlyProperty("mediaKeys", &HTMLMediaElement::media_keys);
+  AddReadOnlyProperty("error", &HTMLMediaElement::error);
 
-  AddGenericProperty("textTracks", &HTMLVideoElement::text_tracks);
-  AddGenericProperty("readyState", &HTMLVideoElement::GetReadyState);
-  AddGenericProperty("paused", &HTMLVideoElement::Paused);
-  AddGenericProperty("seeking", &HTMLVideoElement::Seeking);
-  AddGenericProperty("ended", &HTMLVideoElement::Ended);
-  AddGenericProperty("buffered", &HTMLVideoElement::Buffered);
-  AddGenericProperty("seekable", &HTMLVideoElement::Seekable);
-  AddGenericProperty("src", &HTMLVideoElement::Source,
-                     &HTMLVideoElement::SetSource);
-  AddGenericProperty("currentSrc", &HTMLVideoElement::Source);
-  AddGenericProperty("currentTime", &HTMLVideoElement::CurrentTime,
-                     &HTMLVideoElement::SetCurrentTime);
-  AddGenericProperty("duration", &HTMLVideoElement::Duration);
-  AddGenericProperty("playbackRate", &HTMLVideoElement::PlaybackRate,
-                     &HTMLVideoElement::SetPlaybackRate);
-  AddGenericProperty("volume", &HTMLVideoElement::Volume,
-                     &HTMLVideoElement::SetVolume);
-  AddGenericProperty("muted", &HTMLVideoElement::Muted,
-                     &HTMLVideoElement::SetMuted);
+  AddGenericProperty("textTracks", &HTMLMediaElement::text_tracks);
+  AddGenericProperty("readyState", &HTMLMediaElement::GetReadyState);
+  AddGenericProperty("paused", &HTMLMediaElement::Paused);
+  AddGenericProperty("seeking", &HTMLMediaElement::Seeking);
+  AddGenericProperty("ended", &HTMLMediaElement::Ended);
+  AddGenericProperty("buffered", &HTMLMediaElement::Buffered);
+  AddGenericProperty("seekable", &HTMLMediaElement::Seekable);
+  AddGenericProperty("src", &HTMLMediaElement::Source,
+                     &HTMLMediaElement::SetSource);
+  AddGenericProperty("currentSrc", &HTMLMediaElement::Source);
+  AddGenericProperty("currentTime", &HTMLMediaElement::CurrentTime,
+                     &HTMLMediaElement::SetCurrentTime);
+  AddGenericProperty("duration", &HTMLMediaElement::Duration);
+  AddGenericProperty("playbackRate", &HTMLMediaElement::PlaybackRate,
+                     &HTMLMediaElement::SetPlaybackRate);
+  AddGenericProperty("volume", &HTMLMediaElement::Volume,
+                     &HTMLMediaElement::SetVolume);
+  AddGenericProperty("muted", &HTMLMediaElement::Muted,
+                     &HTMLMediaElement::SetMuted);
 
-  AddMemberFunction("load", &HTMLVideoElement::Load);
-  AddMemberFunction("play", &HTMLVideoElement::Play);
-  AddMemberFunction("pause", &HTMLVideoElement::Pause);
-  AddMemberFunction("setMediaKeys", &HTMLVideoElement::SetMediaKeys);
-  AddMemberFunction("addTextTrack", &HTMLVideoElement::AddTextTrack);
-  AddMemberFunction("getVideoPlaybackQuality",
-                    &HTMLVideoElement::GetVideoPlaybackQuality);
-  AddMemberFunction("canPlayType", &HTMLVideoElement::CanPlayType);
+  AddMemberFunction("load", &HTMLMediaElement::Load);
+  AddMemberFunction("play", &HTMLMediaElement::Play);
+  AddMemberFunction("pause", &HTMLMediaElement::Pause);
+  AddMemberFunction("setMediaKeys", &HTMLMediaElement::SetMediaKeys);
+  AddMemberFunction("addTextTrack", &HTMLMediaElement::AddTextTrack);
+  AddMemberFunction("canPlayType", &HTMLMediaElement::CanPlayType);
 
   NotImplemented("crossOrigin");
   NotImplemented("networkState");
@@ -455,8 +425,9 @@ HTMLVideoElementFactory::HTMLVideoElementFactory() {
   NotImplemented("mediaGroup");
   NotImplemented("controller");
   NotImplemented("controls");
-  NotImplemented("audioTracks");
-  NotImplemented("videoTracks");
+
+  // Don't add audioTracks and videoTracks since src= uses them.  The default
+  // will have a value of undefined.
 }
 
 }  // namespace mse

@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SHAKA_EMBEDDED_JS_MSE_VIDEO_ELEMENT_H_
-#define SHAKA_EMBEDDED_JS_MSE_VIDEO_ELEMENT_H_
+#ifndef SHAKA_EMBEDDED_JS_MSE_MEDIA_ELEMENT_H_
+#define SHAKA_EMBEDDED_JS_MSE_MEDIA_ELEMENT_H_
 
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "shaka/media/media_player.h"
@@ -28,11 +27,11 @@
 #include "src/js/eme/media_keys.h"
 #include "src/js/mse/media_error.h"
 #include "src/js/mse/text_track.h"
+#include "src/js/mse/text_track_list.h"
 #include "src/mapping/backing_object_factory.h"
 #include "src/mapping/enum.h"
 #include "src/mapping/exception_or.h"
 #include "src/mapping/promise.h"
-#include "src/mapping/struct.h"
 #include "src/media/types.h"
 #include "src/util/clock.h"
 
@@ -49,28 +48,17 @@ enum class CanPlayTypeEnum {
   PROBABLY,
 };
 
-struct VideoPlaybackQuality : Struct {
-  DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE(VideoPlaybackQuality);
-
-  ADD_DICT_FIELD(creationTime, double);
-  ADD_DICT_FIELD(totalVideoFrames, uint64_t);
-  ADD_DICT_FIELD(droppedVideoFrames, uint64_t);
-  ADD_DICT_FIELD(corruptedVideoFrames, uint64_t);
-};
-
-class HTMLVideoElement : public dom::Element, media::MediaPlayer::Client {
-  DECLARE_TYPE_INFO(HTMLVideoElement);
+class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
+  DECLARE_TYPE_INFO(HTMLMediaElement);
 
  public:
-  HTMLVideoElement(RefPtr<dom::Document> document,
+  HTMLMediaElement(RefPtr<dom::Document> document,
+                   const std::string& name,
                    media::MediaPlayer* player);
 
   void Trace(memory::HeapTracer* tracer) const override;
 
   void Detach();
-
-  static RefPtr<HTMLVideoElement> AnyVideoElement();
-  static media::MediaPlayer* AnyMediaPlayer();
 
   // Encrypted media extensions
   Promise SetMediaKeys(RefPtr<eme::MediaKeys> media_keys);
@@ -87,9 +75,8 @@ class HTMLVideoElement : public dom::Element, media::MediaPlayer::Client {
   bool default_muted;
   RefPtr<MediaError> error;
 
-  std::vector<RefPtr<TextTrack>> text_tracks() const;
+  RefPtr<TextTrackList> text_tracks() const;
   media::VideoReadyState GetReadyState() const;
-  ExceptionOr<VideoPlaybackQuality> GetVideoPlaybackQuality() const;
   RefPtr<TimeRanges> Buffered() const;
   RefPtr<TimeRanges> Seekable() const;
   std::string Source() const;
@@ -114,6 +101,9 @@ class HTMLVideoElement : public dom::Element, media::MediaPlayer::Client {
                                               optional<std::string> label,
                                               optional<std::string> language);
 
+ protected:
+  media::MediaPlayer* player_;
+
  private:
   void OnReadyStateChanged(media::VideoReadyState old_state,
                            media::VideoReadyState new_state) override;
@@ -125,20 +115,18 @@ class HTMLVideoElement : public dom::Element, media::MediaPlayer::Client {
   void OnWaitingForKey() override;
 
   Member<MediaSource> media_source_;
-  media::MediaPlayer* player_;
   const util::Clock* const clock_;
   std::string src_;
 
   mutable std::unordered_map<std::shared_ptr<shaka::media::TextTrack>,
                              Member<TextTrack>>
       text_track_cache_;
-  static std::unordered_set<HTMLVideoElement*> g_video_elements_;
 };
 
-class HTMLVideoElementFactory
-    : public BackingObjectFactory<HTMLVideoElement, dom::Element> {
+class HTMLMediaElementFactory
+    : public BackingObjectFactory<HTMLMediaElement, dom::Element> {
  public:
-  HTMLVideoElementFactory();
+  HTMLMediaElementFactory();
 };
 
 }  // namespace mse
@@ -153,4 +141,4 @@ DEFINE_ENUM_MAPPING(shaka::js::mse, CanPlayTypeEnum) {
   AddMapping(Enum::PROBABLY, "probably");
 }
 
-#endif  // SHAKA_EMBEDDED_JS_MSE_VIDEO_ELEMENT_H_
+#endif  // SHAKA_EMBEDDED_JS_MSE_MEDIA_ELEMENT_H_

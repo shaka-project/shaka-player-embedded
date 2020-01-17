@@ -52,12 +52,14 @@
 #include "src/js/idb/request.h"
 #include "src/js/idb/transaction.h"
 #include "src/js/location.h"
+#include "src/js/mse/media_element.h"
 #include "src/js/mse/media_error.h"
 #include "src/js/mse/media_source.h"
 #include "src/js/mse/source_buffer.h"
 #include "src/js/mse/text_track.h"
+#include "src/js/mse/text_track_list.h"
 #include "src/js/mse/time_ranges.h"
-#include "src/js/mse/video_element.h"
+#include "src/js/mse/video_element_2.h"
 #include "src/js/navigator.h"
 #include "src/js/test_type.h"
 #include "src/js/timeouts.h"
@@ -133,7 +135,9 @@ struct Environment::Impl {
   js::mse::MediaSourceFactory media_source;
   js::mse::SourceBufferFactory source_buffer;
   js::mse::TextTrackFactory text_track;
+  js::mse::TextTrackListFactory text_track_list;
   js::mse::TimeRangesFactory time_ranges;
+  js::mse::HTMLMediaElementFactory media_element;
   js::mse::HTMLVideoElementFactory video_element;
 
   js::eme::MediaKeySessionFactory media_key_session;
@@ -209,7 +213,9 @@ ADD_GET_FACTORY(js::mse::MediaError, media_error);
 ADD_GET_FACTORY(js::mse::MediaSource, media_source);
 ADD_GET_FACTORY(js::mse::SourceBuffer, source_buffer);
 ADD_GET_FACTORY(js::mse::TextTrack, text_track);
+ADD_GET_FACTORY(js::mse::TextTrackList, text_track_list);
 ADD_GET_FACTORY(js::mse::TimeRanges, time_ranges);
+ADD_GET_FACTORY(js::mse::HTMLMediaElement, media_element);
 ADD_GET_FACTORY(js::mse::HTMLVideoElement, video_element);
 
 ADD_GET_FACTORY(js::events::EventTarget, event_target);

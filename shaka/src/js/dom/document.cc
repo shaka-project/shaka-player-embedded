@@ -17,7 +17,7 @@
 #include "src/js/dom/comment.h"
 #include "src/js/dom/element.h"
 #include "src/js/dom/text.h"
-#include "src/js/mse/video_element.h"
+#include "src/js/mse/video_element_2.h"
 #include "src/memory/heap_tracer.h"
 #include "src/util/clock.h"
 
