@@ -15,7 +15,7 @@
 #include "src/js/mse/text_track.h"
 
 #include "src/js/js_error.h"
-#include "src/js/mse/video_element_2.h"
+#include "src/js/mse/video_element.h"
 
 namespace shaka {
 namespace js {

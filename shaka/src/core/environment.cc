@@ -59,7 +59,7 @@
 #include "src/js/mse/text_track.h"
 #include "src/js/mse/text_track_list.h"
 #include "src/js/mse/time_ranges.h"
-#include "src/js/mse/video_element_2.h"
+#include "src/js/mse/video_element.h"
 #include "src/js/navigator.h"
 #include "src/js/test_type.h"
 #include "src/js/timeouts.h"

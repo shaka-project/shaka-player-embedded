@@ -21,7 +21,7 @@
 #include "src/core/js_object_wrapper.h"
 #include "src/js/dom/document.h"
 #include "src/js/manifest.h"
-#include "src/js/mse/video_element_2.h"
+#include "src/js/mse/video_element.h"
 #include "src/js/player_externs.h"
 #include "src/js/stats.h"
 #include "src/js/track.h"

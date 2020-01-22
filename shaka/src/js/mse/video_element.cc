@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/js/mse/video_element_2.h"
+#include "src/js/mse/video_element.h"
 
 #include "src/js/dom/document.h"
 #include "src/util/macros.h"

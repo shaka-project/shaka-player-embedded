@@ -28,7 +28,7 @@
 #include "src/js/events/media_encrypted_event.h"
 #include "src/js/mse/media_element.h"
 #include "src/js/mse/source_buffer.h"
-#include "src/js/mse/video_element_2.h"
+#include "src/js/mse/video_element.h"
 #include "src/media/media_utils.h"
 #include "src/util/macros.h"
 
