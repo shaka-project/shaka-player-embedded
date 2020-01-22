@@ -110,6 +110,9 @@ class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
   void OnPlaybackStateChanged(media::VideoPlaybackState old_state,
                               media::VideoPlaybackState new_state) override;
   void OnError(const std::string& error) override;
+  void OnAttachMse() override;
+  void OnAttachSource() override;
+  void OnDetach() override;
   void OnPlay() override;
   void OnSeeking() override;
   void OnWaitingForKey() override;

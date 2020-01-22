@@ -223,6 +223,9 @@ bool MseMediaPlayer::AttachMse() {
     std::unique_lock<SharedMutex> lock(mutex_);
     old_state_ = VideoPlaybackState::Initializing;
     ready_state_ = VideoReadyState::HaveNothing;
+
+    for (auto* client : clients_)
+      client->OnAttachMse();
   }
 
   pipeline_manager_.Reset();
@@ -289,6 +292,9 @@ void MseMediaPlayer::Detach() {
   video_.Detach();
   audio_.Detach();
   ready_state_ = VideoReadyState::NotAttached;
+
+  for (auto* client : clients_)
+    client->OnDetach();
 }
 
 void MseMediaPlayer::OnStatusChanged(VideoPlaybackState state) {

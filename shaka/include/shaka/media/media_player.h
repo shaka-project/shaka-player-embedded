@@ -237,6 +237,23 @@ class SHAKA_EXPORT MediaPlayer {
     virtual void OnError(const std::string& error) = 0;
 
     /**
+     * Called when MSE-based playback has been attached.  The media has not been
+     * loaded yet, so many of the methods may not be usable yet.  But MSE
+     * content will be played once loaded.
+     */
+    virtual void OnAttachMse() = 0;
+
+    /**
+     * Called when src= content has been attached.  This is called right after
+     * starting, so the content may not be loaded yet.
+     */
+    virtual void OnAttachSource() = 0;
+
+    /** Called when playback has stopped and the content has been unloaded. */
+    virtual void OnDetach() = 0;
+
+
+    /**
      * Called when the video starts playing after startup or a call to Pause.
      * This is different from entering the Playing state since this is only
      * called for autoplay or a call to Pause.

@@ -83,6 +83,12 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
     OnError(shaka::Error(error));
   }
 
+  void OnAttachMse() override {}
+
+  void OnAttachSource() override {}
+
+  void OnDetach() override {}
+
   void OnPlay() override {}
 
   void OnSeeking() override {
