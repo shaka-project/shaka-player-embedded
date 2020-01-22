@@ -15,10 +15,11 @@
 #include "shaka/media/proxy_media_player.h"
 
 #include <cmath>
-#include <unordered_set>
+#include <vector>
 
 #include "shaka/optional.h"
 #include "src/debug/mutex.h"
+#include "src/util/utils.h"
 
 namespace shaka {
 namespace media {
@@ -41,7 +42,7 @@ class ProxyMediaPlayer::Impl {
 
   SharedMutex mutex;
   MediaPlayer* player;
-  std::unordered_set<Client*> clients;
+  std::vector<Client*> clients;
   std::string key_system;
   eme::Implementation* implementation;
 
@@ -68,14 +69,15 @@ VideoPlaybackQuality ProxyMediaPlayer::VideoPlaybackQuality() const {
 
 void ProxyMediaPlayer::AddClient(Client* client) {
   std::unique_lock<SharedMutex> lock(impl_->mutex);
-  impl_->clients.insert(client);
+  if (!util::contains(impl_->clients, client))
+    impl_->clients.emplace_back(client);
   if (impl_->player)
     impl_->player->AddClient(client);
 }
 
 void ProxyMediaPlayer::RemoveClient(Client* client) {
   std::unique_lock<SharedMutex> lock(impl_->mutex);
-  impl_->clients.erase(client);
+  util::RemoveElement(&impl_->clients, client);
   if (impl_->player)
     impl_->player->RemoveClient(client);
 }

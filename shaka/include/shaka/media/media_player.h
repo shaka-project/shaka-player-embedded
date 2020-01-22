@@ -311,7 +311,8 @@ class SHAKA_EXPORT MediaPlayer {
 
   /**
    * Adds a new client listener.  The given object will be called when events
-   * are raised.
+   * are raised.  Clients are called in the order they are registered.  Calling
+   * this with an already-registered client will have no effect.
    */
   virtual void AddClient(Client* client) = 0;
 

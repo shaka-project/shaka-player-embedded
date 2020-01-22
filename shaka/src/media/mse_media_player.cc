@@ -21,6 +21,7 @@
 #  include "src/media/ffmpeg/ffmpeg_decoder.h"
 #endif
 #include "src/media/media_utils.h"
+#include "src/util/utils.h"
 
 namespace shaka {
 namespace media {
@@ -98,12 +99,13 @@ VideoPlaybackQuality MseMediaPlayer::VideoPlaybackQuality() const {
 
 void MseMediaPlayer::AddClient(MediaPlayer::Client* client) {
   std::unique_lock<SharedMutex> lock(mutex_);
-  clients_.insert(client);
+  if (!util::contains(clients_, client))
+    clients_.emplace_back(client);
 }
 
 void MseMediaPlayer::RemoveClient(MediaPlayer::Client* client) {
   std::unique_lock<SharedMutex> lock(mutex_);
-  clients_.erase(client);
+  util::RemoveElement(&clients_, client);
 }
 
 std::vector<BufferedRange> MseMediaPlayer::GetBuffered() const {

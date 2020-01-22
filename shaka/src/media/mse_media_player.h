@@ -17,7 +17,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "shaka/eme/implementation.h"
@@ -131,7 +130,7 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
 
   VideoRenderer* video_renderer_;
   AudioRenderer* audio_renderer_;
-  std::unordered_set<MediaPlayer::Client*> clients_;
+  std::vector<MediaPlayer::Client*> clients_;
 };
 
 }  // namespace media
