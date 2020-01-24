@@ -21,7 +21,10 @@ export arch=$ARCHS
 cd "$PROJECT_DIR/.."
 
 # Get the PATH variable from outside of XCode, so that the scripts can find depot_tools
-PATH=$(bash -l -c 'echo $PATH')
+# Pass -i to trick .bashrc files into thinking this is interactive (since many
+# scripts won't do anything in non-interactive modes).  -c takes priority and
+# will only execute this command.
+export PATH=$(bash -li -c 'echo $PATH'):$(zsh -li -c 'echo $PATH')
 
 # Determine configuration options and framework path.
 CONFIG_FLAGS="--ios --disable-demo --disable-tests"
@@ -45,5 +48,7 @@ fi
 (cd "$CONFIG_PATH" && ../../build.py)
 
 # Copy the correct framework into that path.
-rm -rf ./sample_xcode_project/ShakaPlayerEmbedded.framework
-mv "$CONFIG_PATH"/ShakaPlayerEmbedded.framework ./sample_xcode_project/ShakaPlayerEmbedded.framework
+rm -rf ./sample_xcode_project/*.framework
+mv "$CONFIG_PATH"/ShakaPlayerEmbedded.framework \
+    "$CONFIG_PATH"/ShakaPlayerEmbedded.FFmpeg.framework \
+    ./sample_xcode_project/
