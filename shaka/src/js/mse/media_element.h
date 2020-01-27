@@ -27,7 +27,7 @@
 #include "src/js/eme/media_keys.h"
 #include "src/js/mse/media_error.h"
 #include "src/js/mse/text_track.h"
-#include "src/js/mse/text_track_list.h"
+#include "src/js/mse/track_list.h"
 #include "src/mapping/backing_object_factory.h"
 #include "src/mapping/enum.h"
 #include "src/mapping/exception_or.h"
@@ -73,9 +73,9 @@ class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
   bool autoplay;
   bool loop;
   bool default_muted;
-  RefPtr<MediaError> error;
+  Member<MediaError> error;
+  Member<TextTrackList> text_tracks;
 
-  RefPtr<TextTrackList> text_tracks() const;
   media::VideoReadyState GetReadyState() const;
   RefPtr<TimeRanges> Buffered() const;
   RefPtr<TimeRanges> Seekable() const;
@@ -117,10 +117,6 @@ class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
   Member<MediaSource> media_source_;
   const util::Clock* const clock_;
   std::string src_;
-
-  mutable std::unordered_map<std::shared_ptr<shaka::media::TextTrack>,
-                             Member<TextTrack>>
-      text_track_cache_;
 };
 
 class HTMLMediaElementFactory

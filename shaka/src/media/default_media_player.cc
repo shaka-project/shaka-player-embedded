@@ -67,9 +67,14 @@ std::vector<std::shared_ptr<const TextTrack>> DefaultMediaPlayer::TextTracks()
 
 std::shared_ptr<TextTrack> DefaultMediaPlayer::AddTextTrack(
     TextTrackKind kind, const std::string& label, const std::string& language) {
-  std::unique_lock<Mutex> lock(impl_->mutex);
-  impl_->text_tracks_.emplace_back(new TextTrack(kind, label, language, ""));
-  return impl_->text_tracks_.back();
+  std::shared_ptr<TextTrack> ret;
+  {
+    std::unique_lock<Mutex> lock(impl_->mutex);
+    ret.reset(new TextTrack(kind, label, language, ""));
+    impl_->text_tracks_.emplace_back(ret);
+  }
+  GetClientList()->OnAddTextTrack(ret);
+  return ret;
 }
 
 

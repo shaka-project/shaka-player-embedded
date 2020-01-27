@@ -12,40 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/js/mse/text_track_list.h"
+#include "src/js/mse/track_list.h"
 
+#include "shaka/media/text_track.h"
 #include "src/js/mse/text_track.h"
 
 namespace shaka {
 namespace js {
 namespace mse {
 
-TextTrackList::TextTrackList(const std::vector<RefPtr<TextTrack>>& tracks)
-    : text_tracks_(tracks.begin(), tracks.end()) {}
-
 // \cond Doxygen_Skip
 TextTrackList::~TextTrackList() {}
 // \endcond Doxygen_Skip
 
-void TextTrackList::Trace(memory::HeapTracer* tracer) const {
-  events::EventTarget::Trace(tracer);
-  tracer->Trace(&text_tracks_);
+void TextTrackList::OnAddTextTrack(std::shared_ptr<media::TextTrack> track) {
+  AddTrack(track);
 }
 
-bool TextTrackList::GetIndex(size_t i, RefPtr<TextTrack>* track) const {
-  if (i < text_tracks_.size()) {
-    *track = text_tracks_.at(i);
-    return true;
-  } else {
-    return false;
-  }
-}
-
-
-TextTrackListFactory::TextTrackListFactory() {
-  AddGenericProperty("length", &TextTrackList::length);
-
-  AddIndexer(&TextTrackList::GetIndex);
+void TextTrackList::OnRemoveTextTrack(std::shared_ptr<media::TextTrack> track) {
+  RemoveTrack(track);
 }
 
 }  // namespace mse

@@ -32,6 +32,10 @@ std::atomic<const MediaPlayer*> player_{nullptr};
 MediaPlayer::Client::Client() {}
 MediaPlayer::Client::~Client() {}
 
+void MediaPlayer::Client::OnAddTextTrack(std::shared_ptr<TextTrack> track) {}
+
+void MediaPlayer::Client::OnRemoveTextTrack(std::shared_ptr<TextTrack> track) {}
+
 void MediaPlayer::Client::OnReadyStateChanged(VideoReadyState old_state,
                                               VideoReadyState new_state) {}
 
@@ -79,6 +83,15 @@ void MediaPlayer::ClientList::AddClient(Client* client) {
 void MediaPlayer::ClientList::RemoveClient(Client* client) {
   std::unique_lock<SharedMutex> lock(impl_->mutex);
   util::RemoveElement(&impl_->clients, client);
+}
+
+void MediaPlayer::ClientList::OnAddTextTrack(std::shared_ptr<TextTrack> track) {
+  impl_->CallClientMethod(&Client::OnAddTextTrack, track);
+}
+
+void MediaPlayer::ClientList::OnRemoveTextTrack(
+    std::shared_ptr<TextTrack> track) {
+  impl_->CallClientMethod(&Client::OnRemoveTextTrack, track);
 }
 
 void MediaPlayer::ClientList::OnReadyStateChanged(VideoReadyState old_state,

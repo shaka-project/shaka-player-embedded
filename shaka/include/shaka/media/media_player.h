@@ -222,6 +222,22 @@ class SHAKA_EXPORT MediaPlayer {
     Client& operator=(const Client&) = delete;
     Client& operator=(Client&&) = delete;
 
+    /**
+     * Called when a TextTrack is added to the MediaPlayer.  This should be
+     * called for both AddTextTrack calls and when the player adds its own
+     * objects.
+     *
+     * @param track The new track that was added.
+     */
+    virtual void OnAddTextTrack(std::shared_ptr<TextTrack> track);
+
+    /**
+     * Called when a TextTrack is removed from the MediaPlayer.
+     * @param track The track that was removed.
+     */
+    virtual void OnRemoveTextTrack(std::shared_ptr<TextTrack> track);
+
+
     /** Called when the VideoReadyState of the media changes. */
     virtual void OnReadyStateChanged(VideoReadyState old_state,
                                      VideoReadyState new_state);
@@ -283,6 +299,8 @@ class SHAKA_EXPORT MediaPlayer {
     void AddClient(Client* client);
     void RemoveClient(Client* client);
 
+    void OnAddTextTrack(std::shared_ptr<TextTrack> track) override;
+    void OnRemoveTextTrack(std::shared_ptr<TextTrack> track) override;
     void OnReadyStateChanged(VideoReadyState old_state,
                              VideoReadyState new_state) override;
     void OnPlaybackStateChanged(VideoPlaybackState old_state,

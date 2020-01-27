@@ -39,8 +39,7 @@ class TextTrack : public events::EventTarget, shaka::media::TextTrack::Client {
   DECLARE_TYPE_INFO(TextTrack);
 
  public:
-  explicit TextTrack(RefPtr<const HTMLMediaElement> video,
-                     std::shared_ptr<shaka::media::TextTrack> track);
+  explicit TextTrack(std::shared_ptr<shaka::media::TextTrack> track);
 
   void Trace(memory::HeapTracer* tracer) const override;
 
@@ -65,7 +64,6 @@ class TextTrack : public events::EventTarget, shaka::media::TextTrack::Client {
 
   mutable Mutex mutex_;
   std::unordered_map<shaka::media::VTTCue*, Member<VTTCue>> cues_;
-  Member<const HTMLMediaElement> video_;
   std::shared_ptr<shaka::media::TextTrack> track_;
 };
 

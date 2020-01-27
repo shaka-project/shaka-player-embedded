@@ -45,6 +45,7 @@ HTMLMediaElement::HTMLMediaElement(RefPtr<dom::Document> document,
       autoplay(false),
       loop(false),
       default_muted(false),
+      text_tracks(new TextTrackList(player)),
       player_(player),
       clock_(&util::Clock::Instance) {
   AddListenerField(EventType::Encrypted, &on_encrypted);
@@ -61,15 +62,16 @@ HTMLMediaElement::~HTMLMediaElement() {
 
 void HTMLMediaElement::Trace(memory::HeapTracer* tracer) const {
   dom::Element::Trace(tracer);
+  tracer->Trace(&error);
   tracer->Trace(&media_source_);
-  for (auto& pair : text_track_cache_) {
-    tracer->Trace(&pair.second);
-  }
+  tracer->Trace(&text_tracks);
 }
 
 void HTMLMediaElement::Detach() {
   player_->RemoveClient(this);
   player_ = nullptr;
+
+  text_tracks->Detach();
 }
 
 
@@ -113,25 +115,6 @@ CanPlayTypeEnum HTMLMediaElement::CanPlayType(const std::string& type) {
   else if (!support.smooth)
     return CanPlayTypeEnum::MAYBE;
   return CanPlayTypeEnum::PROBABLY;
-}
-
-RefPtr<TextTrackList> HTMLMediaElement::text_tracks() const {
-  if (!player_)
-    return {};
-
-  auto player_tracks = player_->TextTracks();
-  std::vector<RefPtr<TextTrack>> ret;
-  ret.reserve(player_tracks.size());
-  for (auto& track : player_tracks) {
-    auto it = text_track_cache_.find(track);
-    if (it != text_track_cache_.end()) {
-      ret.emplace_back(it->second);
-    } else {
-      auto pair = text_track_cache_.emplace(track, new TextTrack(this, track));
-      ret.emplace_back(pair.first->second);
-    }
-  }
-  return new TextTrackList(ret);
 }
 
 media::VideoReadyState HTMLMediaElement::GetReadyState() const {
@@ -283,8 +266,10 @@ ExceptionOr<RefPtr<TextTrack>> HTMLMediaElement::AddTextTrack(
     return JsError::DOMException(UnknownError, "Error creating TextTrack");
   }
 
-  RefPtr<TextTrack> ret(new TextTrack(this, track));
-  text_track_cache_[track] = ret;
+  // The TextTrackList should already have gotten an event callback for the new
+  // track, so the JS object should be in the list.
+  RefPtr<TextTrack> ret = text_tracks->GetTrack(track);
+  DCHECK(ret);
   return ret;
 }
 
@@ -388,8 +373,8 @@ HTMLMediaElementFactory::HTMLMediaElementFactory() {
   AddReadWriteProperty("defaultMuted", &HTMLMediaElement::default_muted);
   AddReadOnlyProperty("mediaKeys", &HTMLMediaElement::media_keys);
   AddReadOnlyProperty("error", &HTMLMediaElement::error);
+  AddReadOnlyProperty("textTracks", &HTMLMediaElement::text_tracks);
 
-  AddGenericProperty("textTracks", &HTMLMediaElement::text_tracks);
   AddGenericProperty("readyState", &HTMLMediaElement::GetReadyState);
   AddGenericProperty("paused", &HTMLMediaElement::Paused);
   AddGenericProperty("seeking", &HTMLMediaElement::Seeking);

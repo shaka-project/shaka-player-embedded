@@ -24,6 +24,8 @@ namespace js {
   DEFINE_EVENT(Abort, "abort")                           \
   DEFINE_EVENT(Error, "error")                           \
   DEFINE_EVENT(ReadyStateChange, "readystatechange")     \
+  DEFINE_EVENT(AddTrack, "addtrack")                     \
+  DEFINE_EVENT(RemoveTrack, "removetrack")               \
   /** Media events */                                    \
   DEFINE_EVENT(CanPlay, "canplay")                       \
   DEFINE_EVENT(CanPlayThrough, "canplaythrough")         \
