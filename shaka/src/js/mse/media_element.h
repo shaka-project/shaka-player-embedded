@@ -26,6 +26,7 @@
 #include "src/js/dom/element.h"
 #include "src/js/eme/media_keys.h"
 #include "src/js/mse/media_error.h"
+#include "src/js/mse/media_track.h"
 #include "src/js/mse/text_track.h"
 #include "src/js/mse/track_list.h"
 #include "src/mapping/backing_object_factory.h"
@@ -74,6 +75,8 @@ class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
   bool loop;
   bool default_muted;
   Member<MediaError> error;
+  Member<AudioTrackList> audio_tracks;
+  Member<VideoTrackList> video_tracks;
   Member<TextTrackList> text_tracks;
 
   media::VideoReadyState GetReadyState() const;

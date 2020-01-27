@@ -62,6 +62,10 @@ class SHAKA_EXPORT DefaultMediaPlayer final : public ProxyMediaPlayer {
   MediaCapabilitiesInfo DecodingInfo(
       const MediaDecodingConfiguration& config) const override;
 
+  std::vector<std::shared_ptr<MediaTrack>> AudioTracks() override;
+  std::vector<std::shared_ptr<const MediaTrack>> AudioTracks() const override;
+  std::vector<std::shared_ptr<MediaTrack>> VideoTracks() override;
+  std::vector<std::shared_ptr<const MediaTrack>> VideoTracks() const override;
   std::vector<std::shared_ptr<TextTrack>> TextTracks() override;
   std::vector<std::shared_ptr<const TextTrack>> TextTracks() const override;
   std::shared_ptr<TextTrack> AddTextTrack(TextTrackKind kind,

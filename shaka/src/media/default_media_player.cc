@@ -53,6 +53,23 @@ MediaCapabilitiesInfo DefaultMediaPlayer::DecodingInfo(
     return impl_->mse_player.DecodingInfo(config);
 }
 
+std::vector<std::shared_ptr<MediaTrack>> DefaultMediaPlayer::AudioTracks() {
+  return {};
+}
+
+std::vector<std::shared_ptr<const MediaTrack>> DefaultMediaPlayer::AudioTracks()
+    const {
+  return {};
+}
+
+std::vector<std::shared_ptr<MediaTrack>> DefaultMediaPlayer::VideoTracks() {
+  return {};
+}
+
+std::vector<std::shared_ptr<const MediaTrack>> DefaultMediaPlayer::VideoTracks()
+    const {
+  return {};
+}
 
 std::vector<std::shared_ptr<TextTrack>> DefaultMediaPlayer::TextTracks() {
   std::unique_lock<Mutex> lock(impl_->mutex);

@@ -99,32 +99,6 @@ VideoPlaybackState ProxyMediaPlayer::PlaybackState() const {
     return VideoPlaybackState::Detached;
 }
 
-std::vector<std::shared_ptr<TextTrack>> ProxyMediaPlayer::TextTracks() {
-  util::shared_lock<SharedMutex> lock(impl_->mutex);
-  if (impl_->player)
-    return impl_->player->TextTracks();
-  else
-    return {};
-}
-
-std::vector<std::shared_ptr<const TextTrack>> ProxyMediaPlayer::TextTracks()
-    const {
-  util::shared_lock<SharedMutex> lock(impl_->mutex);
-  if (impl_->player)
-    return const_cast<const MediaPlayer*>(impl_->player)->TextTracks();
-  else
-    return {};
-}
-
-std::shared_ptr<TextTrack> ProxyMediaPlayer::AddTextTrack(
-    TextTrackKind kind, const std::string& label, const std::string& language) {
-  util::shared_lock<SharedMutex> lock(impl_->mutex);
-  if (impl_->player)
-    return impl_->player->AddTextTrack(kind, label, language);
-  else
-    return nullptr;
-}
-
 
 bool ProxyMediaPlayer::SetVideoFillMode(VideoFillMode mode) {
   std::unique_lock<SharedMutex> lock(impl_->mutex);

@@ -51,6 +51,10 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
   std::vector<BufferedRange> GetBuffered() const override;
   VideoReadyState ReadyState() const override;
   VideoPlaybackState PlaybackState() const override;
+  std::vector<std::shared_ptr<MediaTrack>> AudioTracks() override;
+  std::vector<std::shared_ptr<const MediaTrack>> AudioTracks() const override;
+  std::vector<std::shared_ptr<MediaTrack>> VideoTracks() override;
+  std::vector<std::shared_ptr<const MediaTrack>> VideoTracks() const override;
   std::vector<std::shared_ptr<TextTrack>> TextTracks() override;
   std::vector<std::shared_ptr<const TextTrack>> TextTracks() const override;
   std::shared_ptr<TextTrack> AddTextTrack(TextTrackKind kind,

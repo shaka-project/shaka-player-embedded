@@ -33,6 +33,7 @@ namespace shaka {
 
 namespace media {
 
+class MediaTrack;
 class TextTrack;
 
 }  // namespace media
@@ -40,6 +41,8 @@ class TextTrack;
 namespace js {
 namespace mse {
 
+class AudioTrack;
+class VideoTrack;
 class TextTrack;
 
 /**
@@ -121,11 +124,33 @@ class TrackList : public events::EventTarget, media::MediaPlayer::Client {
   media::MediaPlayer* player_;
 };
 
+class AudioTrackList : public TrackList<AudioTrack, media::MediaTrack> {
+  DECLARE_TYPE_INFO(AudioTrackList);
+
+ public:
+  using TrackList::TrackList;
+
+ private:
+  void OnAddAudioTrack(std::shared_ptr<media::MediaTrack> track) override;
+  void OnRemoveAudioTrack(std::shared_ptr<media::MediaTrack> track) override;
+};
+
+class VideoTrackList : public TrackList<VideoTrack, media::MediaTrack> {
+  DECLARE_TYPE_INFO(VideoTrackList);
+
+ public:
+  using TrackList::TrackList;
+
+ private:
+  void OnAddVideoTrack(std::shared_ptr<media::MediaTrack> track) override;
+  void OnRemoveVideoTrack(std::shared_ptr<media::MediaTrack> track) override;
+};
+
 class TextTrackList : public TrackList<TextTrack, media::TextTrack> {
   DECLARE_TYPE_INFO(TextTrackList);
 
  public:
-  using TrackList::TrackList;  // Forward constructors.
+  using TrackList::TrackList;
 
  private:
   void OnAddTextTrack(std::shared_ptr<media::TextTrack> track) override;
@@ -142,6 +167,8 @@ class TrackListFactory : public BackingObjectFactory<T, events::EventTarget> {
   }
 };
 
+using AudioTrackListFactory = TrackListFactory<AudioTrackList>;
+using VideoTrackListFactory = TrackListFactory<VideoTrackList>;
 using TextTrackListFactory = TrackListFactory<TextTrackList>;
 
 }  // namespace mse

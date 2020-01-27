@@ -45,6 +45,8 @@ HTMLMediaElement::HTMLMediaElement(RefPtr<dom::Document> document,
       autoplay(false),
       loop(false),
       default_muted(false),
+      audio_tracks(new AudioTrackList(player)),
+      video_tracks(new VideoTrackList(player)),
       text_tracks(new TextTrackList(player)),
       player_(player),
       clock_(&util::Clock::Instance) {
@@ -64,6 +66,8 @@ void HTMLMediaElement::Trace(memory::HeapTracer* tracer) const {
   dom::Element::Trace(tracer);
   tracer->Trace(&error);
   tracer->Trace(&media_source_);
+  tracer->Trace(&audio_tracks);
+  tracer->Trace(&video_tracks);
   tracer->Trace(&text_tracks);
 }
 
@@ -71,6 +75,8 @@ void HTMLMediaElement::Detach() {
   player_->RemoveClient(this);
   player_ = nullptr;
 
+  audio_tracks->Detach();
+  video_tracks->Detach();
   text_tracks->Detach();
 }
 
@@ -373,6 +379,8 @@ HTMLMediaElementFactory::HTMLMediaElementFactory() {
   AddReadWriteProperty("defaultMuted", &HTMLMediaElement::default_muted);
   AddReadOnlyProperty("mediaKeys", &HTMLMediaElement::media_keys);
   AddReadOnlyProperty("error", &HTMLMediaElement::error);
+  AddReadOnlyProperty("audioTracks", &HTMLMediaElement::audio_tracks);
+  AddReadOnlyProperty("videoTracks", &HTMLMediaElement::video_tracks);
   AddReadOnlyProperty("textTracks", &HTMLMediaElement::text_tracks);
 
   AddGenericProperty("readyState", &HTMLMediaElement::GetReadyState);
@@ -410,9 +418,6 @@ HTMLMediaElementFactory::HTMLMediaElementFactory() {
   NotImplemented("mediaGroup");
   NotImplemented("controller");
   NotImplemented("controls");
-
-  // Don't add audioTracks and videoTracks since src= uses them.  The default
-  // will have a value of undefined.
 }
 
 }  // namespace mse

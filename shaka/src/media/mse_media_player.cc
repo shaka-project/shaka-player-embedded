@@ -126,20 +126,42 @@ VideoPlaybackState MseMediaPlayer::PlaybackState() const {
   return pipeline_manager_.GetPlaybackState();
 }
 
+std::vector<std::shared_ptr<MediaTrack>> MseMediaPlayer::AudioTracks() {
+  // Track usage should be done through DefaultMediaPlayer.
+  LOG(FATAL) << "Not implemented";
+}
+
+std::vector<std::shared_ptr<const MediaTrack>> MseMediaPlayer::AudioTracks()
+    const {
+  // Track usage should be done through DefaultMediaPlayer.
+  LOG(FATAL) << "Not implemented";
+}
+
+std::vector<std::shared_ptr<MediaTrack>> MseMediaPlayer::VideoTracks() {
+  // Track usage should be done through DefaultMediaPlayer.
+  LOG(FATAL) << "Not implemented";
+}
+
+std::vector<std::shared_ptr<const MediaTrack>> MseMediaPlayer::VideoTracks()
+    const {
+  // Track usage should be done through DefaultMediaPlayer.
+  LOG(FATAL) << "Not implemented";
+}
+
 std::vector<std::shared_ptr<TextTrack>> MseMediaPlayer::TextTracks() {
-  // TextTrack usage should be done through DefaultMediaPlayer.
+  // Track usage should be done through DefaultMediaPlayer.
   LOG(FATAL) << "Not implemented";
 }
 
 std::vector<std::shared_ptr<const TextTrack>> MseMediaPlayer::TextTracks()
     const {
-  // TextTrack usage should be done through DefaultMediaPlayer.
+  // Track usage should be done through DefaultMediaPlayer.
   LOG(FATAL) << "Not implemented";
 }
 
 std::shared_ptr<TextTrack> MseMediaPlayer::AddTextTrack(
     TextTrackKind kind, const std::string& label, const std::string& language) {
-  // TextTrack usage should be done through DefaultMediaPlayer.
+  // Track usage should be done through DefaultMediaPlayer.
   LOG(FATAL) << "Not implemented";
 }
 

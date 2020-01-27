@@ -14,12 +14,42 @@
 
 #include "src/js/mse/track_list.h"
 
+#include "shaka/media/media_track.h"
 #include "shaka/media/text_track.h"
+#include "src/js/mse/media_track.h"
 #include "src/js/mse/text_track.h"
 
 namespace shaka {
 namespace js {
 namespace mse {
+
+// \cond Doxygen_Skip
+AudioTrackList::~AudioTrackList() {}
+// \endcond Doxygen_Skip
+
+void AudioTrackList::OnAddAudioTrack(std::shared_ptr<media::MediaTrack> track) {
+  AddTrack(track);
+}
+
+void AudioTrackList::OnRemoveAudioTrack(
+    std::shared_ptr<media::MediaTrack> track) {
+  RemoveTrack(track);
+}
+
+
+// \cond Doxygen_Skip
+VideoTrackList::~VideoTrackList() {}
+// \endcond Doxygen_Skip
+
+void VideoTrackList::OnAddVideoTrack(std::shared_ptr<media::MediaTrack> track) {
+  AddTrack(track);
+}
+
+void VideoTrackList::OnRemoveVideoTrack(
+    std::shared_ptr<media::MediaTrack> track) {
+  RemoveTrack(track);
+}
+
 
 // \cond Doxygen_Skip
 TextTrackList::~TextTrackList() {}

@@ -22,6 +22,7 @@
 #include "../eme/implementation.h"
 #include "../macros.h"
 #include "media_capabilities.h"
+#include "media_track.h"
 #include "streams.h"
 #include "text_track.h"
 
@@ -223,6 +224,30 @@ class SHAKA_EXPORT MediaPlayer {
     Client& operator=(Client&&) = delete;
 
     /**
+     * Called when an AudioTrack is added to the MediaPlayer
+     * @param track The new track that was added.
+     */
+    virtual void OnAddAudioTrack(std::shared_ptr<MediaTrack> track);
+
+    /**
+     * Called when an AudioTrack is removed from the MediaPlayer
+     * @param track The track that was removed.
+     */
+    virtual void OnRemoveAudioTrack(std::shared_ptr<MediaTrack> track);
+
+    /**
+     * Called when a VideoTrack is added to the MediaPlayer
+     * @param track The new track that was added.
+     */
+    virtual void OnAddVideoTrack(std::shared_ptr<MediaTrack> track);
+
+    /**
+     * Called when a VideoTrack is removed from the MediaPlayer
+     * @param track The track that was removed.
+     */
+    virtual void OnRemoveVideoTrack(std::shared_ptr<MediaTrack> track);
+
+    /**
      * Called when a TextTrack is added to the MediaPlayer.  This should be
      * called for both AddTextTrack calls and when the player adds its own
      * objects.
@@ -299,6 +324,10 @@ class SHAKA_EXPORT MediaPlayer {
     void AddClient(Client* client);
     void RemoveClient(Client* client);
 
+    void OnAddAudioTrack(std::shared_ptr<MediaTrack> track) override;
+    void OnRemoveAudioTrack(std::shared_ptr<MediaTrack> track) override;
+    void OnAddVideoTrack(std::shared_ptr<MediaTrack> track) override;
+    void OnRemoveVideoTrack(std::shared_ptr<MediaTrack> track) override;
     void OnAddTextTrack(std::shared_ptr<TextTrack> track) override;
     void OnRemoveTextTrack(std::shared_ptr<TextTrack> track) override;
     void OnReadyStateChanged(VideoReadyState old_state,
@@ -395,6 +424,20 @@ class SHAKA_EXPORT MediaPlayer {
 
   /** @return The current VideoPlaybackSate of the media. */
   virtual VideoPlaybackState PlaybackState() const = 0;
+
+  /** @return The current audio tracks in the media. */
+  virtual std::vector<std::shared_ptr<MediaTrack>> AudioTracks() = 0;
+
+  /** @return The current audio tracks in the media. */
+  virtual std::vector<std::shared_ptr<const MediaTrack>> AudioTracks()
+      const = 0;
+
+  /** @return The current video tracks in the media. */
+  virtual std::vector<std::shared_ptr<MediaTrack>> VideoTracks() = 0;
+
+  /** @return The current video tracks in the media. */
+  virtual std::vector<std::shared_ptr<const MediaTrack>> VideoTracks()
+      const = 0;
 
   /** @return The current text tracks in the media. */
   virtual std::vector<std::shared_ptr<TextTrack>> TextTracks() = 0;

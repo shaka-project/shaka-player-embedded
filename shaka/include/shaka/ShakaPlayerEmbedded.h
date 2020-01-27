@@ -66,6 +66,7 @@
 #  include "media/frames.h"
 #  include "media/media_capabilities.h"
 #  include "media/media_player.h"
+#  include "media/media_track.h"
 #  include "media/proxy_media_player.h"
 #  include "media/renderer.h"
 #  ifdef SHAKA_SDL_AUDIO

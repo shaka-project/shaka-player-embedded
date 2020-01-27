@@ -55,6 +55,7 @@
 #include "src/js/mse/media_element.h"
 #include "src/js/mse/media_error.h"
 #include "src/js/mse/media_source.h"
+#include "src/js/mse/media_track.h"
 #include "src/js/mse/source_buffer.h"
 #include "src/js/mse/text_track.h"
 #include "src/js/mse/time_ranges.h"
@@ -131,6 +132,8 @@ struct Environment::Impl {
   js::dom::DOMParserFactory dom_parser;
   js::dom::DOMStringListFactory dom_string_list;
 
+  js::mse::AudioTrackFactory audio_track;
+  js::mse::AudioTrackListFactory audio_track_list;
   js::mse::MediaErrorFactory media_error;
   js::mse::MediaSourceFactory media_source;
   js::mse::SourceBufferFactory source_buffer;
@@ -139,6 +142,8 @@ struct Environment::Impl {
   js::mse::TimeRangesFactory time_ranges;
   js::mse::HTMLMediaElementFactory media_element;
   js::mse::HTMLVideoElementFactory video_element;
+  js::mse::VideoTrackFactory video_track;
+  js::mse::VideoTrackListFactory video_track_list;
 
   js::eme::MediaKeySessionFactory media_key_session;
   js::eme::MediaKeySystemAccessFactory media_key_system_access;
@@ -209,6 +214,8 @@ ADD_GET_FACTORY(js::URL, url);
 ADD_GET_FACTORY(js::VTTCue, vtt_cue);
 ADD_GET_FACTORY(js::XMLHttpRequest, xml_http_request);
 
+ADD_GET_FACTORY(js::mse::AudioTrack, audio_track);
+ADD_GET_FACTORY(js::mse::AudioTrackList, audio_track_list);
 ADD_GET_FACTORY(js::mse::MediaError, media_error);
 ADD_GET_FACTORY(js::mse::MediaSource, media_source);
 ADD_GET_FACTORY(js::mse::SourceBuffer, source_buffer);
@@ -217,6 +224,8 @@ ADD_GET_FACTORY(js::mse::TextTrackList, text_track_list);
 ADD_GET_FACTORY(js::mse::TimeRanges, time_ranges);
 ADD_GET_FACTORY(js::mse::HTMLMediaElement, media_element);
 ADD_GET_FACTORY(js::mse::HTMLVideoElement, video_element);
+ADD_GET_FACTORY(js::mse::VideoTrack, video_track);
+ADD_GET_FACTORY(js::mse::VideoTrackList, video_track_list);
 
 ADD_GET_FACTORY(js::events::EventTarget, event_target);
 ADD_GET_FACTORY(js::events::Event, event);

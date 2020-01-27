@@ -32,6 +32,16 @@ std::atomic<const MediaPlayer*> player_{nullptr};
 MediaPlayer::Client::Client() {}
 MediaPlayer::Client::~Client() {}
 
+void MediaPlayer::Client::OnAddAudioTrack(std::shared_ptr<MediaTrack> track) {}
+
+void MediaPlayer::Client::OnRemoveAudioTrack(
+    std::shared_ptr<MediaTrack> track) {}
+
+void MediaPlayer::Client::OnAddVideoTrack(std::shared_ptr<MediaTrack> track) {}
+
+void MediaPlayer::Client::OnRemoveVideoTrack(
+    std::shared_ptr<MediaTrack> track) {}
+
 void MediaPlayer::Client::OnAddTextTrack(std::shared_ptr<TextTrack> track) {}
 
 void MediaPlayer::Client::OnRemoveTextTrack(std::shared_ptr<TextTrack> track) {}
@@ -83,6 +93,26 @@ void MediaPlayer::ClientList::AddClient(Client* client) {
 void MediaPlayer::ClientList::RemoveClient(Client* client) {
   std::unique_lock<SharedMutex> lock(impl_->mutex);
   util::RemoveElement(&impl_->clients, client);
+}
+
+void MediaPlayer::ClientList::OnAddAudioTrack(
+    std::shared_ptr<MediaTrack> track) {
+  impl_->CallClientMethod(&Client::OnAddAudioTrack, track);
+}
+
+void MediaPlayer::ClientList::OnRemoveAudioTrack(
+    std::shared_ptr<MediaTrack> track) {
+  impl_->CallClientMethod(&Client::OnRemoveAudioTrack, track);
+}
+
+void MediaPlayer::ClientList::OnAddVideoTrack(
+    std::shared_ptr<MediaTrack> track) {
+  impl_->CallClientMethod(&Client::OnAddVideoTrack, track);
+}
+
+void MediaPlayer::ClientList::OnRemoveVideoTrack(
+    std::shared_ptr<MediaTrack> track) {
+  impl_->CallClientMethod(&Client::OnRemoveVideoTrack, track);
 }
 
 void MediaPlayer::ClientList::OnAddTextTrack(std::shared_ptr<TextTrack> track) {
