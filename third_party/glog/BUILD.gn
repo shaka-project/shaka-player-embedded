@@ -14,6 +14,11 @@
 
 import("//common.gni")
 
+declare_args() {
+  # Extra libraries required by glog.
+  glog_libs = []
+}
+
 config("internal_config") {
   cflags = [
     "-Wno-deprecated-declarations",
@@ -22,6 +27,7 @@ config("internal_config") {
   defines = [
     "HAVE_CONFIG_H",
   ]
+  libs = glog_libs
 }
 
 config("external_config") {
