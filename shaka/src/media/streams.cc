@@ -383,6 +383,8 @@ std::shared_ptr<BaseFrame> StreamBase::GetFrameInternal(
     case FrameLocation::KeyFrameBefore:
       if (frame_it == it->frames.end())
         frame_it = std::prev(it->frames.end());
+      else if (frame_it != it->frames.begin() && getTime(*frame_it) > time)
+        frame_it--;  // If frame_it is a future frame, move backward.
 
       DCHECK((*it->frames.begin())->is_key_frame);
       while (!(*frame_it)->is_key_frame)

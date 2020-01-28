@@ -254,6 +254,19 @@ TEST(StreamBaseTest, GetFrame_KeyFrameBefore_FindsExactFrame) {
   EXPECT_EQ(10, frame->pts);
 }
 
+TEST(StreamBaseTest, GetFrame_KeyFrameBefore_FindsNearFrame) {
+  StreamType buffer;
+  buffer.AddFrame(MakeFrame(10, 20));
+  buffer.AddFrame(MakeFrame(20, 30));
+  buffer.AddFrame(MakeFrame(30, 40));
+  ASSERT_EQ(1u, buffer.GetBufferedRanges().size());
+
+  const BaseFrame* frame =
+      buffer.GetFrame(13, FrameLocation::KeyFrameBefore).get();
+  ASSERT_NE(nullptr, frame);
+  EXPECT_EQ(10, frame->pts);
+}
+
 TEST(StreamBaseTest, GetFrame_KeyFrameBefore_WontReturnFutureFrames) {
   StreamType buffer;
   buffer.AddFrame(MakeFrame(10, 20));
