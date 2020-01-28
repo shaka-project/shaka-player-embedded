@@ -29,6 +29,46 @@ std::atomic<const MediaPlayer*> player_{nullptr};
 
 }  // namespace
 
+std::string to_string(VideoReadyState state) {
+#define TO_STRING(E)       \
+  case VideoReadyState::E: \
+    return #E
+
+  switch (state) {
+    TO_STRING(NotAttached);
+    TO_STRING(HaveNothing);
+    TO_STRING(HaveMetadata);
+    TO_STRING(HaveCurrentData);
+    TO_STRING(HaveFutureData);
+    TO_STRING(HaveEnoughData);
+    default:
+      return "Unknown";
+  }
+#undef TO_STRING
+}
+
+std::string to_string(VideoPlaybackState state) {
+#define TO_STRING(E)          \
+  case VideoPlaybackState::E: \
+    return #E
+
+  switch (state) {
+    TO_STRING(Detached);
+    TO_STRING(Initializing);
+    TO_STRING(Paused);
+    TO_STRING(Seeking);
+    TO_STRING(Buffering);
+    TO_STRING(WaitingForKey);
+    TO_STRING(Playing);
+    TO_STRING(Ended);
+    TO_STRING(Errored);
+    default:
+      return "Unknown";
+  }
+#undef TO_STRING
+}
+
+
 // \cond Doxygen_Skip
 MediaPlayer::Client::Client() {}
 MediaPlayer::Client::~Client() {}

@@ -16,11 +16,13 @@
 
 #include <algorithm>
 #include <functional>
+#include <thread>
 
 #ifdef HAS_FFMPEG_DECODER
 #  include "src/media/ffmpeg/ffmpeg_decoder.h"
 #endif
 #include "src/media/media_utils.h"
+#include "src/util/clock.h"
 #include "src/util/utils.h"
 
 namespace shaka {
@@ -48,6 +50,39 @@ MseMediaPlayer::MseMediaPlayer(ClientList* clients,
       clients_(clients) {
   video_renderer_->SetPlayer(this);
   audio_renderer_->SetPlayer(this);
+
+#if 0
+  std::thread t([=]() {
+    auto printr = [](const char* prefix,
+                     const std::vector<BufferedRange>& ranges) {
+      printf("%s", prefix);
+      for (auto& range : ranges)
+        printf("%.1f-%.1f  ", range.start, range.end);
+      printf("\n");
+    };
+    auto print_stream = [&printr](const char* name, Source* stream) {
+      printf("  %s:\n", name);
+      printr("    Buffered:     ", stream->GetBuffered());
+      printr("    Decoded:      ",
+             stream->GetDecodedStream()->GetBufferedRanges());
+    };
+
+    while (true) {
+      util::Clock::Instance.SleepSeconds(1);
+
+      printf("Playback State:   %s\n", to_string(PlaybackState()).c_str());
+      printf("  Current time:   %.1f\n", CurrentTime());
+      printf("  Duration:       %.1f\n", Duration());
+      printf("  Playback rate:  %.1f\n", PlaybackRate());
+      printr("  Total Buffered: ", GetBuffered());
+
+      util::shared_lock<SharedMutex> lock(mutex_);
+      print_stream("Audio", &audio_);
+      print_stream("Video", &video_);
+    }
+  });
+  t.detach();
+#endif
 }
 
 MseMediaPlayer::~MseMediaPlayer() {

@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_MEDIA_PLAYER_H_
 #define SHAKA_EMBEDDED_MEDIA_MEDIA_PLAYER_H_
 
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -109,6 +110,11 @@ enum class VideoReadyState : int8_t {
   HaveEnoughData = 4,
 };
 
+std::string to_string(VideoReadyState state);
+inline std::ostream& operator<<(std::ostream& os, VideoReadyState state) {
+  return os << to_string(state);
+}
+
 /**
  * Defines possible playback states the video can be in.  This defines how the
  * playhead is moving or why it isn't moving.
@@ -161,6 +167,11 @@ enum class VideoPlaybackState : uint8_t {
    */
   Errored,
 };
+
+std::string to_string(VideoPlaybackState state);
+inline std::ostream& operator<<(std::ostream& os, VideoPlaybackState state) {
+  return os << to_string(state);
+}
 
 /**
  * Describes the current statistics about video playback quality.

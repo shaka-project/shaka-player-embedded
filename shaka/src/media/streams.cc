@@ -15,6 +15,7 @@
 #include "shaka/media/streams.h"
 
 #include <glog/logging.h>
+#include <stdio.h>
 
 #include <algorithm>
 #include <cmath>
@@ -325,6 +326,31 @@ void StreamBase::Remove(double start, double end) {
 void StreamBase::Clear() {
   std::unique_lock<Mutex> lock(impl_->mutex);
   impl_->buffered_ranges.clear();
+}
+
+void StreamBase::DebugPrint(bool all_frames) {
+  std::unique_lock<Mutex> lock(impl_->mutex);
+  AssertRangesSorted();
+
+  fprintf(stderr, "Stream order by %s:\n", impl_->order_by_dts ? "DTS" : "PTS");
+  if (impl_->buffered_ranges.empty())
+    fprintf(stderr, "  Nothing buffered\n");
+  size_t range_i = 0;
+  for (const Range& range : impl_->buffered_ranges) {
+    fprintf(stderr, "  Range[%zu]: %.2f-%.2f\n", range_i, range.start_pts,
+            range.end_pts);
+    if (all_frames) {
+      size_t frame_i = 0;
+      for (const auto& frame : range.frames) {
+        fprintf(stderr,
+                "    Frame[%zu]: is_key_frame=%-5s, pts=%.2f, dts=%.2f\n",
+                frame_i, frame->is_key_frame ? "true" : "false", frame->pts,
+                frame->dts);
+        frame_i++;
+      }
+    }
+    range_i++;
+  }
 }
 
 std::shared_ptr<BaseFrame> StreamBase::GetFrameInternal(

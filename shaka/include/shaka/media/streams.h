@@ -129,6 +129,14 @@ class SHAKA_EXPORT StreamBase {
   /** Removes all frames in the stream. */
   void Clear();
 
+
+  /**
+   * Prints debug info about the stream to stderr.
+   * @param all_frames True to print times of all frames; false to only print a
+   *   summary.
+   */
+  void DebugPrint(bool all_frames);
+
  protected:
   /**
    * Gets the frame that is associated with the given time.  How this searches
