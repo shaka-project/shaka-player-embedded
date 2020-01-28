@@ -19,6 +19,9 @@ config("internal_config") {
     "-Wno-deprecated-declarations",
     "-Wno-header-hygiene",
   ]
+  defines = [
+    "HAVE_CONFIG_H",
+  ]
 }
 
 config("external_config") {
@@ -32,17 +35,6 @@ config("external_config") {
   ]
 }
 
-patch("ios_sim") {
-  # Fix runtime error on an iOS simulator.
-  # TODO: Remove once merged upstream: https://github.com/google/glog/pull/350
-  visibility = [ ":*" ]
-
-  directory = "src"
-  input = "src/src/utilities.cc"
-  output = "$root_gen_dir/glog/utilities.cc"
-  patch = "ios_sim.patch"
-}
-
 
 component("glog") {
   sources = [
@@ -52,8 +44,8 @@ component("glog") {
     "src/src/symbolize.cc",
     "src/src/logging.cc",
     "src/src/signalhandler.cc",
+    "src/src/utilities.cc",
   ]
-  sources += get_target_outputs(":ios_sim")
 
   if (is_win) {
     sources += [
@@ -62,7 +54,6 @@ component("glog") {
   }
 
   deps = [
-    ":ios_sim",
     "//third_party/gflags:gflags",
   ]
 
