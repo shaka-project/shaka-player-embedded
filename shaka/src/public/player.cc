@@ -409,6 +409,16 @@ AsyncResults<void> Player::SetTextTrackVisibility(bool visibility) {
   return impl_->CallMethod<void>("setTextTrackVisibility", visibility);
 }
 
+AsyncResults<Track> Player::AddTextTrack(const std::string& uri,
+                                         const std::string& language,
+                                         const std::string& kind,
+                                         const std::string& mime,
+                                         const std::string& codec,
+                                         const std::string& label) {
+  return impl_->CallMethod<Track>("addTextTrack", uri, language, kind, mime,
+                                  codec, label);
+}
+
 void* Player::GetRawJsValue() {
   return impl_->GetRawJsValue();
 }

@@ -341,6 +341,20 @@ class SHAKA_EXPORT Player final {
       const std::string& name_path);
   //@}
 
+  /**
+   * Adds the given text track to the current Period.  <code>Load()</code> must
+   * resolve before calling.  The current Period or the presentation must have a
+   * duration.
+   * This returns a Promise that will resolve with the track that was created,
+   * when that track can be switched to.
+   */
+  AsyncResults<Track> AddTextTrack(const std::string& uri,
+                                   const std::string& language,
+                                   const std::string& kind,
+                                   const std::string& mime,
+                                   const std::string& codec = "",
+                                   const std::string& label = "");
+
  private:
   friend class Storage;
   void* GetRawJsValue();

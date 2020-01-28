@@ -741,6 +741,35 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
     _player->Destroy();
 }
 
+- (void)addTextTrack:(NSString *)uri
+            language:(NSString *)lang
+                kind:(NSString *)kind
+                mime:(NSString *)mime {
+  [self addTextTrack:uri language:lang kind:kind mime:mime codec:@"" label:@""];
+}
+
+- (void)addTextTrack:(NSString *)uri
+            language:(NSString *)lang
+                kind:(NSString *)kind
+                mime:(NSString *)mime
+               codec:(NSString *)codec {
+  [self addTextTrack:uri language:lang kind:kind mime:mime codec:codec label:@""];
+}
+
+- (void)addTextTrack:(NSString *)uri
+            language:(NSString *)lang
+                kind:(NSString *)kind
+                mime:(NSString *)mime
+               codec:(NSString *)codec
+               label:(NSString *)label {
+  [self checkInitialized];
+  auto results = _player->AddTextTrack(uri.UTF8String, lang.UTF8String, kind.UTF8String,
+                                       mime.UTF8String, codec.UTF8String, label.UTF8String);
+  if (results.has_error()) {
+    _client.OnError(results.error());
+  }
+}
+
 // MARK: +Internal
 - (shaka::Player *)playerInstance {
   return _player;

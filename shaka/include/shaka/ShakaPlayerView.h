@@ -354,6 +354,32 @@ withStartTime:(double)startTime
  */
 - (void)destroy;
 
+
+//@{
+/**
+ * Adds the given text track to the current Period.  <code>load</code> must
+ * resolve before calling.  The current Period or the presentation must have a
+ * duration.
+ * This returns a Promise that will resolve with the track that was created,
+ * when that track can be switched to.
+ */
+- (void)addTextTrack:(NSString *)uri
+            language:(NSString *)lang
+                kind:(NSString *)kind
+                mime:(NSString *)mime;
+- (void)addTextTrack:(NSString *)uri
+            language:(NSString *)lang
+                kind:(NSString *)kind
+                mime:(NSString *)mime
+               codec:(NSString *)codec;
+- (void)addTextTrack:(NSString *)uri
+            language:(NSString *)lang
+                kind:(NSString *)kind
+                mime:(NSString *)mime
+               codec:(NSString *)codec
+               label:(NSString *)label;
+//@}
+
 @end
 
 #endif  // SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_H_
