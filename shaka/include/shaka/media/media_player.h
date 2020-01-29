@@ -224,33 +224,33 @@ class SHAKA_EXPORT MediaPlayer {
 
     /** Called when the VideoReadyState of the media changes. */
     virtual void OnReadyStateChanged(VideoReadyState old_state,
-                                     VideoReadyState new_state) = 0;
+                                     VideoReadyState new_state);
 
     /** Called when the VideoPlaybackState of the media changes. */
     virtual void OnPlaybackStateChanged(VideoPlaybackState old_state,
-                                        VideoPlaybackState new_state) = 0;
+                                        VideoPlaybackState new_state);
 
     /**
      * Called when an error happens during playback.
      * @param error Describes what went wrong, can be empty.
      */
-    virtual void OnError(const std::string& error) = 0;
+    virtual void OnError(const std::string& error);
 
     /**
      * Called when MSE-based playback has been attached.  The media has not been
      * loaded yet, so many of the methods may not be usable yet.  But MSE
      * content will be played once loaded.
      */
-    virtual void OnAttachMse() = 0;
+    virtual void OnAttachMse();
 
     /**
      * Called when src= content has been attached.  This is called right after
      * starting, so the content may not be loaded yet.
      */
-    virtual void OnAttachSource() = 0;
+    virtual void OnAttachSource();
 
     /** Called when playback has stopped and the content has been unloaded. */
-    virtual void OnDetach() = 0;
+    virtual void OnDetach();
 
 
     /**
@@ -258,20 +258,20 @@ class SHAKA_EXPORT MediaPlayer {
      * This is different from entering the Playing state since this is only
      * called for autoplay or a call to Pause.
      */
-    virtual void OnPlay() = 0;
+    virtual void OnPlay();
 
     /**
      * Called when the video starts seeking.  This may be called multiple times
      * while in the Seeking state, if there are multiple seeks.
      */
-    virtual void OnSeeking() = 0;
+    virtual void OnSeeking();
 
     /**
      * Called when the video stops playing due to lack of an encryption key.
      * This should only be called once for each missing key, but can be called
      * multiple times if new keys arrive but there still isn't the required key.
      */
-    virtual void OnWaitingForKey() = 0;
+    virtual void OnWaitingForKey();
   };
 
   MediaPlayer();

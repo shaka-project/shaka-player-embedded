@@ -28,6 +28,27 @@ std::atomic<const MediaPlayer*> player_{nullptr};
 MediaPlayer::Client::Client() {}
 MediaPlayer::Client::~Client() {}
 
+void MediaPlayer::Client::OnReadyStateChanged(VideoReadyState old_state,
+                                              VideoReadyState new_state) {}
+
+void MediaPlayer::Client::OnPlaybackStateChanged(VideoPlaybackState old_state,
+                                                 VideoPlaybackState new_state) {
+}
+
+void MediaPlayer::Client::OnError(const std::string& error) {}
+
+void MediaPlayer::Client::OnAttachMse() {}
+
+void MediaPlayer::Client::OnAttachSource() {}
+
+void MediaPlayer::Client::OnDetach() {}
+
+void MediaPlayer::Client::OnPlay() {}
+
+void MediaPlayer::Client::OnSeeking() {}
+
+void MediaPlayer::Client::OnWaitingForKey() {}
+
 
 MediaPlayer::MediaPlayer() {}
 MediaPlayer::~MediaPlayer() {}

@@ -57,9 +57,6 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
   }
 
 
-  void OnReadyStateChanged(shaka::media::VideoReadyState old_state,
-                           shaka::media::VideoReadyState new_state) override {}
-
   void OnPlaybackStateChanged(shaka::media::VideoPlaybackState old_state,
                               shaka::media::VideoPlaybackState new_state) override {
     switch (new_state) {
@@ -83,19 +80,9 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
     OnError(shaka::Error(error));
   }
 
-  void OnAttachMse() override {}
-
-  void OnAttachSource() override {}
-
-  void OnDetach() override {}
-
-  void OnPlay() override {}
-
   void OnSeeking() override {
     shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekingEvent));
   }
-
-  void OnWaitingForKey() override {}
 
 
   void SetClient(id<ShakaPlayerClient> client) {

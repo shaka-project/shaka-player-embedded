@@ -359,12 +359,6 @@ void HTMLMediaElement::OnError(const std::string& error) {
   ScheduleEvent<events::Event>(EventType::Error);
 }
 
-void HTMLMediaElement::OnAttachMse() {}
-
-void HTMLMediaElement::OnAttachSource() {}
-
-void HTMLMediaElement::OnDetach() {}
-
 void HTMLMediaElement::OnPlay() {
   ScheduleEvent<events::Event>(EventType::Play);
 }
