@@ -30,6 +30,10 @@ namespace media {
  * defaults for the Set* methods and pass them to the chosen MediaPlayer once
  * content is loaded.
  *
+ * Note this does not forward AddClient/RemoveClient calls to the MediaPlayer.
+ * Instead, subclasses should use the GetClientList method and call methods
+ * on that.
+ *
  * @ingroup media
  */
 class SHAKA_EXPORT ProxyMediaPlayer : public MediaPlayer {
@@ -75,6 +79,10 @@ class SHAKA_EXPORT ProxyMediaPlayer : public MediaPlayer {
   bool SetEmeImplementation(const std::string& key_system,
                             eme::Implementation* implementation) override;
   void Detach() override;
+
+ protected:
+  /** @return The current ClientList used to fire events. */
+  ClientList* GetClientList() const;
 
  private:
   /**

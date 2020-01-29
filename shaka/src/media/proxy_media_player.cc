@@ -41,8 +41,8 @@ class ProxyMediaPlayer::Impl {
   }
 
   SharedMutex mutex;
+  ClientList clients;
   MediaPlayer* player;
-  std::vector<Client*> clients;
   std::string key_system;
   eme::Implementation* implementation;
 
@@ -68,18 +68,11 @@ VideoPlaybackQuality ProxyMediaPlayer::VideoPlaybackQuality() const {
 }
 
 void ProxyMediaPlayer::AddClient(Client* client) {
-  std::unique_lock<SharedMutex> lock(impl_->mutex);
-  if (!util::contains(impl_->clients, client))
-    impl_->clients.emplace_back(client);
-  if (impl_->player)
-    impl_->player->AddClient(client);
+  impl_->clients.AddClient(client);
 }
 
 void ProxyMediaPlayer::RemoveClient(Client* client) {
-  std::unique_lock<SharedMutex> lock(impl_->mutex);
-  util::RemoveElement(&impl_->clients, client);
-  if (impl_->player)
-    impl_->player->RemoveClient(client);
+  impl_->clients.RemoveClient(client);
 }
 
 std::vector<BufferedRange> ProxyMediaPlayer::GetBuffered() const {
@@ -311,10 +304,12 @@ void ProxyMediaPlayer::Detach() {
   impl_->reset();
 }
 
+MediaPlayer::ClientList* ProxyMediaPlayer::GetClientList() const {
+  return &impl_->clients;
+}
+
 void ProxyMediaPlayer::SetFields(MediaPlayer* player) {
   impl_->player = player;
-  for (auto* client : impl_->clients)
-    player->AddClient(client);
   if (impl_->implementation)
     player->SetEmeImplementation(impl_->key_system, impl_->implementation);
 

@@ -207,7 +207,7 @@ class SHAKA_EXPORT MediaPlayer {
   /**
    * Defines an interface for listening for player events.  These callbacks are
    * invoked by the MediaPlayer when events happen.  These can be called on
-   * any thread.
+   * any thread and can be called concurrently on multiple threads.
    *
    * These are called synchronously with a lock held on the MediaPlayer, so
    * you can't call back into the MediaPlayer instance from a callback.
@@ -272,6 +272,32 @@ class SHAKA_EXPORT MediaPlayer {
      * multiple times if new keys arrive but there still isn't the required key.
      */
     virtual void OnWaitingForKey();
+  };
+
+  /** Represents a thread-safe collection of Client instances. */
+  class SHAKA_EXPORT ClientList final : public Client {
+   public:
+    ClientList();
+    ~ClientList() override;
+
+    void AddClient(Client* client);
+    void RemoveClient(Client* client);
+
+    void OnReadyStateChanged(VideoReadyState old_state,
+                             VideoReadyState new_state) override;
+    void OnPlaybackStateChanged(VideoPlaybackState old_state,
+                                VideoPlaybackState new_state) override;
+    void OnError(const std::string& error) override;
+    void OnAttachMse() override;
+    void OnAttachSource() override;
+    void OnDetach() override;
+    void OnPlay() override;
+    void OnSeeking() override;
+    void OnWaitingForKey() override;
+
+   private:
+    class Impl;
+    std::unique_ptr<Impl> impl_;
   };
 
   MediaPlayer();

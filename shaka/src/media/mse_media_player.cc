@@ -26,7 +26,8 @@
 namespace shaka {
 namespace media {
 
-MseMediaPlayer::MseMediaPlayer(VideoRenderer* video_renderer,
+MseMediaPlayer::MseMediaPlayer(ClientList* clients,
+                               VideoRenderer* video_renderer,
                                AudioRenderer* audio_renderer)
     : mutex_("MseMediaPlayer"),
       pipeline_manager_(std::bind(&MseMediaPlayer::OnStatusChanged, this,
@@ -43,7 +44,8 @@ MseMediaPlayer::MseMediaPlayer(VideoRenderer* video_renderer,
       video_(this),
       audio_(this),
       video_renderer_(video_renderer),
-      audio_renderer_(audio_renderer) {
+      audio_renderer_(audio_renderer),
+      clients_(clients) {
   video_renderer_->SetPlayer(this);
   audio_renderer_->SetPlayer(this);
 }
@@ -98,14 +100,11 @@ VideoPlaybackQuality MseMediaPlayer::VideoPlaybackQuality() const {
 }
 
 void MseMediaPlayer::AddClient(MediaPlayer::Client* client) {
-  std::unique_lock<SharedMutex> lock(mutex_);
-  if (!util::contains(clients_, client))
-    clients_.emplace_back(client);
+  LOG(FATAL) << "Should be handled by ProxyMediaPlayer";
 }
 
 void MseMediaPlayer::RemoveClient(MediaPlayer::Client* client) {
-  std::unique_lock<SharedMutex> lock(mutex_);
-  util::RemoveElement(&clients_, client);
+  LOG(FATAL) << "Should be handled by ProxyMediaPlayer";
 }
 
 std::vector<BufferedRange> MseMediaPlayer::GetBuffered() const {
@@ -223,13 +222,11 @@ bool MseMediaPlayer::AttachMse() {
     std::unique_lock<SharedMutex> lock(mutex_);
     old_state_ = VideoPlaybackState::Initializing;
     ready_state_ = VideoReadyState::HaveNothing;
-
-    for (auto* client : clients_)
-      client->OnAttachMse();
   }
 
   pipeline_manager_.Reset();
   pipeline_monitor_.Start();
+  clients_->OnAttachMse();
   return true;
 }
 
@@ -288,13 +285,14 @@ void MseMediaPlayer::Detach() {
   video_renderer_->Detach();
   pipeline_monitor_.Stop();
 
-  std::unique_lock<SharedMutex> lock(mutex_);
-  video_.Detach();
-  audio_.Detach();
-  ready_state_ = VideoReadyState::NotAttached;
+  {
+    std::unique_lock<SharedMutex> lock(mutex_);
+    video_.Detach();
+    audio_.Detach();
+    ready_state_ = VideoReadyState::NotAttached;
+  }
 
-  for (auto* client : clients_)
-    client->OnDetach();
+  clients_->OnDetach();
 }
 
 void MseMediaPlayer::OnStatusChanged(VideoPlaybackState state) {
@@ -305,20 +303,15 @@ void MseMediaPlayer::OnStatusChanged(VideoPlaybackState state) {
     old_state_ = state;
   }
 
-  util::shared_lock<SharedMutex> lock(mutex_);
-
   if (state == old_state)
     return;
 
-  for (auto* client : clients_)
-    client->OnPlaybackStateChanged(old_state, state);
+  clients_->OnPlaybackStateChanged(old_state, state);
   switch (state) {
     case VideoPlaybackState::Initializing:
     case VideoPlaybackState::Playing:
-      if (old_state == VideoPlaybackState::Paused) {
-        for (auto* client : clients_)
-          client->OnPlay();
-      }
+      if (old_state == VideoPlaybackState::Paused)
+        clients_->OnPlay();
       break;
 
     case VideoPlaybackState::Seeking:
@@ -341,21 +334,14 @@ void MseMediaPlayer::ReadyStateChanged(VideoReadyState state) {
     ready_state_ = state;
   }
 
-  util::shared_lock<SharedMutex> lock(mutex_);
-  for (auto* client : clients_)
-    client->OnReadyStateChanged(old, state);
+  clients_->OnReadyStateChanged(old, state);
 }
 
 void MseMediaPlayer::OnSeek() {
   // Avoid holding the lock for interacting with the Renderers.
   audio_renderer_->OnSeek();
   video_renderer_->OnSeek();
-
-  {
-    util::shared_lock<SharedMutex> lock(mutex_);
-    for (auto* client : clients_)
-      client->OnSeeking();
-  }
+  clients_->OnSeeking();
 
   std::unique_lock<SharedMutex> lock(mutex_);
   video_.OnSeek();
@@ -364,16 +350,11 @@ void MseMediaPlayer::OnSeek() {
 
 void MseMediaPlayer::OnError(const std::string& error) {
   pipeline_manager_.OnError();
-
-  std::unique_lock<SharedMutex> lock(mutex_);
-  for (auto* client : clients_)
-    client->OnError(error);
+  clients_->OnError(error);
 }
 
 void MseMediaPlayer::OnWaitingForKey() {
-  util::shared_lock<SharedMutex> lock(mutex_);
-  for (auto* client : clients_)
-    client->OnWaitingForKey();
+  clients_->OnWaitingForKey();
 }
 
 

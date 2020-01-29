@@ -25,9 +25,10 @@ namespace media {
 
 class DefaultMediaPlayer::Impl {
  public:
-  Impl(VideoRenderer* video_renderer, AudioRenderer* audio_renderer)
+  Impl(ClientList* clients, VideoRenderer* video_renderer,
+       AudioRenderer* audio_renderer)
       : mutex("DefaultMediaPlayer"),
-        mse_player(video_renderer, audio_renderer) {}
+        mse_player(clients, video_renderer, audio_renderer) {}
 
   Mutex mutex;
   MseMediaPlayer mse_player;
@@ -36,7 +37,7 @@ class DefaultMediaPlayer::Impl {
 
 DefaultMediaPlayer::DefaultMediaPlayer(VideoRenderer* video_renderer,
                                        AudioRenderer* audio_renderer)
-    : impl_(new Impl(video_renderer, audio_renderer)) {}
+    : impl_(new Impl(GetClientList(), video_renderer, audio_renderer)) {}
 DefaultMediaPlayer::~DefaultMediaPlayer() {}
 
 void DefaultMediaPlayer::SetDecoders(Decoder* video_decoder,

@@ -37,7 +37,7 @@ namespace media {
  */
 class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
  public:
-  MseMediaPlayer(VideoRenderer* video_renderer,
+  MseMediaPlayer(ClientList* clients, VideoRenderer* video_renderer,
                  AudioRenderer* audio_renderer);
   ~MseMediaPlayer() override;
 
@@ -104,7 +104,7 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
     void SetCdm(eme::Implementation* cdm);
 
    private:
-    std::unique_ptr<Decoder> default_decoder_;
+    const std::unique_ptr<Decoder> default_decoder_;
 
     DecodedStream decoded_frames_;
     DecoderThread decoder_thread_;
@@ -128,9 +128,9 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
   Source video_;
   Source audio_;
 
-  VideoRenderer* video_renderer_;
-  AudioRenderer* audio_renderer_;
-  std::vector<MediaPlayer::Client*> clients_;
+  VideoRenderer* const video_renderer_;
+  AudioRenderer* const audio_renderer_;
+  ClientList* const clients_;
 };
 
 }  // namespace media
