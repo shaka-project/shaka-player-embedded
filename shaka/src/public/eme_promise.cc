@@ -18,6 +18,7 @@
 
 #include "src/core/js_manager_impl.h"
 #include "src/js/js_error.h"
+#include "src/mapping/js_utils.h"
 #include "src/mapping/promise.h"
 #include "src/memory/heap_tracer.h"
 #include "src/public/eme_promise_impl.h"
@@ -103,12 +104,9 @@ class DoRejectPromise : public memory::Traceable {
 }  // namespace
 
 EmePromise::Impl::Impl(const Promise& promise, bool has_value)
-    : is_pending_(false), has_value_(has_value) {
-  // We need to register the object before we store in RefPtr<T>.
-  auto* p = new Promise(promise);
-  memory::ObjectTracker::Instance()->RegisterObject(p);
-  promise_.reset(p);
-}
+    : promise_(MakeJsRef<Promise>(promise)),
+      is_pending_(false),
+      has_value_(has_value) {}
 
 EmePromise::Impl::Impl() : is_pending_(false), has_value_(false) {}
 

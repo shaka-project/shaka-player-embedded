@@ -19,6 +19,7 @@
 #include "src/core/ref_ptr.h"
 #include "src/js/eme/media_key_session.h"
 #include "src/mapping/byte_buffer.h"
+#include "src/mapping/js_utils.h"
 #include "src/memory/object_tracker.h"
 #include "src/util/macros.h"
 
@@ -27,12 +28,8 @@ namespace eme {
 
 class Data::Impl {
  public:
-  explicit Impl(ByteBuffer buffer) {
-    // We need to register the object before we can store it in the RefPtr<T>.
-    auto* temp = new ByteBuffer(std::move(buffer));
-    memory::ObjectTracker::Instance()->RegisterObject(temp);
-    this->buffer.reset(temp);
-  }
+  explicit Impl(ByteBuffer buffer)
+      : buffer(MakeJsRef<ByteBuffer>(std::move(buffer))) {}
   ~Impl() {}
 
   SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Impl);

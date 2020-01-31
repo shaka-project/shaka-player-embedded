@@ -16,9 +16,12 @@
 #define SHAKA_EMBEDDED_MAPPING_JS_UTILS_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "src/core/ref_ptr.h"
 #include "src/mapping/js_wrappers.h"
+#include "src/memory/object_tracker.h"
 
 namespace shaka {
 
@@ -34,6 +37,18 @@ namespace shaka {
  */
 ReturnVal<JsValue> GetDescendant(Handle<JsObject> root,
                                  const std::vector<std::string>& names);
+
+/**
+ * Allocates a new heap object of the given type that is managed by the
+ * ObjectTracker.  This allows non-Backing objects (e.g. Callback) to be managed
+ * using RefPtr<T>.
+ */
+template <typename T, typename... Args>
+RefPtr<T> MakeJsRef(Args&&... args) {
+  auto* p = new T(std::forward<Args>(args)...);
+  memory::ObjectTracker::Instance()->RegisterObject(p);
+  return p;
+}
 
 }  // namespace shaka
 
