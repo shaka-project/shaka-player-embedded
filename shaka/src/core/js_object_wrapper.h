@@ -126,12 +126,12 @@ class JsObjectWrapper {
         PlainCallbackTask(std::move(callback)));
   }
 
- protected:
   /**
    * Converts the given JavaScript error object into a public Error object.
    */
   static Error ConvertError(Handle<JsValue> except);
 
+ protected:
   /** Sets the object instance to use. */
   void Init(Handle<JsObject> object);
 

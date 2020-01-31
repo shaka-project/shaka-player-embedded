@@ -106,7 +106,17 @@ void Response::Finalize() {
 }
 
 js::Response* Response::JsObject() {
+  Finalize();
   return impl_->response.get();
 }
+
+
+// \cond Doxygen_Skip
+SchemePlugin::SchemePlugin() {}
+SchemePlugin::~SchemePlugin() {}
+
+SchemePlugin::Client::Client() {}
+SchemePlugin::Client::~Client() {}
+// \endcond Doxygen_Skip
 
 }  // namespace shaka

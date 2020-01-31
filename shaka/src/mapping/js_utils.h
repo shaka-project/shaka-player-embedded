@@ -15,12 +15,17 @@
 #ifndef SHAKA_EMBEDDED_MAPPING_JS_UTILS_H_
 #define SHAKA_EMBEDDED_MAPPING_JS_UTILS_H_
 
+#include <functional>
+#include <future>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "shaka/error.h"
+#include "shaka/optional.h"
 #include "src/core/ref_ptr.h"
 #include "src/mapping/js_wrappers.h"
+#include "src/mapping/promise.h"
 #include "src/memory/object_tracker.h"
 
 namespace shaka {
@@ -49,6 +54,14 @@ RefPtr<T> MakeJsRef(Args&&... args) {
   memory::ObjectTracker::Instance()->RegisterObject(p);
   return p;
 }
+
+/**
+ * Handles watching the given future to finish, reports any errors to the
+ * @a promise, and calls the given callback when (and if) the future resolves
+ * with success.  The callback will always be invoked on the JS main thread.
+ */
+void HandleNetworkFuture(Promise promise, std::future<optional<Error>> future,
+                         std::function<void()> on_done);
 
 }  // namespace shaka
 

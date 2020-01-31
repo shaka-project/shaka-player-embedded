@@ -122,7 +122,7 @@ bool ByteBuffer::TryConvert(Handle<JsValue> value) {
 
 ReturnVal<JsValue> ByteBuffer::ToJsValue() const {
   if (buffer_.empty()) {
-    DCHECK(own_ptr_);
+    DCHECK(own_ptr_ || (!ptr_ && size_ == 0));
 #if defined(USING_V8)
     buffer_ = v8::ArrayBuffer::New(GetIsolate(), ptr_, size_,
                                    v8::ArrayBufferCreationMode::kInternalized);

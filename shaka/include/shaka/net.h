@@ -161,6 +161,59 @@ class SHAKA_EXPORT Response final {
   std::unique_ptr<Impl> impl_;
 };
 
+/**
+ * Defines an interface for network scheme plugins.  These are used by Shaka
+ * Player to make network requests.  Requests can be completed asynchronously by
+ * returning a <code>std::future</code> instance.  This may be called while an
+ * asynchronous request is still completing, but won't be called concurrently.
+ * This is called on the JS main thread, so it is preferable to avoid lots of
+ * work and do it asynchronously.
+ *
+ * @ingroup player
+ */
+class SHAKA_EXPORT SchemePlugin {
+ public:
+  SHAKA_DECLARE_INTERFACE_METHODS(SchemePlugin);
+
+  /**
+   * Defines an interface for event listeners.  These should be called by the
+   * plugin as part of the download.  These can be called synchronously within
+   * the calls, or on any thread while a request is being made.
+   */
+  class Client {
+   public:
+    SHAKA_DECLARE_INTERFACE_METHODS(Client);
+
+    /**
+     * Called periodically to report progress of asynchronous downloads.
+     * @param time The time (in milliseconds) this report covers.
+     * @param bytes The number of bytes downloaded in @a time.
+     * @param remaining The number of bytes remaining; can be 0 for unknown.
+     */
+    virtual void OnProgress(double time, uint64_t bytes,
+                            uint64_t remaining) = 0;
+  };
+
+
+  /**
+   * Called when the player wants to make a network request.  This is expected
+   * to read the Request object and load the data into the @a response object.
+   * The objects will remain valid until the returned future resolves.
+   *
+   * @param uri The current URI of the request.
+   * @param type The type of request.
+   * @param request The request info.
+   * @param client A client object used to send events to.
+   * @param response The object to fill with response data.
+   * @return A future for when the request is finished.
+   */
+  virtual std::future<optional<Error>> OnNetworkRequest(const std::string& uri,
+                                                        RequestType type,
+                                                        const Request& request,
+                                                        Client* client,
+                                                        Response* response) = 0;
+};
+
 }  // namespace shaka
 
 #endif  // SHAKA_EMBEDDED_NET_H_

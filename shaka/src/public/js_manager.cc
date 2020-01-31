@@ -14,9 +14,39 @@
 
 #include "shaka/js_manager.h"
 
+#include "shaka/error.h"
 #include "src/core/js_manager_impl.h"
+#include "src/core/js_object_wrapper.h"
+#include "src/js/js_error.h"
+#include "src/js/net.h"
+#include "src/mapping/callback.h"
+#include "src/mapping/convert_js.h"
+#include "src/mapping/js_utils.h"
+#include "src/mapping/js_wrappers.h"
+#include "src/mapping/promise.h"
+#include "src/mapping/register_member.h"
 
 namespace shaka {
+
+namespace {
+
+class ProgressClient : public SchemePlugin::Client {
+ public:
+  explicit ProgressClient(Callback on_progress)
+      : on_progress_(MakeJsRef<Callback>(std::move(on_progress))) {}
+
+  void OnProgress(double time, uint64_t bytes, uint64_t remaining) override {
+    RefPtr<Callback> progress = on_progress_;
+    auto cb = [=]() { (*progress)(time, bytes, remaining); };
+    JsManagerImpl::Instance()->MainThread()->InvokeOrSchedule(
+        PlainCallbackTask(std::move(cb)));
+  }
+
+ private:
+  RefPtr<Callback> on_progress_;
+};
+
+}  // namespace
 
 JsManager::JsManager() : impl_(new JsManagerImpl(StartupOptions())) {}
 JsManager::JsManager(const StartupOptions& options)
@@ -51,6 +81,37 @@ AsyncResults<void> JsManager::RunScript(const std::string& path) {
                            });
 
   return future.share();
+}
+
+AsyncResults<void> JsManager::RegisterNetworkScheme(const std::string& scheme,
+                                                    SchemePlugin* plugin) {
+  auto js_scheme_plugin = [=](const std::string& uri, js::Request request,
+                              RequestType type, Callback on_progress) {
+    std::shared_ptr<Request> pub_req(new Request(std::move(request)));
+    std::shared_ptr<Response> resp(new Response);
+    std::shared_ptr<SchemePlugin::Client> client(
+        new ProgressClient(std::move(on_progress)));
+    Promise ret;
+    auto future =
+        plugin->OnNetworkRequest(uri, type, *pub_req, client.get(), resp.get());
+    auto on_done = [pub_req, resp, client, ret]() {
+      Promise copy = ret;  // By-value captures are const, so make a copy.
+      copy.ResolveWith(resp->JsObject()->ToJsValue(),
+                       /* raise_events= */ false);
+    };
+    HandleNetworkFuture(ret, std::move(future), std::move(on_done));
+    return ret;
+  };
+
+  return JsObjectWrapper::CallGlobalMethod<void>(
+      {"shaka", "net", "NetworkingEngine", "registerScheme"}, scheme,
+      std::move(js_scheme_plugin));
+}
+
+AsyncResults<void> JsManager::UnregisterNetworkScheme(
+    const std::string& scheme) {
+  return JsObjectWrapper::CallGlobalMethod<void>(
+      {"shaka", "net", "NetworkingEngine", "unregisterScheme"}, scheme);
 }
 
 }  // namespace shaka

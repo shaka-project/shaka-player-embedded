@@ -20,6 +20,7 @@
 
 #include "async_results.h"
 #include "macros.h"
+#include "net.h"
 
 namespace shaka {
 class JsManagerImpl;
@@ -109,6 +110,22 @@ class SHAKA_EXPORT JsManager final {
    * will be scheduled to run on the event loop.
    */
   AsyncResults<void> RunScript(const std::string& path);
+
+  /**
+   * Registers a network scheme plugin that handles network requests.  This is
+   * global and applies to all requests for this scheme.
+   *
+   * @param scheme The scheme this handles (e.g. 'http').
+   * @param plugin The plugin object that handles the requests.
+   */
+  AsyncResults<void> RegisterNetworkScheme(const std::string& scheme,
+                                           SchemePlugin* plugin);
+
+  /**
+   * Removes an existing network scheme plugin.
+   * @param scheme The scheme to remove (e.g. 'http').
+   */
+  AsyncResults<void> UnregisterNetworkScheme(const std::string& scheme);
 
  private:
   std::unique_ptr<JsManagerImpl> impl_;
