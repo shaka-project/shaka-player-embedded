@@ -131,6 +131,11 @@ void TestType::StoreByteBuffer(ByteBuffer buffer) {
   this->buffer = std::move(buffer);
 }
 
+TestTypeOptions TestType::ChangeStringField(TestTypeOptions opts) {
+  opts.string = "abc";
+  return opts;
+}
+
 ExceptionOr<void> TestType::ThrowException(const std::string& message) const {
   return JsError::Error(message);
 }
@@ -239,6 +244,7 @@ TestTypeFactory::TestTypeFactory() {
   AddMemberFunction("invokeCallbackWithString",
                     &TestType::InvokeCallbackWithString);
   AddMemberFunction("storeByteBuffer", &TestType::StoreByteBuffer);
+  AddMemberFunction("changeStringField", &TestType::ChangeStringField);
 
   AddMemberFunction("throwException", &TestType::ThrowException);
 

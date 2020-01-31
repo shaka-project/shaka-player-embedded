@@ -109,6 +109,7 @@ class TestType : public BackingObject {
 
   void InvokeCallbackWithString(Callback callback) const;
   void StoreByteBuffer(ByteBuffer buffer);
+  TestTypeOptions ChangeStringField(TestTypeOptions opts);
 
   ExceptionOr<void> ThrowException(const std::string& message) const;
 

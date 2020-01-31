@@ -23,6 +23,7 @@
 #include "src/mapping/convert_js.h"
 #include "src/mapping/generic_converter.h"
 #include "src/mapping/js_wrappers.h"
+#include "src/mapping/weak_js_ptr.h"
 #include "src/memory/heap_tracer.h"
 #include "src/util/templates.h"
 
@@ -156,6 +157,11 @@ class FieldConverter : public FieldConverterBase {
  * CANNOT have member initialization (field assignments before the '{'), you
  * MUST use assignment within the constructor body, otherwise the field will
  * not be registered (see the macro above).
+ *
+ * This stores the original JavaScript object this came from.  ToJsValue will
+ * return that if this came from JavaScript; otherwise this creates a new
+ * JavaScript object to return.  Any fields that are changed in C++ will be
+ * updated when returned back to JavaScript.
  */
 class Struct : public GenericConverter, public memory::Traceable {
  public:
@@ -184,6 +190,7 @@ class Struct : public GenericConverter, public memory::Traceable {
   }
 
  private:
+  mutable WeakJsPtr<JsObject> object_;
   std::vector<std::shared_ptr<impl::FieldConverterBase>> converters_;
 };
 

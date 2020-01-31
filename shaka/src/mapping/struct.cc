@@ -29,20 +29,25 @@ Struct& Struct::operator=(Struct&&) = default;
 bool Struct::TryConvert(Handle<JsValue> value) {
   if (!IsObject(value))
     return false;
+
   LocalVar<JsObject> obj = UnsafeJsCast<JsObject>(value);
+  object_ = obj;
   for (auto& converter : converters_)
     converter->SearchAndStore(this, obj);
   return true;
 }
 
 ReturnVal<JsValue> Struct::ToJsValue() const {
-  WeakJsPtr<JsObject> obj(CreateObject());
+  if (object_.empty())
+    object_ = CreateObject();
+
   for (auto& converter : converters_)
-    converter->AddToObject(this, obj.handle());
-  return obj.value();
+    converter->AddToObject(this, object_.handle());
+  return object_.value();
 }
 
 void Struct::Trace(memory::HeapTracer* tracer) const {
+  tracer->Trace(&object_);
   for (auto& converter : converters_)
     converter->Trace(this, tracer);
 }

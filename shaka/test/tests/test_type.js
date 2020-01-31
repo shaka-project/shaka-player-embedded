@@ -233,6 +233,14 @@ testGroup('TestType', function() {
       gc();
       expectEq(test.struct.any.abc, 1);
     });
+
+    test('ReturnsSameObject', () => {
+      const obj = {foo: 'x', string: 'y'};
+      const ret = new TestType().changeStringField(obj);
+      expectSame(ret, obj);
+      expectEq(ret.foo, 'x');
+      expectEq(ret.string, 'abc');
+    });
   });
 
   testGroup('enums', function() {
