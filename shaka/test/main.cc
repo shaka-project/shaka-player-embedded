@@ -35,14 +35,18 @@
 #include "src/core/js_manager_impl.h"
 #include "src/mapping/callback.h"
 #include "src/mapping/register_member.h"
+#include "src/test/global_fields.h"
+#include "src/test/js_test_fixture.h"
 #include "src/test/media_files.h"
 #include "src/util/file_system.h"
-#include "test/src/test/js_test_fixture.h"
 
 namespace shaka {
 
 // Defined in generated code by //shaka/test/embed_tests.py
 void LoadJsTests();
+
+media::DefaultMediaPlayer* g_media_player = nullptr;
+JsManager* g_js_manager = nullptr;
 
 namespace {
 
@@ -88,6 +92,7 @@ int RunTests(int argc, char** argv) {
   DummyRenderer renderer;
   media::DefaultMediaPlayer player(&renderer, &renderer);
   media::MediaPlayer::SetMediaPlayerForSupportChecks(&player);
+  g_media_player = &player;
 
   // Init gflags.
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -125,6 +130,7 @@ int RunTests(int argc, char** argv) {
   opts.static_data_dir = static_data_dir;
   opts.is_static_relative_to_bundle = true;
   JsManager engine(opts);
+  g_js_manager = &engine;
 
   JsManagerImpl::Instance()->MainThread()->AddInternalTask(
       TaskPriority::Immediate, "", PlainCallbackTask(&RegisterTestFixture));

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Based on https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd
+This only has one audio and one video with low res.  The segments are still on
+cloud storage.  This allows loading the file synchronously in the test.
+-->
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:mpeg:dash:schema:mpd:2011 DASH-MPD.xsd" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011" minBufferTime="PT2S" type="static" mediaPresentationDuration="PT60S">
+  <BaseURL>https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd</BaseURL>
+  <Period id="0">
+    <AdaptationSet id="2" contentType="text" lang="en" subsegmentAlignment="true">
+      <Role schemeIdUri="urn:mpeg:dash:role:2011" value="subtitle"/>
+      <Representation id="2" bandwidth="736" codecs="wvtt" mimeType="application/mp4">
+        <BaseURL>text_en.mp4</BaseURL>
+        <SegmentBase indexRange="727-950" timescale="1000">
+          <Initialization range="0-726"/>
+        </SegmentBase>
+      </Representation>
+    </AdaptationSet>
+    <AdaptationSet id="6" contentType="video" maxWidth="720" maxHeight="576" frameRate="12800/512" par="5:4">
+      <Representation id="6" bandwidth="492476" codecs="avc1.4d400d" mimeType="video/mp4" sar="1:1" width="300" height="240">
+        <BaseURL>video_240p_242k_h264.mp4</BaseURL>
+        <SegmentBase indexRange="860-1071" timescale="12800">
+          <Initialization range="0-859"/>
+        </SegmentBase>
+      </Representation>
+    </AdaptationSet>
+  </Period>
+</MPD>
+

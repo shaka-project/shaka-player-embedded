@@ -87,6 +87,7 @@ def _CheckLicense(_):
       '.json',
       '.md',
       '.mp4',
+      '.mpd',
       '.patch',
       '.pbxproj',
       '.plist',
