@@ -36,13 +36,7 @@ namespace media {
  */
 class SHAKA_EXPORT Renderer {
  public:
-  Renderer();
-  Renderer(const Renderer&) = delete;
-  Renderer(Renderer&&) = delete;
-  virtual ~Renderer();
-
-  Renderer& operator=(const Renderer&) = delete;
-  Renderer& operator=(Renderer&&) = delete;
+  SHAKA_DECLARE_INTERFACE_METHODS(Renderer);
 
   /** Called when a seek begins. */
   virtual void OnSeek() = 0;

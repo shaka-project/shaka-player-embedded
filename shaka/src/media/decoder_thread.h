@@ -58,7 +58,7 @@ class DecoderThread {
   DecoderThread(Client* client, DecodedStream* output);
   ~DecoderThread();
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(DecoderThread);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(DecoderThread);
 
   /** Starts decoding frames from the given stream. */
   void Attach(const ElementaryStream* input);

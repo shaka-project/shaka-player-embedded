@@ -23,6 +23,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "macros.h"
+
 namespace shaka {
 
 // Note that we shouldn't use the C++17 type even if we are compiling with that
@@ -118,12 +120,9 @@ template <typename T, typename... Rest>
 class union_ final {
  public:
   union_() {}
-  union_(const union_&) = delete;
-  union_(union_&&) = delete;
   ~union_() {}
 
-  union_& operator=(const union_&) = delete;
-  union_& operator=(union_&&) = delete;
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(union_);
 
   void copy(const union_& other, size_t i) {
     if (i == 0) {
@@ -221,12 +220,9 @@ template <typename T>
 class union_<T> final {
  public:
   union_() {}
-  union_(const union_&) = delete;
-  union_(union_&&) = delete;
   ~union_() {}
 
-  union_& operator=(const union_&) = delete;
-  union_& operator=(union_&&) = delete;
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(union_);
 
   void copy(const union_& other, size_t i) {
     assert(i == 0);

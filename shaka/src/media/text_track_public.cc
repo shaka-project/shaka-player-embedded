@@ -33,8 +33,10 @@ class TextTrack::Impl {
   std::unordered_set<Client*> clients;
 };
 
+// \cond Doxygen_Skip
 TextTrack::Client::Client() {}
 TextTrack::Client::~Client() {}
+// \endcond Doxygen_Skip
 
 TextTrack::TextTrack(TextTrackKind kind, const std::string& label,
                      const std::string& language, const std::string& id)

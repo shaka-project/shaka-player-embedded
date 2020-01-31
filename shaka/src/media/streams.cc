@@ -122,7 +122,7 @@ struct Range {
   Range() {}
   ~Range() {}
 
-  NON_COPYABLE_TYPE(Range);
+  SHAKA_NON_COPYABLE_TYPE(Range);
 
   std::list<std::shared_ptr<BaseFrame>> frames;
 

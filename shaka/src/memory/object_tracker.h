@@ -53,7 +53,7 @@ class ObjectTracker final : public PseudoSingleton<ObjectTracker> {
   explicit ObjectTracker(HeapTracer* tracer);
   ~ObjectTracker();
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(ObjectTracker);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(ObjectTracker);
 
   /** Registers the given object to be tracked. */
   void RegisterObject(Traceable* object);

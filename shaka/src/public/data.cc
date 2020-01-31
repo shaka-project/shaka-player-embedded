@@ -35,7 +35,7 @@ class Data::Impl {
   }
   ~Impl() {}
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
   RefPtr<ByteBuffer> buffer;
 };

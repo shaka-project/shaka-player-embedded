@@ -32,7 +32,7 @@ class EmePromise::Impl {
   Impl(const Promise& promise, bool has_value);
   virtual ~Impl();
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
   virtual void Resolve();
   virtual void ResolveWith(bool value);

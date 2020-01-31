@@ -37,7 +37,7 @@ struct TextureInfo {
     SDL_DestroyTexture(texture);
   }
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(TextureInfo);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(TextureInfo);
 
   SDL_Texture* texture;
   uint32_t pixel_format;
@@ -70,7 +70,7 @@ class SdlFrameDrawer::Impl {
   Impl() : renderer_(nullptr) {}
   ~Impl() {}
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
   void SetRenderer(SDL_Renderer* renderer) {
     textures_.clear();

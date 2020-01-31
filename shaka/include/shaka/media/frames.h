@@ -172,12 +172,9 @@ class SHAKA_EXPORT BaseFrame {
  public:
   BaseFrame(std::shared_ptr<const StreamInfo> stream_info, double pts,
             double dts, double duration, bool is_key_frame);
-  BaseFrame(const BaseFrame&) = delete;
-  BaseFrame(BaseFrame&&) = delete;
   virtual ~BaseFrame();
 
-  BaseFrame& operator=(const BaseFrame&) = delete;
-  BaseFrame& operator=(BaseFrame&&) = delete;
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(BaseFrame);
 
   /**
    * Contains the info describing the current stream this belongs to.  If two

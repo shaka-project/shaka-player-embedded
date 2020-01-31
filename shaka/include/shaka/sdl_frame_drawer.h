@@ -33,12 +33,12 @@ namespace shaka {
 class SHAKA_EXPORT SdlFrameDrawer final {
  public:
   SdlFrameDrawer();
-  SdlFrameDrawer(const SdlFrameDrawer&) = delete;
   SdlFrameDrawer(SdlFrameDrawer&&);
   ~SdlFrameDrawer();
 
-  SdlFrameDrawer& operator=(const SdlFrameDrawer&) = delete;
   SdlFrameDrawer& operator=(SdlFrameDrawer&&);
+
+  SHAKA_NON_COPYABLE_TYPE(SdlFrameDrawer);
 
 
   /**

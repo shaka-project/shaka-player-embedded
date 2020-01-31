@@ -17,8 +17,10 @@
 namespace shaka {
 namespace media {
 
+// \cond Doxygen_Skip
 Renderer::Renderer() {}
 Renderer::~Renderer() {}
+// \endcond Doxygen_Skip
 
 }  // namespace media
 }  // namespace shaka

@@ -98,7 +98,7 @@ class SdlThreadVideoRenderer::Impl {
     thread_.join();
   }
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
  private:
   void ThreadMain() {

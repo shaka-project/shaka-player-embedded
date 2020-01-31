@@ -215,13 +215,7 @@ class SHAKA_EXPORT MediaPlayer {
    */
   class SHAKA_EXPORT Client {
    public:
-    Client();
-    Client(const Client&) = delete;
-    Client(Client&&) = delete;
-    virtual ~Client();
-
-    Client& operator=(const Client&) = delete;
-    Client& operator=(Client&&) = delete;
+    SHAKA_DECLARE_INTERFACE_METHODS(Client);
 
     /**
      * Called when an AudioTrack is added to the MediaPlayer
@@ -347,13 +341,7 @@ class SHAKA_EXPORT MediaPlayer {
     std::unique_ptr<Impl> impl_;
   };
 
-  MediaPlayer();
-  MediaPlayer(const MediaPlayer&) = delete;
-  MediaPlayer(MediaPlayer&&) = delete;
-  virtual ~MediaPlayer();
-
-  MediaPlayer& operator=(const MediaPlayer&) = delete;
-  MediaPlayer& operator=(MediaPlayer&&) = delete;
+  SHAKA_DECLARE_INTERFACE_METHODS(MediaPlayer);
 
   /**
    * Sets the global MediaPlayer instance that is used to determine if content

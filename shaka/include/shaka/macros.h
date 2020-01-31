@@ -39,4 +39,23 @@
   Type& operator=(const Type&);                    \
   Type& operator=(Type&&)
 
+
+#define SHAKA_NON_COPYABLE_TYPE(Type) \
+  Type(const Type&) = delete;         \
+  Type& operator=(const Type&) = delete
+
+#define SHAKA_NON_MOVABLE_TYPE(Type) \
+  Type(Type&&) = delete;        \
+  Type& operator=(Type&&) = delete
+
+#define SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Type) \
+  SHAKA_NON_COPYABLE_TYPE(Type);                 \
+  SHAKA_NON_MOVABLE_TYPE(Type)
+
+#define SHAKA_DECLARE_INTERFACE_METHODS(Type) \
+  Type();                                     \
+  virtual ~Type();                            \
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Type)
+
+
 #endif  // SHAKA_EMBEDDED_MACROS_H_

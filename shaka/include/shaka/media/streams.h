@@ -84,12 +84,9 @@ class SHAKA_EXPORT StreamBase {
    * this means there may be differences between the times used in some methods.
    */
   explicit StreamBase(bool order_by_dts);
-  StreamBase(const StreamBase&) = delete;
-  StreamBase(StreamBase&&) = delete;
   ~StreamBase();
 
-  StreamBase& operator=(const StreamBase&) = delete;
-  StreamBase& operator=(StreamBase&&) = delete;
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(StreamBase);
 
   /**
    * @param start The exclusive time to start from.

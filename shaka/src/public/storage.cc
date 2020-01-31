@@ -30,13 +30,10 @@ struct TypeName<StoredContent, void> {
 };
 
 
+// \cond Doxygen_Skip
 Storage::Client::Client() {}
-Storage::Client::Client(const Client&) = default;
-Storage::Client::Client(Client&&) = default;
 Storage::Client::~Client() {}
-
-Storage::Client& Storage::Client::operator=(const Client&) = default;
-Storage::Client& Storage::Client::operator=(Client&&) = default;
+// \endcond Doxygen_Skip
 
 void Storage::Client::OnProgress(StoredContent /* content */,
                                  double /* progress */) {}

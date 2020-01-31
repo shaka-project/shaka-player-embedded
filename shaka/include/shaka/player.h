@@ -56,13 +56,7 @@ class SHAKA_EXPORT Player final {
    */
   class Client {
    public:
-    Client();
-    Client(const Client&);
-    Client(Client&&);
-    virtual ~Client();
-
-    Client& operator=(const Client&);
-    Client& operator=(Client&&);
+    SHAKA_DECLARE_INTERFACE_METHODS(Client);
 
     /**
      * Called when an error occurs asynchronously.
@@ -82,12 +76,12 @@ class SHAKA_EXPORT Player final {
    * @param engine The JavaScript engine to use.
    */
   Player(JsManager* engine);
-  Player(const Player&) = delete;
   Player(Player&&);
   ~Player();
 
-  Player& operator=(const Player&) = delete;
   Player& operator=(Player&&);
+
+  SHAKA_NON_COPYABLE_TYPE(Player);
 
 
   enum class LogLevel : uint8_t {

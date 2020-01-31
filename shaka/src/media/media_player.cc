@@ -29,8 +29,10 @@ std::atomic<const MediaPlayer*> player_{nullptr};
 
 }  // namespace
 
+// \cond Doxygen_Skip
 MediaPlayer::Client::Client() {}
 MediaPlayer::Client::~Client() {}
+// \endcond Doxygen_Skip
 
 void MediaPlayer::Client::OnAddAudioTrack(std::shared_ptr<MediaTrack> track) {}
 
@@ -164,8 +166,10 @@ void MediaPlayer::ClientList::OnWaitingForKey() {
 }
 
 
+// \cond Doxygen_Skip
 MediaPlayer::MediaPlayer() {}
 MediaPlayer::~MediaPlayer() {}
+// \endcond Doxygen_Skip
 
 void MediaPlayer::SetMediaPlayerForSupportChecks(const MediaPlayer* player) {
   player_.store(player, std::memory_order_relaxed);

@@ -40,8 +40,6 @@ class FFmpegDecodedFrame final : public DecodedFrame {
       std::shared_ptr<const StreamInfo> stream, AVFrame* frame, double time,
       double duration);
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(FFmpegDecodedFrame);
-
   size_t EstimateSize() const override;
 
   AVFrame* raw_frame() const {

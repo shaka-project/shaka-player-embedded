@@ -47,7 +47,7 @@ class JsObjectWrapper {
   JsObjectWrapper();
   ~JsObjectWrapper();
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(JsObjectWrapper);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(JsObjectWrapper);
 
   /**
    * A helper that converts a JavaScript value into the given return type as a

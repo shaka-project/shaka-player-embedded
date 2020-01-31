@@ -83,11 +83,11 @@ class SHAKA_EXPORT JsManager final {
   JsManager();
   JsManager(const StartupOptions& options);
   JsManager(JsManager&&);
-  JsManager(const JsManager&) = delete;
   ~JsManager();
 
   JsManager& operator=(JsManager&&);
-  JsManager& operator=(const JsManager&) = delete;
+
+  SHAKA_NON_COPYABLE_TYPE(JsManager);
 
   /**
    * Stops the JavaScript engine and all background threads.  It is invalid

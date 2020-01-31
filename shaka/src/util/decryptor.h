@@ -38,7 +38,7 @@ class Decryptor {
             const std::vector<uint8_t>& iv);
   ~Decryptor();
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(Decryptor);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Decryptor);
 
   /**
    * Decrypts the given partial block into the given buffer.  This must be

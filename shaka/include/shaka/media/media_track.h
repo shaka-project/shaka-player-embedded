@@ -80,12 +80,9 @@ class SHAKA_EXPORT MediaTrack {
  public:
   MediaTrack(MediaTrackKind kind, const std::string& label,
             const std::string& language, const std::string& id);
-  MediaTrack(MediaTrack&&) = delete;
-  MediaTrack(const MediaTrack&) = delete;
   virtual ~MediaTrack();
 
-  MediaTrack& operator=(const MediaTrack&) = delete;
-  MediaTrack& operator=(MediaTrack&&) = delete;
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(MediaTrack);
 
   /** The label string of the track. */
   const std::string label;

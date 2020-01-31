@@ -92,13 +92,7 @@ class SHAKA_EXPORT TextTrack {
    */
   class Client {
    public:
-    Client();
-    Client(const Client&) = delete;
-    Client(Client&&) = delete;
-    virtual ~Client();
-
-    Client& operator=(const Client&) = delete;
-    Client& operator=(Client&&) = delete;
+    SHAKA_DECLARE_INTERFACE_METHODS(Client);
 
     /** Called when a cue is added to the track. */
     virtual void OnCueAdded(std::shared_ptr<VTTCue> cue) = 0;
@@ -109,12 +103,9 @@ class SHAKA_EXPORT TextTrack {
 
   TextTrack(TextTrackKind kind, const std::string& label,
             const std::string& language, const std::string& id);
-  TextTrack(TextTrack&&) = delete;
-  TextTrack(const TextTrack&) = delete;
   virtual ~TextTrack();
 
-  TextTrack& operator=(const TextTrack&) = delete;
-  TextTrack& operator=(TextTrack&&) = delete;
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(TextTrack);
 
   /** The kind of the text track. */
   const TextTrackKind kind;

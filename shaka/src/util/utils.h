@@ -65,7 +65,7 @@ struct Unlocker {
     lock_->lock();
   }
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(Unlocker);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Unlocker);
 
   std::unique_lock<_Mutex>* lock_;
 };

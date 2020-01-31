@@ -44,13 +44,7 @@ class SHAKA_EXPORT Demuxer {
    */
   class SHAKA_EXPORT Client {
    public:
-    Client();
-    Client(const Client&) = delete;
-    Client(Client&&) = delete;
-    virtual ~Client();
-
-    Client& operator=(const Client&) = delete;
-    Client& operator=(Client&&) = delete;
+    SHAKA_DECLARE_INTERFACE_METHODS(Client);
 
     /**
      * Called after the first init segment has been processed.
@@ -67,13 +61,7 @@ class SHAKA_EXPORT Demuxer {
                              const uint8_t* data, size_t size) = 0;
   };
 
-  Demuxer();
-  Demuxer(const Demuxer&) = delete;
-  Demuxer(Demuxer&&) = delete;
-  virtual ~Demuxer();
-
-  Demuxer& operator=(const Demuxer&) = delete;
-  Demuxer& operator=(Demuxer&&) = delete;
+  SHAKA_DECLARE_INTERFACE_METHODS(Demuxer);
 
   /**
    * Switches to demux content of the given MIME type.  It is not required for
@@ -124,13 +112,7 @@ class SHAKA_EXPORT Demuxer {
  */
 class SHAKA_EXPORT DemuxerFactory {
  public:
-  DemuxerFactory();
-  DemuxerFactory(const DemuxerFactory&) = delete;
-  DemuxerFactory(DemuxerFactory&&) = delete;
-  virtual ~DemuxerFactory();
-
-  DemuxerFactory& operator=(const DemuxerFactory&) = delete;
-  DemuxerFactory& operator=(DemuxerFactory&&) = delete;
+  SHAKA_DECLARE_INTERFACE_METHODS(DemuxerFactory);
 
   /** @return The current DemuxerFactory instance. */
   static const DemuxerFactory* GetFactory();

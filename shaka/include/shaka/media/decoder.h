@@ -41,13 +41,7 @@ namespace media {
  */
 class SHAKA_EXPORT Decoder {
  public:
-  Decoder();
-  Decoder(const Decoder&) = delete;
-  Decoder(Decoder&&) = delete;
-  virtual ~Decoder();
-
-  Decoder& operator=(const Decoder&) = delete;
-  Decoder& operator=(Decoder&&) = delete;
+  SHAKA_DECLARE_INTERFACE_METHODS(Decoder);
 
   /** @see MediaPlayer::DecodingInfo */
   virtual MediaCapabilitiesInfo DecodingInfo(

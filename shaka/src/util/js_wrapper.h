@@ -15,7 +15,12 @@
 #ifndef SHAKA_EMBEDDED_JS_WRAPPER_H_
 #define SHAKA_EMBEDDED_JS_WRAPPER_H_
 
+#include <glog/logging.h>
+
+#include "src/core/js_manager_impl.h"
 #include "src/core/ref_ptr.h"
+#include "src/core/task_runner.h"
+#include "src/util/macros.h"
 
 namespace shaka {
 namespace util {
@@ -26,7 +31,8 @@ class JSWrapper {
   RefPtr<T> inner;
 
   JSWrapper() {}
-  NON_COPYABLE_OR_MOVABLE_TYPE(JSWrapper);
+
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(JSWrapper);
 
   template <typename Func, typename... Args>
   auto CallInnerMethod(Func member, Args... args)

@@ -58,12 +58,9 @@ class SHAKA_EXPORT StreamInfo {
              Rational time_scale, const std::vector<uint8_t>& extra_data,
              uint32_t width, uint32_t height, uint32_t channel_count,
              uint32_t sample_rate);
-  StreamInfo(const StreamInfo&) = delete;
-  StreamInfo(StreamInfo&&) = delete;
   virtual ~StreamInfo();
 
-  StreamInfo& operator=(const StreamInfo&) = delete;
-  StreamInfo& operator=(StreamInfo&&) = delete;
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(StreamInfo);
 
   /**
    * The full MIME type of the input stream.  If the input is multiplexed, this

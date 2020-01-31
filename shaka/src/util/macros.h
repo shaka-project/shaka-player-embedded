@@ -20,17 +20,7 @@
 #include <iostream>
 #include <string>
 
-#define NON_COPYABLE_TYPE(Type) \
-  Type(const Type&) = delete;   \
-  Type& operator=(const Type&) = delete
-
-#define NON_MOVABLE_TYPE(Type) \
-  Type(Type&&) = delete;       \
-  Type& operator=(Type&&) = delete
-
-#define NON_COPYABLE_OR_MOVABLE_TYPE(Type) \
-  NON_COPYABLE_TYPE(Type);                 \
-  NON_MOVABLE_TYPE(Type)
+#include "shaka/macros.h"
 
 #define LOG_ONCE(severity) LOG_FIRST_N(severity, 1)
 

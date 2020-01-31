@@ -89,7 +89,7 @@ class Player::Impl : public JsObjectWrapper {
       video_->Detach();
   }
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
   Converter<void>::future_type Initialize(Client* client,
                                           media::MediaPlayer* player) {
@@ -208,13 +208,10 @@ class Player::Impl : public JsObjectWrapper {
   RefPtr<js::mse::HTMLVideoElement> video_;
 };
 
+// \cond Doxygen_Skip
 Player::Client::Client() {}
-Player::Client::Client(const Client&) = default;
-Player::Client::Client(Client&&) = default;
 Player::Client::~Client() {}
-
-Player::Client& Player::Client::operator=(const Client&) = default;
-Player::Client& Player::Client::operator=(Client&&) = default;
+// \endcond Doxygen_Skip
 
 void Player::Client::OnError(const Error& /* error */) {}
 void Player::Client::OnBuffering(bool /* is_buffering */) {}

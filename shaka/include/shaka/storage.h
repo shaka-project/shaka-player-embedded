@@ -44,13 +44,7 @@ class SHAKA_EXPORT Storage final {
    */
   class Client {
    public:
-    Client();
-    Client(const Client&);
-    Client(Client&&);
-    virtual ~Client();
-
-    Client& operator=(const Client&);
-    Client& operator=(Client&&);
+    SHAKA_DECLARE_INTERFACE_METHODS(Client);
 
 
     /**
@@ -67,12 +61,12 @@ class SHAKA_EXPORT Storage final {
    * @param player The Player instance to use as a base, can be nullptr.
    */
   Storage(JsManager* engine, Player* player = nullptr);
-  Storage(const Storage&) = delete;
   Storage(Storage&&);
   ~Storage();
 
-  Storage& operator=(const Storage&) = delete;
   Storage& operator=(Storage&&);
+
+  SHAKA_NON_COPYABLE_TYPE(Storage);
 
   /**
    * Gets whether offline storage is supported. Returns true if offline storage

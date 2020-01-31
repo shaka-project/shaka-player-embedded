@@ -59,7 +59,7 @@ class shared_mutex {
   shared_mutex();
   ~shared_mutex();
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(shared_mutex);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(shared_mutex);
 
   /** Locks the mutex for exclusive access. */
   void lock() {
@@ -129,7 +129,7 @@ class shared_lock {
       mutex_->unlock_shared();
   }
 
-  NON_COPYABLE_TYPE(shared_lock);
+  SHAKA_NON_COPYABLE_TYPE(shared_lock);
 
   shared_lock& operator=(shared_lock&& other) {
     other.swap(*this);

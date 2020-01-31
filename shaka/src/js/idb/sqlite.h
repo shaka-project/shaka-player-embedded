@@ -57,7 +57,7 @@ class SqliteTransaction {
   SqliteTransaction(SqliteTransaction&&);
   ~SqliteTransaction();
 
-  NON_COPYABLE_TYPE(SqliteTransaction);
+  SHAKA_NON_COPYABLE_TYPE(SqliteTransaction);
 
   SqliteTransaction& operator=(SqliteTransaction&&);
 
@@ -126,7 +126,7 @@ class SqliteConnection {
   explicit SqliteConnection(const std::string& file_path);
   ~SqliteConnection();
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(SqliteConnection);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(SqliteConnection);
 
   /**
    * Initializes the connection and sets up the database as needed.  This MUST

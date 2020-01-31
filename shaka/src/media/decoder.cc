@@ -17,8 +17,10 @@
 namespace shaka {
 namespace media {
 
+// \cond Doxygen_Skip
 Decoder::Decoder() {}
 Decoder::~Decoder() {}
+// \endcond Doxygen_Skip
 
 }  // namespace media
 }  // namespace shaka

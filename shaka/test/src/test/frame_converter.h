@@ -33,7 +33,7 @@ class FrameConverter {
   FrameConverter();
   ~FrameConverter();
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(FrameConverter);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(FrameConverter);
 
   /**
    * Converts the given frame to ARGB.

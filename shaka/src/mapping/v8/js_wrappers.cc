@@ -28,7 +28,7 @@ class StaticExternalResource
   StaticExternalResource(const uint8_t* data, size_t data_size)
       : data_(data), data_size_(data_size) {}
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(StaticExternalResource);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(StaticExternalResource);
 
   const char* data() const override {
     return reinterpret_cast<const char*>(data_);

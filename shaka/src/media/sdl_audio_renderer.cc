@@ -210,7 +210,7 @@ class SdlAudioRenderer::Impl {
     swr_free(&swr_ctx_);
   }
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
   void OnSeek() {
     std::unique_lock<Mutex> lock(mutex_);

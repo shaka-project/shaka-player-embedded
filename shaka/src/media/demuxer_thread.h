@@ -50,7 +50,7 @@ class DemuxerThread {
                 ElementaryStream* stream);
   ~DemuxerThread();
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(DemuxerThread);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(DemuxerThread);
 
   /** Stops the background thread and joins it. */
   void Stop();

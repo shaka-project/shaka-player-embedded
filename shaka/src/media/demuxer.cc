@@ -32,19 +32,23 @@ std::atomic<const DemuxerFactory*> demuxer_factory_{nullptr};
 
 }  // namespace
 
+// \cond Doxygen_Skip
 Demuxer::Demuxer() {}
 Demuxer::~Demuxer() {}
 
 Demuxer::Client::Client() {}
 Demuxer::Client::~Client() {}
+// \endcond Doxygen_Skip
 
 bool Demuxer::SwitchType(const std::string& mime_type) {
   return false;
 }
 
 
+// \cond Doxygen_Skip
 DemuxerFactory::DemuxerFactory() {}
 DemuxerFactory::~DemuxerFactory() {}
+// \endcond Doxygen_Skip
 
 const DemuxerFactory* DemuxerFactory::GetFactory() {
   const DemuxerFactory* ret = demuxer_factory_.load(std::memory_order_relaxed);
