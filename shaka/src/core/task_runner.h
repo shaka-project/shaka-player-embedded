@@ -176,6 +176,22 @@ class MemberCallbackTaskImpl : public memory::Traceable {
   Member member_;
 };
 
+template <typename T>
+struct FutureResolver {
+  template <typename Func>
+  static void CallAndResolve(Func&& callback, std::promise<T>* promise) {
+    promise->set_value(callback());
+  }
+};
+template <>
+struct FutureResolver<void> {
+  template <typename Func>
+  static void CallAndResolve(Func&& callback, std::promise<void>* promise) {
+    callback();
+    promise->set_value();
+  }
+};
+
 }  // namespace impl
 
 /**
@@ -236,6 +252,28 @@ class TaskRunner {
   /** Blocks the calling thread until the worker has no more work to do. */
   void WaitUntilFinished();
 
+
+  /**
+   * If called from the thread this manages, the given callback is invoked
+   * synchronously; otherwise it is scheduled as an internal task.
+   *
+   * @param callback The Traceable callback object.
+   * @return A future for when the task is completed.
+   */
+  template <typename Func>
+  std::shared_future<impl::RetOf<Func>> InvokeOrSchedule(Func&& callback) {
+    using Ret = impl::RetOf<Func>;
+    if (BelongsToCurrentThread()) {
+      std::promise<Ret> promise;
+      impl::FutureResolver<Ret>::CallAndResolve(std::forward<Func>(callback),
+                                                &promise);
+      return promise.get_future().share();
+    } else {
+      return AddInternalTask(TaskPriority::Internal, "",
+                             std::forward<Func>(callback))
+          ->future();
+    }
+  }
 
   /**
    * Registers an internal task to be called on the worker thread.  This

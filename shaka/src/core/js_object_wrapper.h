@@ -121,19 +121,9 @@ class JsObjectWrapper {
   template <typename T>
   static typename Converter<T>::future_type GetGlobalField(
       const std::vector<std::string>& global_path) {
-    if (JsManagerImpl::Instance()->MainThread()->BelongsToCurrentThread()) {
-      std::promise<typename Converter<T>::variant_type> promise;
-      promise.set_value(GetFieldRaw<T>(global_path));
-      return promise.get_future().share();
-    } else {
-      auto callback =
-          std::bind(&GetFieldRaw<T>, global_path);
-      return JsManagerImpl::Instance()
-          ->MainThread()
-          ->AddInternalTask(TaskPriority::Internal, global_path.back(),
-                            PlainCallbackTask(std::move(callback)))
-          ->future();
-    }
+    auto callback = std::bind(&GetFieldRaw<T>, global_path);
+    return JsManagerImpl::Instance()->MainThread()->InvokeOrSchedule(
+        PlainCallbackTask(std::move(callback)));
   }
 
  protected:

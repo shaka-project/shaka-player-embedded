@@ -133,19 +133,9 @@ class Player::Impl : public JsObjectWrapper {
   template <typename T>
   typename Converter<T>::future_type GetConfigValue(
       const std::string& name_path) {
-    if (JsManagerImpl::Instance()->MainThread()->BelongsToCurrentThread()) {
-      std::promise<typename Converter<T>::variant_type> promise;
-      promise.set_value(GetConfigValueRaw<T>(name_path));
-      return promise.get_future().share();
-    }
-
-    const auto callback =
-        std::bind(&Impl::GetConfigValueRaw<T>, this, name_path);
-    return JsManagerImpl::Instance()
-        ->MainThread()
-        ->AddInternalTask(TaskPriority::Internal, "Player.getConfiguration",
-                          PlainCallbackTask(callback))
-        ->future();
+    auto callback = std::bind(&Impl::GetConfigValueRaw<T>, this, name_path);
+    return JsManagerImpl::Instance()->MainThread()->InvokeOrSchedule(
+        PlainCallbackTask(std::move(callback)));
   }
 
   void* GetRawJsValue() {
