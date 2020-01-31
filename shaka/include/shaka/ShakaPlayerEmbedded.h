@@ -79,4 +79,5 @@
 #  include "media/streams.h"
 #  include "media/text_track.h"
 #  include "media/vtt_cue.h"
+#  include "net.h"
 #endif
