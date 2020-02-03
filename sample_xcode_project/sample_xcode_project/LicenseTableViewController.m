@@ -29,7 +29,7 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  NSBundle *bundle = [NSBundle bundleForClass:[ShakaPlayerView class]];
+  NSBundle *bundle = [NSBundle bundleForClass:[ShakaPlayer class]];
   NSString *path = [bundle pathForResource:@"licenses" ofType:@"json"];
   NSData *data = [NSData dataWithContentsOfFile:path];
   NSError *error;

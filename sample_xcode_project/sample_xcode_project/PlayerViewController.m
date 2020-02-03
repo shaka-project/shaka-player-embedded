@@ -38,7 +38,8 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
 @property PlayPauseIcon oldPlayPauseIcon;
 @property BOOL oldClosedCaptions;
 @property UIView *playerContainer;
-@property ShakaPlayerView *player;
+@property ShakaPlayer *player;
+@property ShakaPlayerView *playerView;
 @property CFTimeInterval lastActionTime;
 @property NSLayoutConstraint *navigationBarHeightConstraint;
 @property UIActivityIndicatorView *spinner;
@@ -79,7 +80,7 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
   [self.uiTimer invalidate];
 
   [self.player unloadWithBlock:^(ShakaPlayerError* error) {
-    [self.player removeFromSuperview];
+    [self.playerView removeFromSuperview];
     self.player = nil;
   }];
 }
@@ -161,7 +162,7 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
       }
       if (self.player.isAudioOnly) {
         self.audioOnlyView.hidden = NO;
-        self.player.backgroundColor = [UIColor whiteColor];
+        self.playerView.backgroundColor = [UIColor whiteColor];
       }
     }
   }];
@@ -199,7 +200,7 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
   [self.uiTimer invalidate];
   self.uiTimer = nil;
   [self.player destroy];
-  [self.player removeFromSuperview];
+  [self.playerView removeFromSuperview];
   self.player = nil;
 }
 
@@ -245,7 +246,7 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
 }
 
 - (void)updateViews {
-  if (!self.player || !self.player.superview) [self setupTopLevelViews];
+  if (!self.player || !self.playerView || !self.playerView.superview) [self setupTopLevelViews];
 
   if (self.oldPlayPauseIcon != self.playPauseIcon) [self updatePlayPauseButton];
   if (self.player.closedCaptions != self.oldClosedCaptions) [self updateClosedCaptionsButton];
@@ -356,13 +357,15 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
 }
 
 - (void)placePlayerIntoContainer {
-  if (!self.player)
-    self.player = [[ShakaPlayerView alloc] initWithClient:self];
-  self.player.backgroundColor = [UIColor blackColor];
-  [self.playerContainer addSubview:self.player];
+  if (!self.player) {
+    self.player = [[ShakaPlayer alloc] initWithClient:self];
+    self.playerView = [[ShakaPlayerView alloc] initWithPlayer:self.player];
+  }
+  self.playerView.backgroundColor = [UIColor blackColor];
+  [self.playerContainer addSubview:self.playerView];
 
   // Place autolayout constraints on views, using Visual Format Language.
-  NSDictionary<NSString *, UIView *> *views = @{@"p" : self.player};
+  NSDictionary<NSString *, UIView *> *views = @{@"p" : self.playerView};
   [self shaka_constraint:@"|-0-[p]-0-|" onViews:views];
   [self shaka_constraint:@"V:|-0-[p]-0-|" onViews:views];
 }
@@ -393,7 +396,7 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
   UIActivityIndicatorViewStyle style = UIActivityIndicatorViewStyleWhiteLarge;
   self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:style];
   [self.spinner startAnimating];
-  [self.player addSubview:self.spinner];
+  [self.playerView addSubview:self.spinner];
 
   self.errorDisplayView = [[ErrorDisplayView alloc] init];
   self.errorDisplayView.hidden = YES;
@@ -467,10 +470,10 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
   self.spinner.translatesAutoresizingMaskIntoConstraints = NO;
   [self shaka_equalConstraintForAttribute:NSLayoutAttributeCenterX
                                  fromItem:self.spinner
-                                   toItem:self.player];
+                                   toItem:self.playerView];
   [self shaka_equalConstraintForAttribute:NSLayoutAttributeCenterY
                                  fromItem:self.spinner
-                                   toItem:self.player];
+                                   toItem:self.playerView];
 
   [self setupControls];
 }

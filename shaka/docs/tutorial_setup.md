@@ -124,12 +124,13 @@ class ViewController: UIViewController, ShakaPlayerClient {
     super.viewWillAppear(animated)
 
     // Make a Shaka Player view.
-    guard let player = ShakaPlayerView(client: self) else {
+    guard let player = ShakaPlayer(client: self) else {
       print("Error creating player")
       return
     }
-    player.frame = self.view.bounds
-    self.view.addSubview(player)
+    let playerView = ShakaPlayerView(player: player)
+    playerView.frame = self.view.bounds
+    self.view.addSubview(playerView)
 
     // Load and play an asset.
     player.load("https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd") {
@@ -166,9 +167,10 @@ Go to `ViewController.m`, and replace its contents with the following code:
   [super viewWillAppear:animated];
 
   // Make a Shaka Player view.
-  ShakaPlayerView *player = [[ShakaPlayerView alloc] initWithClient:self];
-  player.frame = self.view.bounds;
-  [self.view addSubview:player];
+  ShakaPlayer *player = [[ShakaPlayer alloc] initWithClient:self];
+  ShakaPlayerView *playerView = [[ShakaPlayerView alloc] initWithPlayer:player];
+  playerView.frame = self.view.bounds;
+  [self.view addSubview:playerView];
 
   // Load and play an asset.
   [player load:@"https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd"

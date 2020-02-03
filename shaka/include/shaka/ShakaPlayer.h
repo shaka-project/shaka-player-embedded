@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_H_
-#define SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_H_
+#ifndef SHAKA_EMBEDDED_SHAKA_PLAYER_H_
+#define SHAKA_EMBEDDED_SHAKA_PLAYER_H_
 
-#import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 
 #include "error_objc.h"
 #include "macros.h"
@@ -93,48 +91,20 @@ SHAKA_EXPORT
 
 
 /**
- * A view that encapsulates an instance of Shaka Player, handles rendering,
- * and exposes controls.
- *
- * When creating instance of this object, you need to set the client to
- * initialize this object.  Using <code>init</code>, <code>initWithFrame</code>,
- * or <code>initWithCoder</code> will not work by itself.  You need to either
- * use <code>initWithClient</code> or call <code>setClient</code> before you use
- * the object.  You can pass a <code>nil</code> client, but that means you can't
- * tell what error happened.
+ * Handles loading and playback of media content.  The is the control aspect of playback.  Use
+ * a ShakaPlayerView to display the video frames.  This will still load and play content without
+ * an active view.  This will play audio without a view.
  *
  * @ingroup player
  */
 SHAKA_EXPORT
-@interface ShakaPlayerView : UIView
-
-/**
- * Creates a new *uninitialized* Player object.  You MUST call setClient before
- * using this object.  Alternatively, use initWithClient instead.
- */
-- (instancetype)initWithFrame:(CGRect)frame;
-
-/**
- * Creates a new *uninitialized* Player object.  You MUST call setClient before
- * using this object.  Alternatively, use initWithClient instead.
- */
-- (instancetype)initWithCoder:(NSCoder *)aDecoder;
+@interface ShakaPlayer : NSObject
 
 /**
  * Creates a new initialized Player object.  If there is an error, the client
  * will be called synchronously to report the error and this returns nil.
  */
 - (instancetype)initWithClient:(id<ShakaPlayerClient>)client;
-
-
-/**
- * If initializing from nib or a storyboard, you MUST call this to set the
- * client before calling other methods.
- */
-- (BOOL)setClient:(id<ShakaPlayerClient>)client;
-
-/** Sets how to resize the video frame within the view. */
-- (void)setVideoGravity:(AVLayerVideoGravity)videoGravity;
 
 
 /** Plays the video. */
@@ -382,4 +352,4 @@ withStartTime:(double)startTime
 
 @end
 
-#endif  // SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_H_
+#endif  // SHAKA_EMBEDDED_SHAKA_PLAYER_H_

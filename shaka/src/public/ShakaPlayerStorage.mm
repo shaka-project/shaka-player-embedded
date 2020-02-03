@@ -19,7 +19,7 @@
 #include "shaka/storage.h"
 #include "src/js/offline_externs+Internal.h"
 #include "src/js/offline_externs.h"
-#include "src/public/ShakaPlayerView+Internal.h"
+#include "src/public/ShakaPlayer+Internal.h"
 #include "src/util/objc_utils.h"
 
 namespace {
@@ -75,12 +75,12 @@ std::unordered_map<std::string, std::string> ToUnorderedMap(
   return self;
 }
 
-- (instancetype)initWithPlayer:(ShakaPlayerView *)player {
+- (instancetype)initWithPlayer:(ShakaPlayer *)player {
   self = [self initWithPlayer:player andClient:nil];
   return self;
 }
 
-- (instancetype)initWithPlayer:(ShakaPlayerView *)player
+- (instancetype)initWithPlayer:(ShakaPlayer *)player
                      andClient:(id<ShakaPlayerStorageClient>)client {
   if (!(self = [super init]))
     return nil;

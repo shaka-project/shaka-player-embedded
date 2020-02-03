@@ -77,7 +77,7 @@ static NSMutableArray <NSString *> *gCategoriesOrder;
 
 + (void)applyDefaults {
   NSString *systemLanguage = [[NSLocale preferredLanguages] firstObject];
-  ShakaPlayerView *player = [[ShakaPlayerView alloc] initWithClient:nil];
+  ShakaPlayer *player = [[ShakaPlayer alloc] initWithClient:nil];
 
   for (NSArray <ConfigTableValue *> *category in gValues.allValues) {
     for (ConfigTableValue *value in category) {

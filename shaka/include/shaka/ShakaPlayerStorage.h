@@ -19,7 +19,7 @@
 
 #include "macros.h"
 #include "offline_externs_objc.h"
-#include "ShakaPlayerView.h"
+#include "ShakaPlayer.h"
 
 
 /**
@@ -47,9 +47,9 @@ SHAKA_EXPORT
 @interface ShakaPlayerStorage : NSObject
 
 - (instancetype)init;
-- (instancetype)initWithPlayer:(ShakaPlayerView *) player;
+- (instancetype)initWithPlayer:(ShakaPlayer *) player;
 - (instancetype)initWithClient:(id<ShakaPlayerStorageClient>) client;
-- (instancetype)initWithPlayer:(ShakaPlayerView *) player
+- (instancetype)initWithPlayer:(ShakaPlayer *) player
                      andClient:(id<ShakaPlayerStorageClient>) client;
 
 /** Returns true if an asset is currently downloading. */

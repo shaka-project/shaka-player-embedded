@@ -12,22 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_INTERNAL_H_
-#define SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_INTERNAL_H_
+#ifndef SHAKA_EMBEDDED_SHAKA_PLAYER_INTERNAL_H_
+#define SHAKA_EMBEDDED_SHAKA_PLAYER_INTERNAL_H_
 
 #import <Foundation/Foundation.h>
 
 #include <memory>
 
-#include "js_manager.h"  // NOLINT
-#include "player.h"  // NOLINT
+#include "shaka/js_manager.h"
+#include "shaka/player.h"
+#include "src/media/ios/ios_video_renderer.h"
 
 std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine();
 
-@interface ShakaPlayerView(Internal)
+@interface ShakaPlayer(Internal)
 
 @property(atomic, readonly) shaka::Player* playerInstance;
+@property(atomic, readonly) shaka::media::MediaPlayer* mediaPlayer;
+@property(atomic, readonly) shaka::media::ios::IosVideoRenderer* videoRenderer;
 
 @end
 
-#endif  // SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_INTERNAL_H_
+#endif  // SHAKA_EMBEDDED_SHAKA_PLAYER_INTERNAL_H_
