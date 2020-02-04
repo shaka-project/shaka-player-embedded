@@ -32,13 +32,7 @@
 #include <SDL2/SDL.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <shaka/js_manager.h>
-#include <shaka/media/default_media_player.h>
-#include <shaka/media/sdl_audio_renderer.h>
-#include <shaka/media/sdl_video_renderer.h>
-#include <shaka/player.h>
-#include <shaka/shaka_config.h>
-#include <shaka/utils.h>
+#include <shaka/ShakaPlayerEmbedded.h>
 
 #if !defined(SHAKA_SDL_AUDIO) || !defined(SHAKA_SDL_VIDEO)
 #  error "This demo requires SDL utils"
