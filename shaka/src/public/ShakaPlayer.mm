@@ -14,6 +14,7 @@
 
 #import "shaka/ShakaPlayer.h"
 
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -109,10 +110,10 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 @interface ShakaPlayer () {
   NativeClient _client;
   shaka::media::ios::IosVideoRenderer _video_renderer;
-  shaka::media::SdlAudioRenderer *_audio_renderer;
+  std::unique_ptr<shaka::media::SdlAudioRenderer> _audio_renderer;
 
-  shaka::media::DefaultMediaPlayer *_media_player;
-  shaka::Player *_player;
+  std::unique_ptr<shaka::media::DefaultMediaPlayer> _media_player;
+  std::unique_ptr<shaka::Player> _player;
 
   std::shared_ptr<shaka::JsManager> _engine;
 }
@@ -131,12 +132,6 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   return self;
 }
 
-- (void)dealloc {
-  delete _player;
-  delete _media_player;
-  delete _audio_renderer;
-}
-
 - (BOOL)setClient:(id<ShakaPlayerClient>)client {
   _client.SetClient(client);
   if (_engine) {
@@ -145,13 +140,14 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
   // Create JS objects.
   _engine = ShakaGetGlobalEngine();
-  _audio_renderer = new shaka::media::SdlAudioRenderer("");
-  _media_player = new shaka::media::DefaultMediaPlayer(&_video_renderer, _audio_renderer);
+  _audio_renderer.reset(new shaka::media::SdlAudioRenderer(""));
+  _media_player.reset(
+      new shaka::media::DefaultMediaPlayer(&_video_renderer, _audio_renderer.get()));
   _media_player->AddClient(&_client);
 
   // Set up player.
-  _player = new shaka::Player(_engine.get());
-  const auto initResults = _player->Initialize(&_client, _media_player);
+  _player.reset(new shaka::Player(_engine.get()));
+  const auto initResults = _player->Initialize(&_client, _media_player.get());
   if (initResults.has_error()) {
     _client.OnError(initResults.error());
     return NO;
@@ -340,14 +336,14 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 }
 
 - (void)load:(NSString *)uri withStartTime:(double)startTime andBlock:(ShakaPlayerAsyncBlock)block {
-  auto loadResults = self->_player->Load(uri.UTF8String, startTime);
+  auto loadResults = _player->Load(uri.UTF8String, startTime);
   shaka::util::CallBlockForFuture(self, std::move(loadResults), ^(ShakaPlayerError *error) {
     block(error);
   });
 }
 
 - (void)unloadWithBlock:(ShakaPlayerAsyncBlock)block {
-  auto unloadResults = self->_player->Unload();
+  auto unloadResults = _player->Unload();
   shaka::util::CallBlockForFuture(self, std::move(unloadResults), block);
 }
 
@@ -496,11 +492,11 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 // MARK: +Internal
 - (shaka::Player *)playerInstance {
-  return _player;
+  return _player.get();
 }
 
 - (shaka::media::MediaPlayer *)mediaPlayer {
-  return _media_player;
+  return _media_player.get();
 }
 
 - (shaka::media::ios::IosVideoRenderer *)videoRenderer {
