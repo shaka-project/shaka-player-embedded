@@ -725,7 +725,7 @@ source_set("internal_sources") {
     sources += [
       "shaka/src/public/ShakaPlayerStorage.mm",
       "shaka/src/public/ShakaPlayer.mm",
-      "shaka/src/public/ShakaPlayerView2.mm",
+      "shaka/src/public/ShakaPlayerView.mm",
     ]
   }
   if (decoder == "ffmpeg") {
@@ -949,7 +949,7 @@ if (is_mac || is_ios) {
       "shaka/include/shaka/error_objc.h",
       "shaka/include/shaka/ShakaPlayerStorage.h",
       "shaka/include/shaka/ShakaPlayer.h",
-      "shaka/include/shaka/ShakaPlayerView2.h",
+      "shaka/include/shaka/ShakaPlayerView.h",
     ]
     sources += get_target_outputs(":gen_config_h")
     sources += get_target_outputs(":gen_version_h")

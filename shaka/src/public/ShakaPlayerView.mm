@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import "shaka/ShakaPlayerView2.h"
+#import "shaka/ShakaPlayerView.h"
 
 #include "shaka/utils.h"
 #include "src/public/ShakaPlayer+Internal.h"

@@ -22,7 +22,7 @@
 #if defined(__OBJC__)
 #  import "ShakaPlayerStorage.h"
 #  import "ShakaPlayer.h"
-#  import "ShakaPlayerView2.h"
+#  import "ShakaPlayerView.h"
 #  import "error_objc.h"
 #  import "manifest_objc.h"
 #  import "offline_externs_objc.h"
