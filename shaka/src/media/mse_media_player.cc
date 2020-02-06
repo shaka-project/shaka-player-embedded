@@ -35,7 +35,7 @@ MseMediaPlayer::MseMediaPlayer(ClientList* clients,
                         std::bind(&MseMediaPlayer::OnSeek, this),
                         &util::Clock::Instance),
       pipeline_monitor_(std::bind(&MseMediaPlayer::GetBuffered, this),
-                        std::bind(&MseMediaPlayer::GetBuffered, this),
+                        std::bind(&MseMediaPlayer::GetDecoded, this),
                         std::bind(&MseMediaPlayer::ReadyStateChanged, this,
                                   std::placeholders::_1),
                         &util::Clock::Instance, &pipeline_manager_),
@@ -379,6 +379,16 @@ void MseMediaPlayer::OnWaitingForKey() {
   clients_->OnWaitingForKey();
 }
 
+std::vector<BufferedRange> MseMediaPlayer::GetDecoded() const {
+  util::shared_lock<SharedMutex> lock(mutex_);
+  std::vector<std::vector<BufferedRange>> ranges;
+  for (auto* ptr : {&video_, &audio_}) {
+    if (ptr->IsAttached())
+      ranges.emplace_back(ptr->GetDecodedStream()->GetBufferedRanges());
+  }
+  return IntersectionOfBufferedRanges(ranges);
+}
+
 
 MseMediaPlayer::Source::Source(MseMediaPlayer* player)
 #ifdef HAS_FFMPEG_DECODER
@@ -394,7 +404,7 @@ MseMediaPlayer::Source::Source(MseMediaPlayer* player)
 
 MseMediaPlayer::Source::~Source() {}
 
-DecodedStream* MseMediaPlayer::Source::GetDecodedStream() {
+const DecodedStream* MseMediaPlayer::Source::GetDecodedStream() const {
   return &decoded_frames_;
 }
 

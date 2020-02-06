@@ -94,7 +94,7 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
     explicit Source(MseMediaPlayer* player);
     ~Source();
 
-    DecodedStream* GetDecodedStream();
+    const DecodedStream* GetDecodedStream() const;
     Decoder* GetDecoder() const;
     void SetDecoder(Decoder* decoder);
 
@@ -122,6 +122,7 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
   void OnSeek();
   void OnError(const std::string& error) override;
   void OnWaitingForKey() override;
+  std::vector<BufferedRange> GetDecoded() const;
 
   mutable SharedMutex mutex_;
   PipelineManager pipeline_manager_;
