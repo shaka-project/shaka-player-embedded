@@ -27,6 +27,7 @@
 #include "macros.h"
 #include "manifest.h"
 #include "media/media_player.h"
+#include "net.h"
 #include "player_externs.h"
 #include "stats.h"
 #include "track.h"
@@ -367,6 +368,16 @@ class SHAKA_EXPORT Player final {
    * we are currently playing content, this will unload the content first.
    */
   AsyncResults<void> Detach();
+
+  /*
+   * Adds an object that is called when network requests happen.  These are
+   * called in the order they are registered.
+   * @param filters The object that receives the calls.
+   */
+  void AddNetworkFilters(NetworkFilters* filters);
+
+  /** Stops the given object from receiving calls for network requests. */
+  void RemoveNetworkFilters(NetworkFilters* filters);
 
  private:
   friend class Storage;

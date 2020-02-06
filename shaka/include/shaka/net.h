@@ -214,6 +214,46 @@ class SHAKA_EXPORT SchemePlugin {
                                                         Response* response) = 0;
 };
 
+/**
+ * Defines an interface for request/response filters.  These are used by Shaka
+ * Player as part of making a network request.  These allow modifying the
+ * request/response before handing it off to other pieces.  This is only used for
+ * MSE playback, this doesn't affect src= playback.
+ *
+ * These can be completed asynchronously by returning a <code>std::future</code>
+ * instance.  This may be called while an asynchronous request is still
+ * completing, but won't be called concurrently.  This is called on the JS main
+ * thread, so it is preferable to avoid lots of work and do it asynchronously.
+ */
+class SHAKA_EXPORT NetworkFilters {
+ public:
+  SHAKA_DECLARE_INTERFACE_METHODS(NetworkFilters);
+
+  /**
+   * Called before a request is sent.  This can modify the request object to
+   * change properties of the request.
+   *
+   * @param type The type of the request.
+   * @param request The request object.  This can be modified by the callback
+   *   and remains valid until the returned future is resolved.
+   * @return A future for when this filter completes.
+   */
+  virtual std::future<optional<Error>> OnRequestFilter(RequestType type,
+                                                       Request* request);
+
+  /**
+   * Called after a request sent, but before it is handled by the library.  This
+   * can modify the response object.
+   *
+   * @param type The type of the request.
+   * @param response The response object.  This can be modified by the callback
+   *   and remains valid until the returned future is resolved.
+   * @return A future for when this filter completes.
+   */
+  virtual std::future<optional<Error>> OnResponseFilter(RequestType type,
+                                                        Response* response);
+};
+
 }  // namespace shaka
 
 #endif  // SHAKA_EMBEDDED_NET_H_

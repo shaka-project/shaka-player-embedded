@@ -131,10 +131,10 @@ class JsObjectWrapper {
    */
   static Error ConvertError(Handle<JsValue> except);
 
- protected:
   /** Sets the object instance to use. */
   void Init(Handle<JsObject> object);
 
+ protected:
   /**
    * Calls the given member of the given object.  If this throws an error, this
    * returns it; otherwise it stores the return value in |*result|.  This can

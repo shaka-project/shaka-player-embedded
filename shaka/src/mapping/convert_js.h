@@ -305,6 +305,16 @@ struct ConvertHelper<ReturnVal<T>, void> {
 };
 
 template <>
+struct ConvertHelper<Handle<JsObject>, void> {
+  static bool FromJsValue(Handle<JsValue> source, Handle<JsObject>* dest) {
+    if (!IsObject(source))
+      return false;
+    *dest = UnsafeJsCast<JsObject>(source);
+    return true;
+  }
+};
+
+template <>
 struct ConvertHelper<std::string, void> {
   static bool FromJsValue(Handle<JsValue> source, std::string* dest) {
     const proto::ValueType type = GetValueType(source);

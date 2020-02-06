@@ -117,6 +117,20 @@ SchemePlugin::~SchemePlugin() {}
 
 SchemePlugin::Client::Client() {}
 SchemePlugin::Client::~Client() {}
+
+NetworkFilters::NetworkFilters() {}
+NetworkFilters::~NetworkFilters() {}
 // \endcond Doxygen_Skip
+
+
+std::future<optional<Error>> NetworkFilters::OnRequestFilter(RequestType type,
+                                                             Request* request) {
+  return {};
+}
+
+std::future<optional<Error>> NetworkFilters::OnResponseFilter(
+    RequestType type, Response* response) {
+  return {};
+}
 
 }  // namespace shaka

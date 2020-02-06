@@ -15,13 +15,16 @@
 #include "shaka/player.h"
 
 #include <functional>
+#include <list>
 
 #include "shaka/version.h"
 #include "src/core/js_manager_impl.h"
 #include "src/core/js_object_wrapper.h"
+#include "src/debug/mutex.h"
 #include "src/js/dom/document.h"
 #include "src/js/manifest.h"
 #include "src/js/mse/video_element.h"
+#include "src/js/net.h"
 #include "src/js/player_externs.h"
 #include "src/js/stats.h"
 #include "src/js/track.h"
@@ -29,6 +32,7 @@
 #include "src/mapping/js_engine.h"
 #include "src/mapping/js_utils.h"
 #include "src/mapping/js_wrappers.h"
+#include "src/mapping/promise.h"
 #include "src/util/macros.h"
 #include "src/util/utils.h"
 
@@ -79,7 +83,7 @@ struct impl::ConvertHelper<Player::LogLevel> {
 
 class Player::Impl : public JsObjectWrapper {
  public:
-  explicit Impl(JsManager* engine) {
+  explicit Impl(JsManager* engine) : filters_mutex_("Player::Impl") {
     CHECK(engine) << "Must pass a JsManager instance";
   }
   ~Impl() {
@@ -150,6 +154,21 @@ class Player::Impl : public JsObjectWrapper {
         PlainCallbackTask(std::move(callback)));
   }
 
+  void AddNetworkFilters(NetworkFilters* filters) {
+    std::unique_lock<Mutex> lock(filters_mutex_);
+    filters_.emplace_back(filters);
+  }
+
+  void RemoveNetworkFilters(NetworkFilters* filters) {
+    std::unique_lock<Mutex> lock(filters_mutex_);
+    for (NetworkFilters*& elem : filters_) {
+      // Don't remove from the list so we don't invalidate the iterator while we
+      // are processing a request.
+      if (elem == filters)
+        elem = nullptr;
+    }
+  }
+
   void* GetRawJsValue() {
     return &object_;
   }
@@ -171,6 +190,10 @@ class Player::Impl : public JsObjectWrapper {
     // function.
     return std::async(std::launch::deferred, std::move(then));
   }
+
+  template <typename T>
+  using filter_member_t =
+      std::future<optional<Error>> (NetworkFilters::*)(RequestType, T*);
 
   template <typename T>
   typename Converter<T>::variant_type GetConfigValueRaw(
@@ -218,13 +241,70 @@ class Player::Impl : public JsObjectWrapper {
       }
     };
     ATTACH("buffering", on_buffering);
-
 #undef ATTACH
+
+    auto results = CallMethod<Handle<JsObject>>("getNetworkingEngine").get();
+    if (holds_alternative<Error>(results))
+      return get<Error>(results);
+    JsObjectWrapper net_engine;
+    net_engine.Init(get<Handle<JsObject>>(results));
+
+    auto req_filter = [this](RequestType type, js::Request request) {
+      Promise ret;
+      std::shared_ptr<Request> pub_request(new Request(std::move(request)));
+      StepNetworkFilter(type, pub_request, filters_.begin(),
+                        &NetworkFilters::OnRequestFilter, ret);
+      return ret;
+    };
+    auto results2 =
+        net_engine.CallMethod<void>("registerRequestFilter", req_filter).get();
+    if (holds_alternative<Error>(results2))
+      return get<Error>(results2);
+
+    auto resp_filter = [this](RequestType type, js::Response response) {
+      Promise ret;
+      std::shared_ptr<Response> pub_response(new Response(std::move(response)));
+      StepNetworkFilter(type, pub_response, filters_.begin(),
+                        &NetworkFilters::OnResponseFilter, ret);
+      return ret;
+    };
+    results2 =
+        net_engine.CallMethod<void>("registerResponseFilter", resp_filter)
+            .get();
+    if (holds_alternative<Error>(results2))
+      return get<Error>(results2);
+
     return {};
+  }
+
+  template <typename T>
+  void StepNetworkFilter(RequestType type, std::shared_ptr<T> obj,
+                         std::list<NetworkFilters*>::iterator it,
+                         filter_member_t<T> on_filter, Promise results) {
+    {
+      std::unique_lock<Mutex> lock(filters_mutex_);
+      for (; it != filters_.end(); it++) {
+        if (!*it)
+          continue;
+
+        auto future = ((*it)->*on_filter)(type, obj.get());
+        HandleNetworkFuture(results, std::move(future), [=]() {
+          StepNetworkFilter(type, obj, std::next(it), on_filter, results);
+        });
+        return;
+      }
+    }
+
+    // Don't call these with the lock held since they can cause Promises to get
+    // handled and can call back into this method.
+    obj->Finalize();
+    results.ResolveWith(JsUndefined(), /* run_events= */ false);
   }
 
  private:
   RefPtr<js::mse::HTMLVideoElement> video_;
+  Mutex filters_mutex_;
+  std::list<NetworkFilters*> filters_;
 };
 
 // \cond Doxygen_Skip
@@ -443,6 +523,14 @@ AsyncResults<void> Player::Attach(media::MediaPlayer* player) {
 
 AsyncResults<void> Player::Detach() {
   return impl_->Detach();
+}
+
+void Player::AddNetworkFilters(NetworkFilters* filters) {
+  impl_->AddNetworkFilters(filters);
+}
+
+void Player::RemoveNetworkFilters(NetworkFilters* filters) {
+  impl_->RemoveNetworkFilters(filters);
 }
 
 void* Player::GetRawJsValue() {

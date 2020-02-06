@@ -118,6 +118,8 @@ ExceptionOr<void> HTMLMediaElement::Load() {
 CanPlayTypeEnum HTMLMediaElement::CanPlayType(const std::string& type) {
   auto info =
       ConvertMimeToDecodingConfiguration(type, media::MediaDecodingType::File);
+  if (!player_)
+    return CanPlayTypeEnum::EMPTY;
 
   auto support = player_->DecodingInfo(info);
   if (!support.supported)
