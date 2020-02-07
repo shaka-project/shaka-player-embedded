@@ -61,7 +61,7 @@ ExceptionOr<double> MediaKeySession::GetExpiration() const {
   if (!implementation_->GetExpiration(session_id, &expiration)) {
     return JsError::TypeError("Error getting the expiration");
   }
-  return expiration < 0 ? NAN : expiration / 1000.0;
+  return expiration < 0 ? NAN : expiration;
 }
 
 ExceptionOr<std::unordered_map<ByteBuffer, MediaKeyStatus>>
