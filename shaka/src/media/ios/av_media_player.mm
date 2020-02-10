@@ -56,7 +56,7 @@ class shaka::media::ios::AvMediaPlayer::Impl {
     Detach();
   }
 
-  NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
   /**
    * Atomically returns the current AVPlayer instance.  The value is explicitly retained so

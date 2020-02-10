@@ -109,13 +109,13 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 @interface ShakaPlayer () {
   NativeClient _client;
+  std::shared_ptr<shaka::JsManager> _engine;
+
   shaka::media::ios::IosVideoRenderer _video_renderer;
   std::unique_ptr<shaka::media::SdlAudioRenderer> _audio_renderer;
 
   std::unique_ptr<shaka::media::DefaultMediaPlayer> _media_player;
   std::unique_ptr<shaka::Player> _player;
-
-  std::shared_ptr<shaka::JsManager> _engine;
 }
 
 @end
