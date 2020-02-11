@@ -349,6 +349,21 @@ class SHAKA_EXPORT Player final {
                                    const std::string& codec = "",
                                    const std::string& label = "");
 
+  /**
+   * Tells the Player to use the given MediaPlayer instance for media handling.
+   * Once the returned results resolve, the old MediaPlayer won't be used
+   * anymore and this one will be used.  If we are currently playing content,
+   * this will unload the content first.
+   */
+  AsyncResults<void> Attach(media::MediaPlayer* player);
+
+  /**
+   * Tells the Player to stop using the current MediaPlayer instance.  Once the
+   * returned results resolve, the old MediaPlayer won't be used anymore.  If
+   * we are currently playing content, this will unload the content first.
+   */
+  AsyncResults<void> Detach();
+
  private:
   friend class Storage;
   void* GetRawJsValue();

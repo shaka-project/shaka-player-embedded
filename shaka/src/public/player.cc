@@ -130,6 +130,18 @@ class Player::Impl : public JsObjectWrapper {
         ->future();
   }
 
+  Converter<void>::future_type Attach(media::MediaPlayer* player) {
+    RefPtr<js::mse::HTMLVideoElement> new_elem(new js::mse::HTMLVideoElement(
+        js::dom::Document::EnsureGlobalDocument(), player));
+    auto future = CallMethod<void>("attach", new_elem);
+    return SetVideoWhenResolved(future, new_elem);
+  }
+
+  Converter<void>::future_type Detach() {
+    auto future = CallMethod<void>("detach");
+    return SetVideoWhenResolved(future, nullptr);
+  }
+
   template <typename T>
   typename Converter<T>::future_type GetConfigValue(
       const std::string& name_path) {
@@ -143,6 +155,23 @@ class Player::Impl : public JsObjectWrapper {
   }
 
  private:
+  Converter<void>::future_type SetVideoWhenResolved(
+      Converter<void>::future_type future,
+      RefPtr<js::mse::HTMLVideoElement> video) {
+    auto then = [=]() -> Converter<void>::variant_type {
+      auto results = future.get();
+      if (!holds_alternative<Error>(results)) {
+        if (video_)
+          video_->Detach();
+        video_ = video;
+      }
+      return results;
+    };
+    // Create a std::future that, when get() is called, will call the given
+    // function.
+    return std::async(std::launch::deferred, std::move(then));
+  }
+
   template <typename T>
   typename Converter<T>::variant_type GetConfigValueRaw(
       const std::string& name_path) {
@@ -404,6 +433,14 @@ AsyncResults<Track> Player::AddTextTrack(const std::string& uri,
                                          const std::string& label) {
   return impl_->CallMethod<Track>("addTextTrack", uri, language, kind, mime,
                                   codec, label);
+}
+
+AsyncResults<void> Player::Attach(media::MediaPlayer* player) {
+  return impl_->Attach(player);
+}
+
+AsyncResults<void> Player::Detach() {
+  return impl_->Detach();
 }
 
 void* Player::GetRawJsValue() {
