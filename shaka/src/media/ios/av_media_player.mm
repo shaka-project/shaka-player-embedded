@@ -144,6 +144,8 @@ class shaka::media::ios::AvMediaPlayer::Impl {
         [player_ addObserver:observer_ forKeyPath:name options:options context:nil];
       for (auto *name : LISTEN_ITEM_KEY_PATHS)
         [player_.currentItem addObserver:observer_ forKeyPath:name options:options context:nil];
+
+      clients_->OnAttachSource();
     });
 
     return true;
@@ -171,6 +173,8 @@ class shaka::media::ios::AvMediaPlayer::Impl {
 
     for (CALayer *layer in [layer_.sublayers copy])
       [layer removeFromSuperlayer];
+
+    clients_->OnDetach();
   }
 
   VideoPlaybackState UpdateAndGetVideoPlaybackState() {

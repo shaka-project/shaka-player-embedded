@@ -88,6 +88,20 @@ SHAKA_EXPORT
  */
 - (void)onPlayerSeekedEvent;
 
+/** Called once MSE-based playback has started. */
+- (void)onPlayerAttachMse;
+
+/**
+ * Called once src= based playback has started.  Once this is called, the avPlayer property
+ * will be valid and point to the AVPlayer instance being used.
+ */
+- (void)onPlayerAttachSource;
+
+/**
+ * Called once playback is detached.  If this was src= playback, the AVPlayer is no longer usable.
+ */
+- (void)onPlayerDetach;
+
 @end
 
 

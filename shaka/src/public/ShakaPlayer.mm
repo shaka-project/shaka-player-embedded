@@ -83,6 +83,18 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
     shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekingEvent));
   }
 
+  void OnAttachMse() override {
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerAttachMse));
+  }
+
+  void OnAttachSource() override {
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerAttachSource));
+  }
+
+  void OnDetach() override {
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerDetach));
+  }
+
 
   void SetClient(id<ShakaPlayerClient> client) {
     _client = client;
