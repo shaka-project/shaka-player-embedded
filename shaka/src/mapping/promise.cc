@@ -35,8 +35,7 @@ v8::Local<v8::Promise> GetPromise(v8::Local<v8::Promise::Resolver> resolver) {
 #elif defined(USING_JSC)
 Handle<JSObjectRef> NewPromise(WeakJsPtr<JsObject>* resolve,
                                WeakJsPtr<JsObject>* reject) {
-  std::function<void(Callback, Callback)> callback = [&](Callback on_resolve,
-                                                         Callback on_reject) {
+  auto callback = [&](Callback on_resolve, Callback on_reject) {
     *resolve = UnsafeJsCast<JsObject>(on_resolve.ToJsValue());
     *reject = UnsafeJsCast<JsObject>(on_reject.ToJsValue());
   };
@@ -47,7 +46,8 @@ Handle<JSObjectRef> NewPromise(WeakJsPtr<JsObject>* resolve,
   LocalVar<JsFunction> ctor_obj = UnsafeJsCast<JsFunction>(ctor);
 
   LocalVar<JsValue> ret;
-  LocalVar<JsValue> args[] = {CreateStaticFunction("", "", callback)};
+  LocalVar<JsValue> args[] = {
+      CreateStaticFunction("", "", std::move(callback))};
   CHECK(InvokeConstructor(ctor_obj, 1, args, &ret));
   return UnsafeJsCast<JsObject>(ret);
 }

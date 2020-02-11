@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_UTIL_TEMPLATES_H_
 #define SHAKA_EMBEDDED_UTIL_TEMPLATES_H_
 
+#include <tuple>
 #include <type_traits>
 
 #if defined(USING_V8)
@@ -22,10 +23,6 @@
 #endif
 
 namespace shaka {
-
-template <typename T>
-class optional;
-
 namespace util {
 
 /**
@@ -57,6 +54,59 @@ struct decay_is_same
 
 template <bool B, typename T = void>
 using enable_if_t = typename std::enable_if<B, T>::type;
+
+
+namespace impl {
+
+// \cond Doxygen_Skip
+template <typename Func>
+struct func_traits : func_traits<decltype(&Func::operator())> {};
+// \endcond Doxygen_Skip
+
+template <typename Ret, typename... Args>
+struct func_traits<Ret(*)(Args...)> {
+  using return_type = Ret;
+  using this_type = void;
+  using argument_types = std::tuple<Args...>;
+  template <size_t I>
+  using argument_type = typename std::tuple_element<I, argument_types>::type;
+
+  static constexpr const size_t argument_count = sizeof...(Args);
+};
+
+template <typename Ret, typename This, typename... Args>
+struct func_traits<Ret(This::*)(Args...)> {
+  using return_type = Ret;
+  using this_type = This;
+  using argument_types = std::tuple<Args...>;
+  template <size_t I>
+  using argument_type = typename std::tuple_element<I, argument_types>::type;
+
+  static constexpr const size_t argument_count = sizeof...(Args);
+};
+
+template <typename Ret, typename This, typename... Args>
+struct func_traits<Ret(This::*)(Args...) const> {
+  using return_type = Ret;
+  using this_type = This;
+  using argument_types = std::tuple<Args...>;
+  template <size_t I>
+  using argument_type = typename std::tuple_element<I, argument_types>::type;
+
+  static constexpr const size_t argument_count = sizeof...(Args);
+};
+
+}  // namespace impl
+
+/**
+ * Describes info about a function object.  This assumes the function object
+ * only has one overload of the call operator and the call operator is not
+ * templated.
+ */
+template <typename Func>
+struct func_traits : impl::func_traits<typename std::decay<Func>::type> {
+  using type = Func;
+};
 
 }  // namespace util
 }  // namespace shaka

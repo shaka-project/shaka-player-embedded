@@ -67,7 +67,7 @@ JsObjectWrapper::Converter<void>::variant_type
 JsObjectWrapper::AttachEventListener(
     const std::string& name, std::function<void(const Error&)> on_error,
     std::function<void(Handle<JsObject> event)> handler) const {
-  const std::function<void(optional<Any>)> callback = [=](optional<Any> event) {
+  auto callback = [=](optional<Any> event) {
     // We can't accept or use events::Event since Shaka player raises fake
     // events.  So manually look for the properties.
     LocalVar<JsValue> event_val = ToJsValue(event);
@@ -79,7 +79,8 @@ JsObjectWrapper::AttachEventListener(
     LocalVar<JsObject> event_obj = UnsafeJsCast<JsObject>(event_val);
     handler(event_obj);
   };
-  LocalVar<JsFunction> callback_js = CreateStaticFunction("", "", callback);
+  LocalVar<JsFunction> callback_js =
+      CreateStaticFunction("", "", std::move(callback));
   LocalVar<JsValue> arguments[] = {ToJsValue(name), RawToJsValue(callback_js)};
   return CallMemberFunction(object_, "addEventListener", 2, arguments, nullptr);
 }

@@ -222,8 +222,8 @@ class BackingObjectFactoryBase {
 
   template <typename Ret, typename... Args>
   void AddStaticFunction(const std::string& name, Ret (*callback)(Args...)) {
-    LocalVar<JsFunction> js_function = CreateStaticFunction(
-        type_name_, name, std::function<Ret(Args...)>(callback));
+    LocalVar<JsFunction> js_function =
+        CreateStaticFunction(type_name_, name, callback);
     LocalVar<JsValue> value(RawToJsValue(js_function));
     SetMemberRaw(constructor_, name, value);
   }
@@ -245,10 +245,11 @@ class BackingObjectFactoryBase {
         "Cannot store Structs in fields");
 #endif
 
-    std::function<Prop&(RefPtr<This>)> getter =
-        [=](RefPtr<This> that) -> Prop& { return that.get()->*member; };
+    auto getter = [=](RefPtr<This> that) -> Prop& {
+      return that.get()->*member;
+    };
     LocalVar<JsFunction> js_getter =
-        CreateMemberFunction(type_name_, "get_" + name, getter);
+        CreateMemberFunction(type_name_, "get_" + name, std::move(getter));
     LocalVar<JsFunction> setter;
     SetGenericPropertyRaw(prototype_, name, js_getter, setter);
   }
@@ -261,16 +262,14 @@ class BackingObjectFactoryBase {
         "Cannot store Structs in fields");
 #endif
 
-    std::function<Prop&(RefPtr<This>)> getter =
-        [=](RefPtr<This> that) -> Prop& { return that->*member; };
+    auto getter = [=](RefPtr<This> that) -> Prop& { return that->*member; };
     LocalVar<JsFunction> js_getter =
-        CreateMemberFunction(type_name_, "get_" + name, getter);
-    std::function<void(RefPtr<This>, Prop)> setter = [=](RefPtr<This> that,
-                                                         Prop value) {
+        CreateMemberFunction(type_name_, "get_" + name, std::move(getter));
+    auto setter = [=](RefPtr<This> that, Prop value) {
       that->*member = std::move(value);
     };
     LocalVar<JsFunction> js_setter =
-        CreateMemberFunction(type_name_, "set_" + name, setter);
+        CreateMemberFunction(type_name_, "set_" + name, std::move(setter));
 
     SetGenericPropertyRaw(prototype_, name, js_getter, js_setter);
   }

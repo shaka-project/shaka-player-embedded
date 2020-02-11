@@ -209,76 +209,93 @@ struct CallAndSetReturn<void> {
 };
 
 
-template <typename Ret, typename... RemainingArgs>
-struct CallHelper;
+// Iterative case.
+template <size_t ArgIndex, size_t ArgCount>
+struct CallHelper {
+  template <typename Func, typename... GivenArgs>
+  static bool ConvertAndCallFunction(const std::string& func_name,
+                                     const std::string& target_name,
+                                     bool is_member_func,
+                                     const CallbackArguments& arguments,
+                                     Func&& callback, GivenArgs&&... args) {
+    using CurType =
+        typename util::func_traits<Func>::template argument_type<ArgIndex>;
+    return Helper<CurType>::ConvertAndCallFunction(
+        func_name, target_name, is_member_func, arguments,
+        std::forward<Func>(callback), std::forward<GivenArgs>(args)...);
+  }
+
+ private:
+  template <typename CurType, typename = void>
+  struct Helper {
+    template <typename Func, typename... GivenArgs>
+    static bool ConvertAndCallFunction(const std::string& func_name,
+                                       const std::string& target_name,
+                                       bool is_member_func,
+                                       const CallbackArguments& arguments,
+                                       Func&& callback,
+                                       GivenArgs&&... args) {
+      using Ret = typename util::func_traits<Func>::return_type;
+      RawType<CurType> arg;
+      if (ArgumentCount(arguments) + is_member_func <= ArgIndex) {
+        if (!is_optional<RawType<CurType>>::value) {
+          const size_t arg_count = util::func_traits<Func>::argument_count;
+          return ThrowError<std::is_same<Ret, Promise>::value>::NotEnoughArgs(
+              &arguments, func_name, target_name, arg_count,
+              ArgumentCount(arguments));
+        }
+      } else {
+        // Only convert the argument if it is present.  A missing argument
+        // should always be Nothing even if we can convert undefined to a value.
+        LocalVar<JsValue> source = is_member_func && ArgIndex == 0
+                                       ? GET_ARG_THIS(arguments)
+                                       : arguments[ArgIndex - is_member_func];
+        if (!FromJsValue(source, &arg)) {
+          const std::string type_name = TypeName<RawType<CurType>>::name();
+          const std::string value = ConvertToString(source);
+          return ThrowError<std::is_same<Ret, Promise>::value>::CannotConvert(
+              &arguments, func_name, target_name, value, type_name);
+        }
+      }
+
+      return CallHelper<ArgIndex + 1, ArgCount>::ConvertAndCallFunction(
+          func_name, target_name, is_member_func, arguments,
+          std::forward<Func>(callback), std::forward<GivenArgs>(args)...,
+          std::move(arg));
+    }
+  };
+  // Special case for CallbackArguments.
+  template <typename T>
+  struct Helper<const CallbackArguments&, T> {
+    static_assert(ArgIndex + 1 == ArgCount,
+                  "CallbackArguments must appear last");
+    template <typename Func, typename... GivenArgs>
+    static bool ConvertAndCallFunction(const std::string& func_name,
+                                       const std::string& target_name,
+                                       bool is_member_func,
+                                       const CallbackArguments& arguments,
+                                       Func&& callback,
+                                       GivenArgs&&... args) {
+      return CallHelper<ArgIndex + 1, ArgCount>::ConvertAndCallFunction(
+          func_name, target_name, is_member_func, arguments,
+          std::forward<Func>(callback), std::forward<GivenArgs>(args)...,
+          arguments);
+    }
+  };
+};
 
 // Base-case.
-template <typename Ret>
-struct CallHelper<Ret> {
+template <size_t ArgCount>
+struct CallHelper<ArgCount, ArgCount> {
   template <typename Func, typename... GivenArgs>
   static bool ConvertAndCallFunction(const std::string& func_name,
                                      const std::string& target_name,
                                      bool is_member_func,
                                      const CallbackArguments& arguments,
-                                     Func callback, GivenArgs&&... args) {
-    return CallAndSetReturn<Ret>::Call(arguments, callback,
+                                     Func&& callback, GivenArgs&&... args) {
+    using Ret = typename util::func_traits<Func>::return_type;
+    return CallAndSetReturn<Ret>::Call(arguments, std::forward<Func>(callback),
                                        std::forward<GivenArgs>(args)...);
-  }
-};
-
-// Iterative case, argument is CallbackArguments.  Must be last argument.
-template <typename Ret, typename... RemainingArgs>
-struct CallHelper<Ret, const CallbackArguments&, RemainingArgs...> {
-  static_assert(sizeof...(RemainingArgs) == 0,
-                "CallbackArguments must be the last argument.");
-
-  template <typename Func, typename... GivenArgs>
-  static bool ConvertAndCallFunction(const std::string& func_name,
-                                     const std::string& target_name,
-                                     bool is_member_func,
-                                     const CallbackArguments& arguments,
-                                     Func callback, GivenArgs&&... args) {
-    return CallHelper<Ret, RemainingArgs...>::ConvertAndCallFunction(
-        func_name, target_name, is_member_func, arguments, callback,
-        std::forward<GivenArgs>(args)..., arguments);
-  }
-};
-
-// Iterative case.
-template <typename Ret, typename Cur, typename... RemainingArgs>
-struct CallHelper<Ret, Cur, RemainingArgs...> {
-  template <typename Func, typename... GivenArgs>
-  static bool ConvertAndCallFunction(const std::string& func_name,
-                                     const std::string& target_name,
-                                     bool is_member_func,
-                                     const CallbackArguments& arguments,
-                                     Func callback, GivenArgs&&... args) {
-    const size_t index = sizeof...(GivenArgs);
-    RawType<Cur> arg;
-    if (ArgumentCount(arguments) + is_member_func <= index) {
-      if (!is_optional<RawType<Cur>>::value) {
-        const size_t arg_count = sizeof...(RemainingArgs) + index + 1;
-        return ThrowError<std::is_same<Ret, Promise>::value>::NotEnoughArgs(
-            &arguments, func_name, target_name, arg_count,
-            ArgumentCount(arguments));
-      }
-    } else {
-      // Only convert the argument if it is present.  A missing argument should
-      // always be Nothing even if we can convert undefined to a value.
-      LocalVar<JsValue> source = is_member_func && index == 0
-                                     ? GET_ARG_THIS(arguments)
-                                     : arguments[index - is_member_func];
-      if (!FromJsValue(source, &arg)) {
-        const std::string type_name = TypeName<RawType<Cur>>::name();
-        const std::string value = ConvertToString(source);
-        return ThrowError<std::is_same<Ret, Promise>::value>::CannotConvert(
-            &arguments, func_name, target_name, value, type_name);
-      }
-    }
-
-    return CallHelper<Ret, RemainingArgs...>::ConvertAndCallFunction(
-        func_name, target_name, is_member_func, arguments, callback,
-        std::forward<GivenArgs>(args)..., std::move(arg));
   }
 };
 
@@ -289,11 +306,14 @@ struct InternalCallbackDataBase {
   virtual ~InternalCallbackDataBase() {}
 };
 
-template <typename Ret, typename... Args>
+template <typename Func>
 struct InternalCallbackData : InternalCallbackDataBase {
+  template <typename T>
+  explicit InternalCallbackData(T&& arg) : callback(std::forward<T>(arg)) {}
+
+  typename std::decay<Func>::type callback;
   std::string name;
   std::string target;
-  std::function<Ret(Args...)> callback;
   bool is_member_func;
 };
 
@@ -328,14 +348,14 @@ inline JSClassRef GetCallbackDataClass() {
  * when it is called.  This allows us to pass internal data to specific function
  * objects.
  */
-template <typename T>
-ReturnVal<JsValue> CreateInternalData(T** extra_data) {
+template <typename T, typename Arg>
+ReturnVal<JsValue> CreateInternalData(T** extra_data, Arg&& arg) {
 #ifdef USING_V8
   v8::Local<v8::ArrayBuffer> ret =
       v8::ArrayBuffer::New(GetIsolate(), sizeof(T));
 
   void* ptr = ret->GetContents().Data();
-  *extra_data = new (ptr) T();
+  *extra_data = new (ptr) T(std::forward<Arg>(arg));
   // Sanity check: verify the new object pointer is at the start of the data.
   DCHECK_EQ(reinterpret_cast<void*>(*extra_data), ptr);
   JsEngine::Instance()->AddDestructor(ptr, [](void* obj) {
@@ -344,7 +364,7 @@ ReturnVal<JsValue> CreateInternalData(T** extra_data) {
 
   return ret;
 #elif defined(USING_JSC)
-  *extra_data = new T;
+  *extra_data = new T(std::forward<Arg>(arg));
 
   // IMPORTANT: We need to cast since the argument is a void*.  The finalize
   // method will cast to this type, so the static_cast ensures we pass the
@@ -394,7 +414,7 @@ T* GetInternalData(const CallbackArguments& arguments) {
 #endif
 
 
-template <typename Ret, typename... Args>
+template <typename Func>
 class JsCallback {
  public:
 #if defined(USING_V8)
@@ -418,11 +438,12 @@ class JsCallback {
 
  private:
   static bool CallRaw(const CallbackArguments& arguments) {
-    auto data = GetInternalData<InternalCallbackData<Ret, Args...>>(arguments);
+    auto data = GetInternalData<InternalCallbackData<Func>>(arguments);
     if (!data)
       return false;
 
-    return CallHelper<Ret, Args...>::ConvertAndCallFunction(
+    constexpr const size_t ArgCount = util::func_traits<Func>::argument_count;
+    return CallHelper<0, ArgCount>::ConvertAndCallFunction(
         data->name, data->target, data->is_member_func, arguments,
         data->callback);
   }
@@ -470,8 +491,8 @@ struct JsConstructorCreateOrThrow<This, This*(*)(Args...)> {
       BackingObject* backing = This::Create(std::forward<Args>(args)...);
       CHECK(ConstructWrapperObject(arguments, backing));
     };
-    return CallHelper<void, Args...>::ConvertAndCallFunction(
-        "constructor", type_name, false, arguments, ctor);
+    return CallHelper<0, sizeof...(Args)>::ConvertAndCallFunction(
+        "constructor", type_name, false, arguments, std::move(ctor));
   }
 };
 
@@ -532,27 +553,30 @@ class JsConstructor {
   }
 };
 
-template <typename Ret, typename... Args>
-ReturnVal<JsFunction> CreateJsFunctionFromCallback(
-    const std::string& target, const std::string& name,
-    std::function<Ret(Args...)> callback, bool is_member_func) {
-  impl::InternalCallbackData<Ret, Args...>* data;
-  LocalVar<JsValue> js_value = impl::CreateInternalData(&data);
+
+template <typename Func>
+ReturnVal<JsFunction> CreateJsFunctionFromCallback(const std::string& target,
+                                                   const std::string& name,
+                                                   Func&& callback,
+                                                   bool is_member_func) {
+  impl::InternalCallbackData<Func>* data;
+  LocalVar<JsValue> js_value =
+      impl::CreateInternalData(&data, std::forward<Func>(callback));
+  // data->callback already set.
   data->name = name;
   data->target = target;
-  data->callback = callback;
   data->is_member_func = is_member_func;
 
 #ifdef USING_V8
   return v8::Function::New(GetIsolate()->GetCurrentContext(),
-                           &impl::JsCallback<Ret, Args...>::Call,
-                           js_value, sizeof...(Args),
+                           &impl::JsCallback<Func>::Call,
+                           js_value, util::func_traits<Func>::argument_count,
                            v8::ConstructorBehavior::kThrow).ToLocalChecked();
 #elif defined(USING_JSC)
   JSContextRef cx = GetContext();
   LocalVar<JsObject> ret =
       JSObjectMakeFunctionWithCallback(cx, JsStringFromUtf8(name),
-                                       &impl::JsCallback<Ret, Args...>::Call);
+                                       &impl::JsCallback<Func>::Call);
 
   const int attributes = kJSPropertyAttributeReadOnly |
                          kJSPropertyAttributeDontEnum |
@@ -577,11 +601,12 @@ ReturnVal<JsFunction> CreateJsFunctionFromCallback(
  * @param callback The callback to invoke.
  * @return The resulting function object.
  */
-template <typename Ret, typename... Args>
-ReturnVal<JsFunction> CreateStaticFunction(
-    const std::string& target, const std::string& name,
-    std::function<Ret(Args...)> callback) {
-  return impl::CreateJsFunctionFromCallback(target, name, callback, false);
+template <typename Func>
+ReturnVal<JsFunction> CreateStaticFunction(const std::string& target,
+                                           const std::string& name,
+                                           Func&& callback) {
+  return impl::CreateJsFunctionFromCallback(
+      target, name, std::forward<Func>(callback), false);
 }
 
 /**
@@ -589,11 +614,12 @@ ReturnVal<JsFunction> CreateStaticFunction(
  * The first argument given to the callback will be the |this| argument from
  * JavaScript.  It should be a RefPtr<T> of an appropriate type.
  */
-template <typename Ret, typename... Args>
-ReturnVal<JsFunction> CreateMemberFunction(
-    const std::string& target, const std::string& name,
-    std::function<Ret(Args...)> callback) {
-  return impl::CreateJsFunctionFromCallback(target, name, callback, true);
+template <typename Func>
+ReturnVal<JsFunction> CreateMemberFunction(const std::string& target,
+                                           const std::string& name,
+                                           Func&& callback) {
+  return impl::CreateJsFunctionFromCallback(target, name,
+                                            std::forward<Func>(callback), true);
 }
 
 /**
@@ -603,10 +629,10 @@ ReturnVal<JsFunction> CreateMemberFunction(
  * @param name The name of the function (used for errors).
  * @param callback The callback function to call.
  */
-template <typename Ret, typename... Args>
-void RegisterGlobalFunction(const std::string& name, Ret (*callback)(Args...)) {
-  LocalVar<JsFunction> function = CreateStaticFunction(
-      "window", name, std::function<Ret(Args...)>(callback));
+template <typename Func>
+void RegisterGlobalFunction(const std::string& name, Func&& callback) {
+  LocalVar<JsFunction> function =
+      CreateStaticFunction("window", name, std::forward<Func>(callback));
   LocalVar<JsValue> value(RawToJsValue(function));
   SetMemberRaw(JsEngine::Instance()->global_handle(), name, value);
 }
