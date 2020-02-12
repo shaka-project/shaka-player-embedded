@@ -28,7 +28,7 @@ Event::Event(EventType type) : Event(to_string(type)) {}
 Event::Event(const std::string& type)
     : type(type),
       time_stamp(util::Clock::Instance.GetMonotonicTime() -
-                 dom::Document::GetGlobalDocument()->created_at()) {}
+                 dom::Document::EnsureGlobalDocument()->created_at()) {}
 
 // \cond Doxygen_Skip
 Event::~Event() {}

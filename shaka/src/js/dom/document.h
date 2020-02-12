@@ -41,12 +41,7 @@ class Document : public ContainerNode {
   static Document* Create() {
     return new Document();
   }
-  static Document* GetGlobalDocument() {
-    Document* ret = instance_;
-    CHECK(ret);
-    return ret;
-  }
-  static Document* CreateGlobalDocument();
+  static RefPtr<Document> EnsureGlobalDocument();
 
   /**
    * @return The time, in milliseconds, the document was created, according to

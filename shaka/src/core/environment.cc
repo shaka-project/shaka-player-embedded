@@ -181,7 +181,7 @@ void Environment::Install() {
 #endif
 
   LocalVar<JsValue> document(
-      impl_->document.WrapInstance(js::dom::Document::CreateGlobalDocument()));
+      impl_->document.WrapInstance(js::dom::Document::EnsureGlobalDocument()));
   SetMemberRaw(JsEngine::Instance()->global_handle(), "document", document);
 
   CreateInstance("console", &impl_->console);

@@ -33,15 +33,25 @@ Document::Document()
 
 // \cond Doxygen_Skip
 Document::~Document() {
-  if (instance_ == this)
-    instance_ = nullptr;
+  // If "instance_" equals "this", replace with nullptr.
+  Document* temp = this;
+  instance_.compare_exchange_strong(temp, nullptr, std::memory_order_relaxed);
 }
 // \endcond Doxygen_Skip
 
 // static
-Document* Document::CreateGlobalDocument() {
-  DCHECK(instance_ == nullptr);
-  return (instance_ = new Document());
+RefPtr<Document> Document::EnsureGlobalDocument() {
+  Document* ret = instance_.load(std::memory_order_relaxed);
+  if (!ret) {
+    RefPtr<Document> doc = new Document();
+    // If "instance_" wasn't updated, this will change it to our new value.  If
+    // "instance_" was changed, "ret" will be updated to match the new value.
+    if (instance_.compare_exchange_strong(ret, doc.get(),
+                                          std::memory_order_relaxed)) {
+      ret = doc.get();
+    }
+  }
+  return ret;
 }
 
 std::string Document::node_name() const {

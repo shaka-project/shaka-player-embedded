@@ -112,7 +112,7 @@ class Player::Impl : public JsObjectWrapper {
       std::vector<LocalVar<JsValue>> args;
       if (player) {
         video_ = new js::mse::HTMLVideoElement(
-            js::dom::Document::GetGlobalDocument(), player);
+            js::dom::Document::EnsureGlobalDocument(), player);
         args.emplace_back(video_->JsThis());
       }
       if (!InvokeConstructor(player_ctor_func, args.size(), args.data(),
