@@ -17,6 +17,10 @@
 #include "shaka/error.h"
 #include "src/util/objc_utils.h"
 
+NSErrorDomain const ShakaPlayerErrorDomain = @"ShakaPlayerErrorDomain";
+NSErrorUserInfoKey const ShakaPlayerErrorCategoryKey = @"ShakaPlayerErrorCategoryKey";
+NSErrorUserInfoKey const ShakaPlayerErrorSeverityKey = @"ShakaPlayerErrorSeverityKey";
+
 @interface ShakaPlayerError () {
 }
 
@@ -29,29 +33,16 @@
 @synthesize code;
 @synthesize severity;
 
-- (instancetype)init {
-  if ((self = [super init])) {
-    message = @"";
-    category = 0;
-    code = 0;
-    severity = 0;
-  }
-  return self;
-}
-
-- (instancetype)initWithMessage:(NSString *)message {
-  if ((self = [self init])) {
-    self.message = message;
-  }
-  return self;
-}
-
 - (instancetype)initWithError:(const shaka::Error &)error {
-  if ((self = [super init])) {
-    message = shaka::util::ObjcConverter<std::string>::ToObjc(error.message);
-    category = error.category;
-    code = error.code;
-    severity = error.severity;
+  NSString *message = shaka::util::ObjcConverter<std::string>::ToObjc(error.message);
+  if ((self = [super initWithDomain:ShakaPlayerErrorDomain
+                               code:error.code
+                           userInfo:@{ShakaPlayerErrorCategoryKey: @(error.category),
+                                      ShakaPlayerErrorSeverityKey: @(error.severity),
+                                      NSLocalizedDescriptionKey: message}])) {
+    self.message = shaka::util::ObjcConverter<std::string>::ToObjc(error.message);
+    self.category = error.category;
+    self.severity = error.severity;
   }
   return self;
 }

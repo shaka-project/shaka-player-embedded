@@ -27,11 +27,11 @@
  * @ingroup player
  */
 SHAKA_EXPORT
-@interface ShakaPlayerError : NSObject
+FOUNDATION_EXPORT NSErrorDomain const ShakaPlayerErrorDomain;
+FOUNDATION_EXPORT NSErrorUserInfoKey const ShakaPlayerErrorCategoryKey;
+FOUNDATION_EXPORT NSErrorUserInfoKey const ShakaPlayerErrorSeverityKey;
 
-- (instancetype)init;
-
-- (instancetype)initWithMessage:(NSString *)message;
+@interface ShakaPlayerError : NSError
 
 /** The error message. */
 @property(atomic) NSString *message;
@@ -40,19 +40,19 @@ SHAKA_EXPORT
  * The category of the error, if this is a Shaka error.  This is the same as
  * shaka.util.Error.Category.
  */
-@property(atomic) int category;
+@property(atomic) NSInteger category;
 
 /**
  * The specific code of the error, if this is a Shaka error.  This is the same
  * as shaka.util.Error.Code.
  */
-@property(atomic) int code;
+@property(atomic) NSInteger code;
 
 /**
  * The Shaka severity of the error, if this is a Shaka error.  This is the
  * same as shaka.util.Error.Severity.
  */
-@property (atomic) int severity;
+@property (atomic) NSInteger severity;
 
 @end
 
