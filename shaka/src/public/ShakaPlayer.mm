@@ -100,6 +100,10 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
     _client = client;
   }
 
+  id<ShakaPlayerClient> GetClient() {
+    return _client;
+  }
+
  private:
   __weak id<ShakaPlayerClient> _client;
 };
@@ -136,35 +140,32 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 // MARK: setup
 
-- (instancetype)initWithClient:(id<ShakaPlayerClient>)client {
+- (instancetype)initWithError:(NSError *__autoreleasing *)error {
   if ((self = [super init])) {
-    if (![self setClient:client])
+    // Create JS objects.
+    _engine = ShakaGetGlobalEngine();
+    _audio_renderer.reset(new shaka::media::SdlAudioRenderer(""));
+    _media_player.reset(
+            new shaka::media::DefaultMediaPlayer(&_video_renderer, _audio_renderer.get()));
+    _media_player->AddClient(&_client);
+
+    // Set up player.
+    _player.reset(new shaka::Player(_engine.get()));
+    const auto initResults = _player->Initialize(&_client, _media_player.get());
+    if (initResults.has_error()) {
+      *error = [[ShakaPlayerError alloc] initWithError:initResults.error()];
       return nil;
+    }
   }
   return self;
 }
 
-- (BOOL)setClient:(id<ShakaPlayerClient>)client {
+- (void)setClient:(id<ShakaPlayerClient>)client {
   _client.SetClient(client);
-  if (_engine) {
-    return YES;
-  }
+}
 
-  // Create JS objects.
-  _engine = ShakaGetGlobalEngine();
-  _audio_renderer.reset(new shaka::media::SdlAudioRenderer(""));
-  _media_player.reset(
-      new shaka::media::DefaultMediaPlayer(&_video_renderer, _audio_renderer.get()));
-  _media_player->AddClient(&_client);
-
-  // Set up player.
-  _player.reset(new shaka::Player(_engine.get()));
-  const auto initResults = _player->Initialize(&_client, _media_player.get());
-  if (initResults.has_error()) {
-    _client.OnError(initResults.error());
-    return NO;
-  }
-  return YES;
+- (id<ShakaPlayerClient>)client {
+  return _client.GetClient();
 }
 
 // MARK: controls
