@@ -25,6 +25,8 @@
 #include "stats_objc.h"
 #include "track_objc.h"
 
+@class ShakaPlayer;
+
 typedef void (^ShakaPlayerAsyncBlock)(ShakaPlayerError *);
 
 typedef NS_ENUM(NSInteger, ShakaPlayerLogLevel) {
@@ -52,55 +54,55 @@ SHAKA_EXPORT
  * Called when an asynchronous error occurs.  This is called on the main thread
  * and is only called when there isn't a block callback to give the error to.
  */
-- (void)onPlayerError:(ShakaPlayerError *)error;
+- (void)onPlayer:(ShakaPlayer *)player error:(ShakaPlayerError *)error;
 
 /**
  * Called when the buffering state of the Player changes.
  */
-- (void)onPlayerBufferingChange:(BOOL)is_buffering;
+- (void)onPlayer:(ShakaPlayer *)player bufferingChange:(BOOL)is_buffering;
 
 
 /**
  * Called when the video starts playing after startup or a call to Pause().
  */
-- (void)onPlayerPlayingEvent;
+- (void)onPlayerPlayingEvent:(ShakaPlayer *)player;
 
 /**
  * Called when the video gets paused due to a call to Pause().
  */
-- (void)onPlayerPauseEvent;
+- (void)onPlayerPauseEvent:(ShakaPlayer *)player;
 
 /**
  * Called when the video plays to the end of the content.
  */
-- (void)onPlayerEndedEvent;
+- (void)onPlayerEndedEvent:(ShakaPlayer *)player;
 
 
 /**
  * Called when the video starts seeking.  This may be called multiple times
  * in a row due to Shaka Player repositioning the playhead.
  */
-- (void)onPlayerSeekingEvent;
+- (void)onPlayerSeekingEvent:(ShakaPlayer *)player;
 
 /**
  * Called when the video completes seeking.  This happens once content is
  * available and the playhead can move forward.
  */
-- (void)onPlayerSeekedEvent;
+- (void)onPlayerSeekedEvent:(ShakaPlayer *)player;
 
 /** Called once MSE-based playback has started. */
-- (void)onPlayerAttachMse;
+- (void)onPlayerAttachMse:(ShakaPlayer *)player;
 
 /**
  * Called once src= based playback has started.  Once this is called, the avPlayer property
  * will be valid and point to the AVPlayer instance being used.
  */
-- (void)onPlayerAttachSource;
+- (void)onPlayerAttachSource:(ShakaPlayer *)player;
 
 /**
  * Called once playback is detached.  If this was src= playback, the AVPlayer is no longer usable.
  */
-- (void)onPlayerDetach;
+- (void)onPlayerDetach:(ShakaPlayer *)player;
 
 @end
 
