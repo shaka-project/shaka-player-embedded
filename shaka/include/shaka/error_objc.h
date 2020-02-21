@@ -19,6 +19,10 @@
 
 #include "macros.h"
 
+FOUNDATION_EXPORT NSErrorDomain const ShakaPlayerErrorDomain;
+FOUNDATION_EXPORT NSErrorUserInfoKey const ShakaPlayerErrorCategoryKey;
+FOUNDATION_EXPORT NSErrorUserInfoKey const ShakaPlayerErrorSeverityKey;
+
 /**
  * Represents a Player error.  This can be either a Shaka error or a more
  * generic JavaScript error.
@@ -27,10 +31,6 @@
  * @ingroup player
  */
 SHAKA_EXPORT
-FOUNDATION_EXPORT NSErrorDomain const ShakaPlayerErrorDomain;
-FOUNDATION_EXPORT NSErrorUserInfoKey const ShakaPlayerErrorCategoryKey;
-FOUNDATION_EXPORT NSErrorUserInfoKey const ShakaPlayerErrorSeverityKey;
-
 @interface ShakaPlayerError : NSError
 
 /** The error message. */
