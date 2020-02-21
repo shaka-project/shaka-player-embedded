@@ -116,7 +116,7 @@ import UIKit
 import ShakaPlayerEmbedded
 
 class ViewController: UIViewController, ShakaPlayerClient {
-  func onPlayerError(_ error: ShakaPlayerError!) {
+  func onPlayer(_ player: ShakaPlayer!, error: ShakaPlayerError!) {
     print("Got Shaka Player Error: \(error.message)")
   }
 
@@ -160,7 +160,7 @@ Go to `ViewController.m`, and replace its contents with the following code:
 
 @implementation ViewController
 
-- (void)onPlayerError:(ShakaPlayerError *)error {
+- (void)onPlayer:(ShakaPlayer *)player error:(ShakaPlayerError *)error {
   NSLog(@"Got Shaka Player Error: %@", [error message]);
 }
 

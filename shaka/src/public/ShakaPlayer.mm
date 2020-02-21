@@ -34,7 +34,6 @@
 #include "src/public/error_objc+Internal.h"
 #include "src/util/macros.h"
 #include "src/util/objc_utils.h"
-#import "ShakaPlayer.h"
 
 
 namespace {

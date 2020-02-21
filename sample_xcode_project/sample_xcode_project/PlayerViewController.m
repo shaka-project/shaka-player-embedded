@@ -214,11 +214,11 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
 
 #pragma mark - ShakaPlayerClient
 
-- (void)onPlayerError:(ShakaPlayerError *)error {
+- (void)onPlayer:(ShakaPlayer *)player error:(ShakaPlayerError *)error {
   [self.errorDisplayView applyError:[error message]];
 }
 
-- (void)onPlayerBufferingChange:(BOOL)is_buffering {
+- (void)onPlayer:(ShakaPlayer *)player bufferingChange:(BOOL)is_buffering {
   if (is_buffering) {
     [self.spinner startAnimating];
   } else {
