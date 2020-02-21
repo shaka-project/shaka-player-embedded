@@ -158,7 +158,11 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
     _player.reset(new shaka::Player(_engine.get()));
     const auto initResults = _player->Initialize(&_client, _media_player.get());
     if (initResults.has_error()) {
-      *error = [[ShakaPlayerError alloc] initWithError:initResults.error()];
+      if (error) {
+        *error = [[ShakaPlayerError alloc] initWithError:initResults.error()];
+      } else {
+        LOG(ERROR) << "Error creating player: " << initResults.error().message;
+      }
       return nil;
     }
     _client.SetPlayer(self);
