@@ -143,6 +143,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 - (instancetype)initWithClient:(id<ShakaPlayerClient>)client {
   if ((self = [super init])) {
+    _client.SetPlayer(self);
     if (![self setClient:client])
       return nil;
   }
@@ -150,7 +151,6 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 }
 
 - (BOOL)setClient:(id<ShakaPlayerClient>)client {
-  _client.SetPlayer(self);
   _client.SetClient(client);
   if (_engine) {
     return YES;
