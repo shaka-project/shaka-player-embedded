@@ -19,8 +19,11 @@
 
 #include "macros.h"
 
+/** Shaka Player Embedded errors */
 FOUNDATION_EXPORT const NSErrorDomain ShakaPlayerErrorDomain;
+/** The category of the error, if this is a Shaka error. This is the same as shaka.util.Error.Category. */
 FOUNDATION_EXPORT const NSErrorUserInfoKey ShakaPlayerErrorCategoryKey;
+/** The severity of the error, if this is a Shaka error.  This is the same as shaka.util.Error.Severity. */
 FOUNDATION_EXPORT const NSErrorUserInfoKey ShakaPlayerErrorSeverityKey;
 
 /**
