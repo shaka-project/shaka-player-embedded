@@ -116,18 +116,19 @@ import UIKit
 import ShakaPlayerEmbedded
 
 class ViewController: UIViewController, ShakaPlayerClient {
-  func onPlayerError(_ error: ShakaPlayerError!) {
+  func onPlayer(_ player: ShakaPlayer, error: ShakaPlayerError) {
     print("Got Shaka Player Error: \(error.message)")
   }
 
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
 
-    // Make a Shaka Player view.
-    guard let player = ShakaPlayer(client: self) else {
+    // Make a Shaka Player with its corresponding view.
+    guard let player = try? ShakaPlayer() else {
       print("Error creating player")
       return
     }
+    player.client = self
     let playerView = ShakaPlayerView(player: player)
     playerView.frame = self.view.bounds
     self.view.addSubview(playerView)
@@ -159,15 +160,16 @@ Go to `ViewController.m`, and replace its contents with the following code:
 
 @implementation ViewController
 
-- (void)onPlayerError:(ShakaPlayerError *)error {
+- (void)onPlayer:(ShakaPlayer *)player error:(ShakaPlayerError *)error {
   NSLog(@"Got Shaka Player Error: %@", [error message]);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
-  // Make a Shaka Player view.
-  ShakaPlayer *player = [[ShakaPlayer alloc] initWithClient:self];
+  // Make a Shaka Player with is corresponding view.
+  ShakaPlayer *player = [[ShakaPlayer alloc] initWithError:nil];
+  player.client = self;
   ShakaPlayerView *playerView = [[ShakaPlayerView alloc] initWithPlayer:player];
   playerView.frame = self.view.bounds;
   [self.view addSubview:playerView];

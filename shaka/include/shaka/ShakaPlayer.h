@@ -25,7 +25,9 @@
 #include "stats_objc.h"
 #include "track_objc.h"
 
-typedef void (^ShakaPlayerAsyncBlock)(ShakaPlayerError *);
+@class ShakaPlayer;
+
+typedef void (^ShakaPlayerAsyncBlock)(ShakaPlayerError * _Nullable);
 
 typedef NS_ENUM(NSInteger, ShakaPlayerLogLevel) {
   // These have the same values as shaka.log.Level.
@@ -38,6 +40,8 @@ typedef NS_ENUM(NSInteger, ShakaPlayerLogLevel) {
   ShakaPlayerLogLevelV2 = 6
 };
 
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Defines an interface for Player events.
@@ -52,55 +56,55 @@ SHAKA_EXPORT
  * Called when an asynchronous error occurs.  This is called on the main thread
  * and is only called when there isn't a block callback to give the error to.
  */
-- (void)onPlayerError:(ShakaPlayerError *)error;
+- (void)onPlayer:(ShakaPlayer *)player error:(ShakaPlayerError *)error;
 
 /**
  * Called when the buffering state of the Player changes.
  */
-- (void)onPlayerBufferingChange:(BOOL)is_buffering;
+- (void)onPlayer:(ShakaPlayer *)player bufferingChange:(BOOL)is_buffering;
 
 
 /**
  * Called when the video starts playing after startup or a call to Pause().
  */
-- (void)onPlayerPlayingEvent;
+- (void)onPlayerPlayingEvent:(ShakaPlayer *)player;
 
 /**
  * Called when the video gets paused due to a call to Pause().
  */
-- (void)onPlayerPauseEvent;
+- (void)onPlayerPauseEvent:(ShakaPlayer *)player;
 
 /**
  * Called when the video plays to the end of the content.
  */
-- (void)onPlayerEndedEvent;
+- (void)onPlayerEndedEvent:(ShakaPlayer *)player;
 
 
 /**
  * Called when the video starts seeking.  This may be called multiple times
  * in a row due to Shaka Player repositioning the playhead.
  */
-- (void)onPlayerSeekingEvent;
+- (void)onPlayerSeekingEvent:(ShakaPlayer *)player;
 
 /**
  * Called when the video completes seeking.  This happens once content is
  * available and the playhead can move forward.
  */
-- (void)onPlayerSeekedEvent;
+- (void)onPlayerSeekedEvent:(ShakaPlayer *)player;
 
 /** Called once MSE-based playback has started. */
-- (void)onPlayerAttachMse;
+- (void)onPlayerAttachMse:(ShakaPlayer *)player;
 
 /**
  * Called once src= based playback has started.  Once this is called, the avPlayer property
  * will be valid and point to the AVPlayer instance being used.
  */
-- (void)onPlayerAttachSource;
+- (void)onPlayerAttachSource:(ShakaPlayer *)player;
 
 /**
  * Called once playback is detached.  If this was src= playback, the AVPlayer is no longer usable.
  */
-- (void)onPlayerDetach;
+- (void)onPlayerDetach:(ShakaPlayer *)player;
 
 @end
 
@@ -115,12 +119,17 @@ SHAKA_EXPORT
 SHAKA_EXPORT
 @interface ShakaPlayer : NSObject
 
-/**
- * Creates a new initialized Player object.  If there is an error, the client
- * will be called synchronously to report the error and this returns nil.
- */
-- (instancetype)initWithClient:(id<ShakaPlayerClient>)client;
+- (instancetype)init NS_UNAVAILABLE; // initWithError: should always be used
 
+/**
+ * Creates a new initialized Player object.  If there is an error, the `error` pointer will
+ * be set to an object containing the error information and this returns nil.
+ */
+- (nullable instancetype)initWithError:(NSError * _Nullable __autoreleasing * _Nullable)error NS_SWIFT_NAME(init());
+
+
+/** A client which will receive player events */
+@property (atomic, weak, nullable) id<ShakaPlayerClient> client;
 
 /** Plays the video. */
 - (void)play;
@@ -160,7 +169,7 @@ SHAKA_EXPORT
 @property(atomic) ShakaPlayerLogLevel logLevel;
 
 /** The version of Shaka Player being used, as a string. */
-@property(atomic, readonly) NSString *playerVersion;
+@property(atomic, readonly, nullable) NSString *playerVersion;
 
 /** Whether the video is currently audio-only. */
 @property(atomic, readonly) BOOL isAudioOnly;
@@ -188,7 +197,7 @@ SHAKA_EXPORT
  * playback of src= content.  Use the client events to detect when src= content starts.  New
  * playbacks will use a new instance.
  */
-@property(atomic, readonly) AVPlayer *avPlayer;
+@property(atomic, readonly, nullable) AVPlayer *avPlayer;
 
 
 /** Return playback and adaptation stats. */
@@ -295,14 +304,14 @@ withStartTime:(double)startTime
  *   I.e. @"manifest.dash.defaultPresentationDelay" corresponds to
  *   {manifest: {dash: {defaultPresentationDelay: *your value*}}}
  */
-- (NSString *)getConfigurationString:(const NSString *)namePath;
+- (nullable NSString *)getConfigurationString:(const NSString *)namePath;
 
 
 /**
  * Sets currentAudioLanguage and currentVariantRole to the selected language
  * and role, and chooses a new variant if need be.
  */
-- (void)selectAudioLanguage:(NSString *)language withRole:(NSString *)role;
+- (void)selectAudioLanguage:(NSString *)language withRole:(nullable NSString *)role;
 
 /**
  * Sets currentAudioLanguage to the selected language and role, and chooses a
@@ -314,7 +323,7 @@ withStartTime:(double)startTime
  * Sets currentTextLanguage and currentTextRole to the selected language and
  * role, and chooses a new text stream if need be.
  */
-- (void)selectTextLanguage:(NSString *)language withRole:(NSString *)role;
+- (void)selectTextLanguage:(NSString *)language withRole:(nullable NSString *)role;
 
 /**
  * Sets currentTextLanguage to the selected language and role, and chooses a new
@@ -363,15 +372,16 @@ withStartTime:(double)startTime
             language:(NSString *)lang
                 kind:(NSString *)kind
                 mime:(NSString *)mime
-               codec:(NSString *)codec;
+               codec:(nullable NSString *)codec;
 - (void)addTextTrack:(NSString *)uri
             language:(NSString *)lang
                 kind:(NSString *)kind
                 mime:(NSString *)mime
-               codec:(NSString *)codec
-               label:(NSString *)label;
+               codec:(nullable NSString *)codec
+               label:(nullable NSString *)label;
 //@}
 
 @end
 
+NS_ASSUME_NONNULL_END
 #endif  // SHAKA_EMBEDDED_SHAKA_PLAYER_H_

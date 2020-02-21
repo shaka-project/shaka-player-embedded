@@ -19,6 +19,15 @@
 
 #include "macros.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+/** Shaka Player Embedded errors */
+FOUNDATION_EXPORT const NSErrorDomain ShakaPlayerErrorDomain;
+/** The category of the error, if this is a Shaka error. This is the same as shaka.util.Error.Category. */
+FOUNDATION_EXPORT const NSErrorUserInfoKey ShakaPlayerErrorCategoryKey;
+/** The severity of the error, if this is a Shaka error.  This is the same as shaka.util.Error.Severity. */
+FOUNDATION_EXPORT const NSErrorUserInfoKey ShakaPlayerErrorSeverityKey;
+
 /**
  * Represents a Player error.  This can be either a Shaka error or a more
  * generic JavaScript error.
@@ -27,11 +36,7 @@
  * @ingroup player
  */
 SHAKA_EXPORT
-@interface ShakaPlayerError : NSObject
-
-- (instancetype)init;
-
-- (instancetype)initWithMessage:(NSString *)message;
+@interface ShakaPlayerError : NSError
 
 /** The error message. */
 @property(atomic) NSString *message;
@@ -40,20 +45,21 @@ SHAKA_EXPORT
  * The category of the error, if this is a Shaka error.  This is the same as
  * shaka.util.Error.Category.
  */
-@property(atomic) int category;
+@property(atomic) NSInteger category;
 
 /**
  * The specific code of the error, if this is a Shaka error.  This is the same
  * as shaka.util.Error.Code.
  */
-@property(atomic) int code;
+@property(atomic) NSInteger code;
 
 /**
  * The Shaka severity of the error, if this is a Shaka error.  This is the
  * same as shaka.util.Error.Severity.
  */
-@property (atomic) int severity;
+@property (atomic) NSInteger severity;
 
 @end
 
+NS_ASSUME_NONNULL_END
 #endif  // SHAKA_EMBEDDED_ERROR_OBJC_H_

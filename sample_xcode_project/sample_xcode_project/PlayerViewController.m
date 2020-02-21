@@ -214,11 +214,11 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
 
 #pragma mark - ShakaPlayerClient
 
-- (void)onPlayerError:(ShakaPlayerError *)error {
+- (void)onPlayer:(ShakaPlayer *)player error:(ShakaPlayerError *)error {
   [self.errorDisplayView applyError:[error message]];
 }
 
-- (void)onPlayerBufferingChange:(BOOL)is_buffering {
+- (void)onPlayer:(ShakaPlayer *)player bufferingChange:(BOOL)is_buffering {
   if (is_buffering) {
     [self.spinner startAnimating];
   } else {
@@ -358,7 +358,8 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
 
 - (void)placePlayerIntoContainer {
   if (!self.player) {
-    self.player = [[ShakaPlayer alloc] initWithClient:self];
+    self.player = [[ShakaPlayer alloc] initWithError:nil];
+    self.player.client = self;
     self.playerView = [[ShakaPlayerView alloc] initWithPlayer:self.player];
   }
   self.playerView.backgroundColor = [UIColor blackColor];

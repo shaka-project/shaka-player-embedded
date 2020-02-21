@@ -48,11 +48,11 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
 
   void OnError(const shaka::Error &error) override {
     ShakaPlayerError *objc_error = [[ShakaPlayerError alloc] initWithError:error];
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerError:), objc_error);
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayer:error:), _shakaPlayer, objc_error);
   }
 
   void OnBuffering(bool is_buffering) override {
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerBufferingChange:), is_buffering);
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayer:bufferingChange:), _shakaPlayer, is_buffering);
   }
 
 
@@ -60,19 +60,19 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
                               shaka::media::VideoPlaybackState new_state) override {
     switch (new_state) {
       case shaka::media::VideoPlaybackState::Paused:
-        shaka::util::DispatchObjcEvent(_client, @selector(onPlayerPauseEvent));
+        shaka::util::DispatchObjcEvent(_client, @selector(onPlayerPauseEvent:), _shakaPlayer);
         break;
       case shaka::media::VideoPlaybackState::Playing:
-        shaka::util::DispatchObjcEvent(_client, @selector(onPlayerPlayingEvent));
+        shaka::util::DispatchObjcEvent(_client, @selector(onPlayerPlayingEvent:), _shakaPlayer);
         break;
       case shaka::media::VideoPlaybackState::Ended:
-        shaka::util::DispatchObjcEvent(_client, @selector(onPlayerEndedEvent));
+        shaka::util::DispatchObjcEvent(_client, @selector(onPlayerEndedEvent:), _shakaPlayer);
         break;
       default:
         break;
     }
     if (old_state == shaka::media::VideoPlaybackState::Seeking)
-      shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekedEvent));
+      shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekedEvent:), _shakaPlayer);
   }
 
   void OnError(const std::string &error) override {
@@ -80,19 +80,19 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
   }
 
   void OnSeeking() override {
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekingEvent));
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerSeekingEvent:), _shakaPlayer);
   }
 
   void OnAttachMse() override {
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerAttachMse));
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerAttachMse:), _shakaPlayer);
   }
 
   void OnAttachSource() override {
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerAttachSource));
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerAttachSource:), _shakaPlayer);
   }
 
   void OnDetach() override {
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerDetach));
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayerDetach:), _shakaPlayer);
   }
 
 
@@ -100,8 +100,17 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
     _client = client;
   }
 
+  id<ShakaPlayerClient> GetClient() {
+    return _client;
+  }
+
+  void SetPlayer(ShakaPlayer *shakaPlayer) {
+    _shakaPlayer = shakaPlayer;
+  }
+
  private:
   __weak id<ShakaPlayerClient> _client;
+  __weak ShakaPlayer *_shakaPlayer;
 };
 
 }  // namespace
@@ -136,35 +145,37 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 // MARK: setup
 
-- (instancetype)initWithClient:(id<ShakaPlayerClient>)client {
+- (instancetype)initWithError:(NSError *__autoreleasing *)error {
   if ((self = [super init])) {
-    if (![self setClient:client])
+    // Create JS objects.
+    _engine = ShakaGetGlobalEngine();
+    _audio_renderer.reset(new shaka::media::SdlAudioRenderer(""));
+    _media_player.reset(
+            new shaka::media::DefaultMediaPlayer(&_video_renderer, _audio_renderer.get()));
+    _media_player->AddClient(&_client);
+
+    // Set up player.
+    _player.reset(new shaka::Player(_engine.get()));
+    const auto initResults = _player->Initialize(&_client, _media_player.get());
+    if (initResults.has_error()) {
+      if (error) {
+        *error = [[ShakaPlayerError alloc] initWithError:initResults.error()];
+      } else {
+        LOG(ERROR) << "Error creating player: " << initResults.error().message;
+      }
       return nil;
+    }
+    _client.SetPlayer(self);
   }
   return self;
 }
 
-- (BOOL)setClient:(id<ShakaPlayerClient>)client {
+- (void)setClient:(id<ShakaPlayerClient>)client {
   _client.SetClient(client);
-  if (_engine) {
-    return YES;
-  }
+}
 
-  // Create JS objects.
-  _engine = ShakaGetGlobalEngine();
-  _audio_renderer.reset(new shaka::media::SdlAudioRenderer(""));
-  _media_player.reset(
-      new shaka::media::DefaultMediaPlayer(&_video_renderer, _audio_renderer.get()));
-  _media_player->AddClient(&_client);
-
-  // Set up player.
-  _player.reset(new shaka::Player(_engine.get()));
-  const auto initResults = _player->Initialize(&_client, _media_player.get());
-  if (initResults.has_error()) {
-    _client.OnError(initResults.error());
-    return NO;
-  }
-  return YES;
+- (id<ShakaPlayerClient>)client {
+  return _client.GetClient();
 }
 
 // MARK: controls
