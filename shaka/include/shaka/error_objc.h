@@ -19,9 +19,9 @@
 
 #include "macros.h"
 
-FOUNDATION_EXPORT NSErrorDomain const ShakaPlayerErrorDomain;
-FOUNDATION_EXPORT NSErrorUserInfoKey const ShakaPlayerErrorCategoryKey;
-FOUNDATION_EXPORT NSErrorUserInfoKey const ShakaPlayerErrorSeverityKey;
+FOUNDATION_EXPORT const NSErrorDomain ShakaPlayerErrorDomain;
+FOUNDATION_EXPORT const NSErrorUserInfoKey ShakaPlayerErrorCategoryKey;
+FOUNDATION_EXPORT const NSErrorUserInfoKey ShakaPlayerErrorSeverityKey;
 
 /**
  * Represents a Player error.  This can be either a Shaka error or a more
