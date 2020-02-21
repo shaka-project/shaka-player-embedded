@@ -19,6 +19,8 @@
 
 #include "macros.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /** Shaka Player Embedded errors */
 FOUNDATION_EXPORT const NSErrorDomain ShakaPlayerErrorDomain;
 /** The category of the error, if this is a Shaka error. This is the same as shaka.util.Error.Category. */
@@ -59,4 +61,5 @@ SHAKA_EXPORT
 
 @end
 
+NS_ASSUME_NONNULL_END
 #endif  // SHAKA_EMBEDDED_ERROR_OBJC_H_

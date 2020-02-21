@@ -21,6 +21,8 @@
 #include "ShakaPlayer.h"
 #include "macros.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * A view that displays the video frames from an ShakaPlayer object.
  *
@@ -31,14 +33,15 @@ SHAKA_EXPORT
 
 - (id)init;
 
-- (id)initWithPlayer:(ShakaPlayer *)player;
+- (id)initWithPlayer:(nullable ShakaPlayer *)player;
 
 /** Gets/sets the ShakaPlayer instance to draw. */
-@property(atomic) ShakaPlayer *player;
+@property(nullable, atomic) ShakaPlayer *player;
 
 /** Sets how to resize the video frame within the view. */
 - (void)setVideoGravity:(AVLayerVideoGravity)videoGravity;
 
 @end
 
+NS_ASSUME_NONNULL_END
 #endif  // SHAKA_EMBEDDED_SHAKA_PLAYER_VIEW_H_
