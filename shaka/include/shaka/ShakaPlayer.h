@@ -119,7 +119,7 @@ SHAKA_EXPORT
 SHAKA_EXPORT
 @interface ShakaPlayer : NSObject
 
-- (nullable instancetype)init NS_UNAVAILABLE; // initWithError: should always be used
+- (instancetype)init NS_UNAVAILABLE; // initWithError: should always be used
 
 /**
  * Creates a new initialized Player object.  If there is an error, the `error` pointer will
