@@ -40,7 +40,7 @@ const NSErrorUserInfoKey ShakaPlayerErrorSeverityKey = @"ShakaPlayerErrorSeverit
                            userInfo:@{ShakaPlayerErrorCategoryKey: @(error.category),
                                       ShakaPlayerErrorSeverityKey: @(error.severity),
                                       NSLocalizedDescriptionKey: message}])) {
-    self.message = shaka::util::ObjcConverter<std::string>::ToObjc(error.message);
+    self.message = message;
     self.category = error.category;
     self.severity = error.severity;
   }
