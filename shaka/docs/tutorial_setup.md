@@ -123,11 +123,12 @@ class ViewController: UIViewController, ShakaPlayerClient {
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
 
-    // Make a Shaka Player view.
-    guard let player = ShakaPlayer(client: self) else {
+    // Make a Shaka Player with its corresponding view.
+    guard let player = try? ShakaPlayer() else {
       print("Error creating player")
       return
     }
+    player.client = self
     let playerView = ShakaPlayerView(player: player)
     playerView.frame = self.view.bounds
     self.view.addSubview(playerView)
@@ -166,8 +167,9 @@ Go to `ViewController.m`, and replace its contents with the following code:
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
-  // Make a Shaka Player view.
-  ShakaPlayer *player = [[ShakaPlayer alloc] initWithClient:self];
+  // Make a Shaka Player with is corresponding view.
+  ShakaPlayer *player = [[ShakaPlayer alloc] initWithError:nil];
+  player.client = self;
   ShakaPlayerView *playerView = [[ShakaPlayerView alloc] initWithPlayer:player];
   playerView.frame = self.view.bounds;
   [self.view addSubview:playerView];

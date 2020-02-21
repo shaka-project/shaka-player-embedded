@@ -17,9 +17,9 @@
 #include "shaka/error.h"
 #include "src/util/objc_utils.h"
 
-NSErrorDomain const ShakaPlayerErrorDomain = @"ShakaPlayerErrorDomain";
-NSErrorUserInfoKey const ShakaPlayerErrorCategoryKey = @"ShakaPlayerErrorCategoryKey";
-NSErrorUserInfoKey const ShakaPlayerErrorSeverityKey = @"ShakaPlayerErrorSeverityKey";
+const NSErrorDomain ShakaPlayerErrorDomain = @"ShakaPlayerErrorDomain";
+const NSErrorUserInfoKey ShakaPlayerErrorCategoryKey = @"ShakaPlayerErrorCategoryKey";
+const NSErrorUserInfoKey ShakaPlayerErrorSeverityKey = @"ShakaPlayerErrorSeverityKey";
 
 @interface ShakaPlayerError () {
 }
@@ -40,7 +40,7 @@ NSErrorUserInfoKey const ShakaPlayerErrorSeverityKey = @"ShakaPlayerErrorSeverit
                            userInfo:@{ShakaPlayerErrorCategoryKey: @(error.category),
                                       ShakaPlayerErrorSeverityKey: @(error.severity),
                                       NSLocalizedDescriptionKey: message}])) {
-    self.message = shaka::util::ObjcConverter<std::string>::ToObjc(error.message);
+    self.message = message;
     self.category = error.category;
     self.severity = error.severity;
   }
