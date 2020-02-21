@@ -52,7 +52,8 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
   }
 
   void OnBuffering(bool is_buffering) override {
-    shaka::util::DispatchObjcEvent(_client, @selector(onPlayer:bufferingChange:), _shakaPlayer, is_buffering);
+    shaka::util::DispatchObjcEvent(_client, @selector(onPlayer:bufferingChange:), _shakaPlayer,
+                                   is_buffering);
   }
 
 
@@ -151,7 +152,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
     _engine = ShakaGetGlobalEngine();
     _audio_renderer.reset(new shaka::media::SdlAudioRenderer(""));
     _media_player.reset(
-            new shaka::media::DefaultMediaPlayer(&_video_renderer, _audio_renderer.get()));
+        new shaka::media::DefaultMediaPlayer(&_video_renderer, _audio_renderer.get()));
     _media_player->AddClient(&_client);
 
     // Set up player.

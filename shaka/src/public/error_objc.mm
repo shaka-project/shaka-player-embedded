@@ -35,12 +35,15 @@ const NSErrorUserInfoKey ShakaPlayerErrorSeverityKey = @"ShakaPlayerErrorSeverit
 
 - (instancetype)initWithError:(const shaka::Error &)error {
   NSString *message = shaka::util::ObjcConverter<std::string>::ToObjc(error.message);
-  message = message ? message : @""; // To avoid crash while creating userInfo if C string conversion fails
+  message = message ? message
+                    : @"";  // To avoid crash while creating userInfo if C string conversion fails
   if ((self = [super initWithDomain:ShakaPlayerErrorDomain
                                code:error.code
-                           userInfo:@{ShakaPlayerErrorCategoryKey: @(error.category),
-                                      ShakaPlayerErrorSeverityKey: @(error.severity),
-                                      NSLocalizedDescriptionKey: message}])) {
+                           userInfo:@{
+                             ShakaPlayerErrorCategoryKey: @(error.category),
+                             ShakaPlayerErrorSeverityKey: @(error.severity),
+                             NSLocalizedDescriptionKey: message
+                           }])) {
     self.message = message;
     self.category = error.category;
     self.severity = error.severity;
