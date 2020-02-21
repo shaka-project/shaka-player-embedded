@@ -36,7 +36,7 @@ SHAKA_EXPORT
 - (id)initWithPlayer:(nullable ShakaPlayer *)player;
 
 /** Gets/sets the ShakaPlayer instance to draw. */
-@property(nullable, atomic) ShakaPlayer *player;
+@property(atomic, nullable) ShakaPlayer *player;
 
 /** Sets how to resize the video frame within the view. */
 - (void)setVideoGravity:(AVLayerVideoGravity)videoGravity;
