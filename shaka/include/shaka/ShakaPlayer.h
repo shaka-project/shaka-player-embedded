@@ -115,9 +115,6 @@ SHAKA_EXPORT
 SHAKA_EXPORT
 @interface ShakaPlayer : NSObject
 
-/** A client which will receive player events */
-@property (atomic, weak) id<ShakaPlayerClient> client;
-
 - (instancetype)init NS_UNAVAILABLE; // initWithError: should always be used
 
 /**
@@ -126,6 +123,9 @@ SHAKA_EXPORT
  */
 - (instancetype)initWithError:(NSError *__autoreleasing *)error NS_SWIFT_NAME(init());
 
+
+/** A client which will receive player events */
+@property (atomic, weak) id<ShakaPlayerClient> client;
 
 /** Plays the video. */
 - (void)play;
