@@ -124,7 +124,7 @@ SHAKA_EXPORT
  * Creates a new initialized Player object.  If there is an error, the `error` pointer will
  * be set to an object containing the error information and this returns nil.
  */
-- (instancetype)initWithError:(NSError **)error NS_SWIFT_NAME(init());
+- (instancetype)initWithError:(NSError *__autoreleasing *)error NS_SWIFT_NAME(init());
 
 
 /** Plays the video. */
