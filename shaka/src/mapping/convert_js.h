@@ -38,6 +38,23 @@ namespace impl {
 // ConvertHelper to be used on a set of types (for example, numbers).
 struct _number_identifier {};
 struct _generic_converter_identifier {};
+struct _callable_identifier {};
+
+template <typename T, typename = void>
+struct _SelectSpecialTypes {
+  using type = void;
+};
+#define ADD_SPECIAL_TYPE(id, ...)                                 \
+  template <typename T>                                           \
+  struct _SelectSpecialTypes<T, util::enable_if_t<__VA_ARGS__>> { \
+    using type = id;                                              \
+  }
+
+ADD_SPECIAL_TYPE(_number_identifier, util::is_number<T>::value);
+ADD_SPECIAL_TYPE(_generic_converter_identifier,
+                 std::is_base_of<GenericConverter, T>::value);
+ADD_SPECIAL_TYPE(_callable_identifier, util::is_callable<T>::value);
+#undef ADD_SPECIAL_TYPE
 
 /**
  * A template type that defines two conversion functions to convert between C++
@@ -58,14 +75,10 @@ struct _generic_converter_identifier {};
  * \endcode
  *
  * If the specialization is for a "category" of types (e.g. numbers, where the
- * type would be T), then you need to add a new identifier above and a new
- * selector to the conditions here.
+ * type would be T), then you need to add a new identifier and specialization
+ * above.
  */
-template <typename T, typename = typename std::conditional<
-                          util::is_number<T>::value, _number_identifier,
-                          typename std::conditional<
-                              std::is_base_of<GenericConverter, T>::value,
-                              _generic_converter_identifier, void>::type>::type>
+template <typename T, typename = typename _SelectSpecialTypes<T>::type>
 struct ConvertHelper;
 
 template <typename Number>

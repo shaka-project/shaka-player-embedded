@@ -637,6 +637,20 @@ void RegisterGlobalFunction(const std::string& name, Func&& callback) {
   SetMemberRaw(JsEngine::Instance()->global_handle(), name, value);
 }
 
+namespace impl {
+
+// Allow passing callable objects to JavaScript through ToJsValue().
+template <typename Func>
+struct ConvertHelper<Func, _callable_identifier> {
+  template <typename T>
+  static ReturnVal<JsValue> ToJsValue(T&& source) {
+    auto func = CreateStaticFunction("", "", std::forward<T>(source));
+    return RawToJsValue(func);
+  }
+};
+
+}  // namespace impl
+
 }  // namespace shaka
 
 #endif  // SHAKA_EMBEDDED_MAPPING_REGISTER_MEMBER_H_

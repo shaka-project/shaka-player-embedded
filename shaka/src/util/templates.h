@@ -55,16 +55,26 @@ struct decay_is_same
 template <bool B, typename T = void>
 using enable_if_t = typename std::enable_if<B, T>::type;
 
+template <typename...>
+using void_t = void;
+
 
 namespace impl {
 
+template <typename T> int has_call_operator(decltype(&T::operator()));
+template <typename T> char has_call_operator(...);
+
 // \cond Doxygen_Skip
-template <typename Func>
-struct func_traits : func_traits<decltype(&Func::operator())> {};
+template <typename Func, typename = void>
+struct func_traits {};
 // \endcond Doxygen_Skip
 
+template <typename Func>
+struct func_traits<Func, enable_if_t<sizeof(has_call_operator<Func>(0)) != 1>>
+    : func_traits<decltype(&Func::operator())> {};
+
 template <typename Ret, typename... Args>
-struct func_traits<Ret(*)(Args...)> {
+struct func_traits<Ret(*)(Args...), void> {
   using return_type = Ret;
   using this_type = void;
   using argument_types = std::tuple<Args...>;
@@ -75,7 +85,7 @@ struct func_traits<Ret(*)(Args...)> {
 };
 
 template <typename Ret, typename This, typename... Args>
-struct func_traits<Ret(This::*)(Args...)> {
+struct func_traits<Ret(This::*)(Args...), void> {
   using return_type = Ret;
   using this_type = This;
   using argument_types = std::tuple<Args...>;
@@ -86,7 +96,7 @@ struct func_traits<Ret(This::*)(Args...)> {
 };
 
 template <typename Ret, typename This, typename... Args>
-struct func_traits<Ret(This::*)(Args...) const> {
+struct func_traits<Ret(This::*)(Args...) const, void> {
   using return_type = Ret;
   using this_type = This;
   using argument_types = std::tuple<Args...>;
@@ -107,6 +117,12 @@ template <typename Func>
 struct func_traits : impl::func_traits<typename std::decay<Func>::type> {
   using type = Func;
 };
+
+template <typename T, typename = void>
+struct is_callable : std::false_type {};
+template <typename T>
+struct is_callable<T, void_t<typename func_traits<T>::return_type>>
+    : std::true_type {};
 
 }  // namespace util
 }  // namespace shaka
