@@ -347,8 +347,10 @@ AsyncResults<BufferedRange> Player::SeekRange() const {
 
 
 AsyncResults<void> Player::Load(const std::string& manifest_uri,
-                                double start_time) {
-  return impl_->CallMethod<void>("load", manifest_uri, LoadHelper(start_time));
+                                double start_time,
+                                const std::string& mime_type) {
+  return impl_->CallMethod<void>("load", manifest_uri, LoadHelper(start_time),
+                                 mime_type);
 }
 
 AsyncResults<void> Player::Unload() {

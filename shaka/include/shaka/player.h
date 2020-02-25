@@ -224,9 +224,13 @@ class SHAKA_EXPORT Player final {
    *
    * @param manifest_uri The URI of the manifest to load.
    * @param start_time The time to start playing at, in seconds.
+   * @param mime_type The MIME type of the content being loaded.  If the MIME
+   *   type can't be detected based on the extension, we'll make a HEAD request
+   *   to the URL to figure it out.
    */
   AsyncResults<void> Load(const std::string& manifest_uri,
-                          double start_time = NAN);
+                          double start_time = NAN,
+                          const std::string& mime_type = "");
 
   /** Unload the current manifest and make the Player available for re-use. */
   AsyncResults<void> Unload();
