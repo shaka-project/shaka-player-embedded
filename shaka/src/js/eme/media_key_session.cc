@@ -64,8 +64,7 @@ ExceptionOr<double> MediaKeySession::GetExpiration() const {
   return expiration < 0 ? NAN : expiration;
 }
 
-ExceptionOr<std::unordered_map<ByteBuffer, MediaKeyStatus>>
-MediaKeySession::GetKeyStatuses() const {
+ExceptionOr<ReturnVal<JsValue>> MediaKeySession::GetKeyStatuses() const {
   std::vector<KeyStatusInfo> statuses;
   const std::string session_id = SessionId();
   if (!session_id.empty() &&
@@ -73,12 +72,14 @@ MediaKeySession::GetKeyStatuses() const {
     return JsError::TypeError("Error getting the key statuses");
   }
 
-  std::unordered_map<ByteBuffer, MediaKeyStatus> ret(statuses.size());
+  LocalVar<JsMap> ret(CreateMap());
   for (auto& status : statuses) {
-    ret.emplace(ByteBuffer(status.key_id.data(), status.key_id.size()),
-                status.status);
+    LocalVar<JsValue> key(
+        ToJsValue(ByteBuffer(status.key_id.data(), status.key_id.size())));
+    LocalVar<JsValue> value(ToJsValue(status.status));
+    SetMapValue(ret, key, value);
   }
-  return ret;
+  return RawToJsValue(ret);
 }
 
 Promise MediaKeySession::GenerateRequest(MediaKeyInitDataType init_data_type,

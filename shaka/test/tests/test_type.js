@@ -322,16 +322,8 @@ testGroup('TestType', function() {
       let test = new TestType();
       let result = test.getMapOfStrings();
       expectTrue(result);
-      expectInstanceOf(result, Map);
-
-      expectEq(result.get('a'), '1');
-      expectEq(result.get('b'), '2');
-
-      let spy = jasmine.createSpy('callback');
-      result.forEach(spy);
-      expectToHaveBeenCalledTimes(spy, 2);
-      expectToHaveBeenCalledWith(spy, '1', 'a', result);
-      expectToHaveBeenCalledWith(spy, '2', 'b', result);
+      expectEq(result['a'], '1');
+      expectEq(result['b'], '2');
     });
   });
 

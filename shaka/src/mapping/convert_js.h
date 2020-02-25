@@ -272,11 +272,10 @@ struct ConvertHelper<std::unordered_map<Key, Value>, void> {
 
   static ReturnVal<JsValue> ToJsValue(
       const std::unordered_map<Key, Value>& source) {
-    LocalVar<JsMap> ret(CreateMap());
+    LocalVar<JsObject> ret(CreateObject());
     for (auto& pair : source) {
-      LocalVar<JsValue> key(ConvertHelper<Key>::ToJsValue(pair.first));
       LocalVar<JsValue> value(ConvertHelper<Value>::ToJsValue(pair.second));
-      SetMapValue(ret, key, value);
+      SetMemberRaw(ret, pair.first, value);
     }
     return RawToJsValue(ret);
   }
@@ -295,6 +294,13 @@ struct ConvertHelper<T*, void> {
       return JsNull();
     else
       return source->JsThis();
+  }
+};
+
+template <typename T>
+struct ConvertHelper<ReturnVal<T>, void> {
+  static ReturnVal<JsValue> ToJsValue(const ReturnVal<T>& source) {
+    return RawToJsValue(source);
   }
 };
 

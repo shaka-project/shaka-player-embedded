@@ -18,7 +18,6 @@
 #include <functional>
 #include <mutex>
 #include <string>
-#include <unordered_map>
 
 #include "shaka/eme/configuration.h"
 #include "shaka/eme/implementation.h"
@@ -56,8 +55,7 @@ class MediaKeySession : public events::EventTarget {
   Listener on_message;
 
   ExceptionOr<double> GetExpiration() const;
-  ExceptionOr<std::unordered_map<ByteBuffer, MediaKeyStatus>> GetKeyStatuses()
-      const;
+  ExceptionOr<ReturnVal<JsValue>> GetKeyStatuses() const;
 
   Promise GenerateRequest(MediaKeyInitDataType init_data_type,
                           ByteBuffer init_data);
