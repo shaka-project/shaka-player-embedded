@@ -88,8 +88,12 @@ Promise HTMLMediaElement::SetMediaKeys(RefPtr<eme::MediaKeys> media_keys) {
     return Promise::Resolved();
 
   eme::Implementation* cdm = media_keys ? media_keys->GetCdm() : nullptr;
-  std::string key_system = media_keys ? media_keys->key_system : "";
-  player_->SetEmeImplementation(key_system, cdm);
+  const std::string key_system = media_keys ? media_keys->key_system : "";
+  if (!player_->SetEmeImplementation(key_system, cdm)) {
+    return Promise::Rejected(
+        JsError::TypeError("Error changing MediaKeys on the MediaPlayer"));
+  }
+
   this->media_keys = media_keys;
   return Promise::Resolved();
 }
