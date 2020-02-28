@@ -5,6 +5,7 @@
     <tab type="modules" visible="yes" title="Exported Types" intro=""/>
     <tab type="usergroup" title="Tutorials">
       <tab type="user" url="@ref md_shaka_docs_tutorial_setup" title="Basic Tutorial" />
+      <tab type="user" url="@ref md_shaka_docs_tutorial_filters" title="Network Filters" />
     </tab>
     <tab type="pages" visible="yes" title="Internal Docs" intro=""/>
     <tab type="classes" visible="yes" title="Internal Class List">
