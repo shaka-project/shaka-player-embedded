@@ -25,6 +25,7 @@
 #  import "ShakaPlayerView.h"
 #  import "error_objc.h"
 #  import "manifest_objc.h"
+#  import "net_objc.h"
 #  import "offline_externs_objc.h"
 #  import "player_externs_objc.h"
 #  import "stats_objc.h"

@@ -21,6 +21,7 @@
 #include "error_objc.h"
 #include "macros.h"
 #include "manifest_objc.h"
+#include "net_objc.h"
 #include "player_externs_objc.h"
 #include "stats_objc.h"
 #include "track_objc.h"
@@ -105,6 +106,44 @@ SHAKA_EXPORT
  * Called once playback is detached.  If this was src= playback, the AVPlayer is no longer usable.
  */
 - (void)onPlayerDetach:(ShakaPlayer *)player;
+
+@end
+
+
+/**
+ * Defines an interface for network filters.
+ * @ingroup player
+ */
+SHAKA_EXPORT
+@protocol ShakaPlayerNetworkFilter <NSObject>
+
+@optional
+
+/**
+ * Called before a request is sent.  This can modify the request object to change properties of the
+ * request.
+ *
+ * The block must be called when the filter is done handling the request.  The block can be called
+ * synchronously within the method or on any other thread after this completes.  It should be called
+ * with the error that occurred, or <code>nil</code> on success.
+ */
+- (void)onPlayer:(ShakaPlayer *)player
+  networkRequest:(ShakaPlayerRequest *)request
+          ofType:(ShakaPlayerRequestType)type
+       withBlock:(ShakaPlayerAsyncBlock)block;
+
+/**
+ * Called after a request sent, but before it is handled by the library.  This
+ * can modify the response object.
+ *
+ * The block must be called when the filter is done handling the response.  The block can be called
+ * synchronously within the method or on any other thread after this completes.  It should be called
+ * with the error that occurred, or <code>nil</code> on success.
+ */
+- (void)onPlayer:(ShakaPlayer *)player
+ networkResponse:(ShakaPlayerResponse*)response
+          ofType:(ShakaPlayerRequestType)type
+       withBlock:(ShakaPlayerAsyncBlock)block;
 
 @end
 
@@ -380,6 +419,15 @@ withStartTime:(double)startTime
                codec:(nullable NSString *)codec
                label:(nullable NSString *)label;
 //@}
+
+/**
+ * Adds an object that is called when network requests happen.  These are
+ * called in the order they are registered.
+ */
+- (void)addNetworkFilter:(id<ShakaPlayerNetworkFilter>)filter;
+
+/** Stops the given object from receiving calls for network requests. */
+- (void)removeNetworkFilter:(id<ShakaPlayerNetworkFilter>)filter;
 
 @end
 

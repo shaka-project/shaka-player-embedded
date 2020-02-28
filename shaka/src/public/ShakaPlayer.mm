@@ -14,6 +14,7 @@
 
 #import "shaka/ShakaPlayer.h"
 
+#include <list>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -25,6 +26,7 @@
 #include "shaka/player.h"
 #include "shaka/utils.h"
 
+#include "src/debug/mutex.h"
 #include "src/js/manifest+Internal.h"
 #include "src/js/player_externs+Internal.h"
 #include "src/js/stats+Internal.h"
@@ -32,8 +34,10 @@
 #include "src/media/ios/ios_video_renderer.h"
 #include "src/public/ShakaPlayer+Internal.h"
 #include "src/public/error_objc+Internal.h"
+#include "src/public/net_objc+Internal.h"
 #include "src/util/macros.h"
 #include "src/util/objc_utils.h"
+#include "src/util/utils.h"
 
 
 namespace {
@@ -114,6 +118,78 @@ class NativeClient final : public shaka::Player::Client, public shaka::media::Me
   __weak ShakaPlayer *_shakaPlayer;
 };
 
+class NetworkFilter final : public shaka::NetworkFilters {
+ public:
+  NetworkFilter(ShakaPlayer *player, id<ShakaPlayerNetworkFilter> filter)
+      : player_(player), filter_(filter) {}
+
+  bool ShouldRemove(id<ShakaPlayerNetworkFilter> filter) {
+    return !filter_ || filter_ == filter;
+  }
+
+  std::future<shaka::optional<shaka::Error>> OnRequestFilter(shaka::RequestType type,
+                                                             shaka::Request *request) override {
+    // Create strong references here so if this object is destroyed, these callbacks still work.
+    id<ShakaPlayerNetworkFilter> filter = filter_;
+    ShakaPlayer *player = player_;
+    if (filter && [filter respondsToSelector:@selector(onPlayer:
+                                                 networkRequest:ofType:withBlock:)]) {
+      auto promise = std::make_shared<promise_type>();
+      dispatch_async(dispatch_get_main_queue(), ^{
+        auto *objc = [[ShakaPlayerRequest alloc] initWithRequest:*request];
+        [filter onPlayer:player
+            networkRequest:objc
+                    ofType:static_cast<ShakaPlayerRequestType>(type)
+                 withBlock:MakeBlock(promise, objc, request)];
+      });
+      return promise->get_future();
+    } else {
+      return {};
+    }
+  }
+
+  std::future<shaka::optional<shaka::Error>> OnResponseFilter(shaka::RequestType type,
+                                                              shaka::Response *response) override {
+    // Create strong references here so if this object is destroyed, these callbacks still work.
+    id<ShakaPlayerNetworkFilter> filter = filter_;
+    ShakaPlayer *player = player_;
+    if (filter && [filter respondsToSelector:@selector(onPlayer:
+                                                 networkResponse:ofType:withBlock:)]) {
+      auto promise = std::make_shared<promise_type>();
+      dispatch_async(dispatch_get_main_queue(), ^{
+        auto *objc = [[ShakaPlayerResponse alloc] initWithResponse:*response];
+        [filter onPlayer:player
+            networkResponse:objc
+                     ofType:static_cast<ShakaPlayerRequestType>(type)
+                  withBlock:MakeBlock(promise, objc, response)];
+      });
+      return promise->get_future();
+    } else {
+      return {};
+    }
+  }
+
+ private:
+  using promise_type = std::promise<shaka::optional<shaka::Error>>;
+
+  template <typename Objc, typename Cpp>
+  static ShakaPlayerAsyncBlock MakeBlock(std::shared_ptr<promise_type> promise, Objc objc,
+                                         Cpp cpp) {
+    return ^(ShakaPlayerError *error) {
+      if (error) {
+        promise->set_value(
+            shaka::Error(error.severity, error.category, error.code, error.message.UTF8String));
+      } else {
+        [objc finalize:cpp];  // Propagate changes to the C++ object.
+        promise->set_value({});
+      }
+    };
+  }
+
+  __weak ShakaPlayer *player_;
+  __weak id<ShakaPlayerNetworkFilter> filter_;
+};
+
 }  // namespace
 
 std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
@@ -131,6 +207,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 
 @interface ShakaPlayer () {
   NativeClient _client;
+  std::list<NetworkFilter> _filters;
   std::shared_ptr<shaka::JsManager> _engine;
 
   shaka::media::ios::IosVideoRenderer _video_renderer;
@@ -515,6 +592,26 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
                                        mime.UTF8String, codec.UTF8String, label.UTF8String);
   if (results.has_error()) {
     _client.OnError(results.error());
+  }
+}
+
+- (void)addNetworkFilter:(id<ShakaPlayerNetworkFilter>)filter {
+  @synchronized(self) {
+    _filters.emplace_back(self, filter);
+    _player->AddNetworkFilters(&_filters.back());
+  }
+}
+
+- (void)removeNetworkFilter:(id<ShakaPlayerNetworkFilter>)filter {
+  @synchronized(self) {
+    for (auto it = _filters.begin(); it != _filters.end();) {
+      if (it->ShouldRemove(filter)) {
+        _player->RemoveNetworkFilters(&*it);
+        it = _filters.erase(it);
+      } else {
+        it++;
+      }
+    }
   }
 }
 

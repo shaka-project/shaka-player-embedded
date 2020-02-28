@@ -729,15 +729,17 @@ source_set("internal_sources") {
   }
   if (is_ios) {
     sources += [
-      "shaka/src/public/ShakaPlayerStorage.mm",
-      "shaka/src/public/ShakaPlayer.mm",
-      "shaka/src/public/ShakaPlayerView.mm",
       "shaka/src/media/ios/av_media_player.h",
       "shaka/src/media/ios/av_media_player.mm",
       "shaka/src/media/ios/av_media_track.h",
       "shaka/src/media/ios/av_media_track.mm",
       "shaka/src/media/ios/av_text_track.h",
       "shaka/src/media/ios/av_text_track.mm",
+      "shaka/src/public/net_objc.mm",
+      "shaka/src/public/net_objc+Internal.h",
+      "shaka/src/public/ShakaPlayer.mm",
+      "shaka/src/public/ShakaPlayerStorage.mm",
+      "shaka/src/public/ShakaPlayerView.mm",
     ]
   }
   if (decoder == "ffmpeg") {
@@ -967,6 +969,7 @@ if (is_ios) {
       "$root_gen_dir/shaka/track_objc.h",
       "$root_gen_dir/shaka/stats_objc.h",
       "shaka/include/shaka/error_objc.h",
+      "shaka/include/shaka/net_objc.h",
       "shaka/include/shaka/ShakaPlayerStorage.h",
       "shaka/include/shaka/ShakaPlayer.h",
       "shaka/include/shaka/ShakaPlayerView.h",

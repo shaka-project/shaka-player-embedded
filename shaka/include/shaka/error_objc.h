@@ -38,6 +38,13 @@ FOUNDATION_EXPORT const NSErrorUserInfoKey ShakaPlayerErrorSeverityKey;
 SHAKA_EXPORT
 @interface ShakaPlayerError : NSError
 
+- (instancetype) initWithMessage:(NSString *)message;
+
+- (instancetype) initWithMessage:(NSString *)message
+                        severity:(NSInteger)severity
+                        category:(NSInteger)category
+                            code:(NSInteger)code;
+
 /** The error message. */
 @property(atomic) NSString *message;
 
@@ -46,12 +53,6 @@ SHAKA_EXPORT
  * shaka.util.Error.Category.
  */
 @property(atomic) NSInteger category;
-
-/**
- * The specific code of the error, if this is a Shaka error.  This is the same
- * as shaka.util.Error.Code.
- */
-@property(atomic) NSInteger code;
 
 /**
  * The Shaka severity of the error, if this is a Shaka error.  This is the

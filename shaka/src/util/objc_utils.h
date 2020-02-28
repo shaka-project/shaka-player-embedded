@@ -46,6 +46,10 @@ struct ObjcConverter<std::string> {
                                     length:value.size()
                                   encoding:NSUTF8StringEncoding];
   }
+
+  static std::string FromObjc(NSString *value) {
+    return [value UTF8String];
+  }
 };
 
 template <>
@@ -87,11 +91,19 @@ template <typename T>
 struct ObjcConverter<std::vector<T>> {
   using dest_type = decltype(ObjcConverter<T>::ToObjc(std::declval<T>()));
 
-  static NSArray<dest_type> *ToObjc(const std::vector<T>& value) {
+  static NSMutableArray<dest_type> *ToObjc(const std::vector<T>& value) {
     NSMutableArray<dest_type>* ret =
         [[NSMutableArray<dest_type> alloc] initWithCapacity:value.size()];
     for (size_t i = 0; i < value.size(); i++)
       [ret addObject:ObjcConverter<T>::ToObjc(value[i])];
+    return ret;
+  }
+
+  static std::vector<T> FromObjc(NSArray<dest_type> *value) {
+    std::vector<T> ret;
+    ret.reserve([value count]);
+    for (size_t i = 0; i < [value count]; i++)
+      ret.emplace_back(ObjcConverter<T>::FromObjc(value[i]));
     return ret;
   }
 };
@@ -100,7 +112,7 @@ template <typename T>
 struct ObjcConverter<std::unordered_map<std::string, T>> {
   using dest_type = decltype(ObjcConverter<T>::ToObjc(std::declval<T>()));
 
-  static NSDictionary<NSString *, dest_type> *ToObjc(
+  static NSMutableDictionary<NSString *, dest_type> *ToObjc(
       const std::unordered_map<std::string, T> &map) {
     std::vector<id> keys;
     keys.reserve(map.size());
@@ -112,9 +124,20 @@ struct ObjcConverter<std::unordered_map<std::string, T>> {
       values.emplace_back(ObjcConverter<T>::ToObjc(pair.second));
     }
 
-    return [NSDictionary dictionaryWithObjects:values.data()
-                                       forKeys:keys.data()
-                                         count:map.size()];
+    return [NSMutableDictionary dictionaryWithObjects:values.data()
+                                              forKeys:keys.data()
+                                                count:map.size()];
+  }
+
+  static std::unordered_map<std::string, T> FromObjc(
+      NSDictionary<NSString *, dest_type> *value) {
+    std::unordered_map<std::string, T> ret;
+    ret.reserve([value count]);
+    for (NSString *key in value) {
+      ret.emplace(ObjcConverter<std::string>::FromObjc(key),
+                  ObjcConverter<T>::FromObjc(value[key]));
+    }
+    return ret;
   }
 };
 

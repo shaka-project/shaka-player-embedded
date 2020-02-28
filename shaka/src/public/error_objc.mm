@@ -21,34 +21,42 @@ const NSErrorDomain ShakaPlayerErrorDomain = @"ShakaPlayerErrorDomain";
 const NSErrorUserInfoKey ShakaPlayerErrorCategoryKey = @"ShakaPlayerErrorCategoryKey";
 const NSErrorUserInfoKey ShakaPlayerErrorSeverityKey = @"ShakaPlayerErrorSeverityKey";
 
-@interface ShakaPlayerError () {
-}
-
-@end
-
 @implementation ShakaPlayerError
 
 @synthesize message;
 @synthesize category;
-@synthesize code;
 @synthesize severity;
 
-- (instancetype)initWithError:(const shaka::Error &)error {
-  NSString *message = shaka::util::ObjcConverter<std::string>::ToObjc(error.message);
-  message = message ? message
-                    : @"";  // To avoid crash while creating userInfo if C string conversion fails
+- (instancetype)initWithMessage:(NSString *)message {
+  return [self initWithMessage:message severity:0 category:0 code:0];
+}
+
+- (instancetype)initWithMessage:(NSString *)message
+                       severity:(NSInteger)severity
+                       category:(NSInteger)category
+                           code:(NSInteger)code {
   if ((self = [super initWithDomain:ShakaPlayerErrorDomain
-                               code:error.code
+                               code:code
                            userInfo:@{
-                             ShakaPlayerErrorCategoryKey: @(error.category),
-                             ShakaPlayerErrorSeverityKey: @(error.severity),
+                             ShakaPlayerErrorCategoryKey: @(category),
+                             ShakaPlayerErrorSeverityKey: @(severity),
                              NSLocalizedDescriptionKey: message
                            }])) {
     self.message = message;
-    self.category = error.category;
-    self.severity = error.severity;
+    self.category = category;
+    self.severity = severity;
   }
   return self;
+}
+
+- (instancetype)initWithError:(const shaka::Error &)error {
+  NSString *message = shaka::util::ObjcConverter<std::string>::ToObjc(error.message);
+  // To avoid crash while creating userInfo if C string conversion fails
+  message = message ? message : @"";
+  return [self initWithMessage:message
+                      severity:error.severity
+                      category:error.category
+                          code:error.code];
 }
 
 @end
