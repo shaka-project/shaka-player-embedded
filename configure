@@ -743,11 +743,12 @@ def _ParseArgs(args):
   parser = _CreateArgParser()
   parsed_args = parser.parse_args(args)
   is_ios = parsed_args.target_os == 'ios'
+  is_host_mac = sys.platform == 'darwin'
 
   if (parsed_args.v8_optimized_debug is not None and
       parsed_args.js_engine != 'v8'):
     parser.error('--v8-debug is only valid with --v8.')
-  if is_ios and platform.uname()[0] != 'Darwin':
+  if is_ios and not is_host_mac:
     parser.error('Can only build for iOS on Mac.')
   if parsed_args.is_ubsan and parsed_args.is_debug:
     parser.error('Can only use --ubsan with --release.')
@@ -782,7 +783,8 @@ def _ParseArgs(args):
                     'it will not recompile if you change the blacklists.')
 
   if parsed_args.js_engine is None:
-    parsed_args.js_engine = 'jsc' if is_ios else 'v8'
+    # If we are building for Mac or iOS use JSC.
+    parsed_args.js_engine = 'jsc' if is_host_mac else 'v8'
 
   if parsed_args.sdl_audio is None:
     parsed_args.sdl_audio = True

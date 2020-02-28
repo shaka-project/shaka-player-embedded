@@ -64,7 +64,7 @@ declare_args() {
 eme_implementations += [ "shaka/src/eme/clearkey.json" ]
 
 if (js_engine == "auto") {
-  if (is_ios) {
+  if (is_ios || is_mac) {
     js_engine = "jsc"
   } else {
     js_engine = "v8"
@@ -863,7 +863,7 @@ source_set("internal_sources") {
   configs += [ ":internal_config" ]
 }
 
-if (is_mac || is_ios) {
+if (is_ios) {
   bundle_data("scripts_bundle") {
     visibility = [ ":*" ]
     if (is_debug) {
