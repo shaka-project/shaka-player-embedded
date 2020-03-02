@@ -192,6 +192,16 @@ class NetworkFilter final : public shaka::NetworkFilters {
 
 }  // namespace
 
+NSString *ShakaPlayerLicenseServerConfig(const NSString *key_system) {
+  const std::string ret = shaka::LicenseServerConfig(key_system.UTF8String);
+  return shaka::util::ObjcConverter<std::string>::ToObjc(ret);
+}
+
+NSString *ShakaPlayerAdvancedDrmConfig(const NSString *key_system, const NSString *config) {
+  const std::string ret = shaka::AdvancedDrmConfig(key_system.UTF8String, config.UTF8String);
+  return shaka::util::ObjcConverter<std::string>::ToObjc(ret);
+}
+
 std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   std::shared_ptr<shaka::JsManager> ret = gJsEngine.lock();
   if (!ret) {

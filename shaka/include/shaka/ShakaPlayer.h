@@ -26,6 +26,11 @@
 #include "stats_objc.h"
 #include "track_objc.h"
 
+/**
+ * @ingroup player
+ * @{
+ */
+
 @class ShakaPlayer;
 
 typedef void (^ShakaPlayerAsyncBlock)(ShakaPlayerError * _Nullable);
@@ -45,8 +50,30 @@ typedef NS_ENUM(NSInteger, ShakaPlayerLogLevel) {
 NS_ASSUME_NONNULL_BEGIN
 
 /**
+ * This creates a configuration key that sets the license server URL for the
+ * given key system.
+ *
+ * \code{.mm}
+ * [player configure:ShakaPlayerLicenseServerConfig(@"com.widevine.alpha")
+ *        withString:@"https://example.com/server"];
+ * \endcode
+ */
+NSString *ShakaPlayerLicenseServerConfig(const NSString *key_system);
+
+/**
+ * This creates a configuration key that sets advanced DRM configuration for the
+ * given key system.
+ *
+ * \code{.mm}
+ * [player configure:ShakaPlayerAdvancedDrmConfig(@"com.widevine.alpha", @"videoRobustness")
+ *        withString:@"SW_SECURE_DECODE"];
+ * \endcode
+ */
+NSString *ShakaPlayerAdvancedDrmConfig(const NSString *key_system, const NSString *config);
+
+
+/**
  * Defines an interface for Player events.
- * @ingroup player
  */
 SHAKA_EXPORT
 @protocol ShakaPlayerClient <NSObject>
@@ -112,7 +139,6 @@ SHAKA_EXPORT
 
 /**
  * Defines an interface for network filters.
- * @ingroup player
  */
 SHAKA_EXPORT
 @protocol ShakaPlayerNetworkFilter <NSObject>
@@ -152,8 +178,6 @@ SHAKA_EXPORT
  * Handles loading and playback of media content.  The is the control aspect of playback.  Use
  * a ShakaPlayerView to display the video frames.  This will still load and play content without
  * an active view.  This will play audio without a view.
- *
- * @ingroup player
  */
 SHAKA_EXPORT
 @interface ShakaPlayer : NSObject
@@ -440,6 +464,8 @@ withStartTime:(double)startTime
 - (void)removeNetworkFilter:(id<ShakaPlayerNetworkFilter>)filter;
 
 @end
+
+/** @} */
 
 NS_ASSUME_NONNULL_END
 #endif  // SHAKA_EMBEDDED_SHAKA_PLAYER_H_
