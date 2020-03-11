@@ -310,6 +310,16 @@ withStartTime:(double)startTime
 - (void)configure:(const NSString *)namePath withString:(const NSString *)value;
 
 /**
+ * Applies a configuration.
+ *
+ * @param namePath The path of the parameter to configure.
+ *   I.e. @"manifest.dash.defaultPresentationDelay" corresponds to
+ *   {manifest: {dash: {defaultPresentationDelay: *your value*}}}
+ * @param value The value you wish to assign.
+ */
+- (void)configure:(const NSString *)namePath withData:(NSData *)value;
+
+/**
  * Returns a configuration to the default value.
  *
  * @param namePath The path of the parameter to configure.

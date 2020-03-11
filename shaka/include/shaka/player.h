@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "async_results.h"
 #include "error.h"
@@ -378,6 +379,18 @@ class SHAKA_EXPORT Player final {
 
   /** Stops the given object from receiving calls for network requests. */
   void RemoveNetworkFilters(NetworkFilters* filters);
+
+  //@{
+  /**
+   * Configures the player with the given data buffer.
+   */
+  AsyncResults<bool> Configure(const std::string& name_path,
+                               const std::vector<uint8_t>& data) {
+    return Configure(name_path, data.data(), data.size());
+  }
+  AsyncResults<bool> Configure(const std::string& name_path,
+                               const uint8_t* data, size_t data_size);
+  //@}
 
  private:
   friend class Storage;

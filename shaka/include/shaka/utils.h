@@ -88,6 +88,21 @@ SHAKA_EXPORT ShakaRect FitVideoToWindow(int video_width, int video_height,
 
 
 /**
+ * Escapes the given key-system name so it can appear in a config name path.
+ * @param key_system The key system name (e.g. <code>com.widevine.alpha</code>).
+ * @return A name path usable as part of Player::Configure.
+ */
+inline std::string EscapeKeySystem(const std::string& key_system) {
+  std::string ret = key_system;
+  std::string::size_type pos = 0;
+  while ((pos = ret.find('.', pos)) != std::string::npos) {
+    ret.insert(pos, "\\");
+    pos += 2;
+  }
+  return ret;
+}
+
+/**
  * This creates a configuration key that sets the license server URL for the
  * given key system.
  *
@@ -97,13 +112,20 @@ SHAKA_EXPORT ShakaRect FitVideoToWindow(int video_width, int video_height,
  * \endcode
  */
 inline std::string LicenseServerConfig(const std::string& key_system) {
-  std::string ret = key_system;
-  std::string::size_type pos = 0;
-  while ((pos = ret.find('.', pos)) != std::string::npos) {
-    ret.insert(pos, "\\");
-    pos += 2;
-  }
-  return "drm.servers." + ret;
+  return "drm.servers." + EscapeKeySystem(key_system);
+}
+
+/**
+ * This creates a configuration key for advanced DRM configuration.
+ *
+ * \code{.cpp}
+ * player.Configure(AdvancedDrmConfig("com.widevine.alpha", "videoRobustness"),
+ *                  "SW_SECURE_DECODE");
+ * \endcode
+ */
+inline std::string AdvancedDrmConfig(const std::string& key_system,
+                                     const std::string& property) {
+  return "drm.advanced." + EscapeKeySystem(key_system) + "." + property;
 }
 
 /** @} */

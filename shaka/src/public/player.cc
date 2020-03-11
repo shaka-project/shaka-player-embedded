@@ -28,6 +28,7 @@
 #include "src/js/player_externs.h"
 #include "src/js/stats.h"
 #include "src/js/track.h"
+#include "src/mapping/byte_buffer.h"
 #include "src/mapping/convert_js.h"
 #include "src/mapping/js_engine.h"
 #include "src/mapping/js_utils.h"
@@ -531,6 +532,12 @@ void Player::AddNetworkFilters(NetworkFilters* filters) {
 
 void Player::RemoveNetworkFilters(NetworkFilters* filters) {
   impl_->RemoveNetworkFilters(filters);
+}
+
+AsyncResults<bool> Player::Configure(const std::string& name_path,
+                                     const uint8_t* data, size_t data_size) {
+  return impl_->CallMethod<bool>("configure", name_path,
+                                 ByteBuffer(data, data_size));
 }
 
 void* Player::GetRawJsValue() {

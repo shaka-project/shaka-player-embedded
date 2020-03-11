@@ -464,6 +464,11 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   _player->Configure(namePath.UTF8String, value.UTF8String);
 }
 
+- (void)configure:(const NSString *)namePath withData:(NSData *)value {
+  _player->Configure(namePath.UTF8String, reinterpret_cast<const uint8_t *>([value bytes]),
+                     [value length]);
+}
+
 - (void)configureWithDefault:(const NSString *)namePath {
   _player->Configure(namePath.UTF8String, shaka::DefaultValue);
 }
