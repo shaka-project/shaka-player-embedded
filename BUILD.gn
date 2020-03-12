@@ -922,27 +922,9 @@ if (is_ios) {
     }
   }
 
-  # This needs to be its own target since ios_framework_bundle header field
-  # doesn't work well with generated files.
-  bundle_data("cpp_api_headers") {
+  bundle_data("cpp_media_api_headers") {
     visibility = [ ":*" ]
-    public_deps = [
-      ":gen_config_h",
-      ":gen_version_h",
-      ":gen_exposed_idl",
-    ]
     sources = [
-      # C++ headers
-      "$root_gen_dir/shaka/manifest.h",
-      "$root_gen_dir/shaka/offline_externs.h",
-      "$root_gen_dir/shaka/player_externs.h",
-      "$root_gen_dir/shaka/track.h",
-      "$root_gen_dir/shaka/stats.h",
-      "shaka/include/shaka/async_results.h",
-      "shaka/include/shaka/config_names.h",
-      "shaka/include/shaka/error.h",
-      "shaka/include/shaka/js_manager.h",
-      "shaka/include/shaka/macros.h",
       "shaka/include/shaka/media/decoder.h",
       "shaka/include/shaka/media/demuxer.h",
       "shaka/include/shaka/media/frames.h",
@@ -955,6 +937,49 @@ if (is_ios) {
       "shaka/include/shaka/media/streams.h",
       "shaka/include/shaka/media/text_track.h",
       "shaka/include/shaka/media/vtt_cue.h",
+    ]
+    if (sdl_audio) {
+      sources += ["shaka/include/shaka/media/sdl_audio_renderer.h"]
+    }
+    if (sdl_video) {
+      sources += ["shaka/include/shaka/media/sdl_video_renderer.h"]
+    }
+    if (has_media_player) {
+      sources += ["shaka/include/shaka/media/default_media_player.h"]
+    }
+
+    if (is_mac) {
+      outputs = [
+        "{{bundle_root_dir}}/Versions/A/Headers/media/{{source_file_part}}",
+      ]
+    } else {
+      outputs = [ "{{bundle_root_dir}}/Headers/media/{{source_file_part}}" ]
+    }
+  }
+
+  # This needs to be its own target since ios_framework_bundle header field
+  # doesn't work well with generated files.
+  bundle_data("cpp_api_headers") {
+    visibility = [ ":*" ]
+    public_deps = [
+      ":gen_config_h",
+      ":gen_version_h",
+      ":gen_exposed_idl",
+    ]
+    sources = [
+      # NOTE: You can't add sub-folders to this.  See eme/media targets above.
+
+      # C++ headers
+      "$root_gen_dir/shaka/manifest.h",
+      "$root_gen_dir/shaka/offline_externs.h",
+      "$root_gen_dir/shaka/player_externs.h",
+      "$root_gen_dir/shaka/track.h",
+      "$root_gen_dir/shaka/stats.h",
+      "shaka/include/shaka/async_results.h",
+      "shaka/include/shaka/config_names.h",
+      "shaka/include/shaka/error.h",
+      "shaka/include/shaka/js_manager.h",
+      "shaka/include/shaka/macros.h",
       "shaka/include/shaka/net.h",
       "shaka/include/shaka/optional.h",
       "shaka/include/shaka/player.h",
@@ -976,20 +1001,9 @@ if (is_ios) {
     ]
     sources += get_target_outputs(":gen_config_h")
     sources += get_target_outputs(":gen_version_h")
-    if (sdl_audio) {
-      sources += [
-        "shaka/include/shaka/media/sdl_audio_renderer.h",
-      ]
-    }
     if (sdl_video) {
       sources += [
-        "shaka/include/shaka/media/sdl_video_renderer.h",
         "shaka/include/shaka/sdl_frame_drawer.h",
-      ]
-    }
-    if (has_media_player) {
-      sources += [
-        "shaka/include/shaka/media/default_media_player.h",
       ]
     }
 
@@ -1028,6 +1042,7 @@ if (is_ios) {
     deps = [
       ":internal_sources",
       ":cpp_eme_api_headers",
+      ":cpp_media_api_headers",
       ":cpp_api_headers",
     ]
 
