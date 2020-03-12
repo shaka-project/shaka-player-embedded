@@ -28,12 +28,17 @@ std::string GetId() {
   return "AvMediaTrack " + std::to_string(id_);
 }
 
+std::string MakeStr(NSString *str) {
+  return str ? [str UTF8String] : "";
+}
+
+
 }  // namespace
 
 AvMediaTrack::AvMediaTrack(AVPlayerItem *item, AVMediaSelectionGroup *group,
                            AVMediaSelectionOption *option)
-    : MediaTrack(MediaTrackKind::Unknown, [option.displayName UTF8String],
-                 [option.extendedLanguageTag UTF8String], GetId()),
+    : MediaTrack(MediaTrackKind::Unknown, MakeStr(option.displayName),
+                 MakeStr(option.extendedLanguageTag), GetId()),
       item_(item),
       group_(group),
       option_(option) {}
