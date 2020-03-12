@@ -31,9 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 SHAKA_EXPORT
 @interface ShakaPlayerView : UIView
 
-- (id)init;
-
-- (id)initWithPlayer:(nullable ShakaPlayer *)player;
+// No need to override "init" since UIView's will call "initWithFrame:".
+- (instancetype)initWithFrame:(CGRect)frame;
+- (instancetype)initWithCoder:(NSCoder *)coder;
+- (instancetype)initWithPlayer:(nullable ShakaPlayer *)player;
 
 /** Gets/sets the ShakaPlayer instance to draw. */
 @property(atomic, nullable) ShakaPlayer *player;

@@ -37,42 +37,55 @@
 
 // MARK: setup
 
-- (id)init {
-  return [self initWithPlayer:nil];
+- (instancetype)initWithFrame:(CGRect)frame {
+  if ((self = [super initWithFrame:frame])) {
+    [self setup];
+  }
+  return self;
 }
 
-- (id)initWithPlayer:(ShakaPlayer *)player {
+- (instancetype)initWithCoder:(NSCoder *)coder {
+  if ((self = [super initWithCoder:coder])) {
+    [self setup];
+  }
+  return self;
+}
+
+- (instancetype)initWithPlayer:(ShakaPlayer *)player {
   if ((self = [super init])) {
-    // Start up the render loop.
-    SEL renderLoopSelector = @selector(renderLoop:);
-    _renderLoopTimer = [NSTimer scheduledTimerWithTimeInterval:ShakaRenderLoopDelay
-                                                        target:self
-                                                      selector:renderLoopSelector
-                                                      userInfo:nullptr
-                                                       repeats:YES];
-    _textLoopTimer = [NSTimer scheduledTimerWithTimeInterval:0.25
-                                                      target:self
-                                                    selector:@selector(textLoop:)
-                                                    userInfo:nullptr
-                                                     repeats:YES];
-
-    // Set up the image layer.
-    _imageLayer = [CALayer layer];
-    [self.layer addSublayer:_imageLayer];
-
-    // Set up the text layer.
-    _textLayer = [CALayer layer];
-    [self.layer addSublayer:_textLayer];
-
-    // Disable default animations.
-    _imageLayer.actions = @{@"position": [NSNull null], @"bounds": [NSNull null]};
-
-    _gravity = shaka::media::VideoFillMode::MaintainRatio;
-    _cues = [[NSMutableDictionary alloc] init];
-
+    [self setup];
     [self setPlayer:player];
   }
   return self;
+}
+
+- (void)setup {
+  // Start up the render loop.
+  SEL renderLoopSelector = @selector(renderLoop:);
+  _renderLoopTimer = [NSTimer scheduledTimerWithTimeInterval:ShakaRenderLoopDelay
+                                                      target:self
+                                                    selector:renderLoopSelector
+                                                    userInfo:nullptr
+                                                     repeats:YES];
+  _textLoopTimer = [NSTimer scheduledTimerWithTimeInterval:0.25
+                                                    target:self
+                                                  selector:@selector(textLoop:)
+                                                  userInfo:nullptr
+                                                   repeats:YES];
+
+  // Set up the image layer.
+  _imageLayer = [CALayer layer];
+  [self.layer addSublayer:_imageLayer];
+
+  // Set up the text layer.
+  _textLayer = [CALayer layer];
+  [self.layer addSublayer:_textLayer];
+
+  // Disable default animations.
+  _imageLayer.actions = @{@"position": [NSNull null], @"bounds": [NSNull null]};
+
+  _gravity = shaka::media::VideoFillMode::MaintainRatio;
+  _cues = [[NSMutableDictionary alloc] init];
 }
 
 - (ShakaPlayer *)player {
