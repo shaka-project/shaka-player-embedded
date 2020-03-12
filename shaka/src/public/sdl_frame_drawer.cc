@@ -14,6 +14,8 @@
 
 #include "shaka/sdl_frame_drawer.h"
 
+#include <SDL2/SDL.h>
+
 #include <list>
 #include <unordered_set>
 

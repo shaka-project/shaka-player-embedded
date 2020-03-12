@@ -14,6 +14,8 @@
 
 #include "shaka/media/sdl_video_renderer.h"
 
+#include <SDL2/SDL.h>
+
 #include <atomic>
 
 #include "shaka/optional.h"
@@ -47,7 +49,7 @@ class SdlManualVideoRenderer::Impl : public VideoRendererCommon {
     return renderer_;
   }
 
-  double Render(SDL_Rect* region) {
+  double Render(const SDL_Rect* region) {
     std::shared_ptr<DecodedFrame> frame;
     const double delay = GetCurrentFrame(&frame);
 
@@ -88,9 +90,9 @@ class SdlManualVideoRenderer::Impl : public VideoRendererCommon {
 
 class SdlThreadVideoRenderer::Impl {
  public:
-  Impl(SdlThreadVideoRenderer* renderer, optional<SDL_Rect> region)
+  Impl(SdlThreadVideoRenderer* renderer, const SDL_Rect* region)
       : renderer_(renderer),
-        region_(region),
+        region_(region ? optional<SDL_Rect>(*region) : nullopt),
         shutdown_(false),
         thread_("SdlThreadVideo", std::bind(&Impl::ThreadMain, this)) {}
   ~Impl() {
@@ -103,9 +105,8 @@ class SdlThreadVideoRenderer::Impl {
  private:
   void ThreadMain() {
     while (!shutdown_.load(std::memory_order_relaxed)) {
-      SDL_Rect region = region_.value_or(SDL_Rect());
       const double delay =
-          renderer_->Render(region_.has_value() ? &region : nullptr);
+          renderer_->Render(region_.has_value() ? &region_.value() : nullptr);
       SDL_RenderPresent(renderer_->GetRenderer());
 
       util::Clock::Instance.SleepSeconds(delay);
@@ -113,7 +114,7 @@ class SdlThreadVideoRenderer::Impl {
   }
 
   SdlThreadVideoRenderer* renderer_;
-  optional<SDL_Rect> region_;
+  const optional<SDL_Rect> region_;
   std::atomic<bool> shutdown_;
   Thread thread_;
 };
@@ -130,7 +131,7 @@ SDL_Renderer* SdlManualVideoRenderer::GetRenderer() const {
   return impl_->GetRenderer();
 }
 
-double SdlManualVideoRenderer::Render(SDL_Rect* region) {
+double SdlManualVideoRenderer::Render(const SDL_Rect* region) {
   return impl_->Render(region);
 }
 
@@ -156,9 +157,9 @@ bool SdlManualVideoRenderer::SetVideoFillMode(VideoFillMode mode) {
 
 
 SdlThreadVideoRenderer::SdlThreadVideoRenderer(SDL_Renderer* renderer)
-    : SdlManualVideoRenderer(renderer), impl_(new Impl(this, nullopt)) {}
+    : SdlManualVideoRenderer(renderer), impl_(new Impl(this, nullptr)) {}
 SdlThreadVideoRenderer::SdlThreadVideoRenderer(SDL_Renderer* renderer,
-                                               SDL_Rect region)
+                                               const SDL_Rect* region)
     : SdlManualVideoRenderer(renderer), impl_(new Impl(this, region)) {}
 SdlThreadVideoRenderer::~SdlThreadVideoRenderer() {}
 

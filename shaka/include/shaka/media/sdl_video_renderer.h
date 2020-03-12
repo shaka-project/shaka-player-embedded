@@ -18,10 +18,11 @@
 #include <memory>
 #include <string>
 
-#include <SDL2/SDL.h>
-
 #include "../macros.h"
 #include "renderer.h"
+
+struct SDL_Rect;
+struct SDL_Renderer;
 
 namespace shaka {
 namespace media {
@@ -67,7 +68,7 @@ class SHAKA_EXPORT SdlManualVideoRenderer : public VideoRenderer {
    * @return The suggested delay, in seconds, before the next call to Render;
    *   this uses the framerate and current time to suggest the next delay.
    */
-  double Render(SDL_Rect* region = nullptr);
+  double Render(const SDL_Rect* region = nullptr);
 
 
   void OnSeek() override;
@@ -106,10 +107,11 @@ class SHAKA_EXPORT SdlThreadVideoRenderer final
    * Creates a new renderer that draws video frames using the given renderer.
    * This renders to the given sub-region of the window.
    *
-   * @param renderer The renderer used to draw frames.
+   * @param renderer The renderer used to draw frames, or nullptr to use the
+   *   whole window.
    * @param region The sub-region to draw to.
    */
-  SdlThreadVideoRenderer(SDL_Renderer* renderer, SDL_Rect region);
+  SdlThreadVideoRenderer(SDL_Renderer* renderer, const SDL_Rect* region);
   ~SdlThreadVideoRenderer() override;
 
  private:

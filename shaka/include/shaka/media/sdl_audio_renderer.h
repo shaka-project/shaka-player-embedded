@@ -18,8 +18,6 @@
 #include <memory>
 #include <string>
 
-#include <SDL2/SDL.h>
-
 #include "../macros.h"
 #include "renderer.h"
 

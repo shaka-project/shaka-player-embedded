@@ -14,6 +14,8 @@
 
 #include "shaka/media/sdl_audio_renderer.h"
 
+#include <SDL2/SDL.h>
+
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavutil/opt.h>

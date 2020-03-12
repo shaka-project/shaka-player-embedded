@@ -15,12 +15,13 @@
 #ifndef SHAKA_EMBEDDED_SDL_FRAME_DRAWER_H_
 #define SHAKA_EMBEDDED_SDL_FRAME_DRAWER_H_
 
-#include <SDL2/SDL.h>
-
 #include <memory>
 
 #include "media/frames.h"
 #include "macros.h"
+
+struct SDL_Renderer;
+struct SDL_Texture;
 
 namespace shaka {
 
