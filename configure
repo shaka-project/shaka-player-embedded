@@ -734,6 +734,9 @@ def _CreateArgParser():
   extra_parser.add_argument(
       '--no-makefile', dest='makefile_', action='store_false',
       help="Don't create a Makefile in the working directory.")
+  extra_parser.add_argument(
+      '--code-sign', dest='ios_enable_code_signing', action='store_true',
+      default=False, help='Code sign the resulting framework.')
 
   return parser
 
