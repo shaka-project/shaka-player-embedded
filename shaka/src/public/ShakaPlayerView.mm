@@ -59,19 +59,26 @@
   return self;
 }
 
+- (void)dealloc {
+  [_renderLoopTimer invalidate];
+  [_textLoopTimer invalidate];
+}
+
 - (void)setup {
-  // Start up the render loop.
-  SEL renderLoopSelector = @selector(renderLoop:);
+  // Start up the render loop.  Use a block with a capture to a weak variable to ensure that the
+  // view will be destroyed once there are no other references.
+  __weak ShakaPlayerView *weakSelf = self;
   _renderLoopTimer = [NSTimer scheduledTimerWithTimeInterval:ShakaRenderLoopDelay
-                                                      target:self
-                                                    selector:renderLoopSelector
-                                                    userInfo:nullptr
-                                                     repeats:YES];
+                                                     repeats:YES
+                                                       block:^(NSTimer *timer) {
+                                                         [weakSelf renderLoop];
+                                                       }];
   _textLoopTimer = [NSTimer scheduledTimerWithTimeInterval:0.25
-                                                    target:self
-                                                  selector:@selector(textLoop:)
-                                                  userInfo:nullptr
-                                                   repeats:YES];
+                                                   repeats:YES
+                                                     block:^(NSTimer *timer) {
+                                                       [weakSelf textLoop];
+                                                     }];
+
 
   // Set up the image layer.
   _imageLayer = [CALayer layer];
@@ -123,7 +130,7 @@
 
 // MARK: rendering
 
-- (void)renderLoop:(NSTimer *)timer {
+- (void)renderLoop {
   if (!_player) {
     self->_imageLayer.contents = nil;
     return;
@@ -157,7 +164,7 @@
     _avPlayerLayer.frame = self.bounds;
 }
 
-- (void)textLoop:(NSTimer *)timer {
+- (void)textLoop {
   if (_player && _player.closedCaptions) {
     BOOL sizeChanged = _textLayer.frame.size.width != _imageLayer.frame.size.width ||
                        _textLayer.frame.size.height != _imageLayer.frame.size.height;
