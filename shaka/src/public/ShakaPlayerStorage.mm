@@ -16,6 +16,7 @@
 
 #include <unordered_map>
 
+#include "shaka/error_objc.h"
 #include "shaka/storage.h"
 #include "src/js/offline_externs+Internal.h"
 #include "src/js/offline_externs.h"
@@ -27,6 +28,10 @@ namespace {
 class NativeClient : public shaka::Storage::Client {
  public:
   NativeClient() {}
+
+  id<ShakaPlayerStorageClient> client() const {
+    return _client;
+  }
 
   void set_client(id<ShakaPlayerStorageClient> client) {
     _client = client;
@@ -66,32 +71,26 @@ std::unordered_map<std::string, std::string> ToUnorderedMap(
 @implementation ShakaPlayerStorage
 
 - (instancetype)init {
-  self = [self initWithPlayer:nil];
-  return self;
+  return [self initWithPlayer:nil andError:nil];
 }
 
-- (instancetype)initWithClient:(id<ShakaPlayerStorageClient>)client {
-  self = [self initWithPlayer:nil andClient:client];
-  return self;
+- (instancetype)initWithError:(NSError *__autoreleasing *)error {
+  return [self initWithPlayer:nil andError:error];
 }
 
-- (instancetype)initWithPlayer:(ShakaPlayer *)player {
-  self = [self initWithPlayer:player andClient:nil];
-  return self;
-}
-
-- (instancetype)initWithPlayer:(ShakaPlayer *)player
-                     andClient:(id<ShakaPlayerStorageClient>)client {
+- (instancetype)initWithPlayer:(ShakaPlayer *)player andError:(NSError *__autoreleasing *)error {
   if (!(self = [super init]))
     return nil;
 
-  _client.set_client(client);
   _engine = ShakaGetGlobalEngine();
   _storage = new shaka::Storage(_engine.get(), player ? [player playerInstance] : nullptr);
 
   auto results = _storage->Initialize(&_client);
   if (results.has_error()) {
-    // TODO: Log/report error.
+    if (error)
+      *error = [[ShakaPlayerError alloc] initWithError:results.error()];
+    else
+      LOG(ERROR) << "Error creating Storage instance: " << results.error();
     return nil;
   }
   return self;
@@ -99,6 +98,14 @@ std::unordered_map<std::string, std::string> ToUnorderedMap(
 
 - (void)dealloc {
   delete _storage;
+}
+
+- (id<ShakaPlayerStorageClient>)client {
+  return _client.client();
+}
+
+- (void)setClient:(id<ShakaPlayerStorageClient>)client {
+  _client.set_client(client);
 }
 
 - (BOOL)storeInProgress {

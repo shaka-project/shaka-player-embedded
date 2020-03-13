@@ -22,6 +22,8 @@
 #include "ShakaPlayer.h"
 
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * Defines an interface for Storage events.
  */
@@ -34,7 +36,7 @@ SHAKA_EXPORT
  * Called periodically with progress of a store or delete operation.
  */
 - (void)onStorageProgress:(double)progress
-             withContent:(ShakaStoredContent *)content;
+              withContent:(ShakaStoredContent *)content;
 
 @end
 
@@ -46,11 +48,12 @@ SHAKA_EXPORT
 SHAKA_EXPORT
 @interface ShakaPlayerStorage : NSObject
 
-- (instancetype)init;
-- (instancetype)initWithPlayer:(ShakaPlayer *) player;
-- (instancetype)initWithClient:(id<ShakaPlayerStorageClient>) client;
-- (instancetype)initWithPlayer:(ShakaPlayer *) player
-                     andClient:(id<ShakaPlayerStorageClient>) client;
+- (nullable instancetype)initWithError:(NSError * _Nullable __autoreleasing * _Nullable)error NS_SWIFT_NAME(init());
+- (nullable instancetype)initWithPlayer:(ShakaPlayer * _Nullable) player
+                               andError:(NSError * _Nullable __autoreleasing * _Nullable)error NS_SWIFT_NAME(init(player:));
+
+/** A client that receives events during storage. */
+@property(atomic, weak, nullable) id<ShakaPlayerStorageClient> client;
 
 /** Returns true if an asset is currently downloading. */
 @property(atomic, readonly) BOOL storeInProgress;
@@ -67,7 +70,8 @@ SHAKA_EXPORT
  * structure is the URI that should be given to <code>Player::Load()</code> to
  * play this piece of content offline.
  */
-- (void)listWithBlock:(void (^)(NSArray<ShakaStoredContent *> *, ShakaPlayerError *)) block;
+- (void)listWithBlock:(void (^)(NSArray<ShakaStoredContent *> *,
+                                ShakaPlayerError * _Nullable)) block;
 
 /**
  * Removes the given stored content. This will also attempt to release the
@@ -79,14 +83,15 @@ SHAKA_EXPORT
  * Removes any EME sessions that were not successfully removed before. This
  * gives whether all the sessions were successfully removed.
  */
-- (void)removeEmeSessionsWithBlock:(void (^)(BOOL, ShakaPlayerError *)) block;
+- (void)removeEmeSessionsWithBlock:(void (^)(BOOL, ShakaPlayerError * _Nullable)) block;
 
 /**
  * Stores the given manifest. If the content is encrypted, and encrypted
  * content cannot be stored on this platform, the Promise will be rejected
  * with error code 6001, REQUESTED_KEY_SYSTEM_CONFIG_UNAVAILABLE.
  */
-- (void) store:(NSString*)uri withBlock:(void (^)(ShakaStoredContent *, ShakaPlayerError *)) block;
+- (void) store:(NSString*)uri
+     withBlock:(void (^)(ShakaStoredContent *, ShakaPlayerError * _Nullable)) block;
 
 /**
  * Stores the given manifest.  This also stores the given data along side the
@@ -94,7 +99,7 @@ SHAKA_EXPORT
  */
 - (void)store:(NSString *)uri
     withAppMetadata:(NSDictionary<NSString *, NSString *> *)data
-           andBlock:(void (^)(ShakaStoredContent *, ShakaPlayerError *))block;
+           andBlock:(void (^)(ShakaStoredContent *, ShakaPlayerError * _Nullable))block;
 
 
 /**
@@ -138,4 +143,5 @@ SHAKA_EXPORT
 
 @end
 
+NS_ASSUME_NONNULL_END
 #endif  // SHAKA_EMBEDDED_SHAKA_PLAYER_STORAGE_H_

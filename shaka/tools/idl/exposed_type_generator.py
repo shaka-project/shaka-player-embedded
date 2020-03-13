@@ -67,19 +67,20 @@ def _MapObjcType(t, other_types):
   """Returns an Objective-C type name for the given IDL type."""
   if t.name == 'record':
     assert t.element_type[0].name in {'ByteString', 'DOMString', 'USVString'}
-    return 'NSDictionary<NSString*, %s>*' % _MapObjcType(
+    return 'NSDictionary<NSString *, %s> *' % _MapObjcType(
         t.element_type[1], other_types)
   elif t.name == 'sequence':
-    return 'NSArray<%s>*' % _MapObjcType(t.element_type, other_types)
+    return 'NSArray<%s> *' % _MapObjcType(t.element_type, other_types)
   elif t.name in other_types:
-    return 'Shaka%s*' % t.name
+    return 'Shaka%s *' % t.name
   else:
     type_map = {
         # IDL   ->  Objective-C
         'boolean': 'BOOL',
-        'double': 'double',
-        'DOMString': 'NSString*',
+        'double': 'NSNumber *' if t.nullable else 'double',
+        'DOMString': 'NSString *',
     }
+    assert t.name != 'boolean' or not t.nullable, 'Cannot create nullable bool'
     assert t.name in type_map, 'Type %s not found' % t.name
     return type_map[t.name]
 
@@ -332,6 +333,8 @@ def _GenerateObjcHeader(results, f, name):
   writer.Write()
   writer.Write('#include "macros.h"')
   writer.Write()
+  writer.Write('NS_ASSUME_NONNULL_BEGIN')
+  writer.Write()
   for t in results.types:
     if t.doc:
       writer.Write(_FormatDoc(t, indent=0))
@@ -342,14 +345,18 @@ def _GenerateObjcHeader(results, f, name):
     for attr in t.members:
       if attr.doc:
         writer.Write(_FormatDoc(attr, indent=0))
-      writer.Write('@property (atomic, readonly) %s %s;',
-                   _MapObjcType(attr.type, other_types), _GetObjcName(attr))
+      objc_t = _MapObjcType(attr.type, other_types)
+      writer.Write('@property (atomic, readonly%s) %s%s;',
+                   ', nullable' if attr.type.nullable else '',
+                   objc_t + ('' if objc_t.endswith('*') else ' '),
+                   _GetObjcName(attr))
       writer.Write()
 
     writer.Write('@end')
     writer.Write()
     writer.Write()
 
+  writer.Write('NS_ASSUME_NONNULL_END')
   writer.Write('#endif  // SHAKA_EMBEDDED_OBJC_%s_H_', name.upper())
 
 

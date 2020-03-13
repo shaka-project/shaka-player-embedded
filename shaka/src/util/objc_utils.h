@@ -67,16 +67,10 @@ struct ObjcConverter<double> {
 };
 
 template <>
-struct ObjcConverter<optional<bool>> {
-  static BOOL ToObjc(optional<bool> value) {
-    return value.has_value() ? *value : NO;
-  }
-};
-
-template <>
 struct ObjcConverter<optional<double>> {
-  static double ToObjc(optional<double> value) {
-    return value.has_value() ? *value : NAN;
+  static NSNumber *ToObjc(optional<double> value) {
+    return value.has_value() ? [[NSNumber alloc] initWithDouble:value.value()]
+                             : nil;
   }
 };
 
