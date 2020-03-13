@@ -197,7 +197,11 @@ class SdlAudioRenderer::Impl {
         muted_(false),
         shutdown_(false),
         need_reset_(true),
-        thread_("SdlAudio", std::bind(&Impl::ThreadMain, this)) {}
+        thread_("SdlAudio", std::bind(&Impl::ThreadMain, this)) {
+    // Use "playback" mode on iOS.  This ensures the audio remains playing when
+    // locked or muted.
+    SDL_SetHint(SDL_HINT_AUDIO_CATEGORY, "playback");
+  }
 
   ~Impl() {
     {
