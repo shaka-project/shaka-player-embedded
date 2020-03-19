@@ -42,22 +42,15 @@ config("internal_config") {
     "-Wno-deprecated-declarations",
   ]
 
-  # TODO: Remove CURL_CA_BUNDLE, store the CA bundle with the binary, and
-  # determine at runtime.
   if (is_linux) {
+    # TODO: Remove CURL_CA_BUNDLE, store the CA bundle with the binary, and
+    # determine at runtime.
     curl_ca_bundle = exec_script(
         "//third_party/curl/config/linux/find_curl_ca_bundle.py", [],
         "trim string")
     defines += ["CURL_CA_BUNDLE=\"" + curl_ca_bundle + "\""]
     include_dirs += ["config/linux"]
-  } else if (is_mac) {
-    curl_ca_bundle = exec_script(
-        "//third_party/curl/config/mac/find_curl_ca_bundle.py", [],
-        "trim string")
-    defines += ["CURL_CA_BUNDLE=\"" + curl_ca_bundle + "\""]
-    include_dirs += ["config/mac"]
-  } else if (is_ios) {
-    # TODO: Implement for iOS (probably store file in data dir).
+  } else if (is_mac || is_ios) {
     include_dirs += ["config/mac"]
   } else {
     assert(false, "Not implemented for this platform")
