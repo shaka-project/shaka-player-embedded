@@ -82,14 +82,14 @@ RefPtr<Element> Document::DocumentElement() const {
   return nullptr;
 }
 
-ExceptionOr<RefPtr<Element>> Document::QuerySelector(
-    const std::string& query) const {
+std::vector<RefPtr<Element>> Document::GetElementsByTagName(
+    const std::string& name) const {
   // This exists so Shaka Player can request an arbitrary video element as part
   // of shaka.util.Platform.
   // TODO: Remove once we upgrade Shaka Player to avoid this.
-  if (query == "video")
-    return mse::HTMLVideoElement::AnyVideoElement();
-  return ContainerNode::QuerySelector(query);
+  if (name == "video")
+    return {mse::HTMLVideoElement::AnyVideoElement()};
+  return ContainerNode::GetElementsByTagName(name);
 }
 
 RefPtr<Element> Document::CreateElement(const std::string& name) {

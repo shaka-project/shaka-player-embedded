@@ -17,6 +17,7 @@
 
 #include <atomic>
 #include <string>
+#include <vector>
 
 #include "shaka/optional.h"
 #include "src/js/dom/container_node.h"
@@ -57,8 +58,8 @@ class Document : public ContainerNode {
 
   RefPtr<Element> DocumentElement() const;
 
-  ExceptionOr<RefPtr<Element>> QuerySelector(
-      const std::string& query) const override;
+  std::vector<RefPtr<Element>> GetElementsByTagName(
+      const std::string& name) const override;
 
   RefPtr<Element> CreateElement(const std::string& name);
   RefPtr<Comment> CreateComment(const std::string& data);
