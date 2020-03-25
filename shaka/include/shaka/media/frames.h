@@ -17,6 +17,7 @@
 
 #include <vector>
 
+#include "../eme/configuration.h"
 #include "../eme/implementation.h"
 #include "../macros.h"
 #include "../variant.h"
@@ -209,19 +210,14 @@ class SHAKA_EXPORT BaseFrame {
  * Defines an encoded frame.  This can be used as-is, or can be subclassed to
  * support different frame types.
  *
- * This type doesn't support decrypting frames, but there is an internal
- * subclass that does.  The default Demuxer subclass produces frames that can be
- * decrypted, assuming EME support.  The Decrypt method is only needed if
- * using the DefaultMediaPlayer; a custom MediaPlayer instance can decrypt
- * how they want.
- *
  * @ingroup media
  */
 class SHAKA_EXPORT EncodedFrame : public BaseFrame {
  public:
   EncodedFrame(std::shared_ptr<const StreamInfo> stream, double pts, double dts,
                double duration, bool is_key_frame, const uint8_t* data,
-               size_t data_size, double timestamp_offset, bool is_encrypted);
+               size_t data_size, double timestamp_offset,
+               std::shared_ptr<eme::FrameEncryptionInfo> encryption_info);
   ~EncodedFrame() override;
 
   /**
@@ -238,8 +234,12 @@ class SHAKA_EXPORT EncodedFrame : public BaseFrame {
    */
   const double timestamp_offset;
 
-  /** Whether the current frame is encrypted. */
-  const bool is_encrypted;
+  /**
+   * Contains info on how this frame is encrypted.  If this is nullptr, this
+   * frame is clear.
+   */
+  const std::shared_ptr<eme::FrameEncryptionInfo> encryption_info;
+
 
   /**
    * Attempts to decrypt the frame's data into the given buffer.  This may not
@@ -247,7 +247,7 @@ class SHAKA_EXPORT EncodedFrame : public BaseFrame {
    * only used by the DefaultMediaPlayer.
    */
   virtual MediaStatus Decrypt(const eme::Implementation* implementation,
-                              uint8_t* output) const;
+                              uint8_t* dest) const;
 
 
   size_t EstimateSize() const override;

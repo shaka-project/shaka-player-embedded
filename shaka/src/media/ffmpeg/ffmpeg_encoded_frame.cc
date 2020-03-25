@@ -20,12 +20,9 @@ extern "C" {
 
 #include <glog/logging.h>
 
-#include <limits>
-#include <memory>
 #include <vector>
 
 #include "shaka/eme/configuration.h"
-#include "shaka/eme/implementation.h"
 
 namespace shaka {
 namespace media {
@@ -81,10 +78,6 @@ bool MakeEncryptionInfo(const AVPacket* packet,
   return true;
 }
 
-bool IsEncrypted(const AVPacket* packet) {
-  return av_packet_get_side_data(packet, AV_PKT_DATA_ENCRYPTION_INFO, nullptr);
-}
-
 }  // namespace
 
 // static
@@ -96,37 +89,17 @@ FFmpegEncodedFrame* FFmpegEncodedFrame::MakeFrame(
   const double dts = pkt->dts * factor + timestamp_offset;
   const double duration = pkt->duration * factor;
   const bool is_key_frame = pkt->flags & AV_PKT_FLAG_KEY;
+  std::shared_ptr<eme::FrameEncryptionInfo> encryption_info;
+  if (!MakeEncryptionInfo(pkt, &encryption_info))
+    return nullptr;
 
-  return new (std::nothrow) FFmpegEncodedFrame(
-      pkt, pts, dts, duration, is_key_frame, info, timestamp_offset);
+  return new (std::nothrow)
+      FFmpegEncodedFrame(pkt, pts, dts, duration, is_key_frame, info,
+                         encryption_info, timestamp_offset);
 }
 
 FFmpegEncodedFrame::~FFmpegEncodedFrame() {
   av_packet_unref(&packet_);
-}
-
-MediaStatus FFmpegEncodedFrame::Decrypt(const eme::Implementation* cdm,
-                                        uint8_t* dest) const {
-  if (!is_encrypted)
-    return MediaStatus::Success;
-  if (!cdm)
-    return MediaStatus::FatalError;
-
-  std::shared_ptr<eme::FrameEncryptionInfo> info;
-  if (!MakeEncryptionInfo(&packet_, &info)) {
-    LOG(DFATAL) << "Unable to create encryption info.";
-    return MediaStatus::FatalError;
-  }
-  const eme::DecryptStatus decrypt_status =
-      cdm->Decrypt(info.get(), packet_.data, packet_.size, dest);
-  switch (decrypt_status) {
-    case eme::DecryptStatus::Success:
-      return MediaStatus::Success;
-    case eme::DecryptStatus::KeyNotFound:
-      return MediaStatus::KeyNotFound;
-    default:
-      return MediaStatus::FatalError;
-  }
 }
 
 size_t FFmpegEncodedFrame::EstimateSize() const {
@@ -136,12 +109,13 @@ size_t FFmpegEncodedFrame::EstimateSize() const {
   return size;
 }
 
-FFmpegEncodedFrame::FFmpegEncodedFrame(AVPacket* pkt, double pts, double dts,
-                                       double duration, bool is_key_frame,
-                                       std::shared_ptr<const StreamInfo> info,
-                                       double timestamp_offset)
+FFmpegEncodedFrame::FFmpegEncodedFrame(
+    AVPacket* pkt, double pts, double dts, double duration, bool is_key_frame,
+    std::shared_ptr<const StreamInfo> info,
+    std::shared_ptr<eme::FrameEncryptionInfo> encryption_info,
+    double timestamp_offset)
     : EncodedFrame(info, pts, dts, duration, is_key_frame, pkt->data, pkt->size,
-                   timestamp_offset, IsEncrypted(pkt)) {
+                   timestamp_offset, encryption_info) {
   av_packet_move_ref(&packet_, pkt);
 }
 

@@ -416,7 +416,7 @@ MediaStatus IosDecoder::Decode(
   const uint8_t* data;
   const size_t size = input->data_size;
   std::vector<uint8_t> decrypted_data;
-  if (input->is_encrypted) {
+  if (input->encryption_info) {
     decrypted_data.resize(input->data_size);
     const auto status = input->Decrypt(eme, decrypted_data.data());
     if (status != MediaStatus::Success) {

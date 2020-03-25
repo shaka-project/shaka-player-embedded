@@ -78,7 +78,7 @@ void RunDemuxerTest(const std::vector<std::string>& files) {
       for (size_t i = 0; i < frames.size(); i++) {
         const auto& expected = info.frames().at(i);
         EXPECT_EQ(frames[i]->stream_info, stream);
-        EXPECT_EQ(frames[i]->is_encrypted, expected.is_encrypted());
+        EXPECT_EQ(!!frames[i]->encryption_info, expected.is_encrypted());
         EXPECT_NEAR(frames[i]->pts, expected.pts(), 0.0001);
         EXPECT_NEAR(frames[i]->dts, expected.dts(), 0.0001);
         if (expected.has_duration())

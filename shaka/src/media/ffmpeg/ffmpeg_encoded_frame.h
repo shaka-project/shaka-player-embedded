@@ -36,13 +36,12 @@ class FFmpegEncodedFrame final : public EncodedFrame {
                                        std::shared_ptr<const StreamInfo> info,
                                        double timestamp_offset);
 
-  MediaStatus Decrypt(const eme::Implementation* cdm,
-                      uint8_t* data) const override;
   size_t EstimateSize() const override;
 
  private:
   FFmpegEncodedFrame(AVPacket* pkt, double pts, double dts, double duration,
                      bool is_key_frame, std::shared_ptr<const StreamInfo> info,
+                     std::shared_ptr<eme::FrameEncryptionInfo> encryption_info,
                      double timestamp_offset);
 
   AVPacket packet_;

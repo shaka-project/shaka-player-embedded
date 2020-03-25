@@ -150,7 +150,7 @@ MediaStatus FFmpegDecoder::Decode(
   // If the encoded frame is encrypted, decrypt it first.
   AVPacket packet{};
   util::Finally free_decrypted_packet(std::bind(&av_packet_unref, &packet));
-  if (input && input->is_encrypted) {
+  if (input && input->encryption_info) {
     if (!eme) {
       LOG(WARNING) << (*extra_info = "No CDM given for encrypted frame");
       return MediaStatus::KeyNotFound;

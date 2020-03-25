@@ -78,23 +78,35 @@ size_t BaseFrame::EstimateSize() const {
 }
 
 
-EncodedFrame::EncodedFrame(std::shared_ptr<const StreamInfo> stream, double pts,
-                           double dts, double duration, bool is_key_frame,
-                           const uint8_t* data, size_t data_size,
-                           double timestamp_offset, bool is_encrypted)
+EncodedFrame::EncodedFrame(
+    std::shared_ptr<const StreamInfo> stream, double pts, double dts,
+    double duration, bool is_key_frame, const uint8_t* data, size_t data_size,
+    double timestamp_offset,
+    std::shared_ptr<eme::FrameEncryptionInfo> encryption_info)
     : BaseFrame(stream, pts, dts, duration, is_key_frame),
       data(data),
       data_size(data_size),
       timestamp_offset(timestamp_offset),
-      is_encrypted(is_encrypted) {}
+      encryption_info(encryption_info) {}
 EncodedFrame::~EncodedFrame() {}
 
 MediaStatus EncodedFrame::Decrypt(const eme::Implementation* implementation,
-                                  uint8_t* data) const {
-  if (!is_encrypted)
+                                  uint8_t* dest) const {
+  if (!encryption_info)
     return MediaStatus::Success;
-  LOG(ERROR) << "Decrypt not supported with base EncodedFrame type";
-  return MediaStatus::FatalError;
+  if (!implementation)
+    return MediaStatus::FatalError;
+
+  const eme::DecryptStatus decrypt_status =
+      implementation->Decrypt(encryption_info.get(), data, data_size, dest);
+  switch (decrypt_status) {
+    case eme::DecryptStatus::Success:
+      return MediaStatus::Success;
+    case eme::DecryptStatus::KeyNotFound:
+      return MediaStatus::KeyNotFound;
+    default:
+      return MediaStatus::FatalError;
+  }
 }
 
 size_t EncodedFrame::EstimateSize() const {
