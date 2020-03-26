@@ -502,6 +502,7 @@ source_set("internal_sources") {
     "shaka/src/eme/clearkey_implementation.h",
     "shaka/src/eme/clearkey_implementation_factory.cc",
     "shaka/src/eme/clearkey_implementation_factory.h",
+    "shaka/src/eme/configuration.cc",
     "shaka/src/eme/implementation.cc",
     "shaka/src/js/base_64.cc",
     "shaka/src/js/base_64.h",

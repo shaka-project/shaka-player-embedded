@@ -21,7 +21,6 @@
 #include "src/js/js_error.h"
 #include "src/mapping/js_wrappers.h"
 #include "src/util/buffer_reader.h"
-#include "src/util/decryptor.h"
 #include "src/util/utils.h"
 
 namespace shaka {
@@ -319,18 +318,16 @@ void ClearKeyImplementation::Remove(const std::string& /* session_id */,
                  "Clear-key doesn't support persistent licences.");
 }
 
-DecryptStatus ClearKeyImplementation::Decrypt(
-    EncryptionScheme scheme, EncryptionPattern pattern, uint32_t block_offset,
-    const uint8_t* key_id, size_t key_id_size, const uint8_t* iv,
-    size_t iv_size, const uint8_t* data, size_t data_size,
-    uint8_t* dest) const {
+DecryptStatus ClearKeyImplementation::Decrypt(const FrameEncryptionInfo* info,
+                                              const uint8_t* data,
+                                              size_t data_size,
+                                              uint8_t* dest) const {
   std::unique_lock<std::mutex> lock(mutex_);
 
-  const std::vector<uint8_t> key_id_vec(key_id, key_id + key_id_size);
   const std::vector<uint8_t>* key = nullptr;
   for (auto& session_pair : sessions_) {
     for (auto& cur_key : session_pair.second.keys) {
-      if (cur_key.key_id == key_id_vec) {
+      if (cur_key.key_id == info->key_id) {
         key = &cur_key.key;
         break;
       }
@@ -338,38 +335,76 @@ DecryptStatus ClearKeyImplementation::Decrypt(
   }
   if (!key) {
     LOG(ERROR) << "Unable to find key ID: "
-               << util::ToHexString(key_id, key_id_size);
+               << util::ToHexString(info->key_id.data(), info->key_id.size());
     return DecryptStatus::KeyNotFound;
   }
 
-  util::Decryptor decryptor(scheme, *key,
-                            std::vector<uint8_t>{iv, iv + iv_size});
+  util::Decryptor decryptor(info->scheme, *key, info->iv);
+  if (info->subsamples.empty()) {
+    return DecryptBlock(info, data, data_size, 0, dest, &decryptor);
+  } else {
+    size_t block_offset = 0;
+    for (const auto& subsample : info->subsamples) {
+      if (data_size < subsample.clear_bytes ||
+          data_size - subsample.clear_bytes < subsample.protected_bytes) {
+        LOG(ERROR) << "Input data not large enough for subsamples";
+        return DecryptStatus::OtherError;
+      }
 
+      // The clear portion appears first.
+      memcpy(dest, data, subsample.clear_bytes);
+      data += subsample.clear_bytes;
+      dest += subsample.clear_bytes;
+      data_size -= subsample.clear_bytes;
+
+      // Then the encrypted portion.
+      const auto ret = DecryptBlock(info, data, subsample.protected_bytes,
+                                    block_offset, dest, &decryptor);
+      if (ret != DecryptStatus::Success)
+        return ret;
+      data += subsample.protected_bytes;
+      dest += subsample.protected_bytes;
+      data_size -= subsample.protected_bytes;
+      block_offset =
+          (block_offset + subsample.protected_bytes) % AES_BLOCK_SIZE;
+
+      // iv changing is handled by Decryptor.
+    }
+    if (data_size != 0) {
+      LOG(ERROR) << "Data remaining after subsample handling";
+      return DecryptStatus::OtherError;
+    }
+    return DecryptStatus::Success;
+  }
+}
+
+DecryptStatus ClearKeyImplementation::DecryptBlock(
+    const FrameEncryptionInfo* info, const uint8_t* data, size_t data_size,
+    size_t block_offset, uint8_t* dest, util::Decryptor* decryptor) const {
   size_t num_bytes_read = 0;
-  block_offset %= AES_BLOCK_SIZE;
   if (block_offset != 0) {
-    if (pattern.clear_blocks != 0) {
+    if (info->pattern.clear_blocks != 0) {
       LOG(ERROR) << "Cannot have block offset when using pattern encryption";
       return DecryptStatus::OtherError;
     }
 
-    num_bytes_read = std::min<int>(data_size, AES_BLOCK_SIZE - block_offset);
-    if (!decryptor.DecryptPartialBlock(data, num_bytes_read, block_offset,
-                                       dest)) {
+    num_bytes_read = std::min<size_t>(data_size, AES_BLOCK_SIZE - block_offset);
+    if (!decryptor->DecryptPartialBlock(data, num_bytes_read, block_offset,
+                                        dest)) {
       return DecryptStatus::OtherError;
     }
   }
 
-  if (pattern.clear_blocks != 0) {
-    const size_t protected_size = AES_BLOCK_SIZE * pattern.encrypted_blocks;
-    const size_t clear_size = AES_BLOCK_SIZE * pattern.clear_blocks;
+  if (info->pattern.clear_blocks != 0) {
+    const size_t protected_size =
+        AES_BLOCK_SIZE * info->pattern.encrypted_blocks;
+    const size_t clear_size = AES_BLOCK_SIZE * info->pattern.clear_blocks;
     const size_t pattern_size_in_blocks =
-        pattern.encrypted_blocks + pattern.clear_blocks;
-    const size_t data_size_in_blocks =
-        (data_size - num_bytes_read) / AES_BLOCK_SIZE;
+        info->pattern.encrypted_blocks + info->pattern.clear_blocks;
+    const size_t data_size_in_blocks = data_size / AES_BLOCK_SIZE;
     for (size_t i = 0; i < data_size_in_blocks / pattern_size_in_blocks; i++) {
-      if (!decryptor.Decrypt(data + num_bytes_read, protected_size,
-                             dest + num_bytes_read)) {
+      if (!decryptor->Decrypt(data + num_bytes_read, protected_size,
+                              dest + num_bytes_read)) {
         return DecryptStatus::OtherError;
       }
       num_bytes_read += protected_size;
@@ -381,9 +416,9 @@ DecryptStatus ClearKeyImplementation::Decrypt(
     // If the last pattern block isn't big enough for the whole
     // encrypted_blocks, then it is ignored.
     if (data_size_in_blocks % pattern_size_in_blocks >=
-        pattern.encrypted_blocks) {
-      if (!decryptor.Decrypt(data + num_bytes_read, protected_size,
-                             dest + num_bytes_read)) {
+        info->pattern.encrypted_blocks) {
+      if (!decryptor->Decrypt(data + num_bytes_read, protected_size,
+                              dest + num_bytes_read)) {
         return DecryptStatus::OtherError;
       }
       num_bytes_read += protected_size;
@@ -392,8 +427,8 @@ DecryptStatus ClearKeyImplementation::Decrypt(
     memcpy(dest + num_bytes_read, data + num_bytes_read,
            data_size - num_bytes_read);
   } else {
-    if (!decryptor.Decrypt(data + num_bytes_read, data_size - num_bytes_read,
-                           dest + num_bytes_read)) {
+    if (!decryptor->Decrypt(data + num_bytes_read, data_size - num_bytes_read,
+                            dest + num_bytes_read)) {
       return DecryptStatus::OtherError;
     }
   }

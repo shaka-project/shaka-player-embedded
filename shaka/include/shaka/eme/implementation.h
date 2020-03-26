@@ -210,38 +210,25 @@ class SHAKA_EXPORT Implementation {
 
 
   /**
-   * Decrypts the given data.  This is only passed encrypted data, any clear
-   * data is ignored.  This method doesn't need to handle containers or codecs,
-   * all it needs to do is decrypt the data.  If the data needs to be processed
-   * before decryption (e.g. for MPEG2-TS), it is done by the caller.
+   * Decrypts the given data.  This is given a whole frame and is expected to
+   * decrypt the encrypted portions and copy over clear portions.  This method
+   * doesn't need to handle containers or codecs, all it needs to do is decrypt
+   * and copy the data.  If the data needs to be processed before decryption
+   * (e.g. for MPEG2-TS), it is done by the caller.
    *
    * If pattern is (0, 0), then this is not using pattern encryption (e.g. for
    * "cenc" or "cbc1").
    *
-   * If not using subsample encryption, |block_offset| should always be 0.
-   * Otherwise, the first subsample in a sample should use 0.  Then for each
-   * subsample it should increment by |data_size| and mod by 16.
-   *
-   * @param scheme The encryption scheme used to decrypt the data.
-   * @param pattern The encryption pattern.
-   * @param block_offset The offset within the AES block, only used for
-   *   subsample encryption.
-   * @param key_id The ID of the key to use.
-   * @param key_id_size The number of bytes in |key_id|, will always be 16.
-   * @param iv The initialization vector.
-   * @param iv_size The number of bytes in |iv|, will always be 16.
+   * @param info Contains information about how the frame is encrypted.
    * @param data The data to decrypt.
    * @param data_size The size of |data|.
    * @param dest The destination buffer to hold the decrypted data.  Is at least
    *   |data_size| bytes large.
    * @returns The resulting status code.
    */
-  virtual DecryptStatus Decrypt(EncryptionScheme scheme,
-                                EncryptionPattern pattern,
-                                uint32_t block_offset, const uint8_t* key_id,
-                                size_t key_id_size, const uint8_t* iv,
-                                size_t iv_size, const uint8_t* data,
-                                size_t data_size, uint8_t* dest) const = 0;
+  virtual DecryptStatus Decrypt(const FrameEncryptionInfo* info,
+                                const uint8_t* data, size_t data_size,
+                                uint8_t* dest) const = 0;
 };
 
 }  // namespace eme

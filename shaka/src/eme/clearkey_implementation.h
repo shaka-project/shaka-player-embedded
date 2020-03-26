@@ -23,6 +23,7 @@
 
 #include "shaka/eme/implementation.h"
 #include "shaka/eme/implementation_helper.h"
+#include "src/util/decryptor.h"
 
 #define AES_BLOCK_SIZE 16u
 
@@ -65,11 +66,8 @@ class ClearKeyImplementation final : public Implementation {
 
   void Remove(const std::string& session_id, EmePromise promise) override;
 
-  DecryptStatus Decrypt(EncryptionScheme scheme, EncryptionPattern pattern,
-                        uint32_t block_offset, const uint8_t* key_id,
-                        size_t key_id_size, const uint8_t* iv, size_t iv_size,
-                        const uint8_t* data, size_t data_size,
-                        uint8_t* dest) const override;
+  DecryptStatus Decrypt(const FrameEncryptionInfo* info, const uint8_t* data,
+                        size_t data_size, uint8_t* dest) const override;
 
  private:
   struct Session {
@@ -97,6 +95,11 @@ class ClearKeyImplementation final : public Implementation {
   friend class ClearKeyImplementationTest;
   friend class media::DecoderIntegration;
   friend class media::DecoderDecryptIntegration;
+
+  DecryptStatus DecryptBlock(const FrameEncryptionInfo* info,
+                             const uint8_t* data, size_t data_size,
+                             size_t block_offset, uint8_t* dest,
+                             util::Decryptor* decryptor) const;
 
   void LoadKeyForTesting(std::vector<uint8_t> key_id, std::vector<uint8_t> key);
 

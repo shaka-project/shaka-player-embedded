@@ -33,7 +33,11 @@ class MockImplementationHelper : public ImplementationHelper {
   MOCK_CONST_METHOD1(OnKeyStatusChange, void(const std::string&));
 };
 
-}  // namespace
+template <size_t N>
+std::vector<uint8_t> MakeVector(const uint8_t (&arr)[N], size_t size = N) {
+  CHECK_LE(size, N);
+  return {arr, arr + size};
+}
 
 constexpr const uint8_t kKeyId[] = {'1', '2', '3', '4', '5', '6', '7', '8',
                                     '9', '0', '1', '2', '3', '4', '5', '6'};
@@ -52,6 +56,8 @@ constexpr const uint8_t kBlockOffsetEncryptedData[] = {
     0xb2, 0xe9, 0xf5, 0x9c, 0xfe, 0xc6, 0xe6, 0xe6, 0x6b, 0x76, 0xcd};
 constexpr const uint8_t kIv[] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
                                  0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf};
+
+}  // namespace
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -92,58 +98,55 @@ TEST_F(ClearKeyImplementationTest, Decrypt) {
   NiceMock<MockImplementationHelper> helper;
   ClearKeyImplementation clear_key(&helper);
 
-  LoadKeyForTesting(&clear_key,
-                    std::vector<uint8_t>(kKeyId, kKeyId + sizeof(kKeyId)),
-                    std::vector<uint8_t>(kKey, kKey + sizeof(kKey)));
+  std::unique_ptr<FrameEncryptionInfo> info(new FrameEncryptionInfo(
+      EncryptionScheme::AesCtr, MakeVector(kKeyId), MakeVector(kIv)));
+  LoadKeyForTesting(&clear_key, MakeVector(kKeyId), MakeVector(kKey));
 
   // Decryption on a block boundary.
   {
     std::vector<uint8_t> data(kEncryptedData, kEncryptedData + AES_BLOCK_SIZE);
-    EXPECT_EQ(clear_key.Decrypt(EncryptionScheme::AesCtr, EncryptionPattern(),
-                                0, kKeyId, sizeof(kKeyId), kIv, sizeof(kIv),
-                                data.data(), data.size(), data.data()),
-              DecryptStatus::Success);
-    EXPECT_EQ(data,
-              std::vector<uint8_t>(kClearData, kClearData + AES_BLOCK_SIZE));
+    EXPECT_EQ(
+        clear_key.Decrypt(info.get(), data.data(), data.size(), data.data()),
+        DecryptStatus::Success);
+    EXPECT_EQ(data, MakeVector(kClearData, AES_BLOCK_SIZE));
   }
 
   // Decryption with a partial block at the end.
   {
-    std::vector<uint8_t> data(kEncryptedData,
-                              kEncryptedData + sizeof(kEncryptedData));
-    EXPECT_EQ(clear_key.Decrypt(EncryptionScheme::AesCtr, EncryptionPattern(),
-                                0, kKeyId, sizeof(kKeyId), kIv, sizeof(kIv),
-                                data.data(), data.size(), data.data()),
-              DecryptStatus::Success);
-    EXPECT_EQ(data, std::vector<uint8_t>(kClearData,
-                                         kClearData + sizeof(kClearData)));
+    std::vector<uint8_t> data = MakeVector(kEncryptedData);
+    EXPECT_EQ(
+        clear_key.Decrypt(info.get(), data.data(), data.size(), data.data()),
+        DecryptStatus::Success);
+    EXPECT_EQ(data, MakeVector(kClearData));
   }
 
   // Decryption with a block offset and a second block.
   {
-    std::vector<uint8_t> data(
-        kBlockOffsetEncryptedData,
-        kBlockOffsetEncryptedData + sizeof(kBlockOffsetEncryptedData));
+    // Make a buffer with dummy data at the start.  We can only decrypt a whole
+    // block.
+    std::vector<uint8_t> data(kBlockOffset + sizeof(kBlockOffsetEncryptedData));
+    memcpy(data.data() + kBlockOffset, kBlockOffsetEncryptedData,
+           sizeof(kBlockOffsetEncryptedData));
     EXPECT_EQ(
-        clear_key.Decrypt(EncryptionScheme::AesCtr, EncryptionPattern(),
-                          kBlockOffset, kKeyId, sizeof(kKeyId), kIv,
-                          sizeof(kIv), data.data(), data.size(), data.data()),
+        clear_key.Decrypt(info.get(), data.data(), data.size(), data.data()),
         DecryptStatus::Success);
-    EXPECT_EQ(data, std::vector<uint8_t>(kClearData,
-                                         kClearData + sizeof(kClearData)));
+    // Only compare the data after the block offset.
+    EXPECT_EQ(
+        memcmp(data.data() + kBlockOffset, kClearData, sizeof(kClearData)), 0);
   }
 
   // Decryption with a block offset that doesn't fill a block.
   {
+    // Make a buffer with dummy data at the start.  We can only decrypt a whole
+    // block.
     constexpr const size_t kSize = 5;
-    std::vector<uint8_t> data(kBlockOffsetEncryptedData,
-                              kBlockOffsetEncryptedData + kSize);
+    std::vector<uint8_t> data(kSize + kBlockOffset);
+    memcpy(data.data() + kBlockOffset, kBlockOffsetEncryptedData, kSize);
     EXPECT_EQ(
-        clear_key.Decrypt(EncryptionScheme::AesCtr, EncryptionPattern(),
-                          kBlockOffset, kKeyId, sizeof(kKeyId), kIv,
-                          sizeof(kIv), data.data(), data.size(), data.data()),
+        clear_key.Decrypt(info.get(), data.data(), data.size(), data.data()),
         DecryptStatus::Success);
-    EXPECT_EQ(data, std::vector<uint8_t>(kClearData, kClearData + kSize));
+    // Only compare the data after the block offset.
+    EXPECT_EQ(memcmp(data.data() + kBlockOffset, kClearData, kSize), 0);
   }
 }
 
@@ -159,10 +162,11 @@ TEST_F(ClearKeyImplementationTest, Decrypt_KeyNotFound) {
   std::vector<uint8_t> data(kEncryptedData, kEncryptedData + AES_BLOCK_SIZE);
   std::vector<uint8_t> key_id(16, 0);
   ASSERT_EQ(key_id.size(), 16u);
-  EXPECT_EQ(clear_key.Decrypt(EncryptionScheme::AesCtr, EncryptionPattern(), 0,
-                              key_id.data(), key_id.size(), kIv, sizeof(kIv),
-                              data.data(), data.size(), data.data()),
-            DecryptStatus::KeyNotFound);
+  std::unique_ptr<FrameEncryptionInfo> info(new FrameEncryptionInfo(
+      EncryptionScheme::AesCtr, key_id, MakeVector(kIv)));
+  EXPECT_EQ(
+      clear_key.Decrypt(info.get(), data.data(), data.size(), data.data()),
+      DecryptStatus::KeyNotFound);
 }
 
 TEST_F(ClearKeyImplementationTest, HandlesMissingSessionId) {

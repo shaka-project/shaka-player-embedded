@@ -17,6 +17,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "../macros.h"
 
 namespace shaka {
@@ -88,10 +90,73 @@ enum class EncryptionScheme : uint8_t {
 };
 
 struct SHAKA_EXPORT EncryptionPattern final {
+  EncryptionPattern();
+  EncryptionPattern(uint32_t encrypted_blocks, uint32_t clear_blocks);
+
   /** The number of 16-byte blocks that are encrypted. */
   uint32_t encrypted_blocks;
   /** The number of 16-byte blocks that are clear. */
   uint32_t clear_blocks;
+};
+
+/**
+ * Contains how many bytes are encrypted in a subsample.  Each subsample is
+ * contiguous and starts with some number of clear bytes followed by some
+ * number of protected bytes.
+ */
+struct SHAKA_EXPORT SubsampleInfo final {
+  SubsampleInfo(uint32_t clear_bytes, uint32_t protected_bytes);
+
+  /** The number of clear bytes, can be 0. */
+  uint32_t clear_bytes;
+  /** The number of encrypted bytes, can be 0. */
+  uint32_t protected_bytes;
+};
+
+/** Contains info about how a frame is encrypted. */
+class SHAKA_EXPORT FrameEncryptionInfo final {
+ public:
+  FrameEncryptionInfo(EncryptionScheme scheme,
+                      const std::vector<uint8_t>& key_id,
+                      const std::vector<uint8_t>& iv);
+  FrameEncryptionInfo(EncryptionScheme scheme,
+                      EncryptionPattern pattern,
+                      const std::vector<uint8_t>& key_id,
+                      const std::vector<uint8_t>& iv);
+  FrameEncryptionInfo(EncryptionScheme scheme,
+                      EncryptionPattern pattern,
+                      const std::vector<uint8_t>& key_id,
+                      const std::vector<uint8_t>& iv,
+                      const std::vector<SubsampleInfo>& subsamples);
+  ~FrameEncryptionInfo();
+
+  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(FrameEncryptionInfo);
+
+
+  /** Contains the scheme this is encrypted with. */
+  const EncryptionScheme scheme;
+
+  /**
+   * Contains the pattern this is encrypted with.  Will be (0, 0) for
+   * non-pattern encryption.
+   */
+  const EncryptionPattern pattern;
+
+  /**
+   * Contains the ID of the key this is encrypted with.  Should be 16
+   * bytes.
+   */
+  const std::vector<uint8_t> key_id;
+
+  /** Contains the encryption initialization vector.  Should be 16 bytes. */
+  const std::vector<uint8_t> iv;
+
+  /**
+   * Contains info about the subsamples in this frame.  Subsamples are
+   * contiguous and appear in this order.  If this is empty, then the whole
+   * frame is encrypted.
+   */
+  const std::vector<SubsampleInfo> subsamples;
 };
 
 /** @} */
