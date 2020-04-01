@@ -23,6 +23,7 @@
 #include "net.h"
 
 namespace shaka {
+
 class JsManagerImpl;
 
 /**
@@ -44,8 +45,8 @@ class JsManagerImpl;
 
 /**
  * Manages the JavaScript engine.  There must be exactly one instance per
- * program.  This manages a single V8 instance, but can support any number
- * of Player or Video instances.
+ * program.  This manages a single JavaScript instance, but can support any
+ * number of Player or Video instances.
  *
  * @ingroup player
  */
@@ -69,14 +70,16 @@ class SHAKA_EXPORT JsManager final {
      * The path to static library data (e.g. shaka-player.compiled.js).  This
      * directory only needs read access.
      *
-     * See |is_static_relative_to_bundle| for handling of relative paths.
+     * See <code>is_static_relative_to_bundle</code> for handling of relative
+     * paths.
      */
     std::string static_data_dir;
 
     /**
-     * If set, then |static_data_dir| is relative to the iOS app bundle,
-     * otherwise the path is relative to the working directory.  This flag is
-     * ignored for non-iOS targets (always relative to working directory).
+     * If <code>true</code>, then <code>static_data_dir</code> is relative to
+     * the iOS app bundle, otherwise the path is relative to the working
+     * directory.  This flag is ignored for non-iOS targets (always relative to
+     * working directory).
      */
     bool is_static_relative_to_bundle = false;
   };
@@ -99,15 +102,15 @@ class SHAKA_EXPORT JsManager final {
   /**
    * Blocks the current thread until all scheduled work is finished.  This is
    * used by the tests to detect when they are done.  This should not be called
-   * if there are alive Player instances as they use setInterval which means
-   * there will always be pending work.
+   * if there are live Player instances as they use <code>setInterval</code>,
+   * which means there will always be pending work.
    */
   void WaitUntilFinished();
 
   /**
    * Executes the given script in JavaScript.  This can be used to register
-   * plugins or to run tests.  This cannot be called after Stop().  The script
-   * will be scheduled to run on the event loop.
+   * plugins or to run tests.  The script will be scheduled to run on the event
+   * loop.
    */
   AsyncResults<void> RunScript(const std::string& path);
 

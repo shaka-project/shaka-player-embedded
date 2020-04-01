@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_STREAM_INFO_H_
 #define SHAKA_EMBEDDED_MEDIA_STREAM_INFO_H_
 
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -103,6 +104,10 @@ class SHAKA_EXPORT StreamInfo {
    * (Hz).
    */
   const uint32_t sample_rate;
+
+ private:
+  class Impl;
+  std::unique_ptr<Impl> impl_;
 };
 
 }  // namespace media

@@ -72,9 +72,9 @@ inline KeyStatusInfo::~KeyStatusInfo() {}
  *
  * Many of the actions here are asynchronous.  Some are completed by the end
  * of the call here, but are run asynchronously with respect to JavaScript.  In
- * either case, those methods are given a |promise|.  Once the operation is
- * complete (error or success), one of the methods on it MUST be called.
- * It is ok to synchronously call those methods.
+ * either case, those methods are given a <code>promise</code>.  Once the
+ * operation is complete (error or success), one of the methods on it MUST be
+ * called.  It is ok to synchronously call those methods.
  *
  * Most methods here are only called on the JS main thread; the exception is
  * Decrypt, which can be called from any thread, including concurrently with

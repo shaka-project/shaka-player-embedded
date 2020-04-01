@@ -30,9 +30,6 @@ namespace media {
  * objects.  This must do so synchronously and is called on a background thread.
  * This is only used from a single thread after being created.
  *
- * Be sure to read the note on EncodedFrame about the EncodedFrame::Decrypt
- * function if you care about encrypted content.
- *
  * @ingroup media
  */
 class SHAKA_EXPORT Demuxer {

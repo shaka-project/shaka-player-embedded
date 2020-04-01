@@ -19,6 +19,8 @@
 namespace shaka {
 namespace media {
 
+class StreamInfo::Impl {};
+
 StreamInfo::StreamInfo(const std::string& mime, const std::string& codec,
                        bool is_video, Rational time_scale,
                        const std::vector<uint8_t>& extra_data, uint32_t width,
