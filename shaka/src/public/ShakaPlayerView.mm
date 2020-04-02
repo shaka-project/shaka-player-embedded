@@ -165,25 +165,24 @@
 }
 
 - (void)textLoop {
-  if (_player && _player.closedCaptions) {
-    BOOL sizeChanged = _textLayer.frame.size.width != _imageLayer.frame.size.width ||
-                       _textLayer.frame.size.height != _imageLayer.frame.size.height;
+  BOOL sizeChanged = _textLayer.frame.size.width != _imageLayer.frame.size.width ||
+                     _textLayer.frame.size.height != _imageLayer.frame.size.height;
 
-    _textLayer.hidden = NO;
-    _textLayer.frame = _imageLayer.frame;
-
-    [self remakeTextCues:sizeChanged];
-  } else {
-    _textLayer.hidden = YES;
-  }
+  _textLayer.frame = _imageLayer.frame;
+  _textLayer.hidden = ![self remakeTextCues:sizeChanged];
 }
 
-- (void)remakeTextCues:(BOOL)sizeChanged {
+- (BOOL)remakeTextCues:(BOOL)sizeChanged {
   if (!_player)
-    return;
+    return NO;
 
   auto text_tracks = _player.mediaPlayer->TextTracks();
+  if (text_tracks.empty())
+    return NO;
   auto activeCues = text_tracks[0]->active_cues(_player.currentTime);
+  if (text_tracks[0]->mode() != shaka::media::TextTrackMode::Showing) {
+    return NO;
+  }
 
   if (sizeChanged) {
     for (CALayer *layer in [_textLayer.sublayers copy])
@@ -267,6 +266,7 @@
     y -= size.height;
     cueLayer.frame = CGRectMake(cueLayer.frame.origin.x, y, size.width, size.height);
   }
+  return YES;
 }
 
 @end

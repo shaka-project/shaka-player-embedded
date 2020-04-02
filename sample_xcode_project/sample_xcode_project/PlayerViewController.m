@@ -249,69 +249,72 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
   if (!self.player || !self.playerView || !self.playerView.superview) [self setupTopLevelViews];
 
   if (self.oldPlayPauseIcon != self.playPauseIcon) [self updatePlayPauseButton];
-  if (self.player.closedCaptions != self.oldClosedCaptions) [self updateClosedCaptionsButton];
 
-  CFTimeInterval currentTime = CACurrentMediaTime();
+  [self.player getUiInfoWithBlock:^(ShakaPlayerUiInfo *info) {
+    if (info.closedCaptions != self.oldClosedCaptions) [self updateClosedCaptionsButton];
 
-  // Set live edge of presentation.
-  ShakaBufferedRange *seekable = self.player.seekRange;
-  [self.progressSlider setStart:seekable.start andDuration:(seekable.end - seekable.start)];
+    CFTimeInterval currentTime = CACurrentMediaTime();
 
-  if (self.progressSlider.active || self.player.paused || UIAccessibilityIsVoiceOverRunning()) {
-    // While a slider is being used, VoiceOver is on, or the player is paused, don't fade.
-    self.lastActionTime = currentTime;
-  }
+    // Set live edge of presentation.
+    ShakaBufferedRange *seekable = info.seekRange;
+    [self.progressSlider setStart:seekable.start andDuration:(seekable.end - seekable.start)];
 
-  if (!self.errorDisplayView.hidden) {
-    // If there's an error being displayed, don't fade.
-    self.lastActionTime = currentTime;
-  }
-
-  // Keep track of the height of the navigation bar manually.
-  self.navigationBarHeightConstraint.constant = self.navBarHeight;
-
-  // Make the controls fade away if they haven't been used recently.
-  CFTimeInterval elapsed = currentTime - self.lastActionTime;
-  if (elapsed > ShakaFadeEnd) {
-    self.controlsView.hidden = YES;
-    self.navigationController.navigationBar.hidden = YES;
-    return;
-  } else if (elapsed > ShakaFadeBegin) {
-    CGFloat alpha = 1 - (elapsed - ShakaFadeBegin) / (ShakaFadeEnd - ShakaFadeBegin);
-    self.controlsView.alpha = alpha;
-    self.navigationController.navigationBar.alpha = alpha;
-  } else {
-    self.controlsView.alpha = 1.0;
-    self.navigationController.navigationBar.alpha = 1.0;
-  }
-  self.controlsView.hidden = NO;
-  self.navigationController.navigationBar.hidden = NO;
-
-  // Don't update the progress slider while the user is controlling it, or while the player is
-  // seeking.
-  if (self.player.seeking || self.progressSlider.active) {
-    // Keep up with the player's input on the nub.
-    [self.progressSlider synchronize];
-  } else {
-    self.progressSlider.isLive = self.player.isLive;
-
-    CGFloat progress = 0;
-    CGFloat bufferedStart = 0;
-    CGFloat bufferedEnd = 0;
-    // The durations is nan before the asset is loaded; in that situation, the progress should be 0.
-    if (!isnan(self.player.duration)) {
-      NSArray<ShakaBufferedRange *> *bufferedRanges = self.player.bufferedInfo.total;
-      progress = self.player.currentTime;
-      if (bufferedRanges.count) {
-        ShakaBufferedRange *buffered = bufferedRanges[0];
-        bufferedStart = buffered.start;
-        bufferedEnd = buffered.end;
-      }
+    if (self.progressSlider.active || info.paused || UIAccessibilityIsVoiceOverRunning()) {
+      // While a slider is being used, VoiceOver is on, or the player is paused, don't fade.
+      self.lastActionTime = currentTime;
     }
-    [self.progressSlider setProgress:progress
-                       bufferedStart:bufferedStart
-                      andBufferedEnd:bufferedEnd];
-  }
+
+    if (!self.errorDisplayView.hidden) {
+      // If there's an error being displayed, don't fade.
+      self.lastActionTime = currentTime;
+    }
+
+    // Keep track of the height of the navigation bar manually.
+    self.navigationBarHeightConstraint.constant = self.navBarHeight;
+
+    // Make the controls fade away if they haven't been used recently.
+    CFTimeInterval elapsed = currentTime - self.lastActionTime;
+    if (elapsed > ShakaFadeEnd) {
+      self.controlsView.hidden = YES;
+      self.navigationController.navigationBar.hidden = YES;
+      return;
+    } else if (elapsed > ShakaFadeBegin) {
+      CGFloat alpha = 1 - (elapsed - ShakaFadeBegin) / (ShakaFadeEnd - ShakaFadeBegin);
+      self.controlsView.alpha = alpha;
+      self.navigationController.navigationBar.alpha = alpha;
+    } else {
+      self.controlsView.alpha = 1.0;
+      self.navigationController.navigationBar.alpha = 1.0;
+    }
+    self.controlsView.hidden = NO;
+    self.navigationController.navigationBar.hidden = NO;
+
+    // Don't update the progress slider while the user is controlling it, or while the player is
+    // seeking.
+    if (info.seeking || self.progressSlider.active) {
+      // Keep up with the player's input on the nub.
+      [self.progressSlider synchronize];
+    } else {
+      self.progressSlider.isLive = info.isLive;
+
+      CGFloat progress = 0;
+      CGFloat bufferedStart = 0;
+      CGFloat bufferedEnd = 0;
+      // The durations is nan before the asset is loaded; in that situation, the progress should be 0.
+      if (!isnan(info.duration)) {
+        NSArray<ShakaBufferedRange *> *bufferedRanges = info.bufferedInfo.total;
+        progress = info.currentTime;
+        if (bufferedRanges.count) {
+          ShakaBufferedRange *buffered = bufferedRanges[0];
+          bufferedStart = buffered.start;
+          bufferedEnd = buffered.end;
+        }
+      }
+      [self.progressSlider setProgress:progress
+                         bufferedStart:bufferedStart
+                        andBufferedEnd:bufferedEnd];
+    }
+  }];
 }
 
 - (void)updatePlayPauseButton {

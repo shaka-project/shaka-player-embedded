@@ -26,6 +26,7 @@
 #include "shaka/player.h"
 #include "shaka/utils.h"
 
+#include "src/core/js_manager_impl.h"
 #include "src/debug/mutex.h"
 #include "src/js/manifest+Internal.h"
 #include "src/js/player_externs+Internal.h"
@@ -191,6 +192,24 @@ class NetworkFilter final : public shaka::NetworkFilters {
 };
 
 }  // namespace
+
+@implementation ShakaPlayerUiInfo
+
+@synthesize paused;
+@synthesize ended;
+@synthesize seeking;
+@synthesize duration;
+@synthesize playbackRate;
+@synthesize currentTime;
+@synthesize volume;
+@synthesize muted;
+@synthesize isAudioOnly;
+@synthesize isLive;
+@synthesize closedCaptions;
+@synthesize seekRange;
+@synthesize bufferedInfo;
+
+@end
 
 NSString *ShakaPlayerLicenseServerConfig(const NSString *key_system) {
   const std::string ret = shaka::LicenseServerConfig(key_system.UTF8String);
@@ -381,30 +400,44 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   _player->SetTextTrackVisibility(closedCaptions);
 }
 
-- (ShakaBufferedRange *)seekRange {
-  auto results = _player->SeekRange();
-  if (results.has_error()) {
-    _client.OnError(results.error());
-    return [[ShakaBufferedRange alloc] init];
-  } else {
-    return [[ShakaBufferedRange alloc] initWithCpp:results.results()];
-  }
-}
-
-- (ShakaBufferedInfo *)bufferedInfo {
-  auto results = _player->GetBufferedInfo();
-  if (results.has_error()) {
-    _client.OnError(results.error());
-    return [[ShakaBufferedInfo alloc] init];
-  } else {
-    return [[ShakaBufferedInfo alloc] initWithCpp:results.results()];
-  }
-}
-
 - (AVPlayer *)avPlayer {
   return static_cast<AVPlayer *>(CFBridgingRelease(_media_player->GetAvPlayer()));
 }
 
+- (void)getUiInfoWithBlock:(void (^)(ShakaPlayerUiInfo *))block {
+  auto callback = [=]() {
+#define GET_VALUE(field, method)                                            \
+  do {                                                                      \
+    auto results = _player->method();                                       \
+    if (!results.has_error()) {                                             \
+      using T = typename std::decay<decltype(results.results())>::type;     \
+      ret.field = shaka::util::ObjcConverter<T>::ToObjc(results.results()); \
+    }                                                                       \
+  } while (false)
+    auto ret = [[ShakaPlayerUiInfo alloc] init];
+    ret.paused = [self paused];
+    ret.ended = [self ended];
+    ret.seeking = [self seeking];
+    ret.duration = _media_player->Duration();
+    ret.playbackRate = _media_player->PlaybackRate();
+    ret.currentTime = _media_player->CurrentTime();
+    ret.volume = _media_player->Volume();
+    ret.muted = _media_player->Muted();
+    // This callback is run on the JS main thread, so all these should complete
+    // synchronously.
+    GET_VALUE(isAudioOnly, IsAudioOnly);
+    GET_VALUE(isLive, IsLive);
+    GET_VALUE(closedCaptions, IsTextTrackVisible);
+    GET_VALUE(seekRange, SeekRange);
+    GET_VALUE(bufferedInfo, GetBufferedInfo);
+    dispatch_async(dispatch_get_main_queue(), ^{
+      block(ret);
+    });
+#undef GET_VALUE
+  };
+  shaka::JsManagerImpl::Instance()->MainThread()->AddInternalTask(
+      shaka::TaskPriority::Internal, "UiInfo", shaka::PlainCallbackTask(std::move(callback)));
+}
 
 - (ShakaStats *)getStats {
   auto results = _player->GetStats();

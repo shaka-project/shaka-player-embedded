@@ -174,6 +174,52 @@ SHAKA_EXPORT
 @end
 
 
+/** Contains info used to update the UI. */
+SHAKA_EXPORT
+@interface ShakaPlayerUiInfo : NSObject
+
+/** Whether the video is currently paused. */
+@property(atomic) BOOL paused;
+
+/** Whether the video is currently ended. */
+@property(atomic) BOOL ended;
+
+/** Whether the video is currently seeking. */
+@property(atomic) BOOL seeking;
+
+/** The duration of the video, or 0 if nothing is loaded. */
+@property(atomic) double duration;
+
+/** The current playback rate of the video, or 1 if nothing is loaded. */
+@property(atomic) double playbackRate;
+
+/** The current time of the video, or 0 if nothing is loaded. */
+@property(atomic) double currentTime;
+
+/** The current volume of the video, or 0 if nothing is loaded. */
+@property(atomic) double volume;
+
+/** Whether the audio is currently muted. */
+@property(atomic) BOOL muted;
+
+/** Whether the video is currently audio-only. */
+@property(atomic) BOOL isAudioOnly;
+
+/** Whether the video is a livestream. */
+@property(atomic) BOOL isLive;
+
+/** Whether the video will display any closed captions present in the asset. */
+@property(atomic) BOOL closedCaptions;
+
+/** The seekable range of the current stream. */
+@property(atomic) ShakaBufferedRange *seekRange;
+
+/** The buffered range of the current stream. */
+@property(atomic) ShakaBufferedInfo *bufferedInfo;
+
+@end
+
+
 /**
  * Handles loading and playback of media content.  The is the control aspect of playback.  Use
  * a ShakaPlayerView to display the video frames.  This will still load and play content without
@@ -243,17 +289,11 @@ SHAKA_EXPORT
 /** Whether the video will display any closed captions present in the asset. */
 @property(atomic) BOOL closedCaptions;
 
-/** The seekable range of the current stream. */
-@property(atomic, readonly) ShakaBufferedRange *seekRange;
-
 /** A list of the audio languages of the current Period. */
 @property(atomic, readonly) NSArray<ShakaLanguageRole *> *audioLanguagesAndRoles;
 
 /** A list of the text languages of the current Period. */
 @property(atomic, readonly) NSArray<ShakaLanguageRole *> *textLanguagesAndRoles;
-
-/** The buffered range of the current stream. */
-@property(atomic, readonly) ShakaBufferedInfo *bufferedInfo;
 
 /**
  * Gets the current AVPlayer instance used to play src= content.  This is only valid after starting
@@ -262,6 +302,12 @@ SHAKA_EXPORT
  */
 @property(atomic, readonly, nullable) AVPlayer *avPlayer;
 
+
+/**
+ * Fetches the current UI info asynchronously.  The block is called with the current
+ * info.  The block is called on the main thread.
+ */
+- (void)getUiInfoWithBlock:(void (^)(ShakaPlayerUiInfo *))block;
 
 /** Return playback and adaptation stats. */
 - (ShakaStats *)getStats;
