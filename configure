@@ -588,9 +588,9 @@ def _CreateArgParser():
   parser = argparse.ArgumentParser(
       description=__doc__, usage='%(prog)s [options]',
       formatter_class=argparse.RawDescriptionHelpFormatter)
+  # TODO: Also add 'vs', 'vs2013', 'vs2015', 'vs2017' when we add Windows.
   parser.add_argument(
-      '--ide', choices=['eclipse', 'vs', 'vs2013', 'vs2015', 'vs2017', 'xcode',
-                        'qtcreator', 'json'],
+      '--ide', choices=['eclipse', 'xcode', 'qtcreator', 'json'],
       dest='ide_', help='The name of an IDE to generate project files for.')
   parser.add_argument(
       '--recover', dest='recover_', action='store_true',
