@@ -20,11 +20,7 @@
 #include <unordered_set>
 #include <utility>
 
-#include "shaka/js_manager.h"
-#include "shaka/media/default_media_player.h"
-#include "shaka/media/sdl_audio_renderer.h"
-#include "shaka/player.h"
-#include "shaka/utils.h"
+#include "shaka/ShakaPlayerEmbedded.h"
 
 #include "src/core/js_manager_impl.h"
 #include "src/debug/mutex.h"
@@ -240,7 +236,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   std::shared_ptr<shaka::JsManager> _engine;
 
   shaka::media::ios::IosVideoRenderer _video_renderer;
-  std::unique_ptr<shaka::media::SdlAudioRenderer> _audio_renderer;
+  std::unique_ptr<shaka::media::AudioRenderer> _audio_renderer;
 
   std::unique_ptr<shaka::media::DefaultMediaPlayer> _media_player;
   std::unique_ptr<shaka::Player> _player;
@@ -256,7 +252,11 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   if ((self = [super init])) {
     // Create JS objects.
     _engine = ShakaGetGlobalEngine();
+#ifdef SHAKA_SDL_AUDIO
     _audio_renderer.reset(new shaka::media::SdlAudioRenderer(""));
+#else
+    _audio_renderer.reset(new shaka::media::AppleAudioRenderer());
+#endif
     _media_player.reset(
         new shaka::media::DefaultMediaPlayer(&_video_renderer, _audio_renderer.get()));
     _media_player->AddClient(&_client);

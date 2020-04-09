@@ -59,6 +59,9 @@
 #  include "eme/implementation_helper.h"
 #  include "eme/implementation_registry.h"
 
+#  ifdef __APPLE__
+#    include "media/apple_audio_renderer.h"
+#  endif
 #  include "media/decoder.h"
 #  ifdef SHAKA_DEFAULT_MEDIA_PLAYER
 #    include "media/default_media_player.h"

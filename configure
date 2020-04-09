@@ -277,6 +277,10 @@ def _GetSdlPath(obj):
 @_Step('sdl2')
 def _RunSdlConfigure(src_dir, dest_dir, cpu, target_os, sysroot, parsed_args):
   """Runs configure for SDL2."""
+  if not parsed_args.sdl_audio and not parsed_args.sdl_video:
+    # Skip SDL altogether if we aren't using it.
+    return 0
+
   extra_flags = [
       # Disable third-party libraries to avoid finding the required paths in GN.
       '--disable-libudev',
@@ -763,8 +767,6 @@ def _ParseArgs(args):
       parsed_args.enable_demo and not is_ios):
     parser.error('Cannot disable SDL utils with the default demo; disable it '
                  'with --disable-demo.')
-  if parsed_args.sdl_audio is False and is_ios:
-    parser.error('Cannot use --no-sdl-audio on iOS')
   if ((parsed_args.sdl_audio is False or parsed_args.sdl_video is False) and
       parsed_args.ios_sdl_demo):
     parser.error(
@@ -788,9 +790,9 @@ def _ParseArgs(args):
     parsed_args.js_engine = 'jsc' if is_host_mac else 'v8'
 
   if parsed_args.sdl_audio is None:
-    parsed_args.sdl_audio = True
+    parsed_args.sdl_audio = bool(not is_ios or parsed_args.ios_sdl_demo)
   if parsed_args.sdl_video is None:
-    parsed_args.sdl_video = not is_ios or parsed_args.ios_sdl_demo
+    parsed_args.sdl_video = bool(not is_ios or parsed_args.ios_sdl_demo)
 
   if parsed_args.is_ubsan:
     parsed_args.is_ubsan_null = True

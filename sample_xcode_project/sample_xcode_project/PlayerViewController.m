@@ -16,6 +16,7 @@
 #import "PlayerViewController.h"
 #import "ProgressAndBufferedSlider.h"
 #import "NSObject+ShakaLayoutHelpers.h"
+#import <AVFoundation/AVFoundation.h>
 #import <ShakaPlayerEmbedded/ShakaPlayerEmbedded.h>
 
 #define ShakaFadeBegin 4
@@ -87,6 +88,9 @@ typedef enum { kPlayPauseIconPlay, kPlayPauseIconPause, kPlayPauseIconReplay } P
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
+
+  AVAudioSession *audioSession = [AVAudioSession sharedInstance];
+  [audioSession setCategory:AVAudioSessionCategoryPlayback error:nil];
 
   // Don't go to sleep while watching a video.
   [UIApplication sharedApplication].idleTimerDisabled = YES;

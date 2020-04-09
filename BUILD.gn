@@ -810,12 +810,19 @@ source_set("internal_sources") {
 
   if (is_ios || is_mac) {
     libs += [
+      "AVFoundation.framework",
+      "AudioToolbox.framework",
+      "CoreAudio.framework",
       "CoreMedia.framework",
+      "CoreVideo.framework",
       "Foundation.framework",
+      "IOKit.framework",
+      "QuartzCore.framework",
       "Security.framework",
       "VideoToolbox.framework",
     ]
     sources += [
+      "shaka/src/media/apple_audio_renderer.cc",
       "shaka/src/util/crypto_darwin.cc",
       "shaka/src/util/darwin_utils.h",
       "shaka/src/util/darwin_utils.mm",
@@ -823,8 +830,8 @@ source_set("internal_sources") {
     ]
     if (is_ios) {
       libs += [
-        "AVFoundation.framework",
         "AVKit.framework",
+        "UIKit.framework",
       ]
     }
   } else {
@@ -936,6 +943,7 @@ if (is_ios) {
   bundle_data("cpp_media_api_headers") {
     visibility = [ ":*" ]
     sources = [
+      "shaka/include/shaka/media/apple_audio_renderer.h",
       "shaka/include/shaka/media/decoder.h",
       "shaka/include/shaka/media/demuxer.h",
       "shaka/include/shaka/media/frames.h",
@@ -1209,6 +1217,7 @@ if (is_ios) {
       cflags = [ "-F." ]
       ldflags = [ "-F." ]
       libs = [
+        "AVFoundation.framework",
         "ShakaPlayerEmbedded.framework",
         "QuartzCore.framework",
       ]
