@@ -19,7 +19,6 @@ declare_args() {
   ffmpeg_codec_files = []
   ffmpeg_util_files = []
   ffmpeg_swscale_files = []
-  ffmpeg_swresample_files = []
 
   ffmpeg_patch_mov = false
   ffmpeg_patch_mkv = false
@@ -93,12 +92,6 @@ framework_library("ffmpeg_libs") {
     ":libavformat",
     ":libavutil",
   ]
-  if (sdl_audio) {
-    deps += [
-      # TODO: Consider making libavresample optional?
-      ":swresample",
-    ]
-  }
 
   public_configs = [ ":external_config" ]
 }
@@ -247,8 +240,4 @@ ffmpeg_part("libavutil") {
 
 ffmpeg_part("swscale_internal") {
   sources = ffmpeg_swscale_files
-}
-
-ffmpeg_part("swresample") {
-  sources = ffmpeg_swresample_files
 }

@@ -293,7 +293,6 @@ def _RunSdlConfigure(src_dir, dest_dir, cpu, target_os, sysroot, parsed_args):
       '--disable-power',
       '--disable-filesystem',
       '--disable-timers',
-      '--disable-libsamplerate',  # We resample ourselves.
       '--disable-libsamplerate-shared',
   ]
   if platform.uname()[0] != 'Darwin':
@@ -390,7 +389,7 @@ def _RunFFmpegConfigure(src_dir, dest_dir, cpu, target_os, sysroot,
       '--disable-avdevice',
       '--enable-avcodec',
       '--enable-avformat',
-      '--enable-swresample',
+      '--disable-swresample',
       '--disable-swscale',
       '--disable-postproc',
       '--disable-avfilter',
@@ -438,7 +437,6 @@ def _RunFFmpegConfigure(src_dir, dest_dir, cpu, target_os, sysroot,
   parsed_args.ffmpeg_codec_files = _GetFiles('libavcodec')
   parsed_args.ffmpeg_util_files = _GetFiles('libavutil')
   parsed_args.ffmpeg_swscale_files = _GetFiles('libswscale')
-  parsed_args.ffmpeg_swresample_files = _GetFiles('libswresample')
   parsed_args.ffmpeg_format_files = _GetFiles('libavformat')
   if 'src/libavformat/mov.c' in parsed_args.ffmpeg_format_files:
     parsed_args.ffmpeg_format_files.remove('src/libavformat/mov.c')

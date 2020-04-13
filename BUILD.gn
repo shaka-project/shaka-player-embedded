@@ -322,7 +322,7 @@ source_set("eme_plugins") {
     "//third_party/libxml:libxml",
     "//third_party/zlib:zlib",
   ]
-  if (decoder == "ffmpeg" || has_demuxer || sdl_audio) {
+  if (decoder == "ffmpeg" || has_demuxer) {
     deps += [ "//third_party/ffmpeg:ffmpeg_libs" ]
   }
   if (sdl_audio || sdl_video) {
@@ -647,6 +647,8 @@ source_set("internal_sources") {
     "shaka/src/mapping/struct.cc",
     "shaka/src/mapping/struct.h",
     "shaka/src/mapping/weak_js_ptr.h",
+    "shaka/src/media/audio_renderer_common.cc",
+    "shaka/src/media/audio_renderer_common.h",
     "shaka/src/media/decoder.cc",
     "shaka/src/media/demuxer.cc",
     "shaka/src/media/demuxer_thread.cc",
@@ -791,7 +793,7 @@ source_set("internal_sources") {
   ]
   libs = ["sqlite3"]
 
-  if (decoder == "ffmpeg" || has_demuxer || sdl_audio) {
+  if (decoder == "ffmpeg" || has_demuxer) {
     deps += [ "//third_party/ffmpeg:ffmpeg_libs" ]
   }
 
@@ -1325,6 +1327,7 @@ test("tests") {
     "shaka/test/src/debug/integration.cc",
     "shaka/test/src/eme/clearkey_implementation_unittest.cc",
     "shaka/test/src/js/idb/sqlite_unittest.cc",
+    "shaka/test/src/media/audio_renderer_common_unittest.cc",
     "shaka/test/src/media/streams_unittest.cc",
     "shaka/test/src/media/media_utils_unittest.cc",
     "shaka/test/src/memory/heap_tracer_unittest.cc",
