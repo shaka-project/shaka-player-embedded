@@ -132,11 +132,11 @@ VideoPlaybackQuality MseMediaPlayer::VideoPlaybackQuality() const {
   return video_renderer_->VideoPlaybackQuality();
 }
 
-void MseMediaPlayer::AddClient(MediaPlayer::Client* client) {
+void MseMediaPlayer::AddClient(MediaPlayer::Client* client) const {
   LOG(FATAL) << "Should be handled by ProxyMediaPlayer";
 }
 
-void MseMediaPlayer::RemoveClient(MediaPlayer::Client* client) {
+void MseMediaPlayer::RemoveClient(MediaPlayer::Client* client) const {
   LOG(FATAL) << "Should be handled by ProxyMediaPlayer";
 }
 
@@ -264,7 +264,9 @@ double MseMediaPlayer::PlaybackRate() const {
 }
 
 void MseMediaPlayer::SetPlaybackRate(double rate) {
+  const double old_rate = pipeline_manager_.GetPlaybackRate();
   pipeline_manager_.SetPlaybackRate(rate);
+  clients_->OnPlaybackRateChanged(old_rate, rate);
 }
 
 

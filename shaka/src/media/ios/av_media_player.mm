@@ -223,8 +223,11 @@ class shaka::media::ios::AvMediaPlayer::Impl {
   }
 
   void OnError(const std::string &message) {
-    util::shared_lock<SharedMutex> lock(mutex_);
     clients_->OnError(message);
+  }
+
+  void OnPlaybackRateChanged(double old_rate, double new_rate) {
+    clients_->OnPlaybackRateChanged(old_rate, new_rate);
   }
 
  private:
@@ -364,6 +367,10 @@ class shaka::media::ios::AvMediaPlayer::Impl {
       std::string str = [[error localizedDescription] UTF8String];
       impl_->OnError(str);
     }
+  } else if ([keyPath isEqual:@"rate"]) {
+    auto *old_num = static_cast<NSNumber *>(old);
+    auto *new_num = static_cast<NSNumber *>(new_);
+    impl_->OnPlaybackRateChanged([old_num doubleValue], [new_num doubleValue]);
   }
 
   impl_->UpdateAndGetVideoPlaybackState();
@@ -406,10 +413,10 @@ MediaCapabilitiesInfo AvMediaPlayer::DecodingInfo(const MediaDecodingConfigurati
 VideoPlaybackQuality AvMediaPlayer::VideoPlaybackQuality() const {
   return {};  // Unsupported.
 }
-void AvMediaPlayer::AddClient(Client *client) {
+void AvMediaPlayer::AddClient(Client *client) const {
   LOG(FATAL) << "Should be handled by ProxyMediaPlayer";
 }
-void AvMediaPlayer::RemoveClient(Client *client) {
+void AvMediaPlayer::RemoveClient(Client *client) const {
   LOG(FATAL) << "Should be handled by ProxyMediaPlayer";
 }
 

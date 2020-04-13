@@ -67,11 +67,11 @@ VideoPlaybackQuality ProxyMediaPlayer::VideoPlaybackQuality() const {
     return VideoPlaybackQuality();
 }
 
-void ProxyMediaPlayer::AddClient(Client* client) {
+void ProxyMediaPlayer::AddClient(Client* client) const {
   impl_->clients.AddClient(client);
 }
 
-void ProxyMediaPlayer::RemoveClient(Client* client) {
+void ProxyMediaPlayer::RemoveClient(Client* client) const {
   impl_->clients.RemoveClient(client);
 }
 

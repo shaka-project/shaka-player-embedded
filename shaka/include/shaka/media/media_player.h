@@ -276,6 +276,9 @@ class SHAKA_EXPORT MediaPlayer {
     virtual void OnPlaybackStateChanged(VideoPlaybackState old_state,
                                         VideoPlaybackState new_state);
 
+    /** Called when the playback rate changes. */
+    virtual void OnPlaybackRateChanged(double old_rate, double new_rate);
+
     /**
      * Called when an error happens during playback.
      * @param error Describes what went wrong, can be empty.
@@ -318,6 +321,23 @@ class SHAKA_EXPORT MediaPlayer {
      * multiple times if new keys arrive but there still isn't the required key.
      */
     virtual void OnWaitingForKey();
+
+
+    /**
+     * Called when a user-defined event is raised.  These may be raised by
+     * custom MediaPlayer implementations to pass user data to a listener.
+     * Library-defined listeners will ignore these events.
+     *
+     * This can also be used by the library to raise new events on minor release
+     * branches without breaking ABI.  There are currently no such events.
+     *
+     * Events that have named methods will not be raised using this method.
+     *
+     * @param name The name of the event.
+     * @param user_data Extra user data associated with the event.  Unless
+     *   otherwise stated, it will only remain valid for this call.
+     */
+    virtual void OnUserEvent(const std::string& name, void* user_data);
   };
 
   /** Represents a thread-safe collection of Client instances. */
@@ -339,6 +359,7 @@ class SHAKA_EXPORT MediaPlayer {
                              VideoReadyState new_state) override;
     void OnPlaybackStateChanged(VideoPlaybackState old_state,
                                 VideoPlaybackState new_state) override;
+    void OnPlaybackRateChanged(double old_rate, double new_rate) override;
     void OnError(const std::string& error) override;
     void OnAttachMse() override;
     void OnAttachSource() override;
@@ -346,6 +367,8 @@ class SHAKA_EXPORT MediaPlayer {
     void OnPlay() override;
     void OnSeeking() override;
     void OnWaitingForKey() override;
+
+    void OnUserEvent(const std::string& name, void* user_data) override;
 
    private:
     class Impl;
@@ -403,13 +426,13 @@ class SHAKA_EXPORT MediaPlayer {
    * are raised.  Clients are called in the order they are registered.  Calling
    * this with an already-registered client will have no effect.
    */
-  virtual void AddClient(Client* client) = 0;
+  virtual void AddClient(Client* client) const = 0;
 
   /**
    * Removes a client listener.  The given client will no longer be called when
    * events happen.
    */
-  virtual void RemoveClient(Client* client) = 0;
+  virtual void RemoveClient(Client* client) const = 0;
 
   /**
    * Gets the ranges of buffered content in the media.  For MSE playback, this

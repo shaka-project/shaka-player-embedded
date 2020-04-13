@@ -46,8 +46,8 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
   MediaCapabilitiesInfo DecodingInfo(
       const MediaDecodingConfiguration& config) const override;
   struct VideoPlaybackQuality VideoPlaybackQuality() const override;
-  void AddClient(MediaPlayer::Client* client) override;
-  void RemoveClient(MediaPlayer::Client* client) override;
+  void AddClient(MediaPlayer::Client* client) const override;
+  void RemoveClient(MediaPlayer::Client* client) const override;
   std::vector<BufferedRange> GetBuffered() const override;
   VideoReadyState ReadyState() const override;
   VideoPlaybackState PlaybackState() const override;

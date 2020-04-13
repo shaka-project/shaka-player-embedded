@@ -95,6 +95,9 @@ void MediaPlayer::Client::OnPlaybackStateChanged(VideoPlaybackState old_state,
                                                  VideoPlaybackState new_state) {
 }
 
+void MediaPlayer::Client::OnPlaybackRateChanged(double old_rate,
+                                                double new_rate) {}
+
 void MediaPlayer::Client::OnError(const std::string& error) {}
 
 void MediaPlayer::Client::OnAttachMse() {}
@@ -108,6 +111,9 @@ void MediaPlayer::Client::OnPlay() {}
 void MediaPlayer::Client::OnSeeking() {}
 
 void MediaPlayer::Client::OnWaitingForKey() {}
+
+void MediaPlayer::Client::OnUserEvent(const std::string& name,
+                                      void* user_data) {}
 
 
 class MediaPlayer::ClientList::Impl {
@@ -177,6 +183,11 @@ void MediaPlayer::ClientList::OnPlaybackStateChanged(
                           new_state);
 }
 
+void MediaPlayer::ClientList::OnPlaybackRateChanged(double old_rate,
+                                                    double new_rate) {
+  impl_->CallClientMethod(&Client::OnPlaybackRateChanged, old_rate, new_rate);
+}
+
 void MediaPlayer::ClientList::OnError(const std::string& error) {
   impl_->CallClientMethod(&Client::OnError, error);
 }
@@ -203,6 +214,11 @@ void MediaPlayer::ClientList::OnSeeking() {
 
 void MediaPlayer::ClientList::OnWaitingForKey() {
   impl_->CallClientMethod(&Client::OnWaitingForKey);
+}
+
+void MediaPlayer::ClientList::OnUserEvent(const std::string& name,
+                                          void* user_data) {
+  impl_->CallClientMethod(&Client::OnUserEvent, name, user_data);
 }
 
 

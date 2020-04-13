@@ -45,8 +45,8 @@ class MockMediaPlayer : public MediaPlayer {
   MOCK_CONST_METHOD1(DecodingInfo,
                      MediaCapabilitiesInfo(const MediaDecodingConfiguration&));
   MOCK_CONST_METHOD0(VideoPlaybackQuality, struct VideoPlaybackQuality());
-  MOCK_METHOD1(AddClient, void(Client*));
-  MOCK_METHOD1(RemoveClient, void(Client*));
+  MOCK_CONST_METHOD1(AddClient, void(Client*));
+  MOCK_CONST_METHOD1(RemoveClient, void(Client*));
   MOCK_CONST_METHOD0(GetBuffered, std::vector<BufferedRange>());
   MOCK_CONST_METHOD0(ReadyState, VideoReadyState());
   MOCK_CONST_METHOD0(PlaybackState, VideoPlaybackState());
