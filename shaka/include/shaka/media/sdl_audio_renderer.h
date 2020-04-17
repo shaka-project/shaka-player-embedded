@@ -45,8 +45,6 @@ class SHAKA_EXPORT SdlAudioRenderer final : public AudioRenderer {
    */
   static std::vector<std::string> ListDevices();
 
-  void OnSeek() override;
-
   void SetPlayer(const MediaPlayer* player) override;
   void Attach(const DecodedStream* stream) override;
   void Detach() override;

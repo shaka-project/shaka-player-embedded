@@ -77,6 +77,14 @@ class shaka::media::ios::AvMediaPlayer::Impl {
     return CFBridgingRetain(player_);
   }
 
+  void AddClient(MediaPlayer::Client *client) {
+    clients_->AddClient(client);
+  }
+
+  void RemoveClient(MediaPlayer::Client *client) {
+    clients_->RemoveClient(client);
+  }
+
 
   bool SetVideoFillMode(VideoFillMode mode) {
     util::shared_lock<SharedMutex> lock(mutex_);
@@ -414,10 +422,10 @@ VideoPlaybackQuality AvMediaPlayer::VideoPlaybackQuality() const {
   return {};  // Unsupported.
 }
 void AvMediaPlayer::AddClient(Client *client) const {
-  LOG(FATAL) << "Should be handled by ProxyMediaPlayer";
+  impl_->AddClient(client);
 }
 void AvMediaPlayer::RemoveClient(Client *client) const {
-  LOG(FATAL) << "Should be handled by ProxyMediaPlayer";
+  impl_->RemoveClient(client);
 }
 
 std::vector<BufferedRange> AvMediaPlayer::GetBuffered() const {

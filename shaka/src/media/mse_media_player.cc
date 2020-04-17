@@ -133,11 +133,11 @@ VideoPlaybackQuality MseMediaPlayer::VideoPlaybackQuality() const {
 }
 
 void MseMediaPlayer::AddClient(MediaPlayer::Client* client) const {
-  LOG(FATAL) << "Should be handled by ProxyMediaPlayer";
+  clients_->AddClient(client);
 }
 
 void MseMediaPlayer::RemoveClient(MediaPlayer::Client* client) const {
-  LOG(FATAL) << "Should be handled by ProxyMediaPlayer";
+  clients_->RemoveClient(client);
 }
 
 std::vector<BufferedRange> MseMediaPlayer::GetBuffered() const {
@@ -396,8 +396,6 @@ void MseMediaPlayer::ReadyStateChanged(VideoReadyState state) {
 
 void MseMediaPlayer::OnSeek() {
   // Avoid holding the lock for interacting with the Renderers.
-  audio_renderer_->OnSeek();
-  video_renderer_->OnSeek();
   clients_->OnSeeking();
 
   std::unique_lock<SharedMutex> lock(mutex_);

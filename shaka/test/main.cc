@@ -57,7 +57,6 @@ DEFINE_string(v8_flags, "", "Pass the given flags to V8.");
 
 class DummyRenderer : public media::VideoRenderer, public media::AudioRenderer {
  public:
-  void OnSeek() override {}
   void SetPlayer(const media::MediaPlayer* player) override {}
   void Attach(const media::DecodedStream* stream) override {}
   void Detach() override {}

@@ -135,10 +135,6 @@ double SdlManualVideoRenderer::Render(const SDL_Rect* region) {
   return impl_->Render(region);
 }
 
-void SdlManualVideoRenderer::OnSeek() {
-  impl_->OnSeek();
-}
-
 void SdlManualVideoRenderer::SetPlayer(const MediaPlayer* player) {
   impl_->SetPlayer(player);
 }

@@ -193,7 +193,7 @@ bool InitSdl() {
 
 }  // namespace
 
-class SdlAudioRenderer::Impl {
+class SdlAudioRenderer::Impl : MediaPlayer::Client {
  public:
   explicit Impl(const std::string& device_name)
       : mutex_("SdlAudioRenderer"),
@@ -214,7 +214,7 @@ class SdlAudioRenderer::Impl {
     SDL_SetHint(SDL_HINT_AUDIO_CATEGORY, "playback");
   }
 
-  ~Impl() {
+  ~Impl() override {
     {
       std::unique_lock<Mutex> lock(mutex_);
       shutdown_ = true;
@@ -225,19 +225,26 @@ class SdlAudioRenderer::Impl {
     if (audio_device_ > 0)
       SDL_CloseAudioDevice(audio_device_);
     swr_free(&swr_ctx_);
+    if (player_)
+      player_->RemoveClient(this);
   }
 
   SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Impl);
 
-  void OnSeek() {
+  void OnSeeking() override {
     std::unique_lock<Mutex> lock(mutex_);
     cur_time_ = -1;
   }
 
   void SetPlayer(const MediaPlayer* player) {
     std::unique_lock<Mutex> lock(mutex_);
+    if (player_)
+      player_->RemoveClient(this);
+
     player_ = player;
     on_reset_.SignalAllIfNotSet();
+    if (player)
+      player->AddClient(this);
   }
 
   void Attach(const DecodedStream* stream) {
@@ -524,10 +531,6 @@ std::vector<std::string> SdlAudioRenderer::ListDevices() {
   for (size_t i = 0; i < ret.size(); i++)
     ret[i] = SDL_GetAudioDeviceName(i, /* iscapture= */ 0);
   return ret;
-}
-
-void SdlAudioRenderer::OnSeek() {
-  impl_->OnSeek();
 }
 
 void SdlAudioRenderer::SetPlayer(const MediaPlayer* player) {

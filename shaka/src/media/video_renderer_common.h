@@ -18,6 +18,7 @@
 #include <atomic>
 #include <memory>
 
+#include "shaka/media/media_player.h"
 #include "shaka/media/renderer.h"
 #include "src/debug/mutex.h"
 
@@ -28,7 +29,7 @@ namespace media {
  * Holds common code between our VideoRenderer types.  This handles selecting
  * the current frame, tracking frame counts, and changing fields.
  */
-class VideoRendererCommon : public VideoRenderer {
+class VideoRendererCommon : public VideoRenderer, MediaPlayer::Client {
  public:
   VideoRendererCommon();
   ~VideoRendererCommon() override;
@@ -43,8 +44,6 @@ class VideoRendererCommon : public VideoRenderer {
   double GetCurrentFrame(std::shared_ptr<DecodedFrame>* frame);
 
 
-  void OnSeek() override;
-
   void SetPlayer(const MediaPlayer* player) override;
   void Attach(const DecodedStream* stream) override;
   void Detach() override;
@@ -53,6 +52,8 @@ class VideoRendererCommon : public VideoRenderer {
   bool SetVideoFillMode(VideoFillMode mode) override;
 
  private:
+  void OnSeeking() override;
+
   mutable Mutex mutex_;
 
   const MediaPlayer* player_;

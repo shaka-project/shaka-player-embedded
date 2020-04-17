@@ -38,10 +38,6 @@ class SHAKA_EXPORT Renderer {
  public:
   SHAKA_DECLARE_INTERFACE_METHODS(Renderer);
 
-  /** Called when a seek begins. */
-  virtual void OnSeek() = 0;
-
-
   /**
    * Sets the MediaPlayer that is controlling this renderer.  This will be used
    * by the Renderer to query the current time and playback state.

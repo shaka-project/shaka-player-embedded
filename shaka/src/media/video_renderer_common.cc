@@ -36,7 +36,11 @@ VideoRendererCommon::VideoRendererCommon()
       quality_(),
       fill_mode_(VideoFillMode::MaintainRatio),
       prev_time_(-1) {}
-VideoRendererCommon::~VideoRendererCommon() {}
+
+VideoRendererCommon::~VideoRendererCommon() {
+  if (player_)
+    player_->RemoveClient(this);
+}
 
 VideoFillMode VideoRendererCommon::fill_mode() const {
   return fill_mode_.load(std::memory_order_relaxed);
@@ -84,14 +88,19 @@ double VideoRendererCommon::GetCurrentFrame(
   return delay;
 }
 
-void VideoRendererCommon::OnSeek() {
+void VideoRendererCommon::OnSeeking() {
   std::unique_lock<Mutex> lock(mutex_);
   prev_time_ = -1;
 }
 
 void VideoRendererCommon::SetPlayer(const MediaPlayer* player) {
   std::unique_lock<Mutex> lock(mutex_);
+  if (player_)
+    player_->RemoveClient(this);
+
   player_ = player;
+  if (player)
+    player->AddClient(this);
 }
 
 void VideoRendererCommon::Attach(const DecodedStream* stream) {

@@ -27,10 +27,11 @@ namespace media {
 
 namespace {
 
+using testing::_;
 using testing::InSequence;
 using testing::MockFunction;
 using testing::Return;
-using testing::StrictMock;
+using testing::SaveArg;
 
 constexpr const double kMinDelay = 1.0 / 120;
 
@@ -95,7 +96,7 @@ TEST(VideoRendererCommonTest, WorksWithNoNextFrame) {
   auto frame = MakeFrame(0.0);
   stream.AddFrame(frame);
 
-  StrictMock<MockMediaPlayer> player;
+  MockMediaPlayer player;
   EXPECT_CALL(player, PlaybackState())
       .WillRepeatedly(Return(VideoPlaybackState::Playing));
   EXPECT_CALL(player, CurrentTime()).WillRepeatedly(Return(0));
@@ -114,7 +115,7 @@ TEST(VideoRendererCommonTest, WorksWithNoNextFrame) {
 TEST(VideoRendererCommonTest, WorksWithNoFrames) {
   DecodedStream stream;
 
-  StrictMock<MockMediaPlayer> player;
+  MockMediaPlayer player;
   EXPECT_CALL(player, PlaybackState())
       .WillRepeatedly(Return(VideoPlaybackState::Playing));
   EXPECT_CALL(player, CurrentTime()).WillRepeatedly(Return(0));
@@ -133,7 +134,7 @@ TEST(VideoRendererCommonTest, DrawsFrameInPast) {
   auto frame = MakeFrame(0.0);
   stream.AddFrame(frame);
 
-  StrictMock<MockMediaPlayer> player;
+  MockMediaPlayer player;
   EXPECT_CALL(player, PlaybackState())
       .WillRepeatedly(Return(VideoPlaybackState::Playing));
   EXPECT_CALL(player, CurrentTime()).WillRepeatedly(Return(4));
@@ -156,7 +157,7 @@ TEST(VideoRendererCommonTest, TracksDroppedFrames) {
   stream.AddFrame(MakeFrame(0.03));
   stream.AddFrame(MakeFrame(0.04));
 
-  StrictMock<MockMediaPlayer> player;
+  MockMediaPlayer player;
   MockFunction<void()> step;
   EXPECT_CALL(player, PlaybackState())
       .WillRepeatedly(Return(VideoPlaybackState::Playing));
@@ -196,10 +197,12 @@ TEST(VideoRendererCommonTest, HandlesSeeks) {
   stream.AddFrame(MakeFrame(0.03));
   stream.AddFrame(MakeFrame(0.04));
 
-  StrictMock<MockMediaPlayer> player;
+  MockMediaPlayer player;
   MockFunction<void()> step;
+  MediaPlayer::Client* client;
   EXPECT_CALL(player, PlaybackState())
       .WillRepeatedly(Return(VideoPlaybackState::Playing));
+  EXPECT_CALL(player, AddClient(_)).WillOnce(SaveArg<0>(&client));
 
   {
     InSequence seq;
@@ -222,7 +225,7 @@ TEST(VideoRendererCommonTest, HandlesSeeks) {
   EXPECT_EQ(renderer.VideoPlaybackQuality().total_video_frames, 1);
   EXPECT_DOUBLE_EQ(delay, 0.01);
 
-  renderer.OnSeek();
+  client->OnSeeking();
   step.Call();
 
   // Time: 0.04
@@ -241,7 +244,7 @@ TEST(VideoRendererCommonTest, TracksNewFrames) {
   stream.AddFrame(MakeFrame(0.04));
 
   MockFunction<void()> step;
-  StrictMock<MockMediaPlayer> player;
+  MockMediaPlayer player;
   EXPECT_CALL(player, PlaybackState())
       .WillRepeatedly(Return(VideoPlaybackState::Playing));
 

@@ -71,8 +71,6 @@ class SHAKA_EXPORT SdlManualVideoRenderer : public VideoRenderer {
   double Render(const SDL_Rect* region = nullptr);
 
 
-  void OnSeek() override;
-
   void SetPlayer(const MediaPlayer* player) override;
   void Attach(const DecodedStream* stream) override;
   void Detach() override;
