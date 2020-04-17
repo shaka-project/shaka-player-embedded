@@ -180,6 +180,17 @@ int64_t GetChannelLayout(int num_channels) {
   }
 }
 
+bool InitSdl() {
+  if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+    SDL_SetMainReady();
+    if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
+      LOG(ERROR) << "Error initializing SDL: " << SDL_GetError();
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 class SdlAudioRenderer::Impl {
@@ -298,13 +309,8 @@ class SdlAudioRenderer::Impl {
   }
 
   bool InitDevice(const DecodedFrame* frame) {
-    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
-      SDL_SetMainReady();
-      if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
-        LOG(ERROR) << "Error initializing SDL: " << SDL_GetError();
-        return false;
-      }
-    }
+    if (!InitSdl())
+      return false;
 
     memset(&audio_spec_, 0, sizeof(audio_spec_));
     audio_spec_.freq = frame->stream_info->sample_rate;
@@ -509,6 +515,16 @@ class SdlAudioRenderer::Impl {
 SdlAudioRenderer::SdlAudioRenderer(const std::string& device_name)
     : impl_(new Impl(device_name)) {}
 SdlAudioRenderer::~SdlAudioRenderer() {}
+
+std::vector<std::string> SdlAudioRenderer::ListDevices() {
+  if (!InitSdl())
+    return {};
+
+  std::vector<std::string> ret(SDL_GetNumAudioDevices(/* iscapture= */ 0));
+  for (size_t i = 0; i < ret.size(); i++)
+    ret[i] = SDL_GetAudioDeviceName(i, /* iscapture= */ 0);
+  return ret;
+}
 
 void SdlAudioRenderer::OnSeek() {
   impl_->OnSeek();

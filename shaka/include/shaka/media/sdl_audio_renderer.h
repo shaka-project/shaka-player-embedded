@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "../macros.h"
 #include "renderer.h"
@@ -31,8 +32,18 @@ namespace media {
  */
 class SHAKA_EXPORT SdlAudioRenderer final : public AudioRenderer {
  public:
+  /**
+   * Creates a new audio renderer that plays using the given SDL audio device.
+   * Can pass the empty string to use the default device.
+   */
   SdlAudioRenderer(const std::string& device_name);
   ~SdlAudioRenderer() override;
+
+  /**
+   * Returns a vector containing all possible audio devices.  Other values may
+   * be valid based on the system.  See SDL documentation for more info.
+   */
+  static std::vector<std::string> ListDevices();
 
   void OnSeek() override;
 
