@@ -22,9 +22,9 @@ namespace shaka {
 #endif
 
 #ifdef __OBJC__
-#  define _SHAKA_MAKE_STRING(name) @name
+#  define SHAKA_MAKE_STRING_(name) @name
 #else
-#  define _SHAKA_MAKE_STRING(name) name
+#  define SHAKA_MAKE_STRING_(name) name
 #endif
 
 /**
@@ -42,263 +42,263 @@ namespace shaka {
  * requests.
  */
 #define kDrmRetryMaxAttempts \
-    _SHAKA_MAKE_STRING("drm.retryParameters.maxAttempts")
+    SHAKA_MAKE_STRING_("drm.retryParameters.maxAttempts")
 /**
  * (number) The delay before the first retry for license requests, in
  * milliseconds.
  */
 #define kDrmRetryBaseDelay \
-    _SHAKA_MAKE_STRING("drm.retryParameters.baseDelay")
+    SHAKA_MAKE_STRING_("drm.retryParameters.baseDelay")
 /** (number) The multiplier for successive retry delays for license requests. */
 #define kDrmRetryBackoffFactor \
-    _SHAKA_MAKE_STRING("drm.retryParameters.backoffFactor")
+    SHAKA_MAKE_STRING_("drm.retryParameters.backoffFactor")
 /**
  * (number) The range (as a factor) to fuzz the delay amount for license
  * requests.  For example, 0.5 means 50% above and below.
  */
 #define kDrmRetryFuzzFactor \
-    _SHAKA_MAKE_STRING("drm.retryParameters.fuzzFactor")
+    SHAKA_MAKE_STRING_("drm.retryParameters.fuzzFactor")
 /**
  * (number) The request timeout for license requests, in milliseconds.  Zero
  * means no timeout.
  */
 #define kDrmRetryTimeout \
-    _SHAKA_MAKE_STRING("drm.retryParameters.timeout")
+    SHAKA_MAKE_STRING_("drm.retryParameters.timeout")
 /** (boolean) Delay sending license requests until playback has started. */
 #define kDelayLicenseRequestUntilPlayed \
-    _SHAKA_MAKE_STRING("drm.delayLicenseRequestUntilPlayed");
+    SHAKA_MAKE_STRING_("drm.delayLicenseRequestUntilPlayed");
 
 /**
  * (number) The maximum number of requests that will be made for manifest
  * requests.
  */
 #define kManifestRetryMaxAttempts \
-    _SHAKA_MAKE_STRING("manifest.retryParameters.maxAttempts")
+    SHAKA_MAKE_STRING_("manifest.retryParameters.maxAttempts")
 /**
  * (number) The delay before the first retry for manifest requests, in
  * milliseconds.
  */
 #define kManifestRetryBaseDelay \
-    _SHAKA_MAKE_STRING("manifest.retryParameters.baseDelay")
+    SHAKA_MAKE_STRING_("manifest.retryParameters.baseDelay")
 /**
  * (number) The multiplier for successive retry delays for manifest requests.
  */
 #define kManifestRetryBackoffFactor \
-    _SHAKA_MAKE_STRING("manifest.retryParameters.backoffFactor")
+    SHAKA_MAKE_STRING_("manifest.retryParameters.backoffFactor")
 /**
  * (number) The range (as a factor) to fuzz the delay amount for manifest
  * requests.  For example, 0.5 means 50% above and below.
  */
 #define kManifestRetryFuzzFactor \
-    _SHAKA_MAKE_STRING("manifest.retryParameters.fuzzFactor")
+    SHAKA_MAKE_STRING_("manifest.retryParameters.fuzzFactor")
 /**
  * (number) The request timeout for manifest requests, in milliseconds.  Zero
  * means no timeout.
  */
 #define kManifestRetryTimeout \
-    _SHAKA_MAKE_STRING("manifest.retryParameters.timeout")
+    SHAKA_MAKE_STRING_("manifest.retryParameters.timeout")
 
 /**
  * (string) The URI to fetch for Live clock-synchronization if none is provided
  * in the manifest.
  */
 #define kManifestDashClockSyncUri \
-    _SHAKA_MAKE_STRING("manifest.dash.clockSyncUri")
+    SHAKA_MAKE_STRING_("manifest.dash.clockSyncUri")
 /**
  * (boolean) Ignore any DRM info provided in the manifest and only use the info
  * found in the media.  This assumes that all standard key systems are
  * supported.
  */
-#define kDashIgnoreDrmInfo _SHAKA_MAKE_STRING("manifest.dash.ignoreDrmInfo")
+#define kDashIgnoreDrmInfo SHAKA_MAKE_STRING_("manifest.dash.ignoreDrmInfo")
 /**
  * (boolean) If true, xlink failures will result in using the existing content
  * in the tag; if false, xlink failures result in manifest parsing errors.
  */
 #define kXlinkFailGracefully \
-    _SHAKA_MAKE_STRING("manifest.dash.xlinkFailGracefully")
+    SHAKA_MAKE_STRING_("manifest.dash.xlinkFailGracefully")
 /**
  * (number) The default presentation delay to use if suggestedPresentationDelay
  * is not found in the manifest.
  */
 #define kDashDefaultPresentationDelay \
-    _SHAKA_MAKE_STRING("manifest.dash.defaultPresentationDelay")
+    SHAKA_MAKE_STRING_("manifest.dash.defaultPresentationDelay")
 
 /**
  * (number) The maximum number of requests that will be made for segment
  * requests.
  */
 #define kStreamingRetryMaxAttempts \
-    _SHAKA_MAKE_STRING("streaming.retryParameters.maxAttempts")
+    SHAKA_MAKE_STRING_("streaming.retryParameters.maxAttempts")
 /**
  * (number) The delay before the first retry for segment requests, in
  * milliseconds.
  */
 #define kStreamingRetryBaseDelay \
-    _SHAKA_MAKE_STRING("streaming.retryParameters.baseDelay")
+    SHAKA_MAKE_STRING_("streaming.retryParameters.baseDelay")
 /**
  * (number) The multiplier for successive retry delays for segment requests.
  */
 #define kStreamingRetryBackoffFactor \
-    _SHAKA_MAKE_STRING("streaming.retryParameters.backoffFactor")
+    SHAKA_MAKE_STRING_("streaming.retryParameters.backoffFactor")
 /**
  * (number) The range (as a factor) to fuzz the delay amount for segment
  * requests.  For example, 0.5 means 50% above and below.
  */
 #define kStreamingRetryFuzzFactor \
-    _SHAKA_MAKE_STRING("streaming.retryParameters.fuzzFactor")
+    SHAKA_MAKE_STRING_("streaming.retryParameters.fuzzFactor")
 /**
  * (number) The request timeout for segment requests, in milliseconds.  Zero
  * means no timeout.
  */
 #define kStreamingRetryTimeout \
-    _SHAKA_MAKE_STRING("streaming.retryParameters.timeout")
+    SHAKA_MAKE_STRING_("streaming.retryParameters.timeout")
 
 /**
  * (number) The minimum number of seconds of content that must buffer before we
  * can begin playback or can continue playback after we enter into a
  * buffering state.
  */
-#define kRebufferingGoal _SHAKA_MAKE_STRING("streaming.rebufferingGoal")
+#define kRebufferingGoal SHAKA_MAKE_STRING_("streaming.rebufferingGoal")
 /**
  * (number) The number of seconds of content that we will attempt to buffer
  * ahead of the playhead.
  */
-#define kBufferingGoal _SHAKA_MAKE_STRING("streaming.bufferingGoal")
+#define kBufferingGoal SHAKA_MAKE_STRING_("streaming.bufferingGoal")
 /**
  * (number) The maximum number of seconds of content that we will keep in buffer
  * behind the playhead.
  */
-#define kBufferBehind _SHAKA_MAKE_STRING("streaming.bufferBehind")
+#define kBufferBehind SHAKA_MAKE_STRING_("streaming.bufferBehind")
 /**
  * (boolean) If true, the player will ignore text stream failures and continue
  * playing other streams.
  */
 #define kIgnoreTextStreamFailures \
-    _SHAKA_MAKE_STRING("streaming.ignoreTextStreamFailures")
+    SHAKA_MAKE_STRING_("streaming.ignoreTextStreamFailures")
 /**
  * (boolean) If true, always stream text tracks, regardless of whether or not
  * they are shown.
  */
-#define kAlwaysStreamText _SHAKA_MAKE_STRING("streaming.alwaysStreamText")
+#define kAlwaysStreamText SHAKA_MAKE_STRING_("streaming.alwaysStreamText")
 /**
  * (boolean) If true, adjust the start time backwards so it is at the start of a
  * segment.
  */
 #define kStartAtSegmentBoundary \
-    _SHAKA_MAKE_STRING("streaming.startAtSegmentBoundary")
+    SHAKA_MAKE_STRING_("streaming.startAtSegmentBoundary")
 /**
  * (number) The limit (in seconds) for a gap in the media to be considered
  * "small". Small gaps are jumped automatically without events.
  */
-#define kSmallGapLimit _SHAKA_MAKE_STRING("streaming.smallGapLimit")
+#define kSmallGapLimit SHAKA_MAKE_STRING_("streaming.smallGapLimit")
 /** (boolean) If true, jump large gaps in addition to small gaps. */
-#define kJumpLargeGaps _SHAKA_MAKE_STRING("streaming.jumpLargeGaps")
+#define kJumpLargeGaps SHAKA_MAKE_STRING_("streaming.jumpLargeGaps")
 /**
  * (number) The number of seconds to adjust backward when seeking to exactly
  * the duration.
  */
-#define kDurationBackoff _SHAKA_MAKE_STRING("streaming.durationBackoff")
+#define kDurationBackoff SHAKA_MAKE_STRING_("streaming.durationBackoff")
 
 /** (boolean) Whether ABR is currently enabled. */
-#define kAbrEnabled _SHAKA_MAKE_STRING("abr.enabled")
+#define kAbrEnabled SHAKA_MAKE_STRING_("abr.enabled")
 /** (number) The default estimate of the network bandwidth, in bit/sec. */
 #define kDefaultBandwidthEstimate \
-    _SHAKA_MAKE_STRING("abr.defaultBandwidthEstimate")
+    SHAKA_MAKE_STRING_("abr.defaultBandwidthEstimate")
 /** (number) The minimum number of seconds between ABR switches. */
-#define kAbrSwitchInterval _SHAKA_MAKE_STRING("abr.switchInterval")
+#define kAbrSwitchInterval SHAKA_MAKE_STRING_("abr.switchInterval")
 /**
  * (number) The fraction of the estimated bandwidth which we should try to use
  * when upgrading.
  */
-#define kAbrUpgradeTarget _SHAKA_MAKE_STRING("abr.bandwidthUpgradeTarget")
+#define kAbrUpgradeTarget SHAKA_MAKE_STRING_("abr.bandwidthUpgradeTarget")
 /**
  * (number) The largest fraction of the estimated bandwidth we should use. We
  * should downgrade to avoid this.
  */
-#define kAbrDowngradeTarget _SHAKA_MAKE_STRING("abr.bandwidthDowngradeTarget")
+#define kAbrDowngradeTarget SHAKA_MAKE_STRING_("abr.bandwidthDowngradeTarget")
 
 /**
  * (number) The minimum width of a video track that will be chosen by ABR; if
  * none match the restrictions, ABR will choose a random track.
  */
-#define kAbrMinWidth _SHAKA_MAKE_STRING("abr.restrictions.minWidth")
+#define kAbrMinWidth SHAKA_MAKE_STRING_("abr.restrictions.minWidth")
 /**
  * (number) The maximum width of a video track that will be chosen by ABR; if
  * none match the restrictions, ABR will choose a random track.
  */
-#define kAbrMaxWidth _SHAKA_MAKE_STRING("abr.restrictions.maxWidth")
+#define kAbrMaxWidth SHAKA_MAKE_STRING_("abr.restrictions.maxWidth")
 /**
  * (number) The minimum height of a video track that will be chosen by ABR; if
  * none match the restrictions, ABR will choose a random track.
  */
-#define kAbrMinHeight _SHAKA_MAKE_STRING("abr.restrictions.minHeight")
+#define kAbrMinHeight SHAKA_MAKE_STRING_("abr.restrictions.minHeight")
 /**
  * (number) The maximum height of a video track that will be chosen by ABR; if
  * none match the restrictions, ABR will choose a random track.
  */
-#define kAbrMaxHeight _SHAKA_MAKE_STRING("abr.restrictions.maxHeight")
+#define kAbrMaxHeight SHAKA_MAKE_STRING_("abr.restrictions.maxHeight")
 /**
  * (number) The minimum number of total pixels of a video track that will be
  * chosen by ABR; if none match the restrictions, ABR will choose a random
  * track.
  */
-#define kAbrMinPixels _SHAKA_MAKE_STRING("abr.restrictions.minPixels")
+#define kAbrMinPixels SHAKA_MAKE_STRING_("abr.restrictions.minPixels")
 /**
  * (number) The maximum number of total pixels of a video track that will be
  * chosen by ABR; if none match the restrictions, ABR will choose a random
  * track.
  */
-#define kAbrMaxPixels _SHAKA_MAKE_STRING("abr.restrictions.maxPixels")
+#define kAbrMaxPixels SHAKA_MAKE_STRING_("abr.restrictions.maxPixels")
 /**
  * (number) The minimum total bandwidth in bit/sec that will be chosen by ABR;
  * if none match the restrictions, ABR will choose a random track.
  */
-#define kAbrMinBandwidth _SHAKA_MAKE_STRING("abr.restrictions.minBandwidth")
+#define kAbrMinBandwidth SHAKA_MAKE_STRING_("abr.restrictions.minBandwidth")
 /**
  * (number) The maximum total bandwidth in bit/sec that will be chosen by ABR;
  * if none match the restrictions, ABR will choose a random track.
  */
-#define kAbrMaxBandwidth _SHAKA_MAKE_STRING("abr.restrictions.maxBandwidth")
+#define kAbrMaxBandwidth SHAKA_MAKE_STRING_("abr.restrictions.maxBandwidth")
 
 /** (string) The preferred language to use for audio tracks. */
-#define kPreferredAudioLanguage _SHAKA_MAKE_STRING("preferredAudioLanguage")
+#define kPreferredAudioLanguage SHAKA_MAKE_STRING_("preferredAudioLanguage")
 /** (string) The preferred language to use for text tracks. */
-#define kPreferredTextLanguage _SHAKA_MAKE_STRING("preferredTextLanguage")
+#define kPreferredTextLanguage SHAKA_MAKE_STRING_("preferredTextLanguage")
 /** (string) The preferred role to use for variant tracks. */
-#define kPreferredVariantRole _SHAKA_MAKE_STRING("preferredVariantRole")
+#define kPreferredVariantRole SHAKA_MAKE_STRING_("preferredVariantRole")
 /** (string) The preferred role to use for text tracks. */
-#define kPreferredTextRole _SHAKA_MAKE_STRING("preferredTextRole")
+#define kPreferredTextRole SHAKA_MAKE_STRING_("preferredTextRole")
 /** (number) The preferred number of audio channels. */
 #define kPreferredAudioChannelCount \
-    _SHAKA_MAKE_STRING("preferredAudioChannelCount")
+    SHAKA_MAKE_STRING_("preferredAudioChannelCount")
 
 /** (number) The minimum width of a video track that can be played. */
-#define kMinWidth _SHAKA_MAKE_STRING("restrictions.minWidth")
+#define kMinWidth SHAKA_MAKE_STRING_("restrictions.minWidth")
 /** (number) The maximum width of a video track that can be played. */
-#define kMaxWidth _SHAKA_MAKE_STRING("restrictions.maxWidth")
+#define kMaxWidth SHAKA_MAKE_STRING_("restrictions.maxWidth")
 /** (number) The minimum height of a video track that can be played. */
-#define kMinHeight _SHAKA_MAKE_STRING("restrictions.minHeight")
+#define kMinHeight SHAKA_MAKE_STRING_("restrictions.minHeight")
 /** (number) The maximum height of a video track that can be played. */
-#define kMaxHeight _SHAKA_MAKE_STRING("restrictions.maxHeight")
+#define kMaxHeight SHAKA_MAKE_STRING_("restrictions.maxHeight")
 /**
  * (number) The minimum number of total pixels of a video track that can be
  * played.
  */
-#define kMinPixels _SHAKA_MAKE_STRING("restrictions.minPixels")
+#define kMinPixels SHAKA_MAKE_STRING_("restrictions.minPixels")
 /**
  * (number) The maximum number of total pixels of a video track that can be
  * played.
  */
-#define kMaxPixels _SHAKA_MAKE_STRING("restrictions.maxPixels")
+#define kMaxPixels SHAKA_MAKE_STRING_("restrictions.maxPixels")
 /** (number) The minimum total bandwidth in bit/sec that can be played. */
-#define kMinBandwidth _SHAKA_MAKE_STRING("restrictions.minBandwidth")
+#define kMinBandwidth SHAKA_MAKE_STRING_("restrictions.minBandwidth")
 /** (number) The maximum total bandwidth in bit/sec that can be played. */
-#define kMaxBandwidth _SHAKA_MAKE_STRING("restrictions.maxBandwidth")
+#define kMaxBandwidth SHAKA_MAKE_STRING_("restrictions.maxBandwidth")
 
 /** (number) The start of restricted seek range, in seconds. */
-#define kPlayRangeStart _SHAKA_MAKE_STRING("playRangeStart")
+#define kPlayRangeStart SHAKA_MAKE_STRING_("playRangeStart")
 /** (number) The end of restricted seek range, in seconds. */
-#define kPlayRangeEnd _SHAKA_MAKE_STRING("playRangeEnd")
+#define kPlayRangeEnd SHAKA_MAKE_STRING_("playRangeEnd")
 
 /** @} */
 
