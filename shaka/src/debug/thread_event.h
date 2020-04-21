@@ -126,17 +126,11 @@ class ThreadEvent final : public ThreadEventBase {
    * Calling Reset() will allow this to be called again.
    */
   void SignalAll() {
-    std::unique_lock<std::mutex> lock(mutex_);
-    DCHECK(!is_set_);
-    is_set_ = true;
-    promise_.set_value();
+    CHECK(SignalAllIfNotSet());
   }
   template <typename U>
   void SignalAll(U&& value) {
-    std::unique_lock<std::mutex> lock(mutex_);
-    DCHECK(!is_set_);
-    is_set_ = true;
-    promise_.set_value(std::forward<U>(value));
+    CHECK(SignalAllIfNotSet(std::forward<U>(value)));
   }
   // @}
 
@@ -144,21 +138,34 @@ class ThreadEvent final : public ThreadEventBase {
   /**
    * Sets the result of the event if it has not already been set.  If this has
    * already been set, this has no effect.
+   * @return True if a signal was set, false if we were already set.
    */
-  void SignalAllIfNotSet() {
-    std::unique_lock<std::mutex> lock(mutex_);
-    if (!is_set_) {
+  bool SignalAllIfNotSet() {
+    // Don't signal with the lock held since once we signal, this object may be
+    // destroyed by thread we woke up.
+    std::promise<void> p;
+    {
+      std::unique_lock<std::mutex> lock(mutex_);
+      if (is_set_)
+        return false;
       is_set_ = true;
-      promise_.set_value();
+      p = std::move(promise_);
     }
+    p.set_value();
+    return true;
   }
   template <typename U>
-  void SignalAllIfNotSet(U&& value) {
-    std::unique_lock<std::mutex> lock(mutex_);
-    if (!is_set_) {
+  bool SignalAllIfNotSet(U&& value) {
+    std::promise<T> p;
+    {
+      std::unique_lock<std::mutex> lock(mutex_);
+      if (is_set_)
+        return false;
       is_set_ = true;
-      promise_.set_value(std::forward<U>(value));
+      p = std::move(promise_);
     }
+    p.set_value(std::forward<U>(value));
+    return true;
   }
   // @}
 
