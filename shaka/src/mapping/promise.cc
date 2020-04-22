@@ -55,13 +55,14 @@ Handle<JSObjectRef> NewPromise(WeakJsPtr<JsObject>* resolve,
 }  // namespace
 
 #ifdef USING_JSC
-Promise::Promise() : promise_(NewPromise(&resolve_, &reject_)) {}
+Promise::Promise(bool unused) : promise_(NewPromise(&resolve_, &reject_)) {}
 #else
-Promise::Promise()
+Promise::Promise(bool unused)
     : resolver_(NewPromiseResolver()),
       promise_(GetPromise(resolver_.handle())) {}
 #endif
 
+Promise::Promise() {}
 Promise::~Promise() {}
 
 Promise::Promise(const Promise&) = default;

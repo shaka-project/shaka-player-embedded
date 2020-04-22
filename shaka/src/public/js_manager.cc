@@ -91,7 +91,7 @@ AsyncResults<void> JsManager::RegisterNetworkScheme(const std::string& scheme,
     std::shared_ptr<Response> resp(new Response);
     std::shared_ptr<SchemePlugin::Client> client(
         new ProgressClient(std::move(on_progress)));
-    Promise ret;
+    Promise ret = Promise::PendingPromise();
     auto future =
         plugin->OnNetworkRequest(uri, type, *pub_req, client.get(), resp.get());
     auto on_done = [pub_req, resp, client, ret]() {

@@ -251,7 +251,7 @@ class Player::Impl : public JsObjectWrapper {
     net_engine.Init(get<Handle<JsObject>>(results));
 
     auto req_filter = [this](RequestType type, js::Request request) {
-      Promise ret;
+      Promise ret = Promise::PendingPromise();
       std::shared_ptr<Request> pub_request(new Request(std::move(request)));
       StepNetworkFilter(type, pub_request, filters_.begin(),
                         &NetworkFilters::OnRequestFilter, ret);
@@ -263,7 +263,7 @@ class Player::Impl : public JsObjectWrapper {
       return get<Error>(results2);
 
     auto resp_filter = [this](RequestType type, js::Response response) {
-      Promise ret;
+      Promise ret = Promise::PendingPromise();
       std::shared_ptr<Response> pub_response(new Response(std::move(response)));
       StepNetworkFilter(type, pub_response, filters_.begin(),
                         &NetworkFilters::OnResponseFilter, ret);

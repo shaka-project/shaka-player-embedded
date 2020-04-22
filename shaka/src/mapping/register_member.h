@@ -116,8 +116,7 @@ struct ThrowError {
 
   static bool Raw(const CallbackArguments* args, const js::JsError& value) {
     if (ReturnPromise) {
-      Promise ret;
-      ret.RejectWith(value);
+      Promise ret = Promise::Rejected(value);
       SET_RETURN_VALUE(*args, ret.ToJsValue());
       return true;
     }

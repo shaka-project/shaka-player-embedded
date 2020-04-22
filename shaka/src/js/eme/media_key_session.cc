@@ -27,7 +27,8 @@ MediaKeySession::MediaKeySession(MediaKeySessionType type,
                                  ImplementationFactory* factory,
                                  Implementation* implementation,
                                  ImplementationHelperImpl* helper)
-    : mutex_("MediaKeySession"),
+    : closed(Promise::PendingPromise()),
+      mutex_("MediaKeySession"),
       factory_(factory),
       implementation_(implementation),
       helper_(helper),
@@ -103,7 +104,7 @@ Promise MediaKeySession::GenerateRequest(MediaKeyInitDataType init_data_type,
     CHECK(session_id_.empty()) << "Cannot call set_session_id() twice.";
     session_id_ = session_id;
   };
-  Promise ret;
+  Promise ret = Promise::PendingPromise();
   implementation_->CreateSessionAndGenerateRequest(
       EmePromise(ret, /* has_value */ false), cb, type_, init_data_type,
       Data(&init_data));
@@ -123,7 +124,7 @@ Promise MediaKeySession::Load(const std::string& session_id) {
         "Cannot load a persistent license in a temporary session"));
   }
 
-  Promise ret;
+  Promise ret = Promise::PendingPromise();
   implementation_->Load(session_id, EmePromise(ret, /* has_value */ true));
   // TODO: This shouldn't be changed if the Promise is rejected.
   session_id_ = session_id;
@@ -140,7 +141,7 @@ Promise MediaKeySession::Update(ByteBuffer response) {
     return Promise::Rejected(JsError::TypeError("Empty response data"));
   }
 
-  Promise ret;
+  Promise ret = Promise::PendingPromise();
   implementation_->Update(session_id, EmePromise(ret, /* has_value */ false),
                           Data(&response));
   return ret;
@@ -163,7 +164,7 @@ Promise MediaKeySession::Remove() {
         JsError::DOMException(InvalidStateError, "Session not initialized"));
   }
 
-  Promise ret;
+  Promise ret = Promise::PendingPromise();
   implementation_->Remove(session_id, EmePromise(ret, /* has_value */ false));
   return ret;
 }

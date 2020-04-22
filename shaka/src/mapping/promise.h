@@ -40,9 +40,20 @@ class Promise : public GenericConverter, public memory::Traceable {
     return "Promise";
   }
 
-  /** A *pending* Promise that can be resolved/rejected by us. */
+  /**
+   * An *invalid* Promise; you must use TryConvert or the assignment operator to
+   * get a valid Promise.
+   */
   Promise();
   ~Promise() override;
+
+  /**
+   * Creates a Promise that represents a pending Promise.  The
+   * ResolveWith/RejectWith methods can be use to complete it.
+   */
+  static Promise PendingPromise() {
+    return Promise(false);
+  }
 
   // Chromium style complains without these.
   Promise(const Promise&);
@@ -51,20 +62,20 @@ class Promise : public GenericConverter, public memory::Traceable {
   Promise& operator=(Promise&&);
 
   static Promise Resolved() {
-    Promise ret;
+    Promise ret = PendingPromise();
     LocalVar<JsValue> undef = JsUndefined();
     ret.ResolveWith(undef, /* run_events */ false);
     return ret;
   }
 
   static Promise Resolved(Handle<JsValue> value) {
-    Promise ret;
+    Promise ret = PendingPromise();
     ret.ResolveWith(value, /* run_events */ false);
     return ret;
   }
 
   static Promise Rejected(const js::JsError& error) {
-    Promise ret;
+    Promise ret = PendingPromise();
     ret.RejectWith(error, /* run_events */ false);
     return ret;
   }
@@ -99,6 +110,8 @@ class Promise : public GenericConverter, public memory::Traceable {
             std::function<void(Any)> on_reject);
 
  private:
+  explicit Promise(bool unused);
+
 #ifdef USING_JSC
   WeakJsPtr<JsObject> resolve_;
   WeakJsPtr<JsObject> reject_;

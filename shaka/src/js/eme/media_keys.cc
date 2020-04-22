@@ -77,7 +77,7 @@ ExceptionOr<RefPtr<MediaKeySession>> MediaKeys::CreateSession(
 }
 
 Promise MediaKeys::SetServerCertificate(ByteBuffer cert) {
-  Promise ret;
+  Promise ret = Promise::PendingPromise();
   implementation_->SetServerCertificate(EmePromise(ret, /* has_value */ true),
                                         Data(&cert));
   return ret;

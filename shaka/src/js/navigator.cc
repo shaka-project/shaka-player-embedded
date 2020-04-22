@@ -49,7 +49,7 @@ Promise Navigator::RequestMediaKeySystemAccess(
   // NA: 4. Let origin be the origin of document.
 
   // 5. Let promise be a new Promise.
-  Promise promise;
+  Promise promise = Promise::PendingPromise();
 
   // 6. Run the following steps in parallel:
   JsManagerImpl::Instance()->MainThread()->AddInternalTask(

@@ -151,7 +151,7 @@ Promise TestType::PromiseResolveWith(Any value) const {
 }
 
 Promise TestType::PromiseResolveAfter(uint64_t delay) const {
-  Promise ret;
+  Promise ret = Promise::PendingPromise();
   JsManagerImpl::Instance()->MainThread()->AddTimer(delay, ResolvePromise(ret));
   return ret;
 }
