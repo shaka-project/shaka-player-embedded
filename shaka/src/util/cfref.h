@@ -25,6 +25,15 @@
 namespace shaka {
 namespace util {
 
+// Defines a type and a singleton to signal which overload to use.  These can
+// be used with the CFRef constructors to use different reference semantics.
+// CFRef(absorb_ref, GetValue())   // The ref already has an extra ref count.
+// CFRef(acquire_ref, GetValue())  // Acquires the ref first.
+struct absorb_ref_t {};
+extern absorb_ref_t absorb_ref;
+struct acquire_ref_t {};
+extern acquire_ref_t acquire_ref;
+
 /**
  * A type traits type that is used to get information about the given ref type.
  * This can be specialized for other types if needed.
@@ -72,6 +81,8 @@ class CFRef {
   CFRef(std::nullptr_t) : ptr_(nullptr) {}  // NOLINT(runtime/explicit)
   CFRef(T arg)  // NOLINT(runtime/explicit)
       : ptr_(traits::AcquireWithRaw ? traits::Duplicate(arg) : arg) {}
+  CFRef(absorb_ref_t, T arg) : ptr_(arg) {}
+  CFRef(acquire_ref_t, T arg) : ptr_(traits::Duplicate(arg)) {}
   CFRef(const CFRef& other) : ptr_(traits::Duplicate(other.ptr_)) {}
   CFRef(CFRef&& other) : ptr_(other.Detach()) {}
   // Careful, these assume that if U is compatible with T, that the
@@ -118,19 +129,6 @@ class CFRef {
     T ret = ptr_;
     ptr_ = nullptr;
     return ret;
-  }
-
-
-  /**
-   * Creates a new reference that increase the ref count.  This should be used
-   * for pointers that are not owned by calling code but wants to be kept,
-   * for example, from non-Create methods.
-   */
-  static CFRef Acquire(T arg) {
-    if (traits::AcquireWithRaw)
-      return CFRef(arg);
-    else
-      return CFRef(traits::Duplicate(arg));
   }
 
  private:

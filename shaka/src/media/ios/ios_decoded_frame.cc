@@ -33,7 +33,7 @@ IosDecodedFrame::IosDecodedFrame(std::shared_ptr<const StreamInfo> stream,
                                  CVImageBufferRef img)
     : DecodedFrame(stream, time, time, duration, PixelFormat::VideoToolbox, 0,
                    {reinterpret_cast<const uint8_t*>(img)}, {0}),
-      img_(util::CFRef<CVImageBufferRef>::Acquire(img)) {}
+      img_(util::acquire_ref, img) {}
 
 IosDecodedFrame::~IosDecodedFrame() {}
 

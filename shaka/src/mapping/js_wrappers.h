@@ -43,7 +43,7 @@ namespace util {
 #ifdef USING_JSC
 template <>
 struct RefTypeTraits<JSStringRef> {
-  static constexpr const bool AcquireWithRaw = true;
+  static constexpr const bool AcquireWithRaw = false;
 
   static JSStringRef Duplicate(JSStringRef arg) {
     if (arg)

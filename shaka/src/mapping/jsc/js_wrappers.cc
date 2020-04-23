@@ -108,7 +108,8 @@ std::vector<std::string> GetMemberNames(Handle<JsObject> object) {
   std::vector<std::string> ret;
   ret.reserve(max);
   for (size_t i = 0; i < max; i++) {
-    LocalVar<JsString> name(JSPropertyNameArrayGetNameAtIndex(props, i));
+    LocalVar<JsString> name(util::acquire_ref,
+                            JSPropertyNameArrayGetNameAtIndex(props, i));
     ret.emplace_back(ConvertToString(RawToJsValue(name)));
   }
   return ret;

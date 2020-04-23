@@ -687,6 +687,8 @@ source_set("internal_sources") {
     "shaka/src/util/buffer_reader.h",
     "shaka/src/util/buffer_writer.cc",
     "shaka/src/util/buffer_writer.h",
+    "shaka/src/util/cfref.cc",
+    "shaka/src/util/cfref.h",
     "shaka/src/util/clock.cc",
     "shaka/src/util/clock.h",
     "shaka/src/util/crypto.h",
