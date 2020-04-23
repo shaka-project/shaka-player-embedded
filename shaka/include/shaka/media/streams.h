@@ -135,7 +135,7 @@ class SHAKA_EXPORT StreamBase {
    * @param all_frames True to print times of all frames; false to only print a
    *   summary.
    */
-  void DebugPrint(bool all_frames);
+  void DebugPrint(bool all_frames) const;
 
  protected:
   /**

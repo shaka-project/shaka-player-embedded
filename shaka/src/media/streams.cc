@@ -328,7 +328,7 @@ void StreamBase::Clear() {
   impl_->buffered_ranges.clear();
 }
 
-void StreamBase::DebugPrint(bool all_frames) {
+void StreamBase::DebugPrint(bool all_frames) const {
   std::unique_lock<Mutex> lock(impl_->mutex);
   AssertRangesSorted();
 
@@ -337,8 +337,8 @@ void StreamBase::DebugPrint(bool all_frames) {
     fprintf(stderr, "  Nothing buffered\n");
   size_t range_i = 0;
   for (const Range& range : impl_->buffered_ranges) {
-    fprintf(stderr, "  Range[%zu]: %.2f-%.2f\n", range_i, range.start_pts,
-            range.end_pts);
+    fprintf(stderr, "  Range[%zu, %zu frames]: %.2f-%.2f\n", range_i,
+            range.frames.size(), range.start_pts, range.end_pts);
     if (all_frames) {
       size_t frame_i = 0;
       for (const auto& frame : range.frames) {
