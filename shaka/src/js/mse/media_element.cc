@@ -49,7 +49,8 @@ HTMLMediaElement::HTMLMediaElement(RefPtr<dom::Document> document,
       video_tracks(new VideoTrackList(player)),
       text_tracks(new TextTrackList(player)),
       player_(player),
-      clock_(&util::Clock::Instance) {
+      clock_(&util::Clock::Instance),
+      default_playback_rate_(1) {
   AddListenerField(EventType::Encrypted, &on_encrypted);
   AddListenerField(EventType::WaitingForKey, &on_waiting_for_key);
   player_->AddClient(this);
@@ -111,6 +112,7 @@ ExceptionOr<void> HTMLMediaElement::Load() {
     src_ = "";
   }
 
+  SetPlaybackRate(default_playback_rate_);
   SetMuted(default_muted);
   return {};
 }
@@ -204,7 +206,24 @@ double HTMLMediaElement::PlaybackRate() const {
 
 ExceptionOr<void> HTMLMediaElement::SetPlaybackRate(double rate) {
   CHECK_ATTACHED();
+  if (!std::isfinite(rate)) {
+    return JsError::TypeError("The value provided is non-finite");
+  }
+
   player_->SetPlaybackRate(rate);
+  return {};
+}
+
+double HTMLMediaElement::DefaultPlaybackRate() const {
+  return default_playback_rate_;
+}
+
+ExceptionOr<void> HTMLMediaElement::SetDefaultPlaybackRate(double rate) {
+  if (!std::isfinite(rate)) {
+    return JsError::TypeError("The value provided is non-finite");
+  }
+
+  default_playback_rate_ = rate;
   return {};
 }
 
@@ -346,6 +365,10 @@ void HTMLMediaElement::OnPlaybackStateChanged(
     ScheduleEvent<events::Event>(EventType::Seeked);
 }
 
+void HTMLMediaElement::OnPlaybackRateChanged(double old_rate, double new_rate) {
+  ScheduleEvent<events::Event>(EventType::RateChange);
+}
+
 void HTMLMediaElement::OnError(const std::string& error) {
   if (!this->error) {
     if (error.empty())
@@ -403,6 +426,9 @@ HTMLMediaElementFactory::HTMLMediaElementFactory() {
   AddGenericProperty("duration", &HTMLMediaElement::Duration);
   AddGenericProperty("playbackRate", &HTMLMediaElement::PlaybackRate,
                      &HTMLMediaElement::SetPlaybackRate);
+  AddGenericProperty("defaultPlaybackRate",
+                     &HTMLMediaElement::DefaultPlaybackRate,
+                     &HTMLMediaElement::SetDefaultPlaybackRate);
   AddGenericProperty("volume", &HTMLMediaElement::Volume,
                      &HTMLMediaElement::SetVolume);
   AddGenericProperty("muted", &HTMLMediaElement::Muted,
@@ -419,7 +445,6 @@ HTMLMediaElementFactory::HTMLMediaElementFactory() {
   NotImplemented("networkState");
   NotImplemented("preload");
   NotImplemented("getStartDate");
-  NotImplemented("defaultPlaybackRate");
   NotImplemented("playable");
   NotImplemented("mediaGroup");
   NotImplemented("controller");

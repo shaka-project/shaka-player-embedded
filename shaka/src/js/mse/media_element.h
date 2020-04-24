@@ -89,6 +89,8 @@ class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
   double Duration() const;
   double PlaybackRate() const;
   ExceptionOr<void> SetPlaybackRate(double rate);
+  double DefaultPlaybackRate() const;
+  ExceptionOr<void> SetDefaultPlaybackRate(double rate);
   bool Muted() const;
   ExceptionOr<void> SetMuted(bool muted);
   double Volume() const;
@@ -112,6 +114,7 @@ class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
                            media::VideoReadyState new_state) override;
   void OnPlaybackStateChanged(media::VideoPlaybackState old_state,
                               media::VideoPlaybackState new_state) override;
+  void OnPlaybackRateChanged(double old_rate, double new_rate) override;
   void OnError(const std::string& error) override;
   void OnPlay() override;
   void OnSeeking() override;
@@ -120,6 +123,7 @@ class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
   Member<MediaSource> media_source_;
   const util::Clock* const clock_;
   std::string src_;
+  double default_playback_rate_;
 };
 
 class HTMLMediaElementFactory

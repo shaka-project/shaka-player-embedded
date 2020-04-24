@@ -36,6 +36,7 @@ namespace js {
   DEFINE_EVENT(Play, "play")                             \
   DEFINE_EVENT(Playing, "playing")                       \
   DEFINE_EVENT(Pause, "pause")                           \
+  DEFINE_EVENT(RateChange, "ratechange")                 \
   DEFINE_EVENT(Seeked, "seeked")                         \
   DEFINE_EVENT(Seeking, "seeking")                       \
   DEFINE_EVENT(Ended, "ended")                           \
