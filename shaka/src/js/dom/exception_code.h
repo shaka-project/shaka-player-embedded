@@ -20,30 +20,40 @@
 namespace shaka {
 
 enum ExceptionCode {
-  // General (used in multiple parts).
-  NotFoundError,
-  NotSupportedError,
-  InvalidStateError,
-  QuotaExceededError,
-
-  // DOM/XML
   IndexSizeError,
   HierarchyRequestError,
-
-  // IndexedDB.
-  AbortError,
-  ConstraintError,
-  DataCloneError,
-  DataError,
+  WrongDocumentError,
+  InvalidCharacterError,
+  NoModificationAllowedError,
+  NotFoundError,
+  NotSupportedError,
+  InUseAttributeError,
+  InvalidStateError,
+  SyntaxError,
+  InvalidModificationError,
+  NamespaceError,
   InvalidAccessError,
-  ReadOnlyError,
-  TransactionInactiveError,
+  TypeMismatchError,
+  SecurityError,
+  NetworkError,
+  AbortError,
+  URLMismatchError,
+  QuotaExceededError,
+  TimeoutError,
+  InvalidNodeTypeError,
+  DataCloneError,
+  EncodingError,
+  NotReadableError,
   UnknownError,
+  ConstraintError,
+  DataError,
+  TransactionInactiveError,
+  ReadOnlyError,
   VersionError,
-
+  OperationError,
+  NotAllowedError,
   MaxExceptionCode,  // Must remain last.
 };
-
 
 }  // namespace shaka
 
