@@ -40,20 +40,20 @@ struct ExceptionInfo {
     DEFINE_MAPPING(IndexSizeError, "The index is not in the allowed range.", 1),
     DEFINE_MAPPING(HierarchyRequestError,
                    "The operation would yield an incorrect node tree.", 3),
-    DEFINE_MAPPING(WrongDocumentError,
-                   "The object is in the wrong Document.", 4),
+    DEFINE_MAPPING(WrongDocumentError, "The object is in the wrong Document.",
+                   4),
     DEFINE_MAPPING(InvalidCharacterError,
                    "The string contains invalid characters.", 5),
-    DEFINE_MAPPING(NoModificationAllowedError,
-                   "The object cannot be modified.", 7),
+    DEFINE_MAPPING(NoModificationAllowedError, "The object cannot be modified.",
+                   7),
     DEFINE_MAPPING(NotFoundError, "The object can not be found here.", 8),
     DEFINE_MAPPING(NotSupportedError, "The operation is not supported.", 9),
     DEFINE_MAPPING(InUseAttributeError, "The attribute is in use.", 10),
     DEFINE_MAPPING(InvalidStateError, "The object is in an invalid state.", 11),
     DEFINE_MAPPING(SyntaxError,
                    "The string did not match the expected pattern.", 12),
-    DEFINE_MAPPING(InvalidModificationError,
-                   "The object cannot be modified.", 13),
+    DEFINE_MAPPING(InvalidModificationError, "The object cannot be modified.",
+                   13),
     DEFINE_MAPPING(NamespaceError,
                    "The operation is not allowed by Namespaces in XML.", 14),
     DEFINE_MAPPING(InvalidAccessError,
@@ -70,36 +70,42 @@ struct ExceptionInfo {
     DEFINE_MAPPING(QuotaExceededError, "The quota has been exceeded.", 22),
     DEFINE_MAPPING(TimeoutError, "The operation timed out.", 23),
     DEFINE_MAPPING(InvalidNodeTypeError,
-                   "The node is incorrect or has an incorrect ancestor for " \
-                   "this operation.", 24),
+                   "The node is incorrect or has an incorrect ancestor for "
+                   "this operation.",
+                   24),
     DEFINE_MAPPING(DataCloneError, "The object can not be cloned.", 25),
-    DEFINE_MAPPING(EncodingError,
-                   "The encoding or decoding operation failed.", 0),
-    DEFINE_MAPPING(NotReadableError,
-                   "The input/output read operation failed.", 0),
+    DEFINE_MAPPING(EncodingError, "The encoding or decoding operation failed.",
+                   0),
+    DEFINE_MAPPING(NotReadableError, "The input/output read operation failed.",
+                   0),
     DEFINE_MAPPING(UnknownError,
-                   "The operation failed for an unknown transient reason " \
-                   "(e.g. out of memory).", 0),
+                   "The operation failed for an unknown transient reason "
+                   "(e.g. out of memory).",
+                   0),
     DEFINE_MAPPING(ConstraintError,
-                   "A mutation operation in a transaction failed because a " \
-                   "constraint was not satisfied.", 0),
+                   "A mutation operation in a transaction failed because a "
+                   "constraint was not satisfied.",
+                   0),
     DEFINE_MAPPING(DataError, "Provided data is inadequate.", 0),
     DEFINE_MAPPING(TransactionInactiveError,
-                   "A request was placed against a transaction which is " \
-                   "currently not active, or which is finished.", 0),
+                   "A request was placed against a transaction which is "
+                   "currently not active, or which is finished.",
+                   0),
     DEFINE_MAPPING(ReadOnlyError,
-                   "The mutating operation was attempted in a \"readonly\" " \
-                   "transaction.", 0),
+                   "The mutating operation was attempted in a \"readonly\" "
+                   "transaction.",
+                   0),
     DEFINE_MAPPING(VersionError,
-                   "An attempt was made to open a database using a lower " \
-                   "version than the existing version.", 0),
+                   "An attempt was made to open a database using a lower "
+                   "version than the existing version.",
+                   0),
     DEFINE_MAPPING(OperationError,
                    "The operation failed for an operation-specific reason.", 0),
     DEFINE_MAPPING(NotAllowedError,
-                   "The request is not allowed by the user agent or the " \
-                   "platform in the current context, possibly because the " \
-                   "user denied permission.", 0)
-};
+                   "The request is not allowed by the user agent or the "
+                   "platform in the current context, possibly because the "
+                   "user denied permission.",
+                   0)};
 static_assert(sizeof(g_exception_map_) / sizeof(g_exception_map_[0]) ==
                   MaxExceptionCode,
               "Not all exceptions appear in map");
@@ -159,12 +165,6 @@ DOMException::DOMException(optional<std::string> message,
 // \cond Doxygen_Skip
 DOMException::~DOMException() {}
 // \endcond Doxygen_Skip
-
-// static
-DOMException* DOMException::Create(optional<std::string> message,
-                                   optional<std::string> name) {
-  return new DOMException(message, name);
-}
 
 DOMExceptionFactory::DOMExceptionFactory() {
   AddConstant("INDEX_SIZE_ERR", GetInfo(IndexSizeError).native_code);

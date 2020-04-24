@@ -32,9 +32,11 @@ class DOMException : public BackingObject {
  public:
   explicit DOMException(ExceptionCode type);
   DOMException(optional<std::string> message, ExceptionCode type);
-  DOMException(optional<std::string> message, optional<std::string> name);
 
-  static DOMException* Create(optional<std::string> message, optional<std::string> name);
+  static DOMException* Create(optional<std::string> message,
+                              optional<std::string> name) {
+    return new DOMException(message, name);
+  }
 
   // NOTE: Should be labelled "name", but it conflicts with type info.
   const std::string error_name;
@@ -42,6 +44,9 @@ class DOMException : public BackingObject {
   std::string stack;
   // Legacy numeric code.
   const int code;
+
+ private:
+  DOMException(optional<std::string> message, optional<std::string> name);
 };
 
 class DOMExceptionFactory : public BackingObjectFactory<DOMException> {
