@@ -14,6 +14,7 @@
 
 #include "src/js/dom/document.h"
 
+#include "src/js/dom/attr.h"
 #include "src/js/dom/comment.h"
 #include "src/js/dom/element.h"
 #include "src/js/dom/text.h"
@@ -24,6 +25,13 @@
 namespace shaka {
 namespace js {
 namespace dom {
+
+namespace {
+
+constexpr const char* kXmlNamespace = "http://www.w3.org/XML/1998/namespace";
+constexpr const char* kXmlNsNamespace = "http://www.w3.org/2000/xmlns/";
+
+}  // namespace
 
 std::atomic<Document*> Document::instance_{nullptr};
 
@@ -100,11 +108,73 @@ RefPtr<Text> Document::CreateTextNode(const std::string& data) {
   return new Text(this, data);
 }
 
+ExceptionOr<RefPtr<Attr>> Document::CreateAttribute(const std::string& name) {
+  // TODO: Validate valid XML characters.
+  if (name.empty())
+    return JsError::DOMException(InvalidCharacterError);
+
+  return new Attr(this, nullptr, util::ToAsciiLower(name), nullopt, nullopt,
+                  "");
+}
+
+ExceptionOr<RefPtr<Attr>> Document::CreateAttributeNS(
+    const std::string& namespace_uri, const std::string& qualified_name) {
+  // 1. If namespace is the empty string, set it to null.
+  optional<std::string> ns =
+      !namespace_uri.empty() ? optional<std::string>(namespace_uri) : nullopt;
+
+  // 2. Validate qualifiedName.
+  // TODO: Validate valid XML characters.
+  if (qualified_name.empty())
+    return JsError::DOMException(InvalidCharacterError);
+
+  // 3. Let prefix be null.
+  optional<std::string> prefix;
+
+  // 4. Let localName be qualifiedName.
+  std::string local_name = qualified_name;
+
+  // 5. If qualifiedName contains a ":" (U+003E), then split the string on it
+  // and set prefix to the part before and localName to the part after.
+  auto pos = local_name.find(':');
+  if (pos != std::string::npos) {
+    prefix = local_name.substr(0, pos);
+    local_name = local_name.substr(pos + 1);
+  }
+
+  // 6. If prefix is non-null and namespace is null, then throw a
+  // "NamespaceError" DOMException.
+  if (prefix.has_value() && !ns.has_value())
+    return JsError::DOMException(NamespaceError);
+
+  // 7. If prefix is "xml" and namespace is not the XML namespace, then throw a
+  // "NamespaceError" DOMException.
+  if (prefix == "xml" && namespace_uri != kXmlNamespace)
+    return JsError::DOMException(NamespaceError);
+
+  // 8. If either qualifiedName or prefix is "xmlns" and namespace is not the
+  // XMLNS namespace, then throw a "NamespaceError" DOMException.
+  if (prefix == "xmlns" && namespace_uri != kXmlNsNamespace)
+    return JsError::DOMException(NamespaceError);
+
+  // 9. If namespace is the XMLNS namespace and neither qualifiedName nor prefix
+  // is "xmlns", then throw a "NamespaceError" DOMException.
+  if (namespace_uri == kXmlNsNamespace && qualified_name != "xmlns" &&
+      prefix != "xmlns") {
+    return JsError::DOMException(NamespaceError);
+  }
+
+  // 10. Return namespace, prefix, and localName.
+  return new Attr(this, nullptr, local_name, ns, prefix, "");
+}
+
 
 DocumentFactory::DocumentFactory() {
   AddMemberFunction("createElement", &Document::CreateElement);
   AddMemberFunction("createComment", &Document::CreateComment);
   AddMemberFunction("createTextNode", &Document::CreateTextNode);
+  AddMemberFunction("createAttribute", &Document::CreateAttribute);
+  AddMemberFunction("createAttributeNS", &Document::CreateAttributeNS);
 
   AddGenericProperty("documentElement", &Document::DocumentElement);
 
@@ -117,8 +187,6 @@ DocumentFactory::DocumentFactory() {
   NotImplemented("createCDATASection");
   NotImplemented("createProcessingInstruction");
 
-  NotImplemented("createAttribute");
-  NotImplemented("createAttributeNS");
   NotImplemented("createRange");
   NotImplemented("createNodeIterator");
   NotImplemented("createTreeWalker");

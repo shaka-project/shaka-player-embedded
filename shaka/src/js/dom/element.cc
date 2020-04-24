@@ -94,10 +94,12 @@ bool Element::HasAttributeNS(const std::string& ns,
 
 void Element::SetAttribute(const std::string& key, const std::string& value) {
   auto it = FindAttribute(key);
-  if (it != attributes_.end())
+  if (it != attributes_.end()) {
     (*it)->value = value;
-  else
-    attributes_.emplace_back(new Attr(this, key, nullopt, nullopt, value));
+  } else {
+    attributes_.emplace_back(
+        new Attr(document(), this, key, nullopt, nullopt, value));
+  }
 }
 
 void Element::SetAttributeNS(const std::string& ns, const std::string& key,
@@ -110,10 +112,12 @@ void Element::SetAttributeNS(const std::string& ns, const std::string& key,
   const std::string prefix = key.substr(0, split_at);
 
   auto it = FindAttributeNS(ns, local_name);
-  if (it != attributes_.end())
+  if (it != attributes_.end()) {
     (*it)->value = value;
-  else
-    attributes_.push_back(new Attr(this, local_name, ns, prefix, value));
+  } else {
+    attributes_.push_back(
+        new Attr(document(), this, local_name, ns, prefix, value));
+  }
 }
 
 void Element::RemoveAttribute(const std::string& attr) {

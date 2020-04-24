@@ -24,6 +24,8 @@
 namespace shaka {
 namespace js {
 namespace dom {
+
+class Attr;
 class Comment;
 class Element;
 class Text;
@@ -61,6 +63,10 @@ class Document : public ContainerNode {
   RefPtr<Element> CreateElement(const std::string& name);
   RefPtr<Comment> CreateComment(const std::string& data);
   RefPtr<Text> CreateTextNode(const std::string& data);
+
+  ExceptionOr<RefPtr<Attr>> CreateAttribute(const std::string& name);
+  ExceptionOr<RefPtr<Attr>> CreateAttributeNS(
+      const std::string& namespace_uri, const std::string& qualified_name);
 
  private:
   static std::atomic<Document*> instance_;
