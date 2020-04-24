@@ -17,6 +17,7 @@
 #include <AudioToolbox/AudioToolbox.h>
 #include <glog/logging.h>
 
+#include <atomic>
 #include <list>
 
 #include "src/debug/mutex.h"
@@ -103,17 +104,19 @@ bool SetSampleFormatFields(SampleFormat format,
  */
 class BufferList final {
  public:
-  BufferList() : queue_(nullptr) {}
+  BufferList() : mutex_("BufferList"), queue_(nullptr) {}
   ~BufferList() {
     Reset();
   }
 
   void SetQueue(AudioQueueRef q) {
+    std::unique_lock<Mutex> lock(mutex_);
     Reset();
     queue_ = q;
   }
 
   AudioQueueBufferRef FindBuffer(size_t size) {
+    std::unique_lock<Mutex> lock(mutex_);
     // Look for a buffer that is the exact requested size; if there isn't one
     // available, look for one that is larger than needed.
     auto found = buffers_.end();
@@ -147,6 +150,7 @@ class BufferList final {
   }
 
   void ReuseBuffer(AudioQueueBufferRef buffer) {
+    std::unique_lock<Mutex> lock(mutex_);
     buffers_.emplace_front(buffer);
     while (buffers_.size() > kMaxNumBuffers) {
       FreeBuffer(buffers_.back());
@@ -167,6 +171,7 @@ class BufferList final {
       LOG(DFATAL) << "Error freeing AudioQueueBuffer: " << status;
   }
 
+  Mutex mutex_;
   AudioQueueRef queue_;
   std::list<AudioQueueBufferRef> buffers_;
 };
@@ -175,7 +180,7 @@ class BufferList final {
 
 class AppleAudioRenderer::Impl : public AudioRendererCommon {
  public:
-  Impl() : mutex_("AudioRenderer") {}
+  Impl() : queue_size_(0) {}
 
   ~Impl() override {
     Stop();
@@ -186,7 +191,6 @@ class AppleAudioRenderer::Impl : public AudioRendererCommon {
   }
 
   bool InitDevice(std::shared_ptr<DecodedFrame> frame, double volume) override {
-    std::unique_lock<Mutex> lock(mutex_);
     AudioStreamBasicDescription desc = {0};
     if (!SetSampleFormatFields(get<SampleFormat>(frame->format), &desc))
       return false;
@@ -207,20 +211,19 @@ class AppleAudioRenderer::Impl : public AudioRendererCommon {
     }
 
     queue_ = q;
-    queue_size_ = 0;
+    queue_size_.store(0, std::memory_order_relaxed);
     buffers_.SetQueue(q);
     UpdateVolume(volume);
     return true;
   }
 
   bool AppendBuffer(const uint8_t* data, size_t size) override {
-    std::unique_lock<Mutex> lock(mutex_);
     auto* buffer = buffers_.FindBuffer(size);
     if (!buffer)
       return false;
 
     memcpy(buffer->mAudioData, data, size);
-    queue_size_ += size;
+    queue_size_.fetch_add(size, std::memory_order_relaxed);
     buffer->mAudioDataByteSize = size;
     buffer->mPacketDescriptionCount = 0;
     const auto status = AudioQueueEnqueueBuffer(queue_, buffer, 0, nullptr);
@@ -230,23 +233,20 @@ class AppleAudioRenderer::Impl : public AudioRendererCommon {
   }
 
   void ClearBuffer() override {
-    std::unique_lock<Mutex> lock(mutex_);
     if (!queue_)
       return;
 
-    queue_size_ = 0;
     const auto status = AudioQueueReset(queue_);
     if (status != 0)
       LOG(DFATAL) << "Error clearing AudioQueue: " << status;
+    DCHECK_EQ(GetBytesBuffered(), 0);  // Should have all buffers returned to us
   }
 
   size_t GetBytesBuffered() const override {
-    std::unique_lock<Mutex> lock(mutex_);
-    return queue_size_;
+    return queue_size_.load(std::memory_order_relaxed);
   }
 
   void SetDeviceState(bool is_playing) override {
-    std::unique_lock<Mutex> lock(mutex_);
     if (!queue_)
       return;
 
@@ -272,24 +272,22 @@ class AppleAudioRenderer::Impl : public AudioRendererCommon {
   static void OnAudioCallback(void* user_data, AudioQueueRef queue,
                               AudioQueueBufferRef buffer) {
     auto* impl = reinterpret_cast<Impl*>(user_data);
-    std::unique_lock<Mutex> lock(impl->mutex_);
     DCHECK_EQ(queue, impl->queue_);
+    DCHECK_LE(buffer->mAudioDataByteSize, impl->GetBytesBuffered());
+    DCHECK_GT(buffer->mAudioDataByteSize, 0);
 
     // Now that the buffer is returned to us, it is no longer used by the audio
     // device, so the buffer size should be reduced.
-    if (buffer->mAudioDataByteSize > impl->queue_size_)
-      impl->queue_size_ = 0;
-    else
-      impl->queue_size_ -= buffer->mAudioDataByteSize;
+    impl->queue_size_.fetch_sub(buffer->mAudioDataByteSize,
+                                std::memory_order_relaxed);
 
     impl->buffers_.ReuseBuffer(buffer);
   }
 
-  mutable Mutex mutex_;
   util::CFRef<AudioQueueRef> queue_;
   BufferList buffers_;
   // Tracks the number of bytes buffered by the audio device.
-  size_t queue_size_;
+  std::atomic<size_t> queue_size_;
 };
 
 AppleAudioRenderer::AppleAudioRenderer() : impl_(new Impl) {}
