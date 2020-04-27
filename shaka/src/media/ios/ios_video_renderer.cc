@@ -47,9 +47,10 @@ CGImageRef IosVideoRenderer::Render() {
   std::shared_ptr<DecodedFrame> frame;
   GetCurrentFrame(&frame);
 
-  if (!frame)
+  if (!frame || frame == prev_frame_)
     return nullptr;
 
+  prev_frame_ = frame;
   switch (get<PixelFormat>(frame->format)) {
     case PixelFormat::RGB24:
       return RenderPackedFrame(frame);

@@ -17,10 +17,9 @@
 #include "shaka/utils.h"
 #include "src/public/ShakaPlayer+Internal.h"
 
-#define ShakaRenderLoopDelay (1.0 / 60)
 
 @interface ShakaPlayerView () {
-  NSTimer *_renderLoopTimer;
+  CADisplayLink *_renderDisplayLink;
   NSTimer *_textLoopTimer;
   CALayer *_imageLayer;
   CALayer *_textLayer;
@@ -29,6 +28,32 @@
   shaka::media::VideoFillMode _gravity;
 
   NSMutableDictionary<NSValue *, NSSet<CALayer *> *> *_cues;
+}
+
+- (void)renderLoop;
+
+@end
+
+/**
+ * A wrapper object that holds a weak reference to ShakaPlayerView so the CADisplayLink can hold
+ * a strong reference without causing a retain cycle.
+ */
+@interface LoopWrapper : NSObject
+@end
+
+@implementation LoopWrapper {
+  __weak ShakaPlayerView *_target;
+}
+
+- (id)initWithTarget:(ShakaPlayerView *)target {
+  if ((self = [super init])) {
+    _target = target;
+  }
+  return self;
+}
+
+- (void)renderLoop:(CADisplayLink *)sender {
+  [self->_target renderLoop];
 }
 
 @end
@@ -60,24 +85,25 @@
 }
 
 - (void)dealloc {
-  [_renderLoopTimer invalidate];
+  [_renderDisplayLink invalidate];
   [_textLoopTimer invalidate];
 }
 
 - (void)setup {
-  // Start up the render loop.  Use a block with a capture to a weak variable to ensure that the
+  _renderDisplayLink =
+      [CADisplayLink displayLinkWithTarget:[[LoopWrapper alloc] initWithTarget:self]
+                                  selector:@selector(renderLoop:)];
+  [_renderDisplayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+
+  // Use a block with a capture to a weak variable to ensure that the
   // view will be destroyed once there are no other references.
   __weak ShakaPlayerView *weakSelf = self;
-  _renderLoopTimer = [NSTimer scheduledTimerWithTimeInterval:ShakaRenderLoopDelay
-                                                     repeats:YES
-                                                       block:^(NSTimer *timer) {
-                                                         [weakSelf renderLoop];
-                                                       }];
-  _textLoopTimer = [NSTimer scheduledTimerWithTimeInterval:0.25
-                                                   repeats:YES
-                                                     block:^(NSTimer *timer) {
-                                                       [weakSelf textLoop];
-                                                     }];
+  _textLoopTimer = [NSTimer timerWithTimeInterval:0.25
+                                          repeats:YES
+                                            block:^(NSTimer *timer) {
+                                              [weakSelf textLoop];
+                                            }];
+  [[NSRunLoop mainRunLoop] addTimer:_textLoopTimer forMode:NSRunLoopCommonModes];
 
 
   // Set up the image layer.

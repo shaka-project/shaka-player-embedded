@@ -35,14 +35,18 @@ class IosVideoRenderer : public VideoRendererCommon {
   ~IosVideoRenderer() override;
 
   /**
-   * Renders the current video frame to a new image.  This follows the CREATE
-   * rule.
+   * Renders the current video frame to a new image.  This will return nullptr
+   * while seeking or if the current frame is the same as the previous call.
+   * In these cases, the previous drawn frame should be kept.
+   *
+   * This follows the CREATE rule.
    */
   CGImageRef Render();
 
  private:
   CGImageRef RenderPackedFrame(std::shared_ptr<DecodedFrame> frame);
   CGImageRef RenderPlanarFrame(std::shared_ptr<DecodedFrame> frame);
+  std::shared_ptr<DecodedFrame> prev_frame_;
 };
 
 }  // namespace ios
