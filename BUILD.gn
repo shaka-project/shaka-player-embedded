@@ -654,8 +654,6 @@ source_set("internal_sources") {
     "shaka/src/media/demuxer_thread.cc",
     "shaka/src/media/demuxer_thread.h",
     "shaka/src/media/frames.cc",
-    "shaka/src/media/ios/ios_video_renderer.cc",
-    "shaka/src/media/ios/ios_video_renderer.h",
     "shaka/src/media/media_capabilities.cc",
     "shaka/src/media/media_player.cc",
     "shaka/src/media/media_track_public.cc",
@@ -713,7 +711,7 @@ source_set("internal_sources") {
 
   sources += get_target_outputs(":gen_exposed_idl")
 
-  if (sdl_video|| is_ios) {
+  if (sdl_video || is_ios || is_mac) {
     sources += [
       "shaka/src/media/video_renderer_common.cc",
       "shaka/src/media/video_renderer_common.h",
@@ -813,6 +811,7 @@ source_set("internal_sources") {
       "AVFoundation.framework",
       "AudioToolbox.framework",
       "CoreAudio.framework",
+      "CoreGraphics.framework",
       "CoreMedia.framework",
       "CoreVideo.framework",
       "Foundation.framework",
@@ -823,6 +822,7 @@ source_set("internal_sources") {
     ]
     sources += [
       "shaka/src/media/apple_audio_renderer.cc",
+      "shaka/src/media/apple_video_renderer.cc",
       "shaka/src/util/crypto_darwin.cc",
       "shaka/src/util/darwin_utils.h",
       "shaka/src/util/darwin_utils.mm",
@@ -944,6 +944,7 @@ if (is_ios) {
     visibility = [ ":*" ]
     sources = [
       "shaka/include/shaka/media/apple_audio_renderer.h",
+      "shaka/include/shaka/media/apple_video_renderer.h",
       "shaka/include/shaka/media/decoder.h",
       "shaka/include/shaka/media/demuxer.h",
       "shaka/include/shaka/media/frames.h",

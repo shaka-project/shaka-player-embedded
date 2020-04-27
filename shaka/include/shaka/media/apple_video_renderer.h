@@ -12,27 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SHAKA_EMBEDDED_MEDIA_IOS_IOS_VIDEO_RENDERER_H_
-#define SHAKA_EMBEDDED_MEDIA_IOS_IOS_VIDEO_RENDERER_H_
+#ifndef SHAKA_EMBEDDED_MEDIA_APPLE_VIDEO_RENDERER_H_
+#define SHAKA_EMBEDDED_MEDIA_APPLE_VIDEO_RENDERER_H_
 
 #include <VideoToolbox/VideoToolbox.h>
 
 #include <memory>
 
-#include "shaka/media/frames.h"
-#include "src/media/video_renderer_common.h"
+#include "../macros.h"
+#include "renderer.h"
 
 namespace shaka {
 namespace media {
-namespace ios {
 
 /**
- * Defines a video renderer that renders to an iOS CGImageRef.
+ * Defines a video renderer that renders to a CGImageRef.
+ *
+ * @ingroup media
  */
-class IosVideoRenderer : public VideoRendererCommon {
+class SHAKA_EXPORT AppleVideoRenderer final : public VideoRenderer {
  public:
-  IosVideoRenderer();
-  ~IosVideoRenderer() override;
+  AppleVideoRenderer();
+  ~AppleVideoRenderer() override;
+
+  /** @return The current video fill mode. */
+  VideoFillMode fill_mode() const;
 
   /**
    * Renders the current video frame to a new image.  This will return nullptr
@@ -43,14 +47,20 @@ class IosVideoRenderer : public VideoRendererCommon {
    */
   CGImageRef Render();
 
+
+  void SetPlayer(const MediaPlayer* player) override;
+  void Attach(const DecodedStream* stream) override;
+  void Detach() override;
+
+  struct VideoPlaybackQuality VideoPlaybackQuality() const override;
+  bool SetVideoFillMode(VideoFillMode mode) override;
+
  private:
-  CGImageRef RenderPackedFrame(std::shared_ptr<DecodedFrame> frame);
-  CGImageRef RenderPlanarFrame(std::shared_ptr<DecodedFrame> frame);
-  std::shared_ptr<DecodedFrame> prev_frame_;
+  class Impl;
+  std::shared_ptr<Impl> impl_;
 };
 
-}  // namespace ios
 }  // namespace media
 }  // namespace shaka
 
-#endif  // SHAKA_EMBEDDED_MEDIA_IOS_IOS_VIDEO_RENDERER_H_
+#endif  // SHAKA_EMBEDDED_MEDIA_APPLE_VIDEO_RENDERER_H_

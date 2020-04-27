@@ -28,7 +28,6 @@
 #include "src/js/player_externs+Internal.h"
 #include "src/js/stats+Internal.h"
 #include "src/js/track+Internal.h"
-#include "src/media/ios/ios_video_renderer.h"
 #include "src/public/ShakaPlayer+Internal.h"
 #include "src/public/error_objc+Internal.h"
 #include "src/public/net_objc+Internal.h"
@@ -235,7 +234,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   std::list<NetworkFilter> _filters;
   std::shared_ptr<shaka::JsManager> _engine;
 
-  shaka::media::ios::IosVideoRenderer _video_renderer;
+  shaka::media::AppleVideoRenderer _video_renderer;
   std::unique_ptr<shaka::media::AudioRenderer> _audio_renderer;
 
   std::unique_ptr<shaka::media::DefaultMediaPlayer> _media_player;
@@ -678,7 +677,7 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   return _media_player.get();
 }
 
-- (shaka::media::ios::IosVideoRenderer *)videoRenderer {
+- (shaka::media::AppleVideoRenderer *)videoRenderer {
   return &_video_renderer;
 }
 

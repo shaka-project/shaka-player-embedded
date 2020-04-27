@@ -61,6 +61,7 @@
 
 #  ifdef __APPLE__
 #    include "media/apple_audio_renderer.h"
+#    include "media/apple_video_renderer.h"
 #  endif
 #  include "media/decoder.h"
 #  ifdef SHAKA_DEFAULT_MEDIA_PLAYER

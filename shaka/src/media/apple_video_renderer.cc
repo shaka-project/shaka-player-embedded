@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/media/ios/ios_video_renderer.h"
+#include "shaka/media/apple_video_renderer.h"
 
 #include <glog/logging.h>
 
+#include "src/media/video_renderer_common.h"
+
 namespace shaka {
 namespace media {
-namespace ios {
 
 namespace {
 
@@ -40,10 +41,18 @@ void FreeFramePlanar(void* info, const void*, size_t, size_t, const void**) {
 
 }  // namespace
 
-IosVideoRenderer::IosVideoRenderer() {}
-IosVideoRenderer::~IosVideoRenderer() {}
+class AppleVideoRenderer::Impl final : public VideoRendererCommon {
+ public:
+  CGImageRef Render();
 
-CGImageRef IosVideoRenderer::Render() {
+ private:
+  CGImageRef RenderPackedFrame(std::shared_ptr<DecodedFrame> frame);
+  CGImageRef RenderPlanarFrame(std::shared_ptr<DecodedFrame> frame);
+
+  std::shared_ptr<DecodedFrame> prev_frame_;
+};
+
+CGImageRef AppleVideoRenderer::Impl::Render() {
   std::shared_ptr<DecodedFrame> frame;
   GetCurrentFrame(&frame);
 
@@ -66,7 +75,7 @@ CGImageRef IosVideoRenderer::Render() {
   }
 }
 
-CGImageRef IosVideoRenderer::RenderPackedFrame(
+CGImageRef AppleVideoRenderer::Impl::RenderPackedFrame(
     std::shared_ptr<DecodedFrame> frame) {
   const uint32_t width = frame->stream_info->width;
   const uint32_t height = frame->stream_info->height;
@@ -104,7 +113,7 @@ CGImageRef IosVideoRenderer::RenderPackedFrame(
   return image;
 }
 
-CGImageRef IosVideoRenderer::RenderPlanarFrame(
+CGImageRef AppleVideoRenderer::Impl::RenderPlanarFrame(
     std::shared_ptr<DecodedFrame> frame) {
   CVPixelBufferRef pixel_buffer;
   bool free_pixel_buffer;
@@ -117,7 +126,7 @@ CGImageRef IosVideoRenderer::RenderPlanarFrame(
     if (pix_fmt != PixelFormat::YUV420P)
       return nullptr;
 
-    const OSType ios_pix_fmt = kCVPixelFormatType_420YpCbCr8Planar;
+    const OSType cv_pix_fmt = kCVPixelFormatType_420YpCbCr8Planar;
     auto* info = new FrameInfo;
     info->frame = frame;
     info->widths[0] = frame->stream_info->width;
@@ -127,7 +136,7 @@ CGImageRef IosVideoRenderer::RenderPlanarFrame(
 
     const auto status = CVPixelBufferCreateWithPlanarBytes(
         nullptr, frame->stream_info->width, frame->stream_info->height,
-        ios_pix_fmt, nullptr, 0, frame->data.size(),
+        cv_pix_fmt, nullptr, 0, frame->data.size(),
         reinterpret_cast<void**>(const_cast<uint8_t**>(frame->data.data())),
         info->widths, info->heights,
         const_cast<size_t*>(frame->linesize.data()), &FreeFramePlanar, info,
@@ -155,6 +164,37 @@ CGImageRef IosVideoRenderer::RenderPlanarFrame(
   return ret;
 }
 
-}  // namespace ios
+
+AppleVideoRenderer::AppleVideoRenderer() : impl_(new Impl) {}
+AppleVideoRenderer::~AppleVideoRenderer() {}
+
+VideoFillMode AppleVideoRenderer::fill_mode() const {
+  return impl_->fill_mode();
+}
+
+CGImageRef AppleVideoRenderer::Render() {
+  return impl_->Render();
+}
+
+void AppleVideoRenderer::SetPlayer(const MediaPlayer* player) {
+  impl_->SetPlayer(player);
+}
+
+void AppleVideoRenderer::Attach(const DecodedStream* stream) {
+  impl_->Attach(stream);
+}
+
+void AppleVideoRenderer::Detach() {
+  impl_->Detach();
+}
+
+VideoPlaybackQuality AppleVideoRenderer::VideoPlaybackQuality() const {
+  return impl_->VideoPlaybackQuality();
+}
+
+bool AppleVideoRenderer::SetVideoFillMode(VideoFillMode mode) {
+  return impl_->SetVideoFillMode(mode);
+}
+
 }  // namespace media
 }  // namespace shaka

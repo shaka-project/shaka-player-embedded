@@ -14,6 +14,8 @@
 
 #import "shaka/ShakaPlayerView.h"
 
+#include <unordered_set>
+
 #include "shaka/utils.h"
 #include "src/public/ShakaPlayer+Internal.h"
 
