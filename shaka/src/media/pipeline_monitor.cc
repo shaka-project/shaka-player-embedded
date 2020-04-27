@@ -97,23 +97,32 @@ void PipelineMonitor::ThreadMain() {
     const BufferedRanges decoded = get_decoded_();
     const double time = pipeline_->GetCurrentTime();
     const double duration = pipeline_->GetDuration();
-    const bool can_play = CanPlay(buffered, time, duration);
+    const auto state = pipeline_->GetPlaybackState();
+    // Don't move playhead until we have decoded at the current time.  This
+    // ensures we stop for decryption errors and that we don't blindly move
+    // forward without the correct frames.
+    // If we're already playing, keep playing until the end of the buffered
+    // range; otherwise wait until we have buffered some amount ahead of the
+    // playhead.
+    const bool is_playing = state == VideoPlaybackState::Playing;
+    const bool has_current_frame =
+        IsBufferedUntil(decoded, time, time, duration);
+    const bool can_start =
+        CanPlay(buffered, time, duration) && has_current_frame;
+    const bool can_play = is_playing ? has_current_frame : can_start;
     if (time >= duration) {
       pipeline_->OnEnded();
-    } else if (can_play && IsBufferedUntil(decoded, time, time, duration)) {
-      // Don't move playhead until we have decoded at the current time.  This
-      // ensures we stop for decryption errors and that we don't blindly move
-      // forward without the correct frames.
+    } else if (can_play) {
       pipeline_->CanPlay();
     } else {
       pipeline_->Buffering();
     }
 
-    if (pipeline_->GetPlaybackState() == VideoPlaybackState::Initializing) {
+    if (state == VideoPlaybackState::Initializing) {
       ChangeReadyState(VideoReadyState::HaveNothing);
     } else if (can_play) {
       ChangeReadyState(VideoReadyState::HaveFutureData);
-    } else if (IsBufferedUntil(buffered, time, time, duration)) {
+    } else if (has_current_frame) {
       ChangeReadyState(VideoReadyState::HaveCurrentData);
     } else {
       ChangeReadyState(VideoReadyState::HaveMetadata);
