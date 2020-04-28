@@ -157,6 +157,8 @@ class AudioRendererCommon : public AudioRenderer, MediaPlayer::Client {
   const DecodedStream* input_;
 
   std::shared_ptr<DecodedFrame> cur_frame_;
+  double sync_time_;
+  uint64_t bytes_written_;
   double volume_;
   bool muted_;
   bool needs_resync_;

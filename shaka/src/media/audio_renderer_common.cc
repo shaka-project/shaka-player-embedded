@@ -25,6 +25,9 @@ namespace {
 /** The number of seconds to buffer ahead of the current time. */
 const double kBufferTarget = 2;
 
+/** The minimum difference, in seconds, to introduce silence or drop frames. */
+const double kSyncLimit = 0.1;
+
 /** A buffer that contains silence. */
 const uint8_t kSilenceBuffer[4096] = {0};
 
@@ -75,6 +78,10 @@ int64_t GetSyncBytes(double prev_time, size_t bytes_written,
                      std::shared_ptr<DecodedFrame> next) {
   const int64_t bytes_per_sample = BytesPerSample(next);
   const double buffer_end = prev_time + BytesToSeconds(next, bytes_written);
+  // If the difference is small, just ignore for now.
+  if (std::abs(buffer_end - next->pts) < kSyncLimit)
+    return 0;
+
   // Round to whole samples before converting to bytes.
   const int64_t sample_delta = static_cast<int64_t>(
       (buffer_end - next->pts) * next->stream_info->sample_rate);
@@ -165,6 +172,7 @@ bool AudioRendererCommon::FillSilence(size_t bytes) {
     const size_t to_write = std::min(bytes, sizeof(kSilenceBuffer));
     if (!AppendBuffer(kSilenceBuffer, to_write))
       return false;
+    bytes_written_ += to_write;
     bytes -= to_write;
   }
   return true;
@@ -247,8 +255,10 @@ void AudioRendererCommon::ThreadMain() {
     int64_t sync_bytes;
     if (needs_resync_ || !cur_frame_) {
       sync_bytes = GetSyncBytes(time, 0, next);
+      sync_time_ = time;
+      bytes_written_ = 0;
     } else {
-      sync_bytes = GetSyncBytes(cur_frame_->pts, cur_frame_->linesize[0], next);
+      sync_bytes = GetSyncBytes(sync_time_, bytes_written_, next);
     }
     if (sync_bytes < 0) {
       if (!FillSilence(-sync_bytes))
@@ -260,6 +270,7 @@ void AudioRendererCommon::ThreadMain() {
                         next->linesize[0] - sync_bytes)) {
         return;
       }
+      bytes_written_ += next->linesize[0] - sync_bytes;
     }
     cur_frame_ = next;
     needs_resync_ = false;
