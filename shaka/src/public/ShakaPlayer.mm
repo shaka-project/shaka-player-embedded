@@ -405,24 +405,30 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
 }
 
 - (void)getUiInfoWithBlock:(void (^)(ShakaPlayerUiInfo *))block {
-  auto callback = [=]() {
+  // Use a weak capture to avoid having this callback keep the player alive.
+  __weak ShakaPlayer *weakSelf = self;
+  auto callback = [weakSelf, block]() {
+    ShakaPlayer *player = weakSelf;
+    if (!player)
+      return;
+
 #define GET_VALUE(field, method)                                            \
   do {                                                                      \
-    auto results = _player->method();                                       \
+    auto results = player->_player->method();                               \
     if (!results.has_error()) {                                             \
       using T = typename std::decay<decltype(results.results())>::type;     \
       ret.field = shaka::util::ObjcConverter<T>::ToObjc(results.results()); \
     }                                                                       \
   } while (false)
     auto ret = [[ShakaPlayerUiInfo alloc] init];
-    ret.paused = [self paused];
-    ret.ended = [self ended];
-    ret.seeking = [self seeking];
-    ret.duration = _media_player->Duration();
-    ret.playbackRate = _media_player->PlaybackRate();
-    ret.currentTime = _media_player->CurrentTime();
-    ret.volume = _media_player->Volume();
-    ret.muted = _media_player->Muted();
+    ret.paused = [player paused];
+    ret.ended = [player ended];
+    ret.seeking = [player seeking];
+    ret.duration = player->_media_player->Duration();
+    ret.playbackRate = player->_media_player->PlaybackRate();
+    ret.currentTime = player->_media_player->CurrentTime();
+    ret.volume = player->_media_player->Volume();
+    ret.muted = player->_media_player->Muted();
     // This callback is run on the JS main thread, so all these should complete
     // synchronously.
     GET_VALUE(isAudioOnly, IsAudioOnly);
