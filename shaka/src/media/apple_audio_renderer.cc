@@ -191,6 +191,10 @@ class AppleAudioRenderer::Impl : public AudioRendererCommon {
   }
 
   bool InitDevice(std::shared_ptr<DecodedFrame> frame, double volume) override {
+    // Clear the buffer first so we delete any existing buffers with the old
+    // queue.
+    ClearBuffer();
+
     AudioStreamBasicDescription desc = {0};
     if (!SetSampleFormatFields(get<SampleFormat>(frame->format), &desc))
       return false;
@@ -210,9 +214,11 @@ class AppleAudioRenderer::Impl : public AudioRendererCommon {
       return false;
     }
 
-    queue_ = q;
     queue_size_.store(0, std::memory_order_relaxed);
     buffers_.SetQueue(q);
+    // Update queue_ after updating buffers_ so the buffer list can free the
+    // old buffers while the old queue is still valid.
+    queue_ = q;
     UpdateVolume(volume);
     return true;
   }
