@@ -27,7 +27,7 @@
   CALayer *_textLayer;
   CALayer *_avPlayerLayer;
   ShakaPlayer *_player;
-  shaka::media::VideoFillMode _gravity;
+  shaka::VideoFillMode _gravity;
 
   NSMutableDictionary<NSValue *, NSSet<CALayer *> *> *_cues;
 }
@@ -119,7 +119,7 @@
   // Disable default animations.
   _imageLayer.actions = @{@"position": [NSNull null], @"bounds": [NSNull null]};
 
-  _gravity = shaka::media::VideoFillMode::MaintainRatio;
+  _gravity = shaka::VideoFillMode::MaintainRatio;
   _cues = [[NSMutableDictionary alloc] init];
 }
 
@@ -144,11 +144,11 @@
 
 - (void)setVideoGravity:(AVLayerVideoGravity)videoGravity {
   if (videoGravity == AVLayerVideoGravityResize) {
-    _gravity = shaka::media::VideoFillMode::Stretch;
+    _gravity = shaka::VideoFillMode::Stretch;
   } else if (videoGravity == AVLayerVideoGravityResizeAspectFill) {
-    _gravity = shaka::media::VideoFillMode::Zoom;
+    _gravity = shaka::VideoFillMode::Zoom;
   } else if (videoGravity == AVLayerVideoGravityResizeAspect) {
-    _gravity = shaka::media::VideoFillMode::MaintainRatio;
+    _gravity = shaka::VideoFillMode::MaintainRatio;
   } else {
     [NSException raise:NSGenericException format:@"Invalid value for videoGravity"];
   }
@@ -168,15 +168,16 @@
     _imageLayer.contents = (__bridge_transfer id)image;
 
     // Fit image in frame.
-    shaka::ShakaRect image_bounds = {0, 0, CGImageGetWidth(image), CGImageGetHeight(image)};
-    shaka::ShakaRect dest_bounds = {
+    shaka::ShakaRect<uint32_t> image_bounds = {0, 0, CGImageGetWidth(image),
+                                               CGImageGetHeight(image)};
+    shaka::ShakaRect<uint32_t> dest_bounds = {
         0,
         0,
-        static_cast<int>(self.bounds.size.width),
-        static_cast<int>(self.bounds.size.height),
+        static_cast<uint32_t>(self.bounds.size.width),
+        static_cast<uint32_t>(self.bounds.size.height),
     };
-    shaka::ShakaRect src;
-    shaka::ShakaRect dest;
+    shaka::ShakaRect<uint32_t> src;
+    shaka::ShakaRect<uint32_t> dest;
     shaka::FitVideoToRegion(image_bounds, dest_bounds, _player.videoRenderer->fill_mode(), &src,
                             &dest);
     _imageLayer.contentsRect = CGRectMake(

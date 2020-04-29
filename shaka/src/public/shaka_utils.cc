@@ -20,35 +20,35 @@
 
 namespace shaka {
 
-void FitVideoToRegion(ShakaRect frame, ShakaRect bounds,
-                      media::VideoFillMode mode, ShakaRect* src,
-                      ShakaRect* dest) {
+void FitVideoToRegion(ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds,
+                      VideoFillMode mode, ShakaRect<uint32_t>* src,
+                      ShakaRect<uint32_t>* dest) {
   const double width_factor = static_cast<double>(bounds.w) / frame.w;
   const double height_factor = static_cast<double>(bounds.h) / frame.h;
   const double max_factor = std::max(width_factor, height_factor);
   const double min_factor = std::min(width_factor, height_factor);
 
   switch (mode) {
-    case media::VideoFillMode::Original:
+    case VideoFillMode::Original:
       src->w = dest->w = std::min(frame.w, bounds.w);
       src->h = dest->h = std::min(frame.h, bounds.h);
       break;
 
-    case media::VideoFillMode::Stretch:
+    case VideoFillMode::Stretch:
       *src = frame;
       *dest = bounds;
       break;
 
-    case media::VideoFillMode::Zoom:
+    case VideoFillMode::Zoom:
       *dest = bounds;
-      src->w = static_cast<int>(bounds.w / max_factor);
-      src->h = static_cast<int>(bounds.h / max_factor);
+      src->w = static_cast<uint32_t>(bounds.w / max_factor);
+      src->h = static_cast<uint32_t>(bounds.h / max_factor);
       break;
 
-    case media::VideoFillMode::MaintainRatio:
+    case VideoFillMode::MaintainRatio:
       *src = frame;
-      dest->w = static_cast<int>(frame.w * min_factor);
-      dest->h = static_cast<int>(frame.h * min_factor);
+      dest->w = static_cast<uint32_t>(frame.w * min_factor);
+      dest->h = static_cast<uint32_t>(frame.h * min_factor);
       break;
 
     default:
@@ -70,15 +70,6 @@ void FitVideoToRegion(ShakaRect frame, ShakaRect bounds,
   DCHECK_GE(dest->y, bounds.y);
   DCHECK_LE(dest->x + dest->w, bounds.x + bounds.w);
   DCHECK_LE(dest->y + dest->h, bounds.y + bounds.h);
-}
-
-ShakaRect FitVideoToWindow(int video_width, int video_height, int window_width,
-                           int window_height, int window_x, int window_y) {
-  ShakaRect src, dest;
-  FitVideoToRegion({0, 0, video_width, video_height},
-                   {window_x, window_y, window_width, window_height},
-                   media::VideoFillMode::MaintainRatio, &src, &dest);
-  return dest;
 }
 
 }  // namespace shaka

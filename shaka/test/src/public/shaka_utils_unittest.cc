@@ -21,18 +21,17 @@ namespace shaka {
 
 namespace {
 
-ShakaRect MakeRect(int x, int y, int w, int h) {
-  return ShakaRect{x, y, w, h};
+ShakaRect<uint32_t> MakeRect(int x, int y, int w, int h) {
+  return ShakaRect<uint32_t>{x, y, w, h};
 }
 
 }  // namespace
 
 TEST(ShakaUtilsTest, FitVideoToRegion_Original) {
-  ShakaRect src;
-  ShakaRect dest;
-  auto run = [&](ShakaRect frame, ShakaRect bounds) {
-    FitVideoToRegion(frame, bounds, media::VideoFillMode::Original, &src,
-                     &dest);
+  ShakaRect<uint32_t> src;
+  ShakaRect<uint32_t> dest;
+  auto run = [&](ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds) {
+    FitVideoToRegion(frame, bounds, VideoFillMode::Original, &src, &dest);
   };
 
   // Original smaller than window.
@@ -65,10 +64,10 @@ TEST(ShakaUtilsTest, FitVideoToRegion_Original) {
 }
 
 TEST(ShakaUtilsTest, FitVideoToRegion_Stretch) {
-  ShakaRect src;
-  ShakaRect dest;
-  auto run = [&](ShakaRect frame, ShakaRect bounds) {
-    FitVideoToRegion(frame, bounds, media::VideoFillMode::Stretch, &src, &dest);
+  ShakaRect<uint32_t> src;
+  ShakaRect<uint32_t> dest;
+  auto run = [&](ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds) {
+    FitVideoToRegion(frame, bounds, VideoFillMode::Stretch, &src, &dest);
     // Stretch should always use the whole input and fill the whole output.
     EXPECT_EQ(src, frame);
     EXPECT_EQ(dest, bounds);
@@ -90,10 +89,10 @@ TEST(ShakaUtilsTest, FitVideoToRegion_Stretch) {
 }
 
 TEST(ShakaUtilsTest, FitVideoToRegion_Zoom) {
-  ShakaRect src;
-  ShakaRect dest;
-  auto run = [&](ShakaRect frame, ShakaRect bounds) {
-    FitVideoToRegion(frame, bounds, media::VideoFillMode::Zoom, &src, &dest);
+  ShakaRect<uint32_t> src;
+  ShakaRect<uint32_t> dest;
+  auto run = [&](ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds) {
+    FitVideoToRegion(frame, bounds, VideoFillMode::Zoom, &src, &dest);
     // Zoom should always fill the whole output.
     EXPECT_EQ(dest, bounds);
   };
@@ -128,11 +127,10 @@ TEST(ShakaUtilsTest, FitVideoToRegion_Zoom) {
 }
 
 TEST(ShakaUtilsTest, FitVideoToRegion_MaintainRatio) {
-  ShakaRect src;
-  ShakaRect dest;
-  auto run = [&](ShakaRect frame, ShakaRect bounds) {
-    FitVideoToRegion(frame, bounds, media::VideoFillMode::MaintainRatio, &src,
-                     &dest);
+  ShakaRect<uint32_t> src;
+  ShakaRect<uint32_t> dest;
+  auto run = [&](ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds) {
+    FitVideoToRegion(frame, bounds, VideoFillMode::MaintainRatio, &src, &dest);
     // MaintainRatio should always use the whole source.
     EXPECT_EQ(src, frame);
   };
@@ -164,6 +162,28 @@ TEST(ShakaUtilsTest, FitVideoToRegion_MaintainRatio) {
   // Same size but different offsets.
   run({1, 4, 5, 5}, {8, 9, 5, 5});
   EXPECT_EQ(dest, MakeRect(8, 9, 5, 5));
+}
+
+TEST(ShakaUtilsTest, Rational) {
+  Rational<int> one(1, 1);
+  Rational<int> two(2, 1);
+  Rational<int> half(1, 2);
+  Rational<int> third(1, 3);
+  Rational<int> sixth(1, 6);
+
+  EXPECT_EQ(one, one);
+  EXPECT_EQ(half * 2, one);
+  EXPECT_EQ(2 * half, one);
+  EXPECT_EQ(two * half, one);
+  EXPECT_EQ(half * third, sixth);
+  EXPECT_EQ(one / two, half);
+  EXPECT_EQ(one / 2, half);
+  EXPECT_EQ(1 / two, half);
+  EXPECT_NE(one, two);
+
+  EXPECT_EQ(static_cast<double>(half), 0.5);
+  EXPECT_EQ(two.truncate(), 2);
+  EXPECT_EQ(two.inverse(), half);
 }
 
 }  // namespace shaka

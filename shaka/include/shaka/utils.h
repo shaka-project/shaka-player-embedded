@@ -15,10 +15,11 @@
 #ifndef SHAKA_EMBEDDED_UTILS_H_
 #define SHAKA_EMBEDDED_UTILS_H_
 
+#include <iostream>
 #include <string>
+#include <type_traits>
 
 #include "macros.h"
-#include "media/media_player.h"
 
 namespace shaka {
 
@@ -29,16 +30,49 @@ namespace shaka {
  * @{
  */
 
+/**
+ * Defines possible fill modes for the video.  When drawing the video onto a
+ * region, this determines how the video gets resized to fit.  The video frame
+ * will always be centered within the region.
+ */
+enum class VideoFillMode : uint8_t {
+  /**
+   * Maintain the aspect ratio of the original video and size the video based on
+   * the smaller of the extents.  There will be black bars around the video if
+   * the region's aspect ratio isn't the same as the video's
+   */
+  MaintainRatio,
+
+  /**
+   * Draw the video frame the same as the original video.  This will put black
+   * bars around the video if it's too small or will crop it if it's too big.
+   */
+  Original,
+
+  /**
+   * Stretch the video to completely fill the region.
+   */
+  Stretch,
+
+  /**
+   * Maintain the aspect ratio of the original video and size the video based on
+   * the larger of the extents.  This will cause the video to be cropped to fit
+   * in the region, but there won't be any black bars around the video.
+   */
+  Zoom,
+};
+
 
 /**
  * A simple struct representing a rectangle, with integer precision.  Units are
  * in pixels.
  */
+template <typename T>
 struct SHAKA_EXPORT ShakaRect {
-  int x;
-  int y;
-  int w;
-  int h;
+  T x;
+  T y;
+  T w;
+  T h;
 
   bool operator==(const ShakaRect& other) const {
     return x == other.x && y == other.y && w == other.w && h == other.h;
@@ -47,6 +81,109 @@ struct SHAKA_EXPORT ShakaRect {
     return !(*this == other);
   }
 };
+
+/**
+ * Defines a rational number (i.e. a fraction) in a way to reduce the number
+ * of rounding errors.
+ */
+template <typename T>
+struct SHAKA_EXPORT Rational final {
+ private:
+  template <typename U>
+  using common = typename std::common_type<T, U>::type;
+  template <typename U>
+  using enable_if_num =
+      typename std::enable_if<std::is_arithmetic<U>::value>::type;
+
+ public:
+  Rational() = default;
+  Rational(T num, T den) : numerator(num), denominator(den) {}
+
+  T truncate() const {
+    return numerator / denominator;
+  }
+  Rational<T> inverse() const {
+    return {denominator, numerator};
+  }
+  Rational<T> reduce() const {
+    T a = numerator;
+    T b = denominator;
+    if (a == 0 || b == 0)
+      return {0, 0};
+
+    // Calculate the gcd(a, b) using the euclidean algorithm.
+    while (b != 0) {
+      T temp = a % b;
+      a = b;
+      b = temp;
+    }
+    return {numerator / a, denominator / a};
+  }
+
+  operator bool() const {
+    return numerator != 0 && denominator != 0;
+  }
+  operator double() const {
+    return static_cast<double>(numerator) / denominator;
+  }
+
+  template <typename U>
+  bool operator==(const Rational<U>& other) const {
+    const Rational<T> a = reduce();
+    const Rational<U> b = other.reduce();
+    return a.numerator == b.numerator && a.denominator == b.denominator;
+  }
+
+  template <typename U>
+  bool operator!=(const Rational<U>& other) const {
+    return !(*this == other);
+  }
+
+  template <typename U>
+  Rational<common<U>> operator*(const Rational<U>& other) const {
+    return {numerator * other.numerator, denominator * other.denominator};
+  }
+
+  template <typename U, typename = enable_if_num<U>>
+  Rational<common<U>> operator*(U other) const {
+    return {numerator * other, denominator};
+  }
+
+  template <typename U>
+  Rational<common<U>> operator/(const Rational<U>& other) const {
+    return {numerator * other.denominator, denominator * other.numerator};
+  }
+
+  template <typename U, typename = enable_if_num<U>>
+  Rational<common<U>> operator/(U other) const {
+    return {numerator, denominator * other};
+  }
+
+  T numerator;
+  T denominator;
+};
+static_assert(std::is_pod<Rational<int>>::value, "Rational should be POD");
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Rational<T>& bar) {
+  return os << bar.numerator << "/" << bar.denominator;
+}
+
+// operator*(T, Rational<T>);
+template <typename T, typename U, typename =
+      typename std::enable_if<std::is_arithmetic<T>::value>::type>
+Rational<typename std::common_type<T, U>::type> operator*(
+    T a, const Rational<U>& b) {
+  return {a * b.numerator, b.denominator};
+}
+
+// operator/(T, Rational<T>);
+template <typename T, typename U, typename =
+      typename std::enable_if<std::is_arithmetic<T>::value>::type>
+Rational<typename std::common_type<T, U>::type> operator/(
+    T a, const Rational<U>& b) {
+  return b.inverse() * a;
+}
 
 
 /**
@@ -64,27 +201,10 @@ struct SHAKA_EXPORT ShakaRect {
  * @param dest Where to put the destination rectangle.  This represents the
  *   region on the window to draw to.
  */
-SHAKA_EXPORT void FitVideoToRegion(ShakaRect frame, ShakaRect bounds,
-                                   media::VideoFillMode mode, ShakaRect* src,
-                                   ShakaRect* dest);
-
-
-/**
- * Creates a rectangle that can be used as a rendering destination to draw the
- * video while maintaining aspect ratio.  This will produce a rectangle that
- * will fit inside the window area, but will maintain the aspect ratio of the
- * video.
- *
- * @param video_width The width of the video.
- * @param video_height The height of the video.
- * @param window_width The width of the window, or the portion to use.
- * @param window_height The height of the window, or the portion to use.
- * @param window_x The X offset of the window region to use.
- * @param window_y The Y offset of the window region to use.
- */
-SHAKA_EXPORT ShakaRect FitVideoToWindow(int video_width, int video_height,
-                                        int window_width, int window_height,
-                                        int window_x = 0, int window_y = 0);
+SHAKA_EXPORT void FitVideoToRegion(ShakaRect<uint32_t> frame,
+                                   ShakaRect<uint32_t> bounds,
+                                   VideoFillMode mode, ShakaRect<uint32_t>* src,
+                                   ShakaRect<uint32_t>* dest);
 
 
 /**

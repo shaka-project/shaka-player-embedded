@@ -17,36 +17,13 @@
 
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 #include "../macros.h"
+#include "../utils.h"
 
 namespace shaka {
 namespace media {
-
-/**
- * Defines a rational number (i.e. a fraction) in a way to reduce the number
- * of rounding errors.  Some decoders can specify rational numbers separately,
- * so this avoids extra rounding errors when using floats.
- */
-struct SHAKA_EXPORT Rational final {
-  size_t numerator;
-  size_t denominator;
-
-  operator double() const {
-    return static_cast<double>(numerator) / denominator;
-  }
-
-  bool operator==(const Rational& other) const {
-    return numerator == other.numerator && denominator == other.denominator;
-  }
-  bool operator!=(const Rational& other) const {
-    return !(*this == other);
-  }
-};
-static_assert(std::is_pod<Rational>::value, "Rational should be POD");
-
 
 /**
  * Defines information about a stream; this is used to initialize decoders.
@@ -56,9 +33,9 @@ static_assert(std::is_pod<Rational>::value, "Rational should be POD");
 class SHAKA_EXPORT StreamInfo {
  public:
   StreamInfo(const std::string& mime, const std::string& codec, bool is_video,
-             Rational time_scale, const std::vector<uint8_t>& extra_data,
-             uint32_t width, uint32_t height, uint32_t channel_count,
-             uint32_t sample_rate);
+             Rational<uint32_t> time_scale,
+             const std::vector<uint8_t>& extra_data, uint32_t width,
+             uint32_t height, uint32_t channel_count, uint32_t sample_rate);
   virtual ~StreamInfo();
 
   SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(StreamInfo);
@@ -82,7 +59,7 @@ class SHAKA_EXPORT StreamInfo {
    * this timescale.  This doesn't apply to the "double" fields on the frame
    * object.
    */
-  const Rational time_scale;
+  const Rational<uint32_t> time_scale;
 
   /** Extra data used to initialize the decoder. */
   const std::vector<uint8_t> extra_data;

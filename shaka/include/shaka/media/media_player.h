@@ -22,6 +22,7 @@
 
 #include "../eme/implementation.h"
 #include "../macros.h"
+#include "../utils.h"
 #include "media_capabilities.h"
 #include "media_track.h"
 #include "streams.h"
@@ -35,40 +36,6 @@ namespace media {
  * @ingroup exported
  * Interfaces for defining custom MediaPlayer implementations.
  */
-
-/**
- * Defines possible fill modes for the video.  When drawing the video onto a
- * region, this determines how the video gets resized to fit.  The video frame
- * will always be centered within the region.
- *
- * @ingroup media
- */
-enum class VideoFillMode : uint8_t {
-  /**
-   * Maintain the aspect ratio of the original video and size the video based on
-   * the smaller of the extents.  There will be black bars around the video if
-   * the region's aspect ratio isn't the same as the video's
-   */
-  MaintainRatio,
-
-  /**
-   * Draw the video frame the same as the original video.  This will put black
-   * bars around the video if it's too small or will crop it if it's too big.
-   */
-  Original,
-
-  /**
-   * Stretch the video to completely fill the region.
-   */
-  Stretch,
-
-  /**
-   * Maintain the aspect ratio of the original video and size the video based on
-   * the larger of the extents.  This will cause the video to be cropped to fit
-   * in the region, but there won't be any black bars around the video.
-   */
-  Zoom,
-};
 
 /**
  * Defines possible content states the video can be in.  This defines how much
