@@ -189,6 +189,8 @@ Rational<typename std::common_type<T, U>::type> operator/(
  *
  * @param frame The bounds of the video.
  * @param bounds The bounds to draw the frame within.
+ * @param sample_aspect_ratio The sample aspect ratio; this is the aspect ratio
+ *   of the pixels in the image.  (0, 0) is treated as (1, 1).
  * @param mode The fill mode to fit to.
  * @param src Where to put the source rectangle.  This represents the sub-region
  *   of the frame to draw.
@@ -197,6 +199,7 @@ Rational<typename std::common_type<T, U>::type> operator/(
  */
 SHAKA_EXPORT void FitVideoToRegion(ShakaRect<uint32_t> frame,
                                    ShakaRect<uint32_t> bounds,
+                                   Rational<uint32_t> sample_aspect_ratio,
                                    VideoFillMode mode, ShakaRect<uint32_t>* src,
                                    ShakaRect<uint32_t>* dest);
 

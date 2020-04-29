@@ -21,30 +21,43 @@
 namespace shaka {
 
 void FitVideoToRegion(ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds,
+                      Rational<uint32_t> sample_aspect_ratio,
                       VideoFillMode mode, ShakaRect<uint32_t>* src,
                       ShakaRect<uint32_t>* dest) {
-  const double width_factor = static_cast<double>(bounds.w) / frame.w;
-  const double height_factor = static_cast<double>(bounds.h) / frame.h;
-  const double max_factor = std::max(width_factor, height_factor);
-  const double min_factor = std::min(width_factor, height_factor);
+  if (!sample_aspect_ratio)
+    sample_aspect_ratio = Rational<uint32_t>{1, 1};
 
   switch (mode) {
+    // Stretch video to fill screen.
     case VideoFillMode::Stretch:
       *src = frame;
       *dest = bounds;
       break;
 
-    case VideoFillMode::Zoom:
+    // Crop video to maintain aspect ratio while filling the screen.
+    case VideoFillMode::Zoom: {
       *dest = bounds;
-      src->w = static_cast<uint32_t>(bounds.w / max_factor);
-      src->h = static_cast<uint32_t>(bounds.h / max_factor);
+      const Rational<uint32_t> bounds_ratio{bounds.w, bounds.h};
+      // We either use the whole width or the whole height; the other dimension
+      // gets cropped based on the aspect ratio.
+      // Convert number of pixels to image size, then use display aspect ratio.
+      src->w = std::min(
+          frame.w, (frame.h / sample_aspect_ratio * bounds_ratio).truncate());
+      src->h = std::min(
+          frame.h, (frame.w * sample_aspect_ratio / bounds_ratio).truncate());
       break;
+    }
 
-    case VideoFillMode::MaintainRatio:
+    // Add black boxes around video to maintain aspect ratio.
+    case VideoFillMode::MaintainRatio: {
       *src = frame;
-      dest->w = static_cast<uint32_t>(frame.w * min_factor);
-      dest->h = static_cast<uint32_t>(frame.h * min_factor);
+      const Rational<uint32_t> aspect_ratio =
+          Rational<uint32_t>{frame.w, frame.h} * sample_aspect_ratio;
+      // Get the width based on the height and the display aspect ratio.
+      dest->w = std::min(bounds.w, (bounds.h * aspect_ratio).truncate());
+      dest->h = std::min(bounds.h, (bounds.w / aspect_ratio).truncate());
       break;
+    }
 
     default:
       LOG(FATAL) << "Unknown video fill mode: " << static_cast<int>(mode);

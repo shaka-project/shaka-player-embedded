@@ -31,7 +31,8 @@ TEST(ShakaUtilsTest, FitVideoToRegion_Stretch) {
   ShakaRect<uint32_t> src;
   ShakaRect<uint32_t> dest;
   auto run = [&](ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds) {
-    FitVideoToRegion(frame, bounds, VideoFillMode::Stretch, &src, &dest);
+    FitVideoToRegion(frame, bounds, {0, 0}, VideoFillMode::Stretch, &src,
+                     &dest);
     // Stretch should always use the whole input and fill the whole output.
     EXPECT_EQ(src, frame);
     EXPECT_EQ(dest, bounds);
@@ -56,7 +57,7 @@ TEST(ShakaUtilsTest, FitVideoToRegion_Zoom) {
   ShakaRect<uint32_t> src;
   ShakaRect<uint32_t> dest;
   auto run = [&](ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds) {
-    FitVideoToRegion(frame, bounds, VideoFillMode::Zoom, &src, &dest);
+    FitVideoToRegion(frame, bounds, {0, 0}, VideoFillMode::Zoom, &src, &dest);
     // Zoom should always fill the whole output.
     EXPECT_EQ(dest, bounds);
   };
@@ -94,7 +95,8 @@ TEST(ShakaUtilsTest, FitVideoToRegion_MaintainRatio) {
   ShakaRect<uint32_t> src;
   ShakaRect<uint32_t> dest;
   auto run = [&](ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds) {
-    FitVideoToRegion(frame, bounds, VideoFillMode::MaintainRatio, &src, &dest);
+    FitVideoToRegion(frame, bounds, {0, 0}, VideoFillMode::MaintainRatio, &src,
+                     &dest);
     // MaintainRatio should always use the whole source.
     EXPECT_EQ(src, frame);
   };
@@ -126,6 +128,29 @@ TEST(ShakaUtilsTest, FitVideoToRegion_MaintainRatio) {
   // Same size but different offsets.
   run({1, 4, 5, 5}, {8, 9, 5, 5});
   EXPECT_EQ(dest, MakeRect(8, 9, 5, 5));
+}
+
+TEST(ShakaUtilsTest, FitVideoToRegion_SampleAspectRatio) {
+  ShakaRect<uint32_t> src;
+  ShakaRect<uint32_t> dest;
+
+  FitVideoToRegion({0, 0, 4, 4}, {0, 0, 8, 8}, {2, 1},
+                   VideoFillMode::MaintainRatio, &src, &dest);
+  EXPECT_EQ(src, MakeRect(0, 0, 4, 4));
+  EXPECT_EQ(dest, MakeRect(0, 2, 8, 4));
+  FitVideoToRegion({0, 0, 4, 4}, {0, 0, 8, 8}, {1, 2},
+                   VideoFillMode::MaintainRatio, &src, &dest);
+  EXPECT_EQ(src, MakeRect(0, 0, 4, 4));
+  EXPECT_EQ(dest, MakeRect(2, 0, 4, 8));
+
+  FitVideoToRegion({0, 0, 4, 4}, {0, 0, 8, 8}, {2, 1}, VideoFillMode::Zoom,
+                   &src, &dest);
+  EXPECT_EQ(src, MakeRect(1, 0, 2, 4));
+  EXPECT_EQ(dest, MakeRect(0, 0, 8, 8));
+  FitVideoToRegion({0, 0, 4, 4}, {0, 0, 8, 8}, {1, 2}, VideoFillMode::Zoom,
+                   &src, &dest);
+  EXPECT_EQ(src, MakeRect(0, 1, 4, 2));
+  EXPECT_EQ(dest, MakeRect(0, 0, 8, 8));
 }
 
 TEST(ShakaUtilsTest, Rational) {

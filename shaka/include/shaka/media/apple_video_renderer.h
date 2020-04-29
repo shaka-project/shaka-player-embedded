@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "../macros.h"
+#include "../utils.h"
 #include "renderer.h"
 
 namespace shaka {
@@ -44,8 +45,14 @@ class SHAKA_EXPORT AppleVideoRenderer final : public VideoRenderer {
    * In these cases, the previous drawn frame should be kept.
    *
    * This follows the CREATE rule.
+   *
+   * @param delay [OUT] Optional, if given, will be filled with the delay, in
+   *   seconds, until the next call to Render should be made.
+   * @param sample_aspect_ratio [OUT] Optional, if given, will be filled with
+   *   the sample aspect ratio of the image.
    */
-  CGImageRef Render();
+  CGImageRef Render(double* delay = nullptr,
+                    Rational<uint32_t>* sample_aspect_ratio = nullptr);
 
 
   void SetPlayer(const MediaPlayer* player) override;

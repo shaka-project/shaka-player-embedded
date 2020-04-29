@@ -57,7 +57,7 @@ const uint8_t kData3[] = {9, 10};
 
 std::shared_ptr<StreamInfo> MakeStreamInfo() {
   return std::shared_ptr<StreamInfo>{
-      new StreamInfo("", "", false, {0, 0}, {}, 0, 0, 1, kSampleRate)};
+      new StreamInfo("", "", false, {0, 0}, {0, 0}, {}, 0, 0, 1, kSampleRate)};
 }
 
 template <size_t N>

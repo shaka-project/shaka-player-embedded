@@ -43,7 +43,7 @@ void FreeFramePlanar(void* info, const void*, size_t, size_t, const void**) {
 
 class AppleVideoRenderer::Impl final : public VideoRendererCommon {
  public:
-  CGImageRef Render();
+  CGImageRef Render(double* delay, Rational<uint32_t>* sample_aspect_ratio);
 
  private:
   CGImageRef RenderPackedFrame(std::shared_ptr<DecodedFrame> frame);
@@ -52,13 +52,18 @@ class AppleVideoRenderer::Impl final : public VideoRendererCommon {
   std::shared_ptr<DecodedFrame> prev_frame_;
 };
 
-CGImageRef AppleVideoRenderer::Impl::Render() {
+CGImageRef AppleVideoRenderer::Impl::Render(
+    double* delay, Rational<uint32_t>* sample_aspect_ratio) {
   std::shared_ptr<DecodedFrame> frame;
-  GetCurrentFrame(&frame);
+  const double loc_delay = GetCurrentFrame(&frame);
+  if (delay)
+    *delay = loc_delay;
 
   if (!frame || frame == prev_frame_)
     return nullptr;
 
+  if (sample_aspect_ratio)
+    *sample_aspect_ratio = frame->stream_info->sample_aspect_ratio;
   prev_frame_ = frame;
   switch (get<PixelFormat>(frame->format)) {
     case PixelFormat::RGB24:
@@ -172,8 +177,9 @@ VideoFillMode AppleVideoRenderer::fill_mode() const {
   return impl_->fill_mode();
 }
 
-CGImageRef AppleVideoRenderer::Render() {
-  return impl_->Render();
+CGImageRef AppleVideoRenderer::Render(double* delay,
+                                      Rational<uint32_t>* sample_aspect_ratio) {
+  return impl_->Render(delay, sample_aspect_ratio);
 }
 
 void AppleVideoRenderer::SetPlayer(const MediaPlayer* player) {

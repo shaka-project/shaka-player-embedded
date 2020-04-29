@@ -164,7 +164,8 @@
     return;
   }
 
-  if (CGImageRef image = _player.videoRenderer->Render()) {
+  shaka::Rational<uint32_t> aspect_ratio;
+  if (CGImageRef image = _player.videoRenderer->Render(nullptr, &aspect_ratio)) {
     _imageLayer.contents = (__bridge_transfer id)image;
 
     // Fit image in frame.
@@ -178,8 +179,8 @@
     };
     shaka::ShakaRect<uint32_t> src;
     shaka::ShakaRect<uint32_t> dest;
-    shaka::FitVideoToRegion(image_bounds, dest_bounds, _player.videoRenderer->fill_mode(), &src,
-                            &dest);
+    shaka::FitVideoToRegion(image_bounds, dest_bounds, aspect_ratio,
+                            _player.videoRenderer->fill_mode(), &src, &dest);
     _imageLayer.contentsRect = CGRectMake(
         static_cast<CGFloat>(src.x) / image_bounds.w, static_cast<CGFloat>(src.y) / image_bounds.h,
         static_cast<CGFloat>(src.w) / image_bounds.w, static_cast<CGFloat>(src.h) / image_bounds.h);

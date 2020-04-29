@@ -23,12 +23,14 @@ class StreamInfo::Impl {};
 
 StreamInfo::StreamInfo(const std::string& mime, const std::string& codec,
                        bool is_video, Rational<uint32_t> time_scale,
+                       Rational<uint32_t> sample_aspect_ratio,
                        const std::vector<uint8_t>& extra_data, uint32_t width,
                        uint32_t height, uint32_t channel_count,
                        uint32_t sample_rate)
     : mime_type(mime),
       codec(codec),
       time_scale(time_scale),
+      sample_aspect_ratio(sample_aspect_ratio),
       extra_data(extra_data),
       is_video(is_video),
       width(width),

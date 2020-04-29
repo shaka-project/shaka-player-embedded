@@ -72,7 +72,9 @@ class SdlManualVideoRenderer::Impl : public VideoRendererCommon {
         ShakaRect<uint32_t> src, dest;
         ShakaRect<uint32_t> frame_region = {0, 0, frame->stream_info->width,
                                             frame->stream_info->height};
-        FitVideoToRegion(frame_region, region_shaka, fill_mode(), &src, &dest);
+        FitVideoToRegion(frame_region, region_shaka,
+                         frame->stream_info->sample_aspect_ratio, fill_mode(),
+                         &src, &dest);
         SDL_Rect src_sdl = {src.x, src.y, src.w, src.h};
         SDL_Rect dest_sdl = {dest.x, dest.y, dest.w, dest.h};
         SDL_RenderCopy(renderer_, texture, &src_sdl, &dest_sdl);

@@ -350,6 +350,7 @@ bool FFmpegDemuxer::ReinitDemuxer() {
   cur_stream_info_.reset(new StreamInfo(
       mime_type_, expected_codec, params->codec_type == AVMEDIA_TYPE_VIDEO,
       {stream->time_base.num, stream->time_base.den},
+      {params->sample_aspect_ratio.num, params->sample_aspect_ratio.den},
       std::vector<uint8_t>{params->extradata,
                            params->extradata + params->extradata_size},
       params->width, params->height, params->channels, params->sample_rate));

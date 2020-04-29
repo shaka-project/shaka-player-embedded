@@ -34,8 +34,10 @@ class SHAKA_EXPORT StreamInfo {
  public:
   StreamInfo(const std::string& mime, const std::string& codec, bool is_video,
              Rational<uint32_t> time_scale,
-             const std::vector<uint8_t>& extra_data, uint32_t width,
-             uint32_t height, uint32_t channel_count, uint32_t sample_rate);
+             Rational<uint32_t> sample_aspect_ratio,
+             const std::vector<uint8_t>& extra_data,
+             uint32_t width, uint32_t height, uint32_t channel_count,
+             uint32_t sample_rate);
   virtual ~StreamInfo();
 
   SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(StreamInfo);
@@ -60,6 +62,12 @@ class SHAKA_EXPORT StreamInfo {
    * object.
    */
   const Rational<uint32_t> time_scale;
+
+  /**
+   * For video frames, the sample aspect ratio.  This is the aspect ratio of the
+   * pixels in the image.  (0, 0) is treated as (1, 1).
+   */
+  const Rational<uint32_t> sample_aspect_ratio;
 
   /** Extra data used to initialize the decoder. */
   const std::vector<uint8_t> extra_data;
