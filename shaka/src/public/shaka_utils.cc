@@ -29,11 +29,6 @@ void FitVideoToRegion(ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds,
   const double min_factor = std::min(width_factor, height_factor);
 
   switch (mode) {
-    case VideoFillMode::Original:
-      src->w = dest->w = std::min(frame.w, bounds.w);
-      src->h = dest->h = std::min(frame.h, bounds.h);
-      break;
-
     case VideoFillMode::Stretch:
       *src = frame;
       *dest = bounds;

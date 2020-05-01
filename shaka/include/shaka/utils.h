@@ -44,12 +44,6 @@ enum class VideoFillMode : uint8_t {
   MaintainRatio,
 
   /**
-   * Draw the video frame the same as the original video.  This will put black
-   * bars around the video if it's too small or will crop it if it's too big.
-   */
-  Original,
-
-  /**
    * Stretch the video to completely fill the region.
    */
   Stretch,

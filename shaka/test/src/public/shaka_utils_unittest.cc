@@ -27,42 +27,6 @@ ShakaRect<uint32_t> MakeRect(int x, int y, int w, int h) {
 
 }  // namespace
 
-TEST(ShakaUtilsTest, FitVideoToRegion_Original) {
-  ShakaRect<uint32_t> src;
-  ShakaRect<uint32_t> dest;
-  auto run = [&](ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds) {
-    FitVideoToRegion(frame, bounds, VideoFillMode::Original, &src, &dest);
-  };
-
-  // Original smaller than window.
-  run({0, 0, 4, 4}, {0, 0, 10, 10});
-  EXPECT_EQ(src, MakeRect(0, 0, 4, 4));
-  EXPECT_EQ(dest, MakeRect(3, 3, 4, 4));
-  run({5, 5, 4, 4}, {5, 5, 10, 10});
-  EXPECT_EQ(src, MakeRect(5, 5, 4, 4));
-  EXPECT_EQ(dest, MakeRect(5 + 3, 5 + 3, 4, 4));
-  run({1, 2, 3, 4}, {10, 11, 12, 13});
-  EXPECT_EQ(src, MakeRect(1, 2, 3, 4));
-  EXPECT_EQ(dest, MakeRect(10 + 4, 11 + 4, 3, 4));
-  // Original larger than window.
-  run({0, 0, 10, 10}, {0, 0, 4, 4});
-  EXPECT_EQ(src, MakeRect(3, 3, 4, 4));
-  EXPECT_EQ(dest, MakeRect(0, 0, 4, 4));
-  run({5, 5, 10, 10}, {5, 5, 4, 4});
-  EXPECT_EQ(src, MakeRect(8, 8, 4, 4));
-  EXPECT_EQ(dest, MakeRect(5, 5, 4, 4));
-
-  // Same size.
-  run({2, 2, 5, 5}, {2, 2, 5, 5});
-  EXPECT_EQ(src, MakeRect(2, 2, 5, 5));
-  EXPECT_EQ(dest, MakeRect(2, 2, 5, 5));
-
-  // Same size but different offsets.
-  run({1, 5, 5, 5}, {4, 7, 5, 5});
-  EXPECT_EQ(src, MakeRect(1, 5, 5, 5));
-  EXPECT_EQ(dest, MakeRect(4, 7, 5, 5));
-}
-
 TEST(ShakaUtilsTest, FitVideoToRegion_Stretch) {
   ShakaRect<uint32_t> src;
   ShakaRect<uint32_t> dest;
