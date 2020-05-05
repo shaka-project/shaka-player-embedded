@@ -23,6 +23,7 @@
 #include "src/js/eme/media_key_system_access.h"
 #include "src/js/js_error.h"
 #include "src/js/mse/media_source.h"
+#include "src/mapping/js_utils.h"
 
 
 namespace shaka {
@@ -255,19 +256,18 @@ bool GetSupportedConfiguration(
 
 SearchRegistry::SearchRegistry(Promise promise, std::string key_system,
                                std::vector<MediaKeySystemConfiguration> configs)
-    : promise_(std::move(promise)),
-      key_system_(std::move(key_system)),
-      configs_(std::move(configs)) {}
+    : promise_(MakeJsRef<Promise>(std::move(promise))),
+      key_system_(std::move(key_system)) {
+  for (auto& config : configs) {
+    configs_.emplace_back(
+        MakeJsRef<MediaKeySystemConfiguration>(std::move(config)));
+  }
+}
 
 SearchRegistry::~SearchRegistry() {}
 
 SearchRegistry::SearchRegistry(SearchRegistry&&) = default;
 SearchRegistry& SearchRegistry::operator=(SearchRegistry&&) = default;
-
-void SearchRegistry::Trace(memory::HeapTracer* tracer) const {
-  tracer->Trace(&promise_);
-  tracer->Trace(&configs_);
-}
 
 void SearchRegistry::operator()() {
   // 1. If keySystem is not one of the Key Systems supported by the user agent,
@@ -277,7 +277,7 @@ void SearchRegistry::operator()() {
   auto* implementation = ImplementationRegistry::GetImplementation(key_system_);
   if (!implementation) {
     VLOG(1) << "No implementation found for: " << key_system_;
-    promise_.RejectWith(JsError::DOMException(
+    promise_->RejectWith(JsError::DOMException(
         NotSupportedError, "Key system " + key_system_ + " is not supported."));
     return;
   }
@@ -291,7 +291,7 @@ void SearchRegistry::operator()() {
     // 3. If supported configuration is not NotSupported, run the following
     // steps:
     MediaKeySystemConfiguration supported_config;
-    if (GetSupportedConfiguration(implementation, candidate_config,
+    if (GetSupportedConfiguration(implementation, *candidate_config,
                                   &supported_config)) {
       // 1. Let access be a new MediaKeySystemAccess object, and initialize it
       // as follows:
@@ -301,13 +301,13 @@ void SearchRegistry::operator()() {
       // 2. Resolve promise with access and abort the parallel steps of this
       // algorithm.
       LocalVar<JsValue> value(ToJsValue(access));
-      promise_.ResolveWith(value);
+      promise_->ResolveWith(value);
       return;
     }
   }
 
   // 4. Reject promise with NotSupportedError.
-  promise_.RejectWith(JsError::DOMException(
+  promise_->RejectWith(JsError::DOMException(
       NotSupportedError, "None of the given configurations are supported."));
 }
 

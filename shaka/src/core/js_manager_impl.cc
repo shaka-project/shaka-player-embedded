@@ -14,6 +14,8 @@
 
 #include "src/core/js_manager_impl.h"
 
+#include <utility>
+
 #include "src/mapping/convert_js.h"
 #include "src/mapping/js_engine.h"
 #include "src/util/clock.h"
@@ -58,7 +60,7 @@ std::shared_ptr<ThreadEvent<bool>> JsManagerImpl::RunScript(
   auto callback = std::bind(
       static_cast<bool (*)(const std::string&)>(&shaka::RunScript), path);
   return event_loop_.AddInternalTask(TaskPriority::Immediate, "RunScript",
-                                     PlainCallbackTask(callback));
+                                     std::move(callback));
 }
 
 std::shared_ptr<ThreadEvent<bool>> JsManagerImpl::RunScript(
@@ -70,7 +72,7 @@ std::shared_ptr<ThreadEvent<bool>> JsManagerImpl::RunScript(
           &shaka::RunScript);
   auto callback = std::bind(run_script, path, data, data_size);
   return event_loop_.AddInternalTask(TaskPriority::Immediate, "RunScript",
-                                     PlainCallbackTask(callback));
+                                     std::move(callback));
 }
 
 void JsManagerImpl::EventThreadWrapper(TaskRunner::RunLoop run_loop) {

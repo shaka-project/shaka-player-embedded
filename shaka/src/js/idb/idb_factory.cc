@@ -31,25 +31,6 @@ namespace {
 
 constexpr const char* kDbFileName = "shaka_indexeddb.db";
 
-template <typename T>
-class Commit : public memory::Traceable {
- public:
-  Commit(RefPtr<T> request, const std::string& db_path)
-      : request_(request), path_(db_path) {}
-
-  void Trace(memory::HeapTracer* tracer) const override {
-    tracer->Trace(&request_);
-  }
-
-  void operator()() {
-    request_->DoOperation(path_);
-  }
-
- private:
-  const Member<T> request_;
-  const std::string path_;
-};
-
 }  // namespace
 
 IDBFactory::IDBFactory() {}
@@ -64,7 +45,7 @@ RefPtr<IDBOpenDBRequest> IDBFactory::Open(const std::string& name,
       JsManagerImpl::Instance()->GetPathForDynamicFile(kDbFileName);
   JsManagerImpl::Instance()->MainThread()->AddInternalTask(
       TaskPriority::Internal, "IndexedDb::open",
-      Commit<IDBOpenDBRequest>(request, db_path));
+      [=]() { request->DoOperation(db_path); });
   return request;
 }
 
@@ -73,7 +54,7 @@ RefPtr<IDBOpenDBRequest> IDBFactory::OpenTestDb() {
   // Use a temporary database name.  This will be cleaned up by sqlite.
   JsManagerImpl::Instance()->MainThread()->AddInternalTask(
       TaskPriority::Internal, "IndexedDb::openTestDb",
-      Commit<IDBOpenDBRequest>(request, ""));
+      [=]() { request->DoOperation(""); });
   return request;
 }
 
@@ -83,7 +64,7 @@ RefPtr<IDBRequest> IDBFactory::DeleteDatabase(const std::string& name) {
       JsManagerImpl::Instance()->GetPathForDynamicFile(kDbFileName);
   JsManagerImpl::Instance()->MainThread()->AddInternalTask(
       TaskPriority::Internal, "IndexedDb::deleteDatabase",
-      Commit<IDBDeleteDBRequest>(request, db_path));
+      [=]() { request->DoOperation(db_path); });
   return request;
 }
 

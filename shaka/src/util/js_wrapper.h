@@ -17,6 +17,8 @@
 
 #include <glog/logging.h>
 
+#include <utility>
+
 #include "src/core/js_manager_impl.h"
 #include "src/core/ref_ptr.h"
 #include "src/core/task_runner.h"
@@ -41,7 +43,7 @@ class JSWrapper {
     return JsManagerImpl::Instance()
         ->MainThread()
         ->AddInternalTask(TaskPriority::Internal, "",
-                          PlainCallbackTask(std::bind(member, inner, args...)))
+                          std::bind(member, inner, args...))
         ->GetValue();
   }
 
@@ -51,8 +53,7 @@ class JSWrapper {
     auto callback = [this, member, val]() { inner->*member = val; };
     JsManagerImpl::Instance()
         ->MainThread()
-        ->AddInternalTask(TaskPriority::Internal, "",
-                          PlainCallbackTask(callback))
+        ->AddInternalTask(TaskPriority::Internal, "", std::move(callback))
         ->GetValue();
   }
 
@@ -61,8 +62,7 @@ class JSWrapper {
     DCHECK(inner) << "Must call Initialize.";
     return JsManagerImpl::Instance()
         ->MainThread()
-        ->AddInternalTask(TaskPriority::Internal, "",
-                          PlainCallbackTask(std::bind(member, inner)))
+        ->AddInternalTask(TaskPriority::Internal, "", std::bind(member, inner))
         ->GetValue();
   }
 };

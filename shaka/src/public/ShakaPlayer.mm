@@ -440,8 +440,8 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
     });
 #undef GET_VALUE
   };
-  shaka::JsManagerImpl::Instance()->MainThread()->AddInternalTask(
-      shaka::TaskPriority::Internal, "UiInfo", shaka::PlainCallbackTask(std::move(callback)));
+  shaka::JsManagerImpl::Instance()->MainThread()->AddInternalTask(shaka::TaskPriority::Internal,
+                                                                  "UiInfo", std::move(callback));
 }
 
 - (ShakaStats *)getStats {

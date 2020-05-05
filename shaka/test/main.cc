@@ -132,7 +132,7 @@ int RunTests(int argc, char** argv) {
   g_js_manager = &engine;
 
   JsManagerImpl::Instance()->MainThread()->AddInternalTask(
-      TaskPriority::Immediate, "", PlainCallbackTask(&RegisterTestFixture));
+      TaskPriority::Immediate, "", &RegisterTestFixture);
 
   LoadJsTests();
 

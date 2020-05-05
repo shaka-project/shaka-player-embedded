@@ -328,8 +328,7 @@ TEST(TaskRunnerTest, PassesReturnValues) {
   NiceMock<MockClock> clock;
 
   TaskRunner runner([](TaskRunner::RunLoop loop) { loop(); }, &clock, true);
-  auto data =
-      runner.AddInternalTask(TaskPriority::Internal, "", PlainCallbackTask(cb));
+  auto data = runner.AddInternalTask(TaskPriority::Internal, "", std::move(cb));
   EXPECT_EQ(1234.5, data->GetValue());
 }
 

@@ -26,83 +26,6 @@
 namespace shaka {
 namespace eme {
 
-namespace {
-
-/**
- * A task that will resolve the given Promise with the given value.
- */
-class DoResolvePromise : public memory::Traceable {
- public:
-  DoResolvePromise(Promise promise, bool has_value, bool value)
-      : promise_(promise), has_value_(has_value), value_(value) {}
-
-  void Trace(memory::HeapTracer* tracer) const override {
-    tracer->Trace(&promise_);
-  }
-
-  void operator()() {
-    LocalVar<JsValue> value;
-    if (has_value_)
-      value = ToJsValue(value_);
-    else
-      value = JsUndefined();
-    promise_.ResolveWith(value);
-  }
-
- private:
-  Promise promise_;
-  const bool has_value_;
-  const bool value_;
-};
-
-/**
- * A task that will reject the given Promise with the given value.
- */
-class DoRejectPromise : public memory::Traceable {
- public:
-  DoRejectPromise(Promise promise, ExceptionType type,
-                  const std::string& message)
-      : promise_(promise), message_(message), type_(type) {}
-
-  void Trace(memory::HeapTracer* tracer) const override {
-    tracer->Trace(&promise_);
-  }
-
-  void operator()() {
-    switch (type_) {
-      case ExceptionType::TypeError:
-        promise_.RejectWith(js::JsError::TypeError(message_));
-        break;
-      case ExceptionType::RangeError:
-        promise_.RejectWith(js::JsError::RangeError(message_));
-        break;
-      case ExceptionType::NotSupported:
-        promise_.RejectWith(
-            js::JsError::DOMException(NotSupportedError, message_));
-        break;
-      case ExceptionType::InvalidState:
-        promise_.RejectWith(
-            js::JsError::DOMException(InvalidStateError, message_));
-        break;
-      case ExceptionType::QuotaExceeded:
-        promise_.RejectWith(
-            js::JsError::DOMException(QuotaExceededError, message_));
-        break;
-
-      default:
-        promise_.RejectWith(js::JsError::DOMException(UnknownError, message_));
-        break;
-    }
-  }
-
- private:
-  Promise promise_;
-  const std::string message_;
-  const ExceptionType type_;
-};
-
-}  // namespace
-
 EmePromise::Impl::Impl(const Promise& promise, bool has_value)
     : promise_(MakeJsRef<Promise>(promise)),
       is_pending_(false),
@@ -120,9 +43,17 @@ void EmePromise::Impl::Resolve() {
                       "value, resolving with false.";
     }
 
+    RefPtr<Promise> promise = promise_;
+    bool has_value = has_value_;
     JsManagerImpl::Instance()->MainThread()->AddInternalTask(
-        TaskPriority::Internal, "DoResolvePromise",
-        DoResolvePromise(*promise_, has_value_, false));
+        TaskPriority::Internal, "DoResolvePromise", [=]() {
+          LocalVar<JsValue> value;
+          if (has_value)
+            value = ToJsValue(false);
+          else
+            value = JsUndefined();
+          promise->ResolveWith(value);
+        });
   }
 }
 
@@ -134,9 +65,17 @@ void EmePromise::Impl::ResolveWith(bool value) {
                       "value, ignoring value.";
     }
 
+    RefPtr<Promise> promise = promise_;
+    bool has_value = has_value_;
     JsManagerImpl::Instance()->MainThread()->AddInternalTask(
-        TaskPriority::Internal, "DoResolvePromise",
-        DoResolvePromise(*promise_, has_value_, value));
+        TaskPriority::Internal, "DoResolvePromise", [=]() {
+          LocalVar<JsValue> js_value;
+          if (has_value)
+            js_value = ToJsValue(value);
+          else
+            js_value = JsUndefined();
+          promise->ResolveWith(js_value);
+        });
   }
 }
 
@@ -144,9 +83,35 @@ void EmePromise::Impl::Reject(ExceptionType except_type,
                               const std::string& message) {
   bool expected = false;
   if (is_pending_.compare_exchange_strong(expected, true)) {
+    RefPtr<Promise> promise = promise_;
     JsManagerImpl::Instance()->MainThread()->AddInternalTask(
-        TaskPriority::Internal, "DoRejectPromise",
-        DoRejectPromise(*promise_, except_type, message));
+        TaskPriority::Internal, "DoRejectPromise", [=]() {
+          switch (except_type) {
+            case ExceptionType::TypeError:
+              promise->RejectWith(js::JsError::TypeError(message));
+              break;
+            case ExceptionType::RangeError:
+              promise->RejectWith(js::JsError::RangeError(message));
+              break;
+            case ExceptionType::NotSupported:
+              promise->RejectWith(
+                  js::JsError::DOMException(NotSupportedError, message));
+              break;
+            case ExceptionType::InvalidState:
+              promise->RejectWith(
+                  js::JsError::DOMException(InvalidStateError, message));
+              break;
+            case ExceptionType::QuotaExceeded:
+              promise->RejectWith(
+                  js::JsError::DOMException(QuotaExceededError, message));
+              break;
+
+            default:
+              promise->RejectWith(
+                  js::JsError::DOMException(UnknownError, message));
+              break;
+          }
+        });
   }
 }
 

@@ -15,10 +15,11 @@
 #ifndef SHAKA_EMBEDDED_CORE_REJECTED_PROMISE_HANDLER_H_
 #define SHAKA_EMBEDDED_CORE_REJECTED_PROMISE_HANDLER_H_
 
-#include <vector>
+#include <list>
 
 #include "src/mapping/js_wrappers.h"
 #include "src/mapping/weak_js_ptr.h"
+#include "src/util/macros.h"
 
 namespace shaka {
 
@@ -43,31 +44,21 @@ class RejectedPromiseHandler {
   /** Indicates that the given Promise had a handler added to it. */
   void RemovePromise(Handle<JsPromise> promise);
 
-  /**
-   * Traces the objects owned by this instance.  This isn't called by JsEngine
-   * since JsEngine isn't traced.  This is called by the background task since
-   * this class only needs to be traced while there are pending Promises.
-   */
-  void Trace(memory::HeapTracer* tracer) const;
-  /** Called by the background task to log pending Promises. */
-  void LogPending();
+  /** Called by the background task to log unhandled rejections. */
+  void LogUnhandledRejection();
 
  private:
   struct PromiseInfo {
     PromiseInfo(Handle<JsPromise> promise, Handle<JsValue> value);
     ~PromiseInfo();
 
-    // Chromium style complains without these.
-    PromiseInfo(const PromiseInfo&) = delete;
-    PromiseInfo& operator=(const PromiseInfo&) = delete;
-    PromiseInfo(PromiseInfo&&);
-    PromiseInfo& operator=(PromiseInfo&&);
+    SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(PromiseInfo);
 
-    WeakJsPtr<JsPromise> promise;
-    WeakJsPtr<JsValue> value;
+    Global<JsPromise> promise;
+    Global<JsValue> value;
   };
 
-  std::vector<PromiseInfo> promises_;
+  std::list<PromiseInfo> promises_;
   bool has_callback_;
 };
 

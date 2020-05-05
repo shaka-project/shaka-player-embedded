@@ -123,7 +123,7 @@ class JsObjectWrapper {
       const std::vector<std::string>& global_path) {
     auto callback = std::bind(&GetFieldRaw<T>, global_path);
     return JsManagerImpl::Instance()->MainThread()->InvokeOrSchedule(
-        PlainCallbackTask(std::move(callback)));
+        std::move(callback));
   }
 
   /**
@@ -264,7 +264,7 @@ class JsObjectWrapper {
           std::bind(&CallMethodRaw<Ret, bind_forward<Args>...>, promise,
                     std::move(that), name, std::forward<Args>(args)...);
       JsManagerImpl::Instance()->MainThread()->AddInternalTask(
-          TaskPriority::Internal, name, PlainCallbackTask(std::move(callback)));
+          TaskPriority::Internal, name, std::move(callback));
     }
     return promise->get_future().share();
   }

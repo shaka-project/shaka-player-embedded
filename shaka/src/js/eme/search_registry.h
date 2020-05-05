@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "shaka/eme/configuration.h"
+#include "src/core/ref_ptr.h"
 #include "src/js/eme/media_key_system_configuration.h"
 #include "src/mapping/promise.h"
 #include "src/memory/heap_tracer.h"
@@ -31,25 +32,23 @@ namespace eme {
  * A task type that searches the ImplementationRegistry for a compatible
  * implementation and resolves/rejects the given Promise appropriately.
  */
-class SearchRegistry : public memory::Traceable {
+class SearchRegistry {
  public:
   SearchRegistry(Promise promise, std::string key_system,
                  std::vector<MediaKeySystemConfiguration> configs);
-  ~SearchRegistry() override;
+  ~SearchRegistry();
 
   SearchRegistry(const SearchRegistry&) = delete;
   SearchRegistry(SearchRegistry&&);
   SearchRegistry& operator=(const SearchRegistry&) = delete;
   SearchRegistry& operator=(SearchRegistry&&);
 
-  void Trace(memory::HeapTracer* tracer) const override;
-
   void operator()();
 
  private:
-  Promise promise_;
+  RefPtr<Promise> promise_;
   std::string key_system_;
-  std::vector<MediaKeySystemConfiguration> configs_;
+  std::vector<RefPtr<MediaKeySystemConfiguration>> configs_;
 };
 
 }  // namespace eme

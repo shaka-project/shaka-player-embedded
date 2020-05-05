@@ -139,7 +139,7 @@ void DemuxerThread::CallOnComplete(bool success) {
     // on_complete must be invoked on the event thread.
     JsManagerImpl::Instance()->MainThread()->AddInternalTask(
         TaskPriority::Internal, "Append done",
-        PlainCallbackTask(std::bind(on_complete_, success)));
+        std::bind(on_complete_, success));
     on_complete_ = std::function<void(bool)>();
   }
 }

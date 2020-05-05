@@ -348,9 +348,11 @@ void XMLHttpRequest::OnDataReceived(uint8_t* buffer, size_t length) {
   const uint64_t now = util::Clock::Instance.GetMonotonicTime();
   if (!abort_pending_ && now - last_progress_time_ >= kProgressInterval) {
     last_progress_time_ = now;
+
+    RefPtr<XMLHttpRequest> req(this);
     JsManagerImpl::Instance()->MainThread()->AddInternalTask(
         TaskPriority::Internal, "Schedule XHR events",
-        MemberCallbackTask(this, &XMLHttpRequest::RaiseProgressEvents));
+        std::bind(&XMLHttpRequest::RaiseProgressEvents, req));
   }
 
   temp_data_.AppendCopy(buffer, length);

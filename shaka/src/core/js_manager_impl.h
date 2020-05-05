@@ -88,7 +88,7 @@ std::function<void(Args...)> MainThreadCallback(
     std::function<void(Args...)> cb) {
   return [=](Args... args) {
     JsManagerImpl::Instance()->MainThread()->AddInternalTask(
-        TaskPriority::Internal, "", PlainCallbackTask(std::bind(cb, args...)));
+        TaskPriority::Internal, "", std::bind(cb, args...));
   };
 }
 

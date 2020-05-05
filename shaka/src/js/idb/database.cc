@@ -24,29 +24,6 @@ namespace shaka {
 namespace js {
 namespace idb {
 
-namespace {
-
-class DoCommit : public memory::Traceable {
- public:
-  DoCommit(RefPtr<IDBTransaction> transaction,
-           std::shared_ptr<SqliteConnection> connection)
-      : trans_(transaction), connection_(connection) {}
-
-  void Trace(memory::HeapTracer* tracer) const override {
-    tracer->Trace(&trans_);
-  }
-
-  void operator()() {
-    trans_->DoCommit(connection_.get());
-  }
-
- private:
-  Member<IDBTransaction> trans_;
-  std::shared_ptr<SqliteConnection> connection_;
-};
-
-}  // namespace
-
 DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE(IDBObjectStoreParameters);
 
 IDBDatabase::IDBDatabase(std::shared_ptr<SqliteConnection> connection,
@@ -191,9 +168,10 @@ ExceptionOr<RefPtr<IDBTransaction>> IDBDatabase::Transaction(
   // 8. Set transaction’s cleanup event loop to the current event loop.
   RefPtr<IDBTransaction> ret = new IDBTransaction(this, real_mode, scope);
 
+  std::shared_ptr<SqliteConnection> connection = connection_;
   JsManagerImpl::Instance()->MainThread()->AddInternalTask(
       TaskPriority::Internal, "IndexedDb Commit Transaction",
-      DoCommit(ret, connection_));
+      [ret, connection]() { ret->DoCommit(connection.get()); });
   // 9. Return an IDBTransaction object representing transaction.
   return ret;
 }

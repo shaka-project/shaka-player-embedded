@@ -92,14 +92,13 @@ void HandleNetworkFuture(Promise promise, std::future<optional<Error>> future,
         thread->CancelTimer(*id);
         finish_future();
       };
-      *id = thread->AddRepeatedTimer(250, PlainCallbackTask(std::move(poll)));
+      *id = thread->AddRepeatedTimer(250, std::move(poll));
     } else {
       thread->AddInternalTask(TaskPriority::Internal, "",
-                              PlainCallbackTask(std::move(finish_future)));
+                              std::move(finish_future));
     }
   } else {
-    thread->AddInternalTask(TaskPriority::Internal, "",
-                            PlainCallbackTask(std::move(on_done)));
+    thread->AddInternalTask(TaskPriority::Internal, "", std::move(on_done));
   }
 }
 

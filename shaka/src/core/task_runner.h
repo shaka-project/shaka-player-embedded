@@ -83,9 +83,6 @@ class PendingTaskBase : public memory::Traceable {
 template <typename Func>
 class PendingTask : public PendingTaskBase {
  public:
-  static_assert(std::is_base_of<memory::Traceable,
-                                typename std::decay<Func>::type>::value,
-                "Traceable callback object must be Traceable");
   using Ret = typename std::result_of<Func()>::type;
 
   PendingTask(const util::Clock* clock, Func&& callback,
@@ -111,7 +108,7 @@ class PendingTask : public PendingTaskBase {
   }
 
   void Trace(memory::HeapTracer* tracer) const override {
-    tracer->Trace(&callback);
+    TraceHelper<typename std::decay<Func>::type>::Trace(tracer, &callback);
   }
 
   typename std::decay<Func>::type callback;
@@ -133,47 +130,20 @@ class PendingTask : public PendingTaskBase {
       (*event)->SignalAllIfNotSet();
     }
   };
-};
 
-template <typename Func>
-class PlainCallbackTaskImpl : public memory::Traceable {
- public:
-  using func_type = typename std::decay<Func>::type;
-  using return_type = decltype(std::declval<func_type>()());
-
-  explicit PlainCallbackTaskImpl(Func&& callback)
-      : callback_(std::forward<Func>(callback)) {}
-
-  void Trace(memory::HeapTracer*) const override {}
-
-  return_type operator()() {
-    return callback_();
-  }
-
- private:
-  func_type callback_;
-};
-
-template <typename This, typename Member>
-class MemberCallbackTaskImpl : public memory::Traceable {
- public:
-  using return_type =
-      decltype((std::declval<This*>()->*std::declval<Member>())());
-
-  MemberCallbackTaskImpl(RefPtr<This> that, Member member)
-      : that_(that), member_(member) {}
-
-  void Trace(memory::HeapTracer* tracer) const override {
-    tracer->Trace(&that_);
-  }
-
-  return_type operator()() {
-    return (that_->*member_)();
-  }
-
- private:
-  ::shaka::Member<This> that_;
-  Member member_;
+  template <typename F,
+            bool IsTrace = std::is_base_of<memory::Traceable, F>::value>
+  struct TraceHelper {
+    template <typename G>
+    static void Trace(memory::HeapTracer* tracer, G* ptr) {
+      ptr->Trace(tracer);
+    }
+  };
+  template <typename F>
+  struct TraceHelper<F, false> {
+    template <typename G>
+    static void Trace(memory::HeapTracer* tracer, G* ptr) {}
+  };
 };
 
 template <typename T>
@@ -193,29 +163,6 @@ struct FutureResolver<void> {
 };
 
 }  // namespace impl
-
-/**
- * Creates a task that is backed by a simple C++ callback function.  This should
- * be used when simply calling another function that doesn't need to be traced.
- * This will NOT keep things alive (except for the callback itself), so this
- * should not be used for JavaScript objects.
- */
-template <typename Func>
-impl::PlainCallbackTaskImpl<Func> PlainCallbackTask(Func&& callback) {
-  // Use a function so we can use argument deduction to deduce |Func|; using the
-  // constructor directly would require passing the type argument explicitly.
-  return impl::PlainCallbackTaskImpl<Func>(std::forward<Func>(callback));
-}
-
-/**
- * Creates a task that traces the given object and then calls the given member
- * function on it.
- */
-template <typename That, typename Member>
-impl::MemberCallbackTaskImpl<That, Member> MemberCallbackTask(That* that,
-                                                              Member member) {
-  return impl::MemberCallbackTaskImpl<That, Member>(that, member);
-}
 
 
 /**
@@ -322,7 +269,7 @@ class TaskRunner {
     tasks_.emplace_back(
         new impl::PendingTask<Func>(clock_, std::forward<Func>(callback), "",
                                     TaskPriority::Timer, delay_ms, id,
-                                    /* loop */ false));
+                                    /* loop= */ false));
 
     return id;
   }
@@ -346,7 +293,7 @@ class TaskRunner {
     tasks_.emplace_back(
         new impl::PendingTask<Func>(clock_, std::forward<Func>(callback), "",
                                     TaskPriority::Timer, delay_ms, id,
-                                    /* loop */ true));
+                                    /* loop= */ true));
 
     return id;
   }

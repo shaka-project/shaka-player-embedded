@@ -129,6 +129,11 @@ struct Global {
     return *this;
   }
 
+  template <typename U = T>
+  bool operator==(v8::Local<U> other) {
+    return val_ == other;
+  }
+
  private:
   v8::Global<T> val_;
 };

@@ -38,8 +38,7 @@ class ProgressClient : public SchemePlugin::Client {
   void OnProgress(double time, uint64_t bytes, uint64_t remaining) override {
     RefPtr<Callback> progress = on_progress_;
     auto cb = [=]() { (*progress)(time, bytes, remaining); };
-    JsManagerImpl::Instance()->MainThread()->InvokeOrSchedule(
-        PlainCallbackTask(std::move(cb)));
+    JsManagerImpl::Instance()->MainThread()->InvokeOrSchedule(std::move(cb));
   }
 
  private:

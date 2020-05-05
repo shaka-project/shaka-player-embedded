@@ -94,7 +94,7 @@ class Storage::Impl : public JsObjectWrapper {
     return JsManagerImpl::Instance()
         ->MainThread()
         ->AddInternalTask(TaskPriority::Internal, "Storage ctor",
-                          PlainCallbackTask(callback))
+                          std::move(callback))
         ->future();
   }
 

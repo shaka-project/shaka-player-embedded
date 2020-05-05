@@ -107,9 +107,20 @@ class EventTarget : public BackingObject {
   template <typename EventType, typename... Args>
   std::shared_ptr<ThreadEvent<bool>> ScheduleEvent(Args&&... args) {
     RefPtr<EventType> event = new EventType(std::forward<Args>(args)...);
+    RefPtr<EventTarget> target(this);
     return JsManagerImpl::Instance()->MainThread()->AddInternalTask(
         TaskPriority::Events, std::string("Schedule ") + EventType::name(),
-        ScheduleEventTask<EventType>(this, event));
+        [=]() {
+          ExceptionOr<bool> val = target->DispatchEvent(event);
+          if (holds_alternative<bool>(val)) {
+            return get<bool>(val);
+          } else {
+            LocalVar<JsValue> except = get<js::JsError>(val).error();
+            LOG(INFO) << "Exception thrown while raising event: "
+                      << ConvertToString(except);
+            return false;
+          }
+        });
   }
 
   /**
@@ -129,35 +140,6 @@ class EventTarget : public BackingObject {
   }
 
  private:
-  template <typename E>
-  class ScheduleEventTask : public memory::Traceable {
-   public:
-    ScheduleEventTask(EventTarget* target, RefPtr<E> event)
-        : target_(target), event_(event) {}
-    ~ScheduleEventTask() override {}
-
-    void Trace(memory::HeapTracer* tracer) const override {
-      tracer->Trace(&target_);
-      tracer->Trace(&event_);
-    }
-
-    bool operator()() {
-      ExceptionOr<bool> val = target_->DispatchEvent(event_);
-      if (holds_alternative<bool>(val)) {
-        return get<bool>(val);
-      } else {
-        LocalVar<JsValue> except = get<js::JsError>(val).error();
-        LOG(INFO) << "Exception thrown while raising event: "
-                  << ConvertToString(except);
-        return false;
-      }
-    }
-
-   private:
-    Member<EventTarget> target_;
-    Member<E> event_;
-  };
-
   struct ListenerInfo {
     ListenerInfo(Listener listener, const std::string& type);
     ~ListenerInfo();

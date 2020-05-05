@@ -131,7 +131,7 @@ class Player::Impl : public JsObjectWrapper {
     return JsManagerImpl::Instance()
         ->MainThread()
         ->AddInternalTask(TaskPriority::Internal, "Player ctor",
-                          PlainCallbackTask(callback))
+                          std::move(callback))
         ->future();
   }
 
@@ -152,7 +152,7 @@ class Player::Impl : public JsObjectWrapper {
       const std::string& name_path) {
     auto callback = std::bind(&Impl::GetConfigValueRaw<T>, this, name_path);
     return JsManagerImpl::Instance()->MainThread()->InvokeOrSchedule(
-        PlainCallbackTask(std::move(callback)));
+        std::move(callback));
   }
 
   void AddNetworkFilters(NetworkFilters* filters) {

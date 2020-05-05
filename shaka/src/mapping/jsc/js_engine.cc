@@ -47,10 +47,8 @@ JsEngine::JsEngine()
   // If the engine was created as part of a test, then don't create the timer
   // since we don't need to GC.
   JsManagerImpl* impl = JsManagerImpl::InstanceOrNull();
-  if (impl) {
-    impl->MainThread()->AddRepeatedTimer(kGcIntervalMs,
-                                         PlainCallbackTask(task));
-  }
+  if (impl)
+    impl->MainThread()->AddRepeatedTimer(kGcIntervalMs, std::move(task));
 }
 
 JsEngine::~JsEngine() {

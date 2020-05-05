@@ -19,26 +19,6 @@
 
 namespace shaka {
 
-namespace {
-class RejectedRunner : public memory::Traceable {
- public:
-  explicit RejectedRunner(RejectedPromiseHandler* handler)
-      : handler_(handler) {}
-
-  void Trace(memory::HeapTracer* tracer) const override {
-    handler_->Trace(tracer);
-  }
-
-  void operator()() {
-    handler_->LogPending();
-  }
-
- private:
-  RejectedPromiseHandler* handler_;
-};
-}  // namespace
-
-
 RejectedPromiseHandler::RejectedPromiseHandler() : has_callback_(false) {}
 
 RejectedPromiseHandler::~RejectedPromiseHandler() {}
@@ -49,7 +29,7 @@ void RejectedPromiseHandler::AddPromise(Handle<JsPromise> promise,
   if (!has_callback_) {
     has_callback_ = true;
     JsManagerImpl::Instance()->MainThread()->AddInternalTask(
-        TaskPriority::Immediate, "", RejectedRunner(this));
+        TaskPriority::Immediate, "", [this]() { LogUnhandledRejection(); });
   }
 }
 
@@ -69,21 +49,10 @@ RejectedPromiseHandler::PromiseInfo::PromiseInfo(Handle<JsPromise> promise,
 
 RejectedPromiseHandler::PromiseInfo::~PromiseInfo() {}
 
-RejectedPromiseHandler::PromiseInfo::PromiseInfo(PromiseInfo&&) = default;
 
-RejectedPromiseHandler::PromiseInfo&
-RejectedPromiseHandler::PromiseInfo::operator=(PromiseInfo&&) = default;
-
-void RejectedPromiseHandler::Trace(memory::HeapTracer* tracer) const {
+void RejectedPromiseHandler::LogUnhandledRejection() {
   for (auto& info : promises_) {
-    tracer->Trace(&info.promise);
-    tracer->Trace(&info.value);
-  }
-}
-
-void RejectedPromiseHandler::LogPending() {
-  for (auto& info : promises_) {
-    OnUncaughtException(info.value.handle(), /* inPromse */ true);
+    OnUncaughtException(info.value, /* inPromse */ true);
   }
   promises_.clear();
   has_callback_ = false;

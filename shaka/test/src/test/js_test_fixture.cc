@@ -91,7 +91,7 @@ class TestImpl : public testing::Test {
                    });
     };
     JsManagerImpl::Instance()->MainThread()->AddInternalTask(
-        TaskPriority::Immediate, "", PlainCallbackTask(task));
+        TaskPriority::Immediate, "", std::move(task));
     test_done.get_future().get();
   }
 

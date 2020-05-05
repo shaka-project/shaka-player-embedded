@@ -15,8 +15,10 @@
 #include "src/js/timeouts.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "src/core/js_manager_impl.h"
+#include "src/mapping/js_utils.h"
 #include "src/mapping/register_member.h"
 
 namespace shaka {
@@ -34,14 +36,16 @@ void Timeouts::Install() {
 
 int Timeouts::SetTimeout(Callback callback, optional<uint64_t> timeout) {
   const uint64_t real_timeout = std::max(timeout.value_or(0), kMinTimerDelay);
+  RefPtr<Callback> cb = MakeJsRef<Callback>(std::move(callback));
   return JsManagerImpl::Instance()->MainThread()->AddTimer(real_timeout,
-                                                           callback);
+                                                           [=]() { (*cb)(); });
 }
 
 int Timeouts::SetInterval(Callback callback, optional<uint64_t> timeout) {
   const uint64_t real_timeout = std::max(timeout.value_or(0), kMinTimerDelay);
-  return JsManagerImpl::Instance()->MainThread()->AddRepeatedTimer(real_timeout,
-                                                                   callback);
+  RefPtr<Callback> cb = MakeJsRef<Callback>(std::move(callback));
+  return JsManagerImpl::Instance()->MainThread()->AddRepeatedTimer(
+      real_timeout, [=]() { (*cb)(); });
 }
 
 void Timeouts::ClearTimeout(optional<int> id) {

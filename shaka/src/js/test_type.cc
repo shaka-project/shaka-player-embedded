@@ -23,28 +23,13 @@
 
 #include "src/core/js_manager_impl.h"
 #include "src/js/console.h"
+#include "src/mapping/js_utils.h"
 #include "src/memory/heap_tracer.h"
 
 namespace shaka {
 namespace js {
 
 namespace {
-
-struct ResolvePromise : public memory::Traceable {
-  explicit ResolvePromise(Promise p) : promise_(p) {}
-
-  void Trace(memory::HeapTracer* tracer) const override {
-    tracer->Trace(&promise_);
-  }
-
-  void operator()() {
-    LocalVar<JsValue> value(JsUndefined());
-    promise_.ResolveWith(value);
-  }
-
- private:
-  Promise promise_;
-};
 
 std::string GetExpectedString() {
   // Since this contains embedded nulls, we can't use the normal char*
@@ -151,9 +136,12 @@ Promise TestType::PromiseResolveWith(Any value) const {
 }
 
 Promise TestType::PromiseResolveAfter(uint64_t delay) const {
-  Promise ret = Promise::PendingPromise();
-  JsManagerImpl::Instance()->MainThread()->AddTimer(delay, ResolvePromise(ret));
-  return ret;
+  RefPtr<Promise> ret = MakeJsRef<Promise>(Promise::PendingPromise());
+  JsManagerImpl::Instance()->MainThread()->AddTimer(delay, [=]() {
+    LocalVar<JsValue> value(JsUndefined());
+    ret->ResolveWith(value);
+  });
+  return *ret;
 }
 
 std::string TestType::GetString() const {
