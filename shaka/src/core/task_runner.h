@@ -29,8 +29,6 @@
 #include "src/debug/mutex.h"
 #include "src/debug/thread.h"
 #include "src/debug/thread_event.h"
-#include "src/memory/heap_tracer.h"
-#include "src/memory/object_tracker.h"
 #include "src/util/clock.h"
 #include "src/util/utils.h"
 
@@ -49,11 +47,11 @@ template <typename Func>
 using RetOf = typename std::result_of<Func()>::type;
 
 /** Defines a base class for a pending task. */
-class PendingTaskBase : public memory::Traceable {
+class PendingTaskBase {
  public:
   PendingTaskBase(const util::Clock* clock, TaskPriority priority,
                   uint64_t delay_ms, int id, bool loop);
-  ~PendingTaskBase() override;
+  virtual ~PendingTaskBase();
 
   /** Performs the task. */
   virtual void Call() = 0;
@@ -83,6 +81,9 @@ class PendingTaskBase : public memory::Traceable {
 template <typename Func>
 class PendingTask : public PendingTaskBase {
  public:
+  static_assert(!std::is_base_of<memory::Traceable,
+                                typename std::decay<Func>::type>::value,
+                "Cannot pass Traceable objects to TaskRunner");
   using Ret = typename std::result_of<Func()>::type;
 
   PendingTask(const util::Clock* clock, Func&& callback,
@@ -90,9 +91,7 @@ class PendingTask : public PendingTaskBase {
               int id, bool loop)
       : PendingTaskBase(clock, priority, delay_ms, id, loop),
         callback(std::forward<Func>(callback)),
-        event(new ThreadEvent<Ret>(name)) {
-    memory::ObjectTracker::Instance()->RegisterObject(this);
-  }
+        event(new ThreadEvent<Ret>(name)) {}
 
   void Call() override {
     // If this were C++17, we could use if-constexpr:
@@ -105,10 +104,6 @@ class PendingTask : public PendingTaskBase {
     // }
 
     SetHelper<Func, Ret>::Set(&callback, &event);
-  }
-
-  void Trace(memory::HeapTracer* tracer) const override {
-    TraceHelper<typename std::decay<Func>::type>::Trace(tracer, &callback);
   }
 
   typename std::decay<Func>::type callback;
@@ -129,20 +124,6 @@ class PendingTask : public PendingTaskBase {
       (*callback)();
       (*event)->SignalAllIfNotSet();
     }
-  };
-
-  template <typename F,
-            bool IsTrace = std::is_base_of<memory::Traceable, F>::value>
-  struct TraceHelper {
-    template <typename G>
-    static void Trace(memory::HeapTracer* tracer, G* ptr) {
-      ptr->Trace(tracer);
-    }
-  };
-  template <typename F>
-  struct TraceHelper<F, false> {
-    template <typename G>
-    static void Trace(memory::HeapTracer* tracer, G* ptr) {}
   };
 };
 
@@ -204,7 +185,7 @@ class TaskRunner {
    * If called from the thread this manages, the given callback is invoked
    * synchronously; otherwise it is scheduled as an internal task.
    *
-   * @param callback The Traceable callback object.
+   * @param callback The callback object.
    * @return A future for when the task is completed.
    */
   template <typename Func>
@@ -231,7 +212,7 @@ class TaskRunner {
    * @param priority The priority of the task.  Higher priority tasks will run
    *   before lower priority tasks even if the higher task is registered later.
    * @param name The name of the new task, used for debugging.
-   * @param callback The Traceable callback object.
+   * @param callback The callback object.
    * @return The task ID and a future that will hold the results.
    */
   template <typename Func>
@@ -251,14 +232,11 @@ class TaskRunner {
   }
 
   /**
-   * Calls the given callback after the given delay on the worker thread.  The
-   * given callback must also be a Traceable object.  The callback will be
-   * traced to keep any JavaScript objects alive.  So the |Func| type must
-   * inherit from Traceable and must define a call operator.
+   * Calls the given callback after the given delay on the worker thread.
    *
    * @param delay_ms The time to wait until the callback is called (in
    *   milliseconds).
-   * @param callback The Traceable callback object.
+   * @param callback The callback object.
    * @return The task ID.
    */
   template <typename Func>
@@ -282,7 +260,7 @@ class TaskRunner {
    *
    * @param delay_ms The time to wait until the callback is called (in
    *   milliseconds).
-   * @param callback The Traceable callback object.
+   * @param callback The callback object.
    * @return The task ID.
    */
   template <typename Func>
@@ -327,7 +305,7 @@ class TaskRunner {
 
 
   // TODO: Consider a different data structure.
-  std::list<RefPtr<impl::PendingTaskBase>> tasks_;
+  std::list<std::unique_ptr<impl::PendingTaskBase>> tasks_;
 
   mutable Mutex mutex_;
   const util::Clock* clock_;

@@ -40,19 +40,14 @@ class MockClock : public util::Clock {
 class TaskWatcher {
  public:
   MOCK_METHOD0(Call, void());
-  MOCK_METHOD1(Trace, void(memory::HeapTracer*));
 };
 
-class MockTask : public memory::Traceable {
+class MockTask {
  public:
   MockTask(TaskWatcher* watcher) : watcher_(watcher) {}
 
   void operator()() {
     watcher_->Call();
-  }
-
-  void Trace(memory::HeapTracer* tracer) const override {
-    watcher_->Trace(tracer);
   }
 
  private:
@@ -243,35 +238,6 @@ TEST(TaskRunnerTest, IgnoresUnknownWhenCanceling) {
   runner.CancelTimer(id - 22);
   start.Call();
   runner.WaitUntilFinished();
-}
-
-TEST(TaskRunnerTest, TracesPendingEvents) {
-  StrictMock<TaskWatcher> watcher;
-  NiceMock<MockClock> clock;
-  memory::HeapTracer tracer;
-  memory::ObjectTracker::UnsetForTesting unset;
-  memory::ObjectTracker object_tracker(&tracer);
-
-  ON_CALL(clock, GetMonotonicTime()).WillByDefault(Return(0));
-  {
-    InSequence seq;
-    EXPECT_CALL(clock, GetMonotonicTime()).WillRepeatedly(Return(0));
-    EXPECT_CALL(watcher, Trace(&tracer)).Times(1);
-    EXPECT_CALL(clock, GetMonotonicTime()).WillRepeatedly(Return(10));
-    EXPECT_CALL(watcher, Call()).Times(1);
-    EXPECT_CALL(clock, GetMonotonicTime()).WillRepeatedly(Return(10));
-  }
-
-  TaskRunner runner([](TaskRunner::RunLoop loop) { loop(); }, &clock, true);
-  runner.AddTimer(5, MockTask(&watcher));
-  util::Clock::Instance.SleepSeconds(0.001);
-  tracer.TraceAll(object_tracker.GetAliveObjects());
-  util::Clock::Instance.SleepSeconds(0.001);
-  tracer.TraceAll(object_tracker.GetAliveObjects());
-  util::Clock::Instance.SleepSeconds(0.001);
-  runner.Stop();
-
-  object_tracker.Dispose();
 }
 
 
