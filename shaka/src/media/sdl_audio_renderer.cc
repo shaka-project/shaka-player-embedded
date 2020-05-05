@@ -25,39 +25,41 @@ namespace media {
 
 namespace {
 
-SDL_AudioFormat SDLFormatFromShaka(variant<PixelFormat, SampleFormat> format) {
+bool SDLFormatFromShaka(variant<PixelFormat, SampleFormat> format,
+                        SDL_AudioFormat* result) {
   // Try to use the same format to avoid work by swresample.
   switch (get<SampleFormat>(format)) {
     case SampleFormat::PackedU8:
     case SampleFormat::PlanarU8:
-      return AUDIO_U8;
+      *result = AUDIO_U8;
+      return true;
     case SampleFormat::PackedS16:
     case SampleFormat::PlanarS16:
-      return AUDIO_S16SYS;
+      *result = AUDIO_S16SYS;
+      return true;
     case SampleFormat::PackedS32:
     case SampleFormat::PlanarS32:
-      return AUDIO_S32SYS;
+      *result = AUDIO_S32SYS;
+      return true;
     case SampleFormat::PackedFloat:
     case SampleFormat::PlanarFloat:
-      return AUDIO_F32SYS;
+      *result = AUDIO_F32SYS;
+      return true;
 
     case SampleFormat::PackedDouble:
-    case SampleFormat::PlanarDouble: {
-      LOG_ONCE(WARNING) << "SDL doesn't support double-precision audio "
-                        << "formats, converting to floats.";
-      return AUDIO_F32SYS;
-    }
+    case SampleFormat::PlanarDouble:
+      LOG(DFATAL) << "SDL doesn't support double-precision audio.";
+      return false;
+
     case SampleFormat::PackedS64:
-    case SampleFormat::PlanarS64: {
-      LOG_ONCE(WARNING) << "SDL doesn't support 64-bit audio "
-                        << "formats, converting to 32-bit.";
-      return AUDIO_S32SYS;
-    }
+    case SampleFormat::PlanarS64:
+      LOG(DFATAL) << "SDL doesn't support 64-bit audio.";
+      return false;
 
     default:
       LOG(DFATAL) << "Unknown audio sample format: "
                   << static_cast<int>(get<SampleFormat>(format));
-      return AUDIO_S32SYS;
+      return false;
   }
 }
 
@@ -104,8 +106,9 @@ class SdlAudioRenderer::Impl : public AudioRendererCommon {
     SDL_AudioSpec obtained_audio_spec;
     SDL_AudioSpec audio_spec;
     memset(&audio_spec, 0, sizeof(audio_spec));
+    if (!SDLFormatFromShaka(frame->format, &audio_spec.format))
+      return false;
     audio_spec.freq = frame->stream_info->sample_rate;
-    audio_spec.format = SDLFormatFromShaka(frame->format);
     audio_spec.channels = static_cast<Uint8>(frame->stream_info->channel_count);
     audio_spec.samples = static_cast<Uint16>(frame->sample_count);
 

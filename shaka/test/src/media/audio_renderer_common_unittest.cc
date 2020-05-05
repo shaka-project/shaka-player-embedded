@@ -30,6 +30,7 @@ namespace media {
 namespace {
 
 using testing::_;
+using testing::Args;
 using testing::AtLeast;
 using testing::InSequence;
 using testing::InvokeWithoutArgs;
@@ -142,6 +143,14 @@ class TestAudioRenderer : public AudioRendererCommon {
   MOCK_METHOD1(SetDeviceState, void(bool));
   MOCK_METHOD1(UpdateVolume, void(double));
 };
+
+MATCHER_P(MatchesData, data, "") {
+  using std::get;
+  *result_listener << "where the data is: "
+                   << testing::PrintToString(std::vector<uint8_t>(
+                          get<0>(arg), get<0>(arg) + get<1>(arg)));
+  return memcmp(get<0>(arg), data, get<1>(arg)) == 0;
+}
 
 }  // namespace
 
@@ -321,6 +330,36 @@ TEST_F(AudioRendererCommonTest, SkipsOverlappingData) {
     EXPECT_CALL(renderer, AppendBuffer(kData1, sizeof(kData1))).Times(1);
     EXPECT_CALL(renderer, AppendBuffer(kData2 + 2, 2)).Times(1);
     EXPECT_CALL(renderer, AppendBuffer(kData3, sizeof(kData3)))
+        .WillOnce(SignalAndReturn(did_append, true));
+  }
+
+  renderer.Attach(&stream);
+  WAIT_WITH_TIMEOUT(did_append);
+}
+
+TEST_F(AudioRendererCommonTest, HandlesPlanarFormats) {
+  // 2 Channels, 4 bytes-per-sample, 3 samples.  Use different values for each
+  // to make sure the loop indexes are correct and not using a different value.
+  // [Channel#][Sample#][Byte#]
+  const uint8_t data1[] = {111, 112, 113, 114, 121, 122,
+                           123, 124, 131, 132, 133, 134};
+  const uint8_t data2[] = {211, 212, 213, 214, 221, 222,
+                           223, 224, 231, 232, 233, 234};
+  const uint8_t expected[] = {111, 112, 113, 114, 211, 212, 213, 214,
+                              121, 122, 123, 124, 221, 222, 223, 224,
+                              131, 132, 133, 134, 231, 232, 233, 234};
+  std::shared_ptr<StreamInfo> info(
+      new StreamInfo("", "", false, {0, 0}, {}, 0, 0, 2, kSampleRate));
+  std::shared_ptr<DecodedFrame> frame(
+      new DecodedFrame(info, 0, 0, 0.01, SampleFormat::PlanarS32, 0,
+                       {data1, data2}, {sizeof(data1), sizeof(data2)}));
+  stream.AddFrame(frame);
+
+  ThreadEvent<void> did_append("");
+  {
+    InSequence seq;
+    EXPECT_CALL(renderer, AppendBuffer(_, sizeof(expected)))
+        .With(Args<0, 1>(MatchesData(expected)))
         .WillOnce(SignalAndReturn(did_append, true));
   }
 

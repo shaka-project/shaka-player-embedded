@@ -57,38 +57,36 @@ bool SetSampleFormatFields(SampleFormat format,
                            AudioStreamBasicDescription* desc) {
   switch (format) {
     case SampleFormat::PackedU8:
+    case SampleFormat::PlanarU8:
       desc->mFormatFlags = 0;
       desc->mBitsPerChannel = 8;
       return true;
     case SampleFormat::PackedS16:
+    case SampleFormat::PlanarS16:
       desc->mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
       desc->mBitsPerChannel = 16;
       return true;
     case SampleFormat::PackedS32:
+    case SampleFormat::PlanarS32:
       desc->mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
       desc->mBitsPerChannel = 32;
       return true;
     case SampleFormat::PackedS64:
+    case SampleFormat::PlanarS64:
       desc->mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
       desc->mBitsPerChannel = 64;
       return true;
     case SampleFormat::PackedFloat:
+    case SampleFormat::PlanarFloat:
       desc->mFormatFlags = kLinearPCMFormatFlagIsFloat;
       desc->mBitsPerChannel = 32;
       return true;
     case SampleFormat::PackedDouble:
+    case SampleFormat::PlanarDouble:
       desc->mFormatFlags = kLinearPCMFormatFlagIsFloat;
       desc->mBitsPerChannel = 64;
       return true;
 
-    case SampleFormat::PlanarU8:
-    case SampleFormat::PlanarS16:
-    case SampleFormat::PlanarS32:
-    case SampleFormat::PlanarS64:
-    case SampleFormat::PlanarFloat:
-    case SampleFormat::PlanarDouble:
-      LOG(DFATAL) << "Audio renderer doesn't support planar formats";
-      return false;
     default:
       LOG(DFATAL) << "Unknown sample format: " << static_cast<uint8_t>(format);
       return false;

@@ -15,7 +15,9 @@
 #include "src/media/audio_renderer_common.h"
 
 #include <algorithm>
+#include <cstring>
 #include <functional>
+#include <vector>
 
 namespace shaka {
 namespace media {
@@ -35,20 +37,26 @@ const uint8_t kSilenceBuffer[4096] = {0};
 uint8_t BytesPerSample(std::shared_ptr<DecodedFrame> frame) {
   switch (get<SampleFormat>(frame->format)) {
     case SampleFormat::PackedU8:
+    case SampleFormat::PlanarU8:
       return 1;
     case SampleFormat::PackedS16:
+    case SampleFormat::PlanarS16:
       return 2;
     case SampleFormat::PackedS32:
+    case SampleFormat::PlanarS32:
       return 4;
     case SampleFormat::PackedS64:
+    case SampleFormat::PlanarS64:
       return 8;
     case SampleFormat::PackedFloat:
+    case SampleFormat::PlanarFloat:
       return 4;
     case SampleFormat::PackedDouble:
+    case SampleFormat::PlanarDouble:
       return 8;
     default:
       LOG(DFATAL) << "Unsupported sample format: "
-                  << static_cast<uint8_t>(get<SampleFormat>(frame->format));
+                  << static_cast<int>(get<SampleFormat>(frame->format));
       return 0;
   }
 }
@@ -185,6 +193,47 @@ bool AudioRendererCommon::IsFrameSimilar(
          frame1->format == frame2->format;
 }
 
+bool AudioRendererCommon::WriteFrame(std::shared_ptr<DecodedFrame> frame,
+                                     size_t sync_bytes) {
+  if (IsPlanarFormat(frame->format)) {
+    // We need to pack the samples into a single array.
+    // Before:
+    //   data[0] -> | 1A | 1B | 1C |
+    //   data[1] -> | 2A | 2B | 2C |
+    // After:
+    //   data    -> | 1A | 2A | 1B | 2B | 1C | 2C |
+    const size_t channel_count = frame->stream_info->channel_count;
+    const size_t sample_size = BytesPerSample(frame);
+    const size_t sample_count = frame->linesize[0] / sample_size;
+    const size_t per_channel_sync = sync_bytes / channel_count;
+    const size_t skipped_samples = per_channel_sync / sample_size;
+    if (sample_count > skipped_samples) {
+      std::vector<uint8_t> temp(frame->linesize[0] * channel_count -
+                                sync_bytes);
+      uint8_t* output = temp.data();
+      for (size_t sample = skipped_samples; sample < sample_count; sample++) {
+        for (size_t channel = 0; channel < channel_count; channel++) {
+          std::memcpy(output, frame->data[channel] + sample * sample_size,
+                      sample_size);
+          output += sample_size;
+        }
+      }
+      if (!AppendBuffer(temp.data(), temp.size()))
+        return false;
+      bytes_written_ += temp.size();
+    }
+  } else {
+    if (frame->linesize[0] > sync_bytes) {
+      if (!AppendBuffer(frame->data[0] + sync_bytes,
+                        frame->linesize[0] - sync_bytes)) {
+        return false;
+      }
+      bytes_written_ += frame->linesize[0] - sync_bytes;
+    }
+  }
+  return true;
+}
+
 void AudioRendererCommon::SetClock(const util::Clock* clock) {
   clock_ = clock;
 }
@@ -265,13 +314,8 @@ void AudioRendererCommon::ThreadMain() {
         return;
       sync_bytes = 0;
     }
-    if (next->linesize[0] > static_cast<size_t>(sync_bytes)) {
-      if (!AppendBuffer(next->data[0] + sync_bytes,
-                        next->linesize[0] - sync_bytes)) {
-        return;
-      }
-      bytes_written_ += next->linesize[0] - sync_bytes;
-    }
+    if (!WriteFrame(next, sync_bytes))
+      return;
     cur_frame_ = next;
     needs_resync_ = false;
   }

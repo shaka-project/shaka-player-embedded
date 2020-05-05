@@ -137,6 +137,8 @@ class AudioRendererCommon : public AudioRenderer, MediaPlayer::Client {
   bool IsFrameSimilar(std::shared_ptr<DecodedFrame> frame1,
                       std::shared_ptr<DecodedFrame> frame2) const;
 
+  bool WriteFrame(std::shared_ptr<DecodedFrame> frame, size_t sync_bytes);
+
   void SetClock(const util::Clock* clock);
 
   void ThreadMain();
