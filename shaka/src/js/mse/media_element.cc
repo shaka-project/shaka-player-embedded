@@ -99,22 +99,11 @@ Promise HTMLMediaElement::SetMediaKeys(RefPtr<eme::MediaKeys> media_keys) {
   return Promise::Resolved();
 }
 
-ExceptionOr<void> HTMLMediaElement::Load() {
-  CHECK_ATTACHED();
-  error = nullptr;
-
-  if (media_source_) {
-    player_->Detach();
-    media_source_->CloseMediaSource();
-    media_source_.reset();
-  } else if (!src_.empty()) {
-    player_->Detach();
-    src_ = "";
-  }
-
-  SetPlaybackRate(default_playback_rate_);
-  SetMuted(default_muted);
-  return {};
+void HTMLMediaElement::Load() {
+  // Normally, this should unload any old content and start the load process
+  // over.  But Shaka Player calls this as part of startup, which would cause a
+  // longer delay before starting.  We start loading when assigning 'src=', so
+  // we don't need to do anything here.
 }
 
 CanPlayTypeEnum HTMLMediaElement::CanPlayType(const std::string& type) {
@@ -159,13 +148,26 @@ std::string HTMLMediaElement::Source() const {
 }
 
 ExceptionOr<void> HTMLMediaElement::SetSource(const std::string& src) {
-  // Unload any previous MediaSource objects.
-  RETURN_IF_ERROR(Load());
+  CHECK_ATTACHED();
 
-  DCHECK(!media_source_);
+  // Unload old content.
+  if (media_source_) {
+    player_->Detach();
+    media_source_->CloseMediaSource();
+    media_source_.reset();
+  } else if (!src_.empty()) {
+    player_->Detach();
+    src_ = "";
+  }
+
+  error = nullptr;
+  SetPlaybackRate(default_playback_rate_);
+  SetMuted(default_muted);
+
   if (src.empty())
     return {};
 
+  // Load new content.
   media_source_ = MediaSource::FindMediaSource(src);
   if (media_source_) {
     if (!player_->AttachMse()) {

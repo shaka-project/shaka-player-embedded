@@ -68,7 +68,7 @@ class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
   Listener on_waiting_for_key;
 
   // HTMLMediaElement members.
-  ExceptionOr<void> Load();
+  void Load();
   CanPlayTypeEnum CanPlayType(const std::string& type);
 
   bool autoplay;
