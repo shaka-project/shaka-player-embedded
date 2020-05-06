@@ -44,6 +44,7 @@ class shaka::media::ios::AvMediaPlayer::Impl {
       : mutex_("AvMediaPlayer"),
         layer_([[LayerWrapper alloc] init]),
         clients_(clients),
+        load_id_(0),
         old_playback_state_(VideoPlaybackState::Detached),
         old_ready_state_(VideoReadyState::NotAttached),
         requested_play_(false),
@@ -141,17 +142,25 @@ class shaka::media::ios::AvMediaPlayer::Impl {
     if (!player_)
       return false;
 
-    // Note that this must be done on the main thread for the layer to be visible.
+    const auto options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;
+    for (auto *name : LISTEN_PLAYER_KEY_PATHS)
+      [player_ addObserver:observer_ forKeyPath:name options:options context:nil];
+    for (auto *name : LISTEN_ITEM_KEY_PATHS)
+      [player_.currentItem addObserver:observer_ forKeyPath:name options:options context:nil];
+
+    // Note that this must be done on the main thread for the layer to be visible.  Since this is
+    // asynchronous, store the current load ID so we know if another attach/detach happened.  We
+    // cannot wait for this to complete since that would block the JS main thread and could
+    // deadlock.
+    int load_id = ++load_id_;
     dispatch_async(dispatch_get_main_queue(), ^{
+      std::unique_lock<SharedMutex> lock(mutex_);
+      if (load_id != load_id_)
+        return;
+
       player_layer_ = [AVPlayerLayer playerLayerWithPlayer:player_];
       player_layer_.frame = layer_.frame;
       [layer_ addSublayer:player_layer_];
-
-      const auto options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;
-      for (auto *name : LISTEN_PLAYER_KEY_PATHS)
-        [player_ addObserver:observer_ forKeyPath:name options:options context:nil];
-      for (auto *name : LISTEN_ITEM_KEY_PATHS)
-        [player_.currentItem addObserver:observer_ forKeyPath:name options:options context:nil];
 
       clients_->OnAttachSource();
     });
@@ -161,6 +170,7 @@ class shaka::media::ios::AvMediaPlayer::Impl {
 
   void Detach() {
     std::unique_lock<SharedMutex> lock(mutex_);
+    load_id_++;
     if (player_) {
       for (auto *name : LISTEN_PLAYER_KEY_PATHS)
         [player_ removeObserver:observer_ forKeyPath:name];
@@ -325,6 +335,7 @@ class shaka::media::ios::AvMediaPlayer::Impl {
   std::vector<std::shared_ptr<MediaTrack>> video_tracks_;
   std::vector<std::shared_ptr<TextTrack>> text_tracks_;
 
+  int load_id_;
   enum VideoPlaybackState old_playback_state_;
   enum VideoReadyState old_ready_state_;
   bool requested_play_;
