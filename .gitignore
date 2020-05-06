@@ -24,4 +24,5 @@ Makefile
 /third_party/llvm-build/
 
 /sample_xcode_project/*.framework/
+/sample_xcode_project/sample_xcode_project.xcodeproj/xcshareddata/
 /sample_xcode_project/sample_xcode_project.xcodeproj/xcuserdata/
