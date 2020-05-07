@@ -349,7 +349,7 @@ TEST_F(AudioRendererCommonTest, HandlesPlanarFormats) {
                               121, 122, 123, 124, 221, 222, 223, 224,
                               131, 132, 133, 134, 231, 232, 233, 234};
   std::shared_ptr<StreamInfo> info(
-      new StreamInfo("", "", false, {0, 0}, {}, 0, 0, 2, kSampleRate));
+      new StreamInfo("", "", false, {0, 0}, {0, 0}, {}, 0, 0, 2, kSampleRate));
   std::shared_ptr<DecodedFrame> frame(
       new DecodedFrame(info, 0, 0, 0.01, SampleFormat::PlanarS32, 0,
                        {data1, data2}, {sizeof(data1), sizeof(data2)}));
