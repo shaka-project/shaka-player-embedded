@@ -100,5 +100,67 @@ TEST(BufferReaderTest, ReadInteger_NotEnoughDataLittleEndian) {
   EXPECT_EQ(0x00000201u, reader.ReadUint32(kLittleEndian));
 }
 
+TEST(BufferReaderTest, ReadBits_BasicFlow) {
+  // 1011 0101  0100 1001
+  const uint8_t buffer[] = {0xb5, 0x49};
+  BufferReader reader(buffer, sizeof(buffer));
+
+  EXPECT_EQ(reader.ReadBits(3), 0x5);   // 101
+  EXPECT_EQ(reader.ReadBits(5), 0x15);  // 10101
+  EXPECT_EQ(reader.ReadBits(1), 0x0);
+  EXPECT_EQ(reader.ReadBits(1), 0x1);
+  EXPECT_EQ(reader.ReadBits(6), 0x9);  // 001001
+  EXPECT_TRUE(reader.empty());
+}
+
+TEST(BufferReaderTest, ReadBits_SpansByte) {
+  // 1011 0101  0100 1001
+  const uint8_t buffer[] = {0xb5, 0x49};
+  BufferReader reader(buffer, sizeof(buffer));
+
+  EXPECT_EQ(reader.ReadBits(5), 0x16);  // 10110
+  EXPECT_EQ(reader.ReadBits(8), 0xa9);  // 10101001
+  EXPECT_EQ(reader.ReadBits(3), 0x1);   // 001
+  EXPECT_TRUE(reader.empty());
+}
+
+TEST(BufferReaderTest, ReadBits_PastEnd) {
+  // 1011 0101
+  const uint8_t buffer[] = {0xb5};
+  BufferReader reader(buffer, sizeof(buffer));
+
+  EXPECT_EQ(reader.ReadBits(5), 0x16);  // 10110
+  EXPECT_EQ(reader.ReadBits(8), 0xa0);  // 101xxxxx
+}
+
+TEST(BufferReaderTest, ReadExpGolomb) {
+  // ue(v) is used in H.264 for an Exp-Golomb code.
+  // ue(0) ue(3) ue(6) ue(14)  ue(40)
+  // 1     00100 00111 0001111 00000101001
+  // 1001 0000  1110 0011  1100 0001  0100 1xxx
+  const uint8_t buffer[] = {0x90, 0xe3, 0xc1, 0x48};
+  BufferReader reader(buffer, sizeof(buffer));
+
+  EXPECT_EQ(reader.ReadExpGolomb(), 0);
+  EXPECT_EQ(reader.ReadExpGolomb(), 3);
+  EXPECT_EQ(reader.ReadExpGolomb(), 6);
+  EXPECT_EQ(reader.ReadExpGolomb(), 14);
+  EXPECT_EQ(reader.ReadExpGolomb(), 40);
+}
+
+TEST(BufferReaderTest, SkipBits) {
+  // 1101 1001  0011 0011  0100 1000
+  const uint8_t data[] = {0xd9, 0x33, 0x48};
+  BufferReader reader(data, sizeof(data));
+
+  EXPECT_EQ(reader.ReadBits(3), 0x6);  // 110
+  EXPECT_EQ(reader.SkipBits(9), 9);
+  EXPECT_EQ(reader.ReadBits(3), 0x1);  // 001
+  EXPECT_EQ(reader.SkipBits(2), 2);
+  EXPECT_EQ(reader.ReadBits(3), 0x4);  // 100
+  EXPECT_EQ(reader.SkipBits(20), 4);
+  EXPECT_TRUE(reader.empty());
+}
+
 }  // namespace util
 }  // namespace shaka

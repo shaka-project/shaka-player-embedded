@@ -43,6 +43,11 @@ class BufferReader {
   BufferReader();
   BufferReader(const uint8_t* data, size_t data_size);
 
+  /** @return The data pointer for the current position. */
+  const uint8_t* data() const {
+    return data_;
+  }
+
   bool empty() const {
     return size_ == 0;
   }
@@ -67,30 +72,48 @@ class BufferReader {
    * Skips the given number of bytes.
    * @return The number of bytes skipped.
    */
-  size_t Skip(size_t count);
+  size_t Skip(size_t count) {
+    return SkipBits(count * 8) / 8;
+  }
+
+  /**
+   * Skips the given number of bits.
+   * @return The number of bits skipped.
+   */
+  size_t SkipBits(size_t count);
 
   /**
    * Reads a 8-bit integer from the buffer.  If the reader is empty, this
    * returns 0.
    */
   uint8_t ReadUint8() {
-    return static_cast<uint8_t>(ReadInteger(1, kBigEndian));
+    return static_cast<uint8_t>(ReadBits(8, kBigEndian));
+  }
+
+  /** Reads a 32-bit integer from the buffer. */
+  uint32_t ReadUint32(Endianness endianness = kBigEndian) {
+    return static_cast<uint32_t>(ReadBits(32, endianness));
   }
 
   /**
-   * Reads a 32-bit integer from the buffer.  If there aren't enough bytes, this
-   * will fill remaining bytes with 0s.  For example, in big-endian, if this
-   * can only read two bytes {0x12, 0x34}, this will return 0x12340000.
+   * Reads the given number of bits.  If there aren't enough bits, this will
+   * fill remaining bits with 0.  This can only read up to 64 bits.
+   *
+   * Little endian mode can only be used at a byte-aligned position and can only
+   * read whole bytes.
    */
-  uint32_t ReadUint32(Endianness endianness = kBigEndian) {
-    return static_cast<uint32_t>(ReadInteger(4, endianness));
-  }
+  uint64_t ReadBits(size_t count, Endianness endianness = kBigEndian);
+
+  /**
+   * Reads a variably-sized integer in a Exponential-Golomb format.
+   * @see https://en.wikipedia.org/wiki/Exponential-Golomb_coding
+   */
+  uint64_t ReadExpGolomb();
 
  private:
-  uint64_t ReadInteger(size_t size, Endianness endianness);
-
   const uint8_t* data_;
   size_t size_;
+  size_t bit_offset_;
 };
 
 }  // namespace util

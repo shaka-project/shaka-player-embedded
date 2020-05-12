@@ -25,6 +25,7 @@ extern "C" {
 
 #include "src/media/ffmpeg/ffmpeg_encoded_frame.h"
 #include "src/media/media_utils.h"
+#include "src/util/buffer_reader.h"
 #include "src/util/buffer_writer.h"
 
 // Special error code added by //third_party/ffmpeg/mov.patch
@@ -107,6 +108,153 @@ bool ParseAndCheckSupport(const std::string& mime, std::string* container) {
 
   *container = normalized;
   return true;
+}
+
+void RemoveEmulationPrevention(const uint8_t* data, size_t size,
+                               std::vector<uint8_t>* output) {
+  DCHECK_EQ(output->size(), size);
+  // A byte sequence 0x0 0x0 0x1 is used to signal the start of a NALU.  So for
+  // the body of the NALU, it needs to be escaped.  So this reverses the
+  // escaping by changing 0x0 0x0 0x3 to 0x0 0x0.
+  DCHECK_EQ(output->size(), size);
+  size_t out_pos = 0;
+  for (size_t in_pos = 0; in_pos < size;) {
+    if (in_pos + 2 < size && data[in_pos] == 0 && data[in_pos + 1] == 0 &&
+        data[in_pos + 2] == 0x3) {
+      (*output)[out_pos++] = 0;
+      (*output)[out_pos++] = 0;
+      in_pos += 3;
+    } else {
+      (*output)[out_pos++] = data[in_pos++];
+    }
+  }
+  output->resize(out_pos);
+}
+
+Rational<uint32_t> GetSarFromH264(const std::vector<uint8_t>& extra_data) {
+  util::BufferReader reader(extra_data.data(), extra_data.size());
+  // The H.264 extra data is a AVCDecoderConfigurationRecord from
+  // Section 5.3.3.1.2 in ISO/IEC 14496-15
+  reader.Skip(5);
+  const size_t sps_count = reader.ReadUint8() & 0x1f;
+  if (sps_count == 0)
+    return {0, 0};
+
+  // There should only be one SPS, or they should be compatible since there
+  // should only be one video stream.  There may be two SPS for encrypted
+  // content with a clear lead.
+  const size_t sps_size = reader.ReadBits(16);
+  if (sps_size >= reader.BytesRemaining()) {
+    LOG(DFATAL) << "Invalid avcC configuration";
+    return {0, 0};
+  }
+
+  // This is an SPS NALU; remove the emulation prevention bytes.
+  // See ISO/IE 14496-10 Sec. 7.3.1/7.3.2 and H.264 Sec. 7.3.2.1.1.
+  std::vector<uint8_t> temp(sps_size);
+  RemoveEmulationPrevention(reader.data(), sps_size, &temp);
+  util::BufferReader sps_reader(temp.data(), temp.size());
+  if (sps_reader.ReadUint8() != 0x67) {
+    LOG(DFATAL) << "Non-SPS found in avcC configuration";
+    return {0, 0};
+  }
+
+  // seq_parameter_set_rbsp()
+  const uint8_t profile_idc = sps_reader.ReadUint8();
+  sps_reader.Skip(2);
+  sps_reader.ReadExpGolomb();  // seq_parameter_set_id
+  // Values here copied from the H.264 spec.
+  if (profile_idc == 100 || profile_idc == 110 || profile_idc == 122 ||
+      profile_idc == 244 || profile_idc == 44 || profile_idc == 83 ||
+      profile_idc == 86 || profile_idc == 118 || profile_idc == 128 ||
+      profile_idc == 138 || profile_idc == 139 || profile_idc == 134) {
+    const uint64_t chroma_format_idc = sps_reader.ReadExpGolomb();
+    if (chroma_format_idc == 3)
+      sps_reader.ReadBits(1);           // separate_colour_plane_flag
+    sps_reader.ReadExpGolomb();         // bit_depth_luma_minus8
+    sps_reader.ReadExpGolomb();         // bit_depth_chroma_minus8
+    sps_reader.SkipBits(1);             // qpprime_y_zero_transform_bypass_flag
+    if (sps_reader.ReadBits(1) == 1) {  // seq_scaling_matrix_present_flag
+      LOG(WARNING) << "Scaling matrix is unsupported";
+      return {0, 0};
+    }
+  }
+  sps_reader.ReadExpGolomb();  // log2_max_frame_num_minus4
+  const uint64_t pic_order_cnt_type = sps_reader.ReadExpGolomb();
+  if (pic_order_cnt_type == 0) {
+    sps_reader.ReadExpGolomb();  // log2_max_pic_order_cnt_lsb_minus4
+  } else if (pic_order_cnt_type == 1) {
+    sps_reader.ReadBits(1);      // delta_pic_order_always_zero_flag
+    sps_reader.ReadExpGolomb();  // offset_for_non_ref_pic
+    sps_reader.ReadExpGolomb();  // offset_for_top_to_bottom_field
+    const uint64_t count = sps_reader.ReadExpGolomb();
+    for (uint64_t i = 0; i < count; i++)
+      sps_reader.ReadExpGolomb();  // offset_for_ref_frame
+  }
+  sps_reader.ReadExpGolomb();         // max_num_ref_frames
+  sps_reader.ReadBits(1);             // gaps_in_frame_num_value_allowed_flag
+  sps_reader.ReadExpGolomb();         // pic_width_in_mbs_minus1
+  sps_reader.ReadExpGolomb();         // pic_height_in_map_units_minus1
+  if (sps_reader.ReadBits(1) == 0)    // frame_mbs_only_flag
+    sps_reader.ReadBits(1);           // mb_adaptive_frame_field_flag
+  sps_reader.ReadBits(1);             // direct_8x8_inference_flag
+  if (sps_reader.ReadBits(1) == 1) {  // frame_cropping_flag
+    sps_reader.ReadExpGolomb();       // pframe_crop_left_offset
+    sps_reader.ReadExpGolomb();       // pframe_crop_right_offset
+    sps_reader.ReadExpGolomb();       // pframe_crop_top_offset
+    sps_reader.ReadExpGolomb();       // pframe_crop_bottom_offset
+  }
+  if (sps_reader.ReadBits(1) == 0)  // vui_parameters_present_flag
+    return {0, 0};  // Values we want aren't there, return unknown.
+
+  // Finally, the thing we actually care about, display parameters.
+  // See section E.1.1 of H.264.
+  // vui_parameters()
+  if (sps_reader.ReadBits(1) == 0)  // aspect_ratio_info_present_flag
+    return {0, 0};  // Values we want aren't there, return unknown.
+  const uint8_t aspect_ratio_idc = sps_reader.ReadUint8();
+  // See Table E-1 in H.264.
+  switch (aspect_ratio_idc) {
+    case 1:
+      return {1, 1};
+    case 2:
+      return {12, 11};
+    case 3:
+      return {10, 11};
+    case 4:
+      return {16, 11};
+    case 5:
+      return {40, 33};
+    case 6:
+      return {24, 11};
+    case 7:
+      return {20, 11};
+    case 8:
+      return {32, 11};
+    case 9:
+      return {80, 33};
+    case 10:
+      return {18, 11};
+    case 11:
+      return {15, 11};
+    case 12:
+      return {64, 33};
+    case 13:
+      return {160, 99};
+    case 14:
+      return {4, 3};
+    case 15:
+      return {3, 2};
+    case 16:
+      return {2, 1};
+    case 255:
+      return {sps_reader.ReadBits(16), sps_reader.ReadBits(16)};
+
+    default:
+      LOG(DFATAL) << "Unknown value of aspect_ratio_idc: "
+                  << static_cast<int>(aspect_ratio_idc);
+      return {0, 0};
+  }
 }
 
 }  // namespace
@@ -347,12 +495,23 @@ bool FFmpegDemuxer::ReinitDemuxer() {
     return false;
   }
 
+  std::vector<uint8_t> extra_data{params->extradata,
+                                  params->extradata + params->extradata_size};
+  Rational<uint32_t> sar{params->sample_aspect_ratio.num,
+                         params->sample_aspect_ratio.den};
+  if (!sar) {
+    switch (params->codec_id) {
+      case AV_CODEC_ID_H264:
+        sar = GetSarFromH264(extra_data);
+        break;
+      default:
+        break;
+    }
+  }
+
   cur_stream_info_.reset(new StreamInfo(
       mime_type_, expected_codec, params->codec_type == AVMEDIA_TYPE_VIDEO,
-      {stream->time_base.num, stream->time_base.den},
-      {params->sample_aspect_ratio.num, params->sample_aspect_ratio.den},
-      std::vector<uint8_t>{params->extradata,
-                           params->extradata + params->extradata_size},
+      {stream->time_base.num, stream->time_base.den}, sar, extra_data,
       params->width, params->height, params->channels, params->sample_rate));
   return true;
 }
