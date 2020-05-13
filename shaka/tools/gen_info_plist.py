@@ -54,7 +54,7 @@ def _GenInfoPlist(output):
   # Note that only the first three values are used by the OS, the tag is
   # ignored.
   version_out = '%s.%s.%s.%s' % (major, minor, revision, tag)
-  output.write(body % (version_out, version_out))
+  output.write(body % (version_out, version_out.rsplit('.', 1)[0]))
 
 
 def main(argv):
