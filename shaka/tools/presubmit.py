@@ -111,7 +111,7 @@ def _CheckLicense(_):
     with open(full_path, 'r') as f:
       text = f.read()
 
-    match = re.match(r'#!(/usr/bin/python\d*|/bin/bash)\n', text)
+    match = re.match(r'#![^\n]+\n', text)
     if match:
       text = text[match.end(0):]
 

@@ -21,6 +21,7 @@
 #include "src/media/ios/ios_decoded_frame.h"
 #include "src/media/media_utils.h"
 #include "src/util/dynamic_buffer.h"
+#include "src/util/utils.h"
 
 #ifndef kVTVideoDecoderSpecification_EnableHardwareAcceleratedVideoDecoder
 #  define kVTVideoDecoderSpecification_EnableHardwareAcceleratedVideoDecoder \
@@ -74,9 +75,9 @@ util::CFRef<CFMutableDictionaryRef> CreateVideoDecoderConfig(
       ret, kVTVideoDecoderSpecification_EnableHardwareAcceleratedVideoDecoder,
       kCFBooleanTrue);
 
-  const std::string raw_codec = codec.substr(0, codec.find('.'));
+  const std::string raw_codec = NormalizeCodec(codec);
   util::CFRef<CFMutableDictionaryRef> info(MakeDict(1));
-  if (raw_codec == "avc1" || raw_codec == "h264") {
+  if (raw_codec == "h264") {
     CFDictionarySetValue(info, CFSTR("avcC"), CreateBuffer(extra_data));
   } else if (raw_codec == "hevc") {
     CFDictionarySetValue(info, CFSTR("hvcC"), CreateBuffer(extra_data));
@@ -92,9 +93,9 @@ util::CFRef<CFMutableDictionaryRef> CreateVideoDecoderConfig(
 util::CFRef<CMVideoFormatDescriptionRef> CreateFormatDescription(
     const std::string& codec, uint32_t width, uint32_t height,
     util::CFRef<CFDictionaryRef> decoder_config) {
-  const std::string raw_codec = codec.substr(0, codec.find('.'));
+  const std::string raw_codec = NormalizeCodec(codec);
   CMVideoCodecType codec_type;
-  if (raw_codec == "avc1" || raw_codec == "h264") {
+  if (raw_codec == "h264") {
     codec_type = kCMVideoCodecType_H264;
   } else if (raw_codec == "hevc") {
     codec_type = kCMVideoCodecType_HEVC;
@@ -195,6 +196,97 @@ std::vector<uint8_t> MakeH264ExtraData(const std::string& codec) {
       // clang-format on
   };
   return {extra_data, extra_data + sizeof(extra_data)};
+}
+
+std::vector<uint8_t> MakeHevcExtraData(const std::string& codec) {
+  // See ISO IEC 14496-15 2012+ Annex E.3
+  // e.g. "hvc1.1.C0000006.L0.0.90.0.0.3"
+  std::vector<std::string> parts = util::StringSplit(codec, '.');
+
+  DCHECK(parts[0] == "hvc1" || parts[0] == "hev1");
+
+  uint8_t general_profile_space = 0;
+  uint8_t general_profile_idc = 1;
+  if (parts.size() > 1) {
+    int offset = 0;
+    if (parts[1].size() > 0 &&
+        (parts[1][0] == 'A' || parts[1][0] == 'B' || parts[1][0] == 'C')) {
+      general_profile_space = 1 + (parts[1][0] - 'A');
+      offset = 1;
+    }
+    general_profile_idc =
+        static_cast<uint8_t>(strtol(parts[1].c_str() + offset, nullptr, 10));
+  }
+
+  uint32_t general_profile_compatibility_flags = 0;
+  if (parts.size() > 2)
+    general_profile_compatibility_flags = strtol(parts[2].c_str(), nullptr, 16);
+
+  uint8_t general_tier_flag = 0;
+  uint8_t general_level_idc = 0;
+  if (parts.size() > 3) {
+    general_tier_flag = parts[3].size() > 0 && parts[3][0] != 'L' ? 1 : 0;
+    general_level_idc =
+        static_cast<uint8_t>(strtol(parts[3].substr(1).c_str(), nullptr, 10));
+  }
+
+  uint8_t general_constraint_indicator_flags[6] = {0};
+  for (size_t i = 0; i < 6 && i + 4 < parts.size(); i++) {
+    general_constraint_indicator_flags[i] =
+        static_cast<uint8_t>(strtol(parts[i + 4].c_str(), nullptr, 16));
+  }
+
+  const uint8_t data[] = {
+      // clang-format off
+      0x01,  // configurationVersion
+      static_cast<uint8_t>((general_profile_space << 6) | general_profile_idc),
+      (general_profile_compatibility_flags >> 24) & 0xff,
+      (general_profile_compatibility_flags >> 16) & 0xff,
+      (general_profile_compatibility_flags >> 8) & 0xff,
+      (general_profile_compatibility_flags >> 0) & 0xff,
+      general_constraint_indicator_flags[0],
+      general_constraint_indicator_flags[1],
+      general_constraint_indicator_flags[2],
+      general_constraint_indicator_flags[3],
+      general_constraint_indicator_flags[4],
+      general_constraint_indicator_flags[5],
+      general_level_idc,
+      0xf0, 0x00,  // reserved(0b1111) | min_spatial_segmentation_idc
+      0xfc,  // reserved(0b111111) | parallelismType
+      0xfc,  // reserved(0b111111) | chroma_format_idc
+      0xf8,  // reserved(0b11111) | bit_depth_luma_minus8
+      0xf8,  // reserved(0b11111) | bit_depth_chroma_minus8
+      0x00, 0x00,  // avgFrameRate
+      0x00,
+
+      0x03,  // numOfArrays
+      // array[0]
+      0xa1,  // NAL_unit_type
+      0x00, 0x01,  // numNalus
+      0x00, 0x2e,  // nalUnitLength
+      0x42, 0x01, 0x01, 0x01, 0x60, 0x00, 0x00, 0x03,
+      0x00, 0x90, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03,
+      0x00, 0x5d, 0xa0, 0x02, 0x80, 0x80, 0x24, 0x1f,
+      0x26, 0x59, 0x99, 0xa4, 0x93, 0x2b, 0xff, 0xc0,
+      0xd5, 0xc0, 0xd6, 0x40, 0x40, 0x00, 0x00, 0x03,
+      0x00, 0x40, 0x00, 0x00, 0x06, 0x02,
+
+      // array[1]
+      0xa2,  // NAL_unit_type
+      0x00, 0x01,  // numNalus
+      0x00, 0x07,  // nalUnitLength
+      0x44, 0x01, 0xc1, 0x72, 0xb4, 0x62, 0x40,
+
+      // array[2]
+      0xa0,  // NAL_unit_type
+      0x00, 0x01,  // numNalus
+      0x00, 0x18,  // nalUnitLength
+      0x40, 0x01, 0x0c, 0x01, 0xff, 0xff, 0x01, 0x60,
+      0x00, 0x00, 0x03, 0x00, 0x90, 0x00, 0x00, 0x03,
+      0x00, 0x00, 0x03, 0x00, 0x5d, 0x99, 0x98, 0x09,
+      // clang-format on
+  };
+  return {data, data + sizeof(data)};
 }
 
 std::vector<uint8_t> MakeAacExtraData(const std::vector<uint8_t>& codec_data) {
@@ -311,10 +403,12 @@ MediaCapabilitiesInfo IosDecoder::DecodingInfo(
   }
 
   const std::string norm_codec = NormalizeCodec(codec);
-  if (norm_codec == "h264") {
+  if (norm_codec == "h264" || norm_codec == "hevc") {
     const uint32_t width = DEFAULT(config.video.width, 640);
     const uint32_t height = DEFAULT(config.video.height, 480);
-    const std::vector<uint8_t> extra_data = MakeH264ExtraData(codec);
+    const std::vector<uint8_t> extra_data = norm_codec == "h264"
+                                                ? MakeH264ExtraData(codec)
+                                                : MakeHevcExtraData(codec);
 
     auto resolution = GetScreenResolution();
     const size_t max_size = std::max(resolution.first, resolution.second);

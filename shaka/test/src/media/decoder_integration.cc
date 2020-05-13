@@ -45,8 +45,10 @@ constexpr const char* kMp4LowInit = "clear_low_frag_init.mp4";
 constexpr const char* kMp4LowSeg = "clear_low_frag_seg1.mp4";
 // This isn't fragmented, so it doesn't need an explicit init segment.
 constexpr const char* kMp4High = "clear_high.mp4";
+constexpr const char* kMp4Hevc = "clear_low_hevc.mp4";
 
 constexpr const char* kHashFile = "hash_file.txt";
+constexpr const char* kHashFileHevc = "hash_file_hevc.txt";
 
 class DemuxerClient : public Demuxer::Client {
  public:
@@ -82,6 +84,7 @@ void DemuxFiles(const std::vector<std::string>& paths,
 }
 
 void DecodeFramesAndCheckHashes(
+    const std::string& hash_file,
     const std::vector<std::shared_ptr<EncodedFrame>>& input_frames,
     Decoder* decoder, eme::Implementation* cdm) {
   FrameConverter converter;
@@ -103,11 +106,11 @@ void DecodeFramesAndCheckHashes(
     }
   }
 
-  const std::vector<uint8_t> expected = GetMediaFile(kHashFile);
+  const std::vector<uint8_t> expected = GetMediaFile(hash_file);
   std::string expected_str(expected.begin(), expected.end());
-#ifdef OS_IOS
-  // After the first 70 frames, iOS produces slightly different frame data.
-  // The frames are still correct, but the colors are off so the hash is
+#if defined(OS_IOS) || defined(OS_MAC)
+  // After the first 70 frames, VideoToolbox produces slightly different frame
+  // data.  The frames are still correct, but the colors are off so the hash is
   // different.
   // TODO: Investigate more and fix.
   results = results.substr(0, 70 * 33);
@@ -132,7 +135,15 @@ TEST_F(DecoderIntegration, CanDecodeFrames) {
   ASSERT_NO_FATAL_FAILURE(DemuxFiles({kMp4LowInit, kMp4LowSeg}, &frames));
 
   auto decoder = Decoder::CreateDefaultDecoder();
-  DecodeFramesAndCheckHashes(frames, decoder.get(), nullptr);
+  DecodeFramesAndCheckHashes(kHashFile, frames, decoder.get(), nullptr);
+}
+
+TEST_F(DecoderIntegration, CanDecodeHevc) {
+  std::vector<std::shared_ptr<EncodedFrame>> frames;
+  ASSERT_NO_FATAL_FAILURE(DemuxFiles({kMp4Hevc}, &frames));
+
+  auto decoder = Decoder::CreateDefaultDecoder();
+  DecodeFramesAndCheckHashes(kHashFileHevc, frames, decoder.get(), nullptr);
 }
 
 TEST_F(DecoderIntegration, CanDecodeWithAdaptation) {
@@ -189,7 +200,7 @@ TEST_P(DecoderDecryptIntegration, CanDecryptFrames) {
   ASSERT_NO_FATAL_FAILURE(DemuxFiles({GetParam()}, &frames));
 
   auto decoder = Decoder::CreateDefaultDecoder();
-  DecodeFramesAndCheckHashes(frames, decoder.get(), &cdm_);
+  DecodeFramesAndCheckHashes(kHashFile, frames, decoder.get(), &cdm_);
 }
 
 INSTANTIATE_TEST_CASE_P(SupportsNormalCase, DecoderDecryptIntegration,

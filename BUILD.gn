@@ -1316,6 +1316,8 @@ if (is_ios) {
     sources = [
       "shaka/test/media/clear_high.mp4",
       "shaka/test/media/clear_high.mp4.dat",
+      "shaka/test/media/clear_low_hevc.mp4",
+      "shaka/test/media/clear_low_hevc.mp4.dat",
       "shaka/test/media/clear_low_frag_init.mp4",
       "shaka/test/media/clear_low_frag_init.mp4.dat",
       "shaka/test/media/clear_low_frag_seg1.mp4",
@@ -1328,6 +1330,7 @@ if (is_ios) {
       "shaka/test/media/encrypted_low_cbcs.mp4",
       "shaka/test/media/encrypted_low_cenc.mp4",
       "shaka/test/media/hash_file.txt",
+      "shaka/test/media/hash_file_hevc.txt",
     ]
     outputs = [ "{{bundle_root_dir}}/{{source_file_part}}" ]
   }
