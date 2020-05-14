@@ -286,9 +286,17 @@ config("eme_plugin_config") {
 }
 
 if (_eme_plugin_info.copy_files != []) {
-  copy("eme_plugin_files") {
-    sources = _eme_plugin_info.copy_files
-    outputs = [ "$root_out_dir/{{source_file_part}}" ]
+  if (is_ios) {
+    bundle_data("eme_plugin_files") {
+      visibility = [ ":*" ]
+      sources = _eme_plugin_info.copy_files
+      outputs = [ "{{bundle_root_dir}}/Frameworks/{{source_file_part}}" ]
+    }
+  } else {
+    copy("eme_plugin_files") {
+      sources = _eme_plugin_info.copy_files
+      outputs = [ "$root_out_dir/{{source_file_part}}" ]
+    }
   }
 } else {
   group("eme_plugin_files") {}
