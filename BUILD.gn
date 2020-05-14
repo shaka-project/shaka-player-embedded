@@ -1325,10 +1325,8 @@ if (is_ios) {
       "shaka/test/media/encrypted_low.mp4",
       "shaka/test/media/encrypted_low.mp4.dat",
       "shaka/test/media/encrypted_low.webm",
-      "shaka/test/media/encrypted_low_cbc1.mp4",
       "shaka/test/media/encrypted_low_cbcs.mp4",
       "shaka/test/media/encrypted_low_cenc.mp4",
-      "shaka/test/media/encrypted_low_cens.mp4",
       "shaka/test/media/hash_file.txt",
     ]
     outputs = [ "{{bundle_root_dir}}/{{source_file_part}}" ]
@@ -1412,12 +1410,12 @@ test("tests") {
     ":test_proto",
     # Because the tests use internal headers, it requires the protobuf.
     ":indexeddb-proto",
-    "//testing/gmock:gmock",
-    "//testing/gtest:gtest",
     "//third_party/ffmpeg:ffmpeg_libs",
     "//third_party/ffmpeg:swscale",
     "//third_party/gflags:gflags",
     "//third_party/glog:glog",
+    "//third_party/googletest:gmock",
+    "//third_party/googletest:gtest",
     "//third_party/zlib:zlib",
   ]
   if (sdl_audio || sdl_video) {

@@ -179,12 +179,11 @@ class DecoderDecryptIntegration : public testing::TestWithParam<const char*> {
 };
 
 TEST_P(DecoderDecryptIntegration, CanDecryptFrames) {
-  const std::string container = EndsWith(GetParam(), ".webm") ? "webm" : "mp4";
+  const std::string container =
+      EndsWith(GetParam(), ".webm") ? "video/webm" : "video/mp4";
   auto* factory = DemuxerFactory::GetFactory();
-  if (!factory || !factory->IsTypeSupported(container)) {
-    LOG(WARNING) << "Skipping test since we don't have support for the media.";
-    return;
-  }
+  if (!factory || !factory->IsTypeSupported(container))
+    GTEST_SKIP();
 
   std::vector<std::shared_ptr<EncodedFrame>> frames;
   ASSERT_NO_FATAL_FAILURE(DemuxFiles({GetParam()}, &frames));
@@ -199,8 +198,6 @@ INSTANTIATE_TEST_CASE_P(SupportsNormalCase, DecoderDecryptIntegration,
 
 INSTANTIATE_TEST_CASE_P(SupportsUnusualCases, DecoderDecryptIntegration,
                         testing::Values("encrypted_low_cenc.mp4",
-                                        "encrypted_low_cens.mp4",
-                                        "encrypted_low_cbc1.mp4",
                                         "encrypted_low_cbcs.mp4"));
 
 }  // namespace media

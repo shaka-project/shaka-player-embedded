@@ -137,9 +137,14 @@ void Fail(const std::string& message, const std::string& file, int line) {
   ADD_FAILURE_AT(file.c_str(), line) << message;
 }
 
+void TestSkip() {
+  GTEST_SKIP();
+}
+
 }  // namespace
 
 void RegisterTestFixture() {
+  RegisterGlobalFunction("testSkip", &TestSkip);
   RegisterGlobalFunction("test_", &DefineTest);
   RegisterGlobalFunction("fail_", &Fail);
 }

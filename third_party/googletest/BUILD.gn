@@ -65,6 +65,7 @@ source_set("gtest") {
     "src/googletest/src/gtest-death-test.cc",
     "src/googletest/src/gtest-filepath.cc",
     "src/googletest/src/gtest-internal-inl.h",
+    "src/googletest/src/gtest-matchers.cc",
     "src/googletest/src/gtest-port.cc",
     "src/googletest/src/gtest-printers.cc",
     "src/googletest/src/gtest-test-part.cc",

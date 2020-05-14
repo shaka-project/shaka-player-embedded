@@ -53,7 +53,7 @@ testGroup('timeouts', function() {
 
   test('FiresShorterTimeoutsBeforeLongerOnes', async function() {
     if (!window.Debug) {
-      console.log('Skipping test in release mode');
+      testSkip();
       return;
     }
 
@@ -99,7 +99,7 @@ testGroup('timeouts', function() {
 
   test('WillKeepFunctionsAlive', async function() {
     if (!window.gc) {
-      console.log('Skipping test in release mode');
+      testSkip();
     } else {
       return new Promise((resolve) => {
         var call = function() { resolve(); };

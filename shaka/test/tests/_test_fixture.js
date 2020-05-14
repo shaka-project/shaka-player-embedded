@@ -50,6 +50,13 @@ var curAfterEach = [[]];
 
 
 /**
+ * This is defined by the environment to mark the current test as skipped.  The
+ * caller still needs to return early to skip the body.
+ */
+// function testSkip() {}
+
+
+/**
  * Returns an object containing the call stack info for the caller of the caller
  * of this function.
  * @return {{file: string, line: number}}

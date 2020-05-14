@@ -40,7 +40,7 @@ testGroup('TestType', function() {
 
 
   if (!window.TestType) {
-    console.log('Skipping TestType tests in release mode');
+    testSkip();
     return;
   }
 
