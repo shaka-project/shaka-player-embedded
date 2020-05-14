@@ -42,6 +42,11 @@ message MediaInfo {
 
     // The hexadecimal hash of the extra_data field.
     required string extra_data_hash = 4;
+
+    // The numerator from the sample aspect ratio.
+    required uint32 sar_num = 5;
+    // The denominator from the sample aspect ratio.
+    required uint32 sar_den = 6;
   }
 
   // The MIME type for the content.

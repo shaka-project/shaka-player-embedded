@@ -74,6 +74,9 @@ void RunDemuxerTest(const std::vector<std::string>& files) {
       const std::string extra_data_hash =
           GetFrameHash(stream->extra_data.data(), stream->extra_data.size());
       EXPECT_EQ(extra_data_hash, info.stream().extra_data_hash());
+      EXPECT_EQ(stream->sample_aspect_ratio.numerator, info.stream().sar_num());
+      EXPECT_EQ(stream->sample_aspect_ratio.denominator,
+                info.stream().sar_den());
 
       for (size_t i = 0; i < frames.size(); i++) {
         const auto& expected = info.frames().at(i);

@@ -92,6 +92,9 @@ def _probe_stream(path, stream):
   stream.time_scale_den = int(den)
   stream.is_video = streams[0]['codec_type'] == 'video'
   stream.extra_data_hash = streams[0]['extradata_hash'][4:].upper()
+  num, den = streams[0]['sample_aspect_ratio'].split(':')
+  stream.sar_num = int(num)
+  stream.sar_den = int(den)
 
 
 def _probe_frames(path, frames):
