@@ -110,6 +110,10 @@ bool ParseAndCheckSupport(const std::string& mime, std::string* container) {
   return true;
 }
 
+// The FFmpeg demuxer will use its decoders to fill in certain fields.  If we
+// aren't using the FFmpeg decoders, we need to parse these fields ourselves.
+#ifndef HAS_FFMPEG_DECODER
+
 void RemoveEmulationPrevention(const uint8_t* data, size_t size,
                                std::vector<uint8_t>* output) {
   DCHECK_EQ(output->size(), size);
@@ -129,6 +133,56 @@ void RemoveEmulationPrevention(const uint8_t* data, size_t size,
     }
   }
   output->resize(out_pos);
+}
+
+Rational<uint32_t> GetSarFromVuiParameters(util::BufferReader* reader) {
+  // See section E.1.1 of H.264/H.265.
+  // vui_parameters()
+  if (reader->ReadBits(1) == 0)  // aspect_ratio_info_present_flag
+    return {0, 0};               // Values we want aren't there, return unknown.
+  const uint8_t aspect_ratio_idc = reader->ReadUint8();
+  // See Table E-1 in H.264.
+  switch (aspect_ratio_idc) {
+    case 1:
+      return {1, 1};
+    case 2:
+      return {12, 11};
+    case 3:
+      return {10, 11};
+    case 4:
+      return {16, 11};
+    case 5:
+      return {40, 33};
+    case 6:
+      return {24, 11};
+    case 7:
+      return {20, 11};
+    case 8:
+      return {32, 11};
+    case 9:
+      return {80, 33};
+    case 10:
+      return {18, 11};
+    case 11:
+      return {15, 11};
+    case 12:
+      return {64, 33};
+    case 13:
+      return {160, 99};
+    case 14:
+      return {4, 3};
+    case 15:
+      return {3, 2};
+    case 16:
+      return {2, 1};
+    case 255:
+      return {reader->ReadBits(16), reader->ReadBits(16)};
+
+    default:
+      LOG(DFATAL) << "Unknown value of aspect_ratio_idc: "
+                  << static_cast<int>(aspect_ratio_idc);
+      return {0, 0};
+  }
 }
 
 Rational<uint32_t> GetSarFromH264(const std::vector<uint8_t>& extra_data) {
@@ -206,56 +260,134 @@ Rational<uint32_t> GetSarFromH264(const std::vector<uint8_t>& extra_data) {
   }
   if (sps_reader.ReadBits(1) == 0)  // vui_parameters_present_flag
     return {0, 0};  // Values we want aren't there, return unknown.
-
   // Finally, the thing we actually care about, display parameters.
-  // See section E.1.1 of H.264.
-  // vui_parameters()
-  if (sps_reader.ReadBits(1) == 0)  // aspect_ratio_info_present_flag
-    return {0, 0};  // Values we want aren't there, return unknown.
-  const uint8_t aspect_ratio_idc = sps_reader.ReadUint8();
-  // See Table E-1 in H.264.
-  switch (aspect_ratio_idc) {
-    case 1:
-      return {1, 1};
-    case 2:
-      return {12, 11};
-    case 3:
-      return {10, 11};
-    case 4:
-      return {16, 11};
-    case 5:
-      return {40, 33};
-    case 6:
-      return {24, 11};
-    case 7:
-      return {20, 11};
-    case 8:
-      return {32, 11};
-    case 9:
-      return {80, 33};
-    case 10:
-      return {18, 11};
-    case 11:
-      return {15, 11};
-    case 12:
-      return {64, 33};
-    case 13:
-      return {160, 99};
-    case 14:
-      return {4, 3};
-    case 15:
-      return {3, 2};
-    case 16:
-      return {2, 1};
-    case 255:
-      return {sps_reader.ReadBits(16), sps_reader.ReadBits(16)};
+  return GetSarFromVuiParameters(&sps_reader);
+}
 
-    default:
-      LOG(DFATAL) << "Unknown value of aspect_ratio_idc: "
-                  << static_cast<int>(aspect_ratio_idc);
-      return {0, 0};
+void SkipHevcProfileTierLevel(bool profile_present,
+                              uint64_t max_sub_layers_minus1,
+                              util::BufferReader* reader) {
+  if (profile_present) {
+    reader->Skip(11);
+  }
+  reader->Skip(1);
+  std::vector<bool> sub_layer_profile_present_flag(max_sub_layers_minus1);
+  std::vector<bool> sub_layer_level_present_flag(max_sub_layers_minus1);
+  for (uint64_t i = 0; i < max_sub_layers_minus1; i++) {
+    sub_layer_profile_present_flag[i] = reader->ReadBits(1);
+    sub_layer_level_present_flag[i] = reader->ReadBits(1);
+  }
+  if (max_sub_layers_minus1 > 0 && max_sub_layers_minus1 < 8)
+    reader->SkipBits(2 * (8 - max_sub_layers_minus1));
+  for (uint64_t i = 0; i < max_sub_layers_minus1; i++) {
+    if (sub_layer_profile_present_flag[i])
+      reader->Skip(11);
+    if (sub_layer_level_present_flag[i])
+      reader->Skip(1);
   }
 }
+
+Rational<uint32_t> GetSarFromHevc(const std::vector<uint8_t>& extra_data) {
+  util::BufferReader reader(extra_data.data(), extra_data.size());
+  // The H.265 extra data is a HEVCDecoderConfigurationRecord from
+  // Section 8.3.3.1.2 in ISO/IEC 14496-15
+  reader.Skip(22);
+  const uint8_t num_of_arrays = reader.ReadUint8();
+  uint64_t nalu_length = 0;
+  bool found = false;
+  for (uint8_t i = 0; i < num_of_arrays && !found; i++) {
+    const uint8_t nalu_type = reader.ReadUint8() & 0x3f;
+    const uint64_t num_nalus = reader.ReadBits(16);
+    for (uint64_t i = 0; i < num_nalus; i++) {
+      nalu_length = reader.ReadBits(16);
+      // Find the first SPS NALU.  Since this stream should only have one video
+      // stream, all SPS should be compatible.
+      if (nalu_type == 33) {
+        found = true;
+        break;
+      }
+      reader.Skip(nalu_length);
+    }
+  }
+  if (!found)
+    return {0, 0};  // No SPS found, return unknown.
+
+  // This is an SPS NALU; remove the emulation prevention bytes.
+  // See H.265 Sec. 7.3.1.2/7.3.2.2.1.
+  std::vector<uint8_t> temp(nalu_length);
+  RemoveEmulationPrevention(reader.data(), nalu_length, &temp);
+  util::BufferReader sps_reader(temp.data(), temp.size());
+  const uint64_t nalu_type = (sps_reader.ReadBits(16) >> 9) & 0x3f;
+  if (nalu_type != 33) {
+    LOG(DFATAL) << "Invalid NALU type found in extra data";
+    return {0, 0};
+  }
+
+  sps_reader.SkipBits(4);  // sps_video_parameter_set_id
+  const uint64_t max_sub_layers_minus1 = sps_reader.ReadBits(3);
+  sps_reader.SkipBits(1);  // sps_temporal_id_nesting_flag
+  SkipHevcProfileTierLevel(/* profile_present= */ true, max_sub_layers_minus1,
+                           &sps_reader);
+  sps_reader.ReadExpGolomb();           // sps_seq_parameter_set_id
+  if (sps_reader.ReadExpGolomb() == 3)  // chroma_format_idc
+    sps_reader.SkipBits(1);             // separate_colour_plane_flag
+  sps_reader.ReadExpGolomb();           // pic_width_in_luma_samples
+  sps_reader.ReadExpGolomb();           // pic_height_in_luma_samples
+  if (sps_reader.ReadBits(1) == 1) {    // conformance_window_flag
+    sps_reader.ReadExpGolomb();         // conf_win_left_offset
+    sps_reader.ReadExpGolomb();         // conf_win_right_offset
+    sps_reader.ReadExpGolomb();         // conf_win_top_offset
+    sps_reader.ReadExpGolomb();         // conf_win_bottom_offset
+  }
+  sps_reader.ReadExpGolomb();  // bit_depth_luma_minus8
+  sps_reader.ReadExpGolomb();  // bit_depth_chroma_minus8
+  sps_reader.ReadExpGolomb();  // log2_max_pic_order_cnt_lsb_minus4
+  const uint64_t sub_layer_ordering_info_present = sps_reader.ReadBits(1);
+  for (uint64_t i =
+           (sub_layer_ordering_info_present ? 0 : max_sub_layers_minus1);
+       i <= max_sub_layers_minus1; i++) {
+    sps_reader.ReadExpGolomb();  // sps_max_dec_pic_buffering_minus1
+    sps_reader.ReadExpGolomb();  // sps_max_num_reorder_pics
+    sps_reader.ReadExpGolomb();  // ps_max_latency_increase_plus1
+  }
+  sps_reader.ReadExpGolomb();  // log2_min_luma_coding_block_size_minus3
+  sps_reader.ReadExpGolomb();  // log2_diff_max_min_luma_coding_block_size
+  sps_reader.ReadExpGolomb();  // log2_min_luma_transform_block_size_minus2
+  sps_reader.ReadExpGolomb();  // log2_diff_max_min_luma_transform_block_size
+  sps_reader.ReadExpGolomb();  // max_transform_hierarchy_depth_inter
+  sps_reader.ReadExpGolomb();  // max_transform_hierarchy_depth_intra
+  if (sps_reader.ReadBits(1) == 1) {  // scaling_list_enabled_flag
+    LOG(WARNING) << "Scaling list isn't supported";
+    return {0, 0};
+  }
+  sps_reader.SkipBits(1);             // amp_enabled_flag
+  sps_reader.SkipBits(1);             // sample_adaptive_offset_enabled_flag
+  if (sps_reader.ReadBits(1) == 1) {  // pcm_enabled_flag
+    sps_reader.ReadBits(4);           // pcm_sample_bit_depth_luma_minus1
+    sps_reader.ReadBits(4);           // pcm_sample_bit_depth_chroma_minus1
+    sps_reader.ReadExpGolomb();  // log2_min_pcm_luma_coding_block_size_minus3
+    sps_reader.ReadExpGolomb();  // log2_diff_max_min_pcm_luma_coding_block_size
+  }
+  const uint64_t num_short_term_ref_pic_sets = sps_reader.ReadExpGolomb();
+  if (num_short_term_ref_pic_sets != 0) {
+    LOG(WARNING) << "Short-term reference pictures not supported";
+    return {0, 0};
+  }
+  if (sps_reader.ReadBits(1) == 1) {  // long_term_ref_pics_present_flag
+    const uint64_t num_long_term_ref_pics_sps = sps_reader.ReadExpGolomb();
+    for (uint64_t i = 0; i < num_long_term_ref_pics_sps; i++) {
+      sps_reader.ReadExpGolomb();  // lt_ref_pic_poc_lsb_sps
+      sps_reader.ReadBits(1);      // used_by_curr_pic_lt_sps_flag
+    }
+  }
+  sps_reader.ReadBits(1);           // sps_temporal_mvp_enabled_flag
+  sps_reader.ReadBits(1);           // strong_intra_smoothing_enabled_flag
+  if (sps_reader.ReadBits(1) != 1)  // vui_parameters_present_flag
+    return {0, 0};  // The info we want isn't there, return unknown.
+  return GetSarFromVuiParameters(&sps_reader);
+}
+
+#endif
 
 }  // namespace
 
@@ -499,15 +631,20 @@ bool FFmpegDemuxer::ReinitDemuxer() {
                                   params->extradata + params->extradata_size};
   Rational<uint32_t> sar{params->sample_aspect_ratio.num,
                          params->sample_aspect_ratio.den};
+#ifndef HAS_FFMPEG_DECODER
   if (!sar) {
     switch (params->codec_id) {
       case AV_CODEC_ID_H264:
         sar = GetSarFromH264(extra_data);
         break;
+      case AV_CODEC_ID_H265:
+        sar = GetSarFromHevc(extra_data);
+        break;
       default:
         break;
     }
   }
+#endif
 
   cur_stream_info_.reset(new StreamInfo(
       mime_type_, expected_codec, params->codec_type == AVMEDIA_TYPE_VIDEO,

@@ -84,7 +84,8 @@ void RunDemuxerTest(const std::vector<std::string>& files) {
         EXPECT_EQ(!!frames[i]->encryption_info, expected.is_encrypted());
         EXPECT_NEAR(frames[i]->pts, expected.pts(), 0.0001);
         EXPECT_NEAR(frames[i]->dts, expected.dts(), 0.0001);
-        if (expected.has_duration())
+        // Allow frames to have a duration of 0.
+        if (expected.has_duration() && frames[i]->duration != 0)
           EXPECT_NEAR(frames[i]->duration, expected.duration(), 0.0001);
 
         const std::string hash =
@@ -99,6 +100,10 @@ void RunDemuxerTest(const std::vector<std::string>& files) {
 
 TEST(DemuxerTest, SingleFile) {
   RunDemuxerTest({"clear_high.mp4"});
+}
+
+TEST(DemuxerTest, Hevc) {
+  RunDemuxerTest({"clear_low_hevc.mp4"});
 }
 
 TEST(DemuxerTest, Segmented) {
