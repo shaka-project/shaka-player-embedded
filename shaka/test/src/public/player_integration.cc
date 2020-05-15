@@ -15,11 +15,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <chrono>
 #include <memory>
 
+#include "shaka/eme/implementation_registry.h"
 #include "shaka/js_manager.h"
 #include "shaka/net.h"
 #include "shaka/player.h"
+#include "src/debug/thread_event.h"
 #include "src/test/global_fields.h"
 #include "src/test/media_files.h"
 #include "src/util/clock.h"
@@ -57,9 +60,11 @@ namespace {
 
 using testing::_;
 using testing::AnyNumber;
+using testing::AtLeast;
 using testing::ByMove;
 using testing::InSequence;
 using testing::Invoke;
+using testing::InvokeWithoutArgs;
 using testing::MockFunction;
 using testing::NiceMock;
 using testing::Return;
@@ -67,6 +72,11 @@ using testing::StrictMock;
 
 constexpr const char* kManifestUrl =
     "https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd";
+constexpr const char* kWidevineManifestUrl =
+    "https://storage.googleapis.com/shaka-demo-assets/angel-one-widevine/"
+    "dash.mpd";
+constexpr const char* kWidevineLicenseServerUrl =
+    "https://cwip-shaka-proxy.appspot.com/no_auth";
 constexpr const char* kMimeType = "application/dash+xml";
 
 class MockClient : public Player::Client {
@@ -139,6 +149,44 @@ TEST_F(PlayerIntegration, Player_BasicFlow) {
   ASSERT_SUCCESS_WITH_RESULTS(player->IsLive(), field);
   EXPECT_FALSE(field);
   ASSERT_SUCCESS(player->Unload());
+}
+
+TEST_F(PlayerIntegration, Player_PlaysWidevine) {
+  if (!eme::ImplementationRegistry::GetImplementation("com.widevine.alpha"))
+    GTEST_SKIP();
+
+  MockNetworkFilters filters;
+  auto signal = std::make_shared<ThreadEvent<void>>("");
+
+  ON_CALL(client, OnBuffering(/* is_buffering= */ false))
+      .WillByDefault(InvokeWithoutArgs([=]() { signal->SignalAllIfNotSet(); }));
+  EXPECT_CALL(filters, OnRequestFilter(_, _)).Times(AnyNumber());
+  EXPECT_CALL(filters, OnResponseFilter(_, _)).Times(AnyNumber());
+  EXPECT_CALL(filters, OnRequestFilter(RequestType::License, _))
+      .Times(AtLeast(1));
+  EXPECT_CALL(filters, OnResponseFilter(RequestType::License, _))
+      .Times(AtLeast(1));
+
+#define WAIT_WITH_TIMEOUT(signal)                                \
+  ASSERT_EQ(signal->future().wait_for(std::chrono::seconds(10)), \
+            std::future_status::ready)
+  player->AddNetworkFilters(&filters);
+  player->Configure(LicenseServerConfig("com.widevine.alpha"),
+                    kWidevineLicenseServerUrl);
+  ASSERT_SUCCESS(player->Load(kWidevineManifestUrl));
+  WAIT_WITH_TIMEOUT(signal);  // Wait to start playing.
+  signal->Reset();
+
+  // Seek past the clear lead and play a bit.  Time will only move forward if
+  // the frames are getting decrypted.
+  // TODO: Consider adding tests for frame hashes.
+  g_media_player->SetCurrentTime(15);
+  g_media_player->Play();
+  WAIT_WITH_TIMEOUT(signal);  // Wait until we start playing after the seek.
+  sleep(1);
+  EXPECT_GT(g_media_player->CurrentTime(), 15.5);
+  EXPECT_SUCCESS(player->Unload());
+#undef WAIT_WITH_TIMEOUT
 }
 
 TEST_F(PlayerIntegration, SchemePlugin_BasicFlow) {
