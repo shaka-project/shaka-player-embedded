@@ -72,6 +72,13 @@ void HTMLMediaElement::Trace(memory::HeapTracer* tracer) const {
   tracer->Trace(&text_tracks);
 }
 
+void HTMLMediaElement::RemoveAttribute(const std::string& attr) {
+  Element::RemoveAttribute(attr);
+  if (attr == "src") {
+    SetSource("");
+  }
+}
+
 void HTMLMediaElement::Detach() {
   player_->RemoveClient(this);
   player_ = nullptr;

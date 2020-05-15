@@ -58,6 +58,7 @@ class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
                    media::MediaPlayer* player);
 
   void Trace(memory::HeapTracer* tracer) const override;
+  void RemoveAttribute(const std::string& attr) override;
 
   void Detach();
 

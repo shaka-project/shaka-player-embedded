@@ -63,7 +63,7 @@ class Element : public ContainerNode {
                       const std::string& value);
   bool HasAttribute(const std::string& name) const;
   bool HasAttributeNS(const std::string& ns, const std::string& name) const;
-  void RemoveAttribute(const std::string& attr);
+  virtual void RemoveAttribute(const std::string& attr);
   void RemoveAttributeNS(const std::string& ns, const std::string& attr);
 
   std::vector<RefPtr<Attr>> attributes() const;
