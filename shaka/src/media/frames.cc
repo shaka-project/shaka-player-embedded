@@ -19,6 +19,52 @@
 namespace shaka {
 namespace media {
 
+std::ostream& operator<<(std::ostream& os, PixelFormat format) {
+  switch (format) {
+#define CASE(F)        \
+  case PixelFormat::F: \
+    return os << #F
+    CASE(YUV420P);
+    CASE(NV12);
+    CASE(RGB24);
+    CASE(VideoToolbox);
+#undef CASE
+
+    default:
+      if (format >= PixelFormat::AppFormat1)
+        return os << "AppFormat(" << static_cast<int>(format) << ")";
+      else
+        return os << "Unknown(" << static_cast<int>(format) << ")";
+  }
+}
+
+std::ostream& operator<<(std::ostream& os, SampleFormat format) {
+  switch (format) {
+#define CASE(F)         \
+  case SampleFormat::F: \
+    return os << #F
+    CASE(PackedU8);
+    CASE(PackedS16);
+    CASE(PackedS32);
+    CASE(PackedS64);
+    CASE(PackedFloat);
+    CASE(PackedDouble);
+    CASE(PlanarU8);
+    CASE(PlanarS16);
+    CASE(PlanarS32);
+    CASE(PlanarS64);
+    CASE(PlanarFloat);
+    CASE(PlanarDouble);
+#undef CASE
+
+    default:
+      if (format >= SampleFormat::AppFormat1)
+        return os << "AppFormat(" << static_cast<int>(format) << ")";
+      else
+        return os << "Unknown(" << static_cast<int>(format) << ")";
+  }
+}
+
 bool IsPlanarFormat(variant<PixelFormat, SampleFormat> format) {
   if (holds_alternative<PixelFormat>(format)) {
     switch (get<PixelFormat>(format)) {

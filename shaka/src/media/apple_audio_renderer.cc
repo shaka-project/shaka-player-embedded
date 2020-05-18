@@ -88,7 +88,7 @@ bool SetSampleFormatFields(SampleFormat format,
       return true;
 
     default:
-      LOG(DFATAL) << "Unknown sample format: " << static_cast<uint8_t>(format);
+      LOG(DFATAL) << "Unsupported sample format: " << format;
       return false;
   }
 }

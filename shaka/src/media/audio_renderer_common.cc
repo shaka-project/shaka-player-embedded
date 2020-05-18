@@ -55,8 +55,7 @@ uint8_t BytesPerSample(std::shared_ptr<DecodedFrame> frame) {
     case SampleFormat::PlanarDouble:
       return 8;
     default:
-      LOG(DFATAL) << "Unsupported sample format: "
-                  << static_cast<int>(get<SampleFormat>(frame->format));
+      LOG(DFATAL) << "Unsupported sample format: " << frame->format;
       return 0;
   }
 }

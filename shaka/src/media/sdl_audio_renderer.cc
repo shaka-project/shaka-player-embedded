@@ -57,8 +57,7 @@ bool SDLFormatFromShaka(variant<PixelFormat, SampleFormat> format,
       return false;
 
     default:
-      LOG(DFATAL) << "Unknown audio sample format: "
-                  << static_cast<int>(get<SampleFormat>(format));
+      LOG(DFATAL) << "Unknown audio sample format: " << format;
       return false;
   }
 }

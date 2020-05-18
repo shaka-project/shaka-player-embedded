@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_FRAMES_H_
 #define SHAKA_EMBEDDED_MEDIA_FRAMES_H_
 
+#include <iostream>
 #include <vector>
 
 #include "../eme/configuration.h"
@@ -99,6 +100,8 @@ enum class PixelFormat : uint8_t {
   //}
 };
 
+SHAKA_EXPORT std::ostream& operator<<(std::ostream& os, PixelFormat format);
+
 /**
  * Defines possible binary formats of raw audio data.
  *
@@ -151,6 +154,16 @@ enum class SampleFormat : uint8_t {
   AppFormat4 = 131,
   //}
 };
+
+SHAKA_EXPORT std::ostream& operator<<(std::ostream& os, SampleFormat format);
+
+inline std::ostream& operator<<(std::ostream& os,
+                                variant<PixelFormat, SampleFormat> format) {
+  if (holds_alternative<PixelFormat>(format))
+    return os << get<PixelFormat>(format);
+  else
+    return os << get<SampleFormat>(format);
+}
 
 /** @return Whether the given format is a planar format. */
 SHAKA_EXPORT bool IsPlanarFormat(variant<PixelFormat, SampleFormat> format);

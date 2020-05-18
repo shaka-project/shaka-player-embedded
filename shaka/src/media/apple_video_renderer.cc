@@ -74,8 +74,7 @@ CGImageRef AppleVideoRenderer::Impl::Render(
       return RenderPlanarFrame(frame);
 
     default:
-      LOG(DFATAL) << "Unsupported pixel format: "
-                  << static_cast<uint8_t>(get<PixelFormat>(frame->format));
+      LOG(DFATAL) << "Unsupported pixel format: " << frame->format;
       return nullptr;
   }
 }
