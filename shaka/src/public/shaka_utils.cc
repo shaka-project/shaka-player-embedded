@@ -56,6 +56,7 @@ void FitVideoToRegion(ShakaRect<uint32_t> frame, ShakaRect<uint32_t> bounds,
       // Get the width based on the height and the display aspect ratio.
       dest->w = std::min(bounds.w, (bounds.h * aspect_ratio).truncate());
       dest->h = std::min(bounds.h, (bounds.w / aspect_ratio).truncate());
+      DCHECK(dest->w == bounds.w || dest->h == bounds.h);
       break;
     }
 

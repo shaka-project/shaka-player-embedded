@@ -15,7 +15,10 @@
 #ifndef SHAKA_EMBEDDED_UTILS_H_
 #define SHAKA_EMBEDDED_UTILS_H_
 
+#include <assert.h>
+
 #include <iostream>
+#include <limits>
 #include <string>
 #include <type_traits>
 
@@ -76,9 +79,17 @@ struct SHAKA_EXPORT ShakaRect {
   }
 };
 
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const ShakaRect<T>& rect) {
+  return os << "{x=" << rect.x << ",y=" << rect.y << ",w=" << rect.w << ",h="
+            << rect.h << "}";
+}
+
 /**
  * Defines a rational number (i.e. a fraction) in a way to reduce the number
- * of rounding errors.
+ * of rounding errors.  Using the constructor or operators results in a reduced
+ * fraction, to reduce the chances of overflow.  Since this uses a fixed-sized
+ * integer, this can still cause overflow with large numbers.
  */
 template <typename T>
 struct SHAKA_EXPORT Rational final {
@@ -89,29 +100,61 @@ struct SHAKA_EXPORT Rational final {
   using enable_if_num =
       typename std::enable_if<std::is_arithmetic<U>::value>::type;
 
- public:
-  Rational() = default;
-  Rational(T num, T den) : numerator(num), denominator(den) {}
-
-  T truncate() const {
-    return numerator / denominator;
-  }
-  Rational<T> inverse() const {
-    return {denominator, numerator};
-  }
-  Rational<T> reduce() const {
-    T a = numerator;
-    T b = denominator;
-    if (a == 0 || b == 0)
-      return {0, 0};
-
+  static T gcd(T a, T b) {
     // Calculate the gcd(a, b) using the euclidean algorithm.
     while (b != 0) {
       T temp = a % b;
       a = b;
       b = temp;
     }
-    return {numerator / a, denominator / a};
+    return a;
+  }
+
+  /** Calculates the gcd(num, den) and divides each number by that. */
+  static void reduce(T* num, T* den) {
+    T a = gcd(*num, *den);
+    *num /= a;
+    *den /= a;
+  }
+
+  /**
+   * Creates a rational from the result of multiplying two rational numbers.
+   * This reduces the numbers separately to reduce the chances of overflow.
+   *
+   * Ret = (num1 * num2) / (den1 * den2).
+   */
+  Rational(T num1, T num2, T den1, T den2) {
+    if (num1 == 0 || num2 == 0 || den1 == 0 || den2 == 0) {
+      numerator = denominator = 0;
+      return;
+    }
+
+    reduce(&num1, &den1);
+    reduce(&num1, &den2);
+    reduce(&num2, &den1);
+    reduce(&num2, &den2);
+
+    // Avoid errors later by just crashing on overflow.
+    // TODO: Consider converting to float and rounding if this would overflow.
+    assert(std::numeric_limits<T>::max() / num1 >= num2);
+    assert(std::numeric_limits<T>::max() / den1 >= den2);
+
+    // These should now be relatively prime since any common prime factor should
+    // have been removed in the reductions above.
+    numerator = num1 * num2;
+    denominator = den1 * den2;
+    assert(gcd(numerator, denominator) == 1);
+  }
+
+ public:
+  Rational() = default;
+  Rational(T num, T den) : Rational(num, 1, den, 1) {}
+
+  T truncate() const {
+    return numerator / denominator;
+  }
+  Rational<T> inverse() const {
+    return {denominator, numerator};
   }
 
   operator bool() const {
@@ -123,9 +166,7 @@ struct SHAKA_EXPORT Rational final {
 
   template <typename U>
   bool operator==(const Rational<U>& other) const {
-    const Rational<T> a = reduce();
-    const Rational<U> b = other.reduce();
-    return a.numerator == b.numerator && a.denominator == b.denominator;
+    return numerator == other.numerator && denominator == other.denominator;
   }
 
   template <typename U>
@@ -135,22 +176,22 @@ struct SHAKA_EXPORT Rational final {
 
   template <typename U>
   Rational<common<U>> operator*(const Rational<U>& other) const {
-    return {numerator * other.numerator, denominator * other.denominator};
+    return {numerator, other.numerator, denominator, other.denominator};
   }
 
   template <typename U, typename = enable_if_num<U>>
   Rational<common<U>> operator*(U other) const {
-    return {numerator * other, denominator};
+    return {numerator, other, denominator, 1};
   }
 
   template <typename U>
   Rational<common<U>> operator/(const Rational<U>& other) const {
-    return {numerator * other.denominator, denominator * other.numerator};
+    return {numerator, other.denominator, denominator, other.numerator};
   }
 
   template <typename U, typename = enable_if_num<U>>
   Rational<common<U>> operator/(U other) const {
-    return {numerator, denominator * other};
+    return {numerator, 1, denominator, other};
   }
 
   T numerator;
@@ -168,7 +209,7 @@ template <typename T, typename U, typename =
       typename std::enable_if<std::is_arithmetic<T>::value>::type>
 Rational<typename std::common_type<T, U>::type> operator*(
     T a, const Rational<U>& b) {
-  return {a * b.numerator, b.denominator};
+  return Rational<T>{a, 1} * b;
 }
 
 // operator/(T, Rational<T>);

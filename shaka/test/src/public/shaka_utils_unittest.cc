@@ -175,4 +175,11 @@ TEST(ShakaUtilsTest, Rational) {
   EXPECT_EQ(two.inverse(), half);
 }
 
+TEST(ShakaUtilsTest, Rational_AvoidsOverflow) {
+  Rational<uint8_t> first(16 * 11, 7 * 5);
+  Rational<uint8_t> second(3 * 7, 8);
+
+  EXPECT_EQ(first * second, Rational<uint8_t>(2 * 3 * 11, 5));
+}
+
 }  // namespace shaka
