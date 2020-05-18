@@ -166,7 +166,7 @@ TEST_F(DecoderIntegration, CanDecodeWithAdaptation) {
 }
 
 
-class DecoderDecryptIntegration : public testing::TestWithParam<const char*> {
+class DecoderDecryptIntegration : public testing::TestWithParam<std::string> {
  protected:
   DecoderDecryptIntegration() : cdm_(nullptr) {
     cdm_.LoadKeyForTesting({0xab, 0xba, 0x27, 0x1e, 0x8b, 0xcf, 0x55, 0x2b,
@@ -194,11 +194,19 @@ TEST_P(DecoderDecryptIntegration, CanDecryptFrames) {
 
 INSTANTIATE_TEST_CASE_P(SupportsNormalCase, DecoderDecryptIntegration,
                         testing::Values("encrypted_low.mp4",
-                                        "encrypted_low.webm"));
+                                        "encrypted_low.webm"),
+                        [](const testing::TestParamInfo<std::string>& info) {
+                          // mp4/webm
+                          return info.param.substr(14);
+                        });
 
 INSTANTIATE_TEST_CASE_P(SupportsUnusualCases, DecoderDecryptIntegration,
                         testing::Values("encrypted_low_cenc.mp4",
-                                        "encrypted_low_cbcs.mp4"));
+                                        "encrypted_low_cbcs.mp4"),
+                        [](const testing::TestParamInfo<std::string>& info) {
+                          // cenc/cbcs
+                          return info.param.substr(14, 4);
+                        });
 
 }  // namespace media
 }  // namespace shaka
