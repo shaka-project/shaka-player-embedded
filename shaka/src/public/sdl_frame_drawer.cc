@@ -15,6 +15,9 @@
 #include "shaka/sdl_frame_drawer.h"
 
 #include <SDL2/SDL.h>
+#ifdef __APPLE__
+#  include <VideoToolbox/VideoToolbox.h>
+#endif
 
 #include <list>
 #include <unordered_set>
@@ -52,6 +55,9 @@ Uint32 SdlPixelFormatFromPublic(
     variant<media::PixelFormat, media::SampleFormat> format) {
   switch (get<media::PixelFormat>(format)) {
 #if SDL_VERSION_ATLEAST(2, 0, 4)
+#  ifdef __APPLE__
+    case media::PixelFormat::VideoToolbox:
+#  endif
     case media::PixelFormat::NV12:
       return SDL_PIXELFORMAT_NV12;
 #endif
@@ -61,6 +67,7 @@ Uint32 SdlPixelFormatFromPublic(
       return SDL_PIXELFORMAT_RGB24;
 
     default:
+      LOG(DFATAL) << "Unsupported pixel format: " << format;
       return SDL_PIXELFORMAT_UNKNOWN;
   }
 }
@@ -87,7 +94,7 @@ class SdlFrameDrawer::Impl {
             info.texture_formats + info.num_texture_formats);
       }
       if (texture_formats_.empty()) {
-        LOG(ERROR) << "No supported texture formats";
+        LOG(DFATAL) << "No supported texture formats";
       }
     }
   }
@@ -123,17 +130,52 @@ class SdlFrameDrawer::Impl {
       if (SDL_UpdateYUVTexture(
               texture, nullptr, frame_data[0], frame_linesize[0], frame_data[1],
               frame_linesize[1], frame_data[2], frame_linesize[2]) < 0) {
-        LOG(ERROR) << "Error updating texture: " << SDL_GetError();
+        LOG(DFATAL) << "Error updating texture: " << SDL_GetError();
         return false;
       }
 #if SDL_VERSION_ATLEAST(2, 0, 4)
+#  ifdef __APPLE__
+    } else if (get<media::PixelFormat>(frame->format) ==
+               media::PixelFormat::VideoToolbox) {
+      auto* pix_buf = reinterpret_cast<CVPixelBufferRef>(
+          const_cast<uint8_t*>(frame->data[0]));
+      uint8_t* pixels;
+      int pitch;
+      if (SDL_LockTexture(texture, nullptr, reinterpret_cast<void**>(&pixels),
+                          &pitch) < 0) {
+        LOG(DFATAL) << "Error locking texture: " << SDL_GetError();
+        return false;
+      }
+      if (static_cast<size_t>(pitch) !=
+              CVPixelBufferGetBytesPerRowOfPlane(pix_buf, 0) ||
+          !CVPixelBufferIsPlanar(pix_buf) ||
+          CVPixelBufferGetPlaneCount(pix_buf) != 2) {
+        LOG(DFATAL) << "Invalid pixel buffer";
+        SDL_UnlockTexture(texture);
+        return false;
+      }
+      if (CVPixelBufferLockBaseAddress(pix_buf, kCVPixelBufferLock_ReadOnly) !=
+          0) {
+        LOG(DFATAL) << "Error locking pixel_buffer";
+        SDL_UnlockTexture(texture);
+        return false;
+      }
+
+      const size_t size0 = pitch * frame->stream_info->height;
+      memcpy(pixels, CVPixelBufferGetBaseAddressOfPlane(pix_buf, 0), size0);
+      memcpy(pixels + size0, CVPixelBufferGetBaseAddressOfPlane(pix_buf, 1),
+             size0 / 2);
+
+      CVPixelBufferUnlockBaseAddress(pix_buf, kCVPixelBufferLock_ReadOnly);
+      SDL_UnlockTexture(texture);
+#  endif
     } else if (sdl_pix_fmt == SDL_PIXELFORMAT_NV12 ||
                sdl_pix_fmt == SDL_PIXELFORMAT_NV21) {
       uint8_t* pixels;
       int pitch;
       if (SDL_LockTexture(texture, nullptr, reinterpret_cast<void**>(&pixels),
                           &pitch) < 0) {
-        LOG(ERROR) << "Error locking texture: " << SDL_GetError();
+        LOG(DFATAL) << "Error locking texture: " << SDL_GetError();
         return false;
       }
 
@@ -164,7 +206,7 @@ class SdlFrameDrawer::Impl {
     } else {
       if (SDL_UpdateTexture(texture, nullptr, frame_data[0],
                             frame_linesize[0]) < 0) {
-        LOG(ERROR) << "Error updating texture: " << SDL_GetError();
+        LOG(DFATAL) << "Error updating texture: " << SDL_GetError();
         return false;
       }
     }
@@ -198,7 +240,7 @@ class SdlFrameDrawer::Impl {
     if (texture)
       textures_.emplace_back(texture, pixel_format, width, height);
     else
-      LOG(ERROR) << "Error creating texture: " << SDL_GetError();
+      LOG(DFATAL) << "Error creating texture: " << SDL_GetError();
 
     return texture;
   }
