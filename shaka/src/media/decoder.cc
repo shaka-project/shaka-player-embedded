@@ -16,8 +16,8 @@
 
 #if defined(HAS_FFMPEG_DECODER)
 #  include "src/media/ffmpeg/ffmpeg_decoder.h"
-#elif defined(HAS_IOS_DECODER)
-#  include "src/media/ios/ios_decoder.h"
+#elif defined(HAS_APPLE_DECODER)
+#  include "src/media/apple/apple_decoder.h"
 #endif
 
 namespace shaka {
@@ -31,8 +31,8 @@ Decoder::~Decoder() {}
 std::unique_ptr<Decoder> Decoder::CreateDefaultDecoder() {
 #if defined(HAS_FFMPEG_DECODER)
   return std::unique_ptr<Decoder>(new ffmpeg::FFmpegDecoder);
-#elif defined(HAS_IOS_DECODER)
-  return std::unique_ptr<Decoder>(new ios::IosDecoder);
+#elif defined(HAS_APPLE_DECODER)
+  return std::unique_ptr<Decoder>(new apple::AppleDecoder);
 #else
   return nullptr;
 #endif

@@ -80,8 +80,9 @@ assert(!(js_engine == "v8" && is_ios), "Cannot use V8 on iOS")
 assert(!(js_engine == "jsc"  && !(is_ios || is_mac)),
        "Can only use JSC on Mac and iOS")
 
-assert(decoder != "ios" || is_ios, "Can only use iOS decoder on iOS")
-assert(decoder == "ffmpeg" || decoder == "ios" || decoder == "none",
+assert(decoder != "apple" || is_ios || is_mac,
+       "Can only use Apple decoder on Mac/iOS")
+assert(decoder == "ffmpeg" || decoder == "apple" || decoder == "none",
        "Unknown value for 'decoder'")
 
 
@@ -178,8 +179,8 @@ config("internal_config") {
   }
   if (decoder == "ffmpeg") {
     defines += [ "HAS_FFMPEG_DECODER" ]
-  } else if (decoder == "ios") {
-    defines += [ "HAS_IOS_DECODER" ]
+  } else if (decoder == "apple") {
+    defines += [ "HAS_APPLE_DECODER" ]
   }
   if (has_demuxer) {
     defines += [ "HAS_DEMUXER" ]
@@ -759,12 +760,12 @@ source_set("internal_sources") {
       "shaka/src/media/ffmpeg/ffmpeg_decoder.cc",
       "shaka/src/media/ffmpeg/ffmpeg_decoder.h",
     ]
-  } else if (decoder == "ios") {
+  } else if (decoder == "apple") {
     sources += [
-      "shaka/src/media/ios/ios_decoded_frame.cc",
-      "shaka/src/media/ios/ios_decoded_frame.h",
-      "shaka/src/media/ios/ios_decoder.cc",
-      "shaka/src/media/ios/ios_decoder.h",
+      "shaka/src/media/apple/apple_decoded_frame.cc",
+      "shaka/src/media/apple/apple_decoded_frame.h",
+      "shaka/src/media/apple/apple_decoder.cc",
+      "shaka/src/media/apple/apple_decoder.h",
     ]
   }
   if (has_demuxer) {

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SHAKA_EMBEDDED_MEDIA_IOS_IOS_DECODED_FRAME_H_
-#define SHAKA_EMBEDDED_MEDIA_IOS_IOS_DECODED_FRAME_H_
+#ifndef SHAKA_EMBEDDED_MEDIA_APPLE_DECODED_FRAME_H_
+#define SHAKA_EMBEDDED_MEDIA_APPLE_DECODED_FRAME_H_
 
 #include <CoreVideo/CoreVideo.h>
 
@@ -25,27 +25,27 @@
 
 namespace shaka {
 namespace media {
-namespace ios {
+namespace apple {
 
 /** This defines a single decoded media frame. */
-class IosDecodedFrame final : public DecodedFrame {
+class AppleDecodedFrame final : public DecodedFrame {
  public:
   // An audio frame.
-  IosDecodedFrame(std::shared_ptr<const StreamInfo> stream, double time,
-                  double duration, SampleFormat format, uint32_t sample_count,
-                  std::vector<uint8_t> buffer);
+  AppleDecodedFrame(std::shared_ptr<const StreamInfo> stream, double time,
+                    double duration, SampleFormat format, uint32_t sample_count,
+                    std::vector<uint8_t> buffer);
   // A video frame.
-  IosDecodedFrame(std::shared_ptr<const StreamInfo> stream, double time,
-                  double duration, CVImageBufferRef img);
-  ~IosDecodedFrame() override;
+  AppleDecodedFrame(std::shared_ptr<const StreamInfo> stream, double time,
+                    double duration, CVImageBufferRef img);
+  ~AppleDecodedFrame() override;
 
  private:
   util::CFRef<CVImageBufferRef> img_;
   std::vector<uint8_t> data_;
 };
 
-}  // namespace ios
+}  // namespace apple
 }  // namespace media
 }  // namespace shaka
 
-#endif  // SHAKA_EMBEDDED_MEDIA_IOS_IOS_DECODED_FRAME_H_
+#endif  // SHAKA_EMBEDDED_MEDIA_APPLE_DECODED_FRAME_H_

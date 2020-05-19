@@ -190,16 +190,20 @@ class DecoderDecryptIntegration : public testing::TestWithParam<std::string> {
 };
 
 TEST_P(DecoderDecryptIntegration, CanDecryptFrames) {
-  const std::string container =
-      EndsWith(GetParam(), ".webm") ? "video/webm" : "video/mp4";
+  const std::string content_type = EndsWith(GetParam(), ".webm")
+                                       ? "video/webm; codecs=\"vp09\""
+                                       : "video/mp4; codecs=\"avc1\"";
   auto* factory = DemuxerFactory::GetFactory();
-  if (!factory || !factory->IsTypeSupported(container))
+  auto decoder = Decoder::CreateDefaultDecoder();
+  MediaDecodingConfiguration config;
+  config.video.content_type = content_type;
+  if (!factory || !factory->IsTypeSupported(content_type) ||
+      !decoder->DecodingInfo(config).supported)
     GTEST_SKIP();
 
   std::vector<std::shared_ptr<EncodedFrame>> frames;
   ASSERT_NO_FATAL_FAILURE(DemuxFiles({GetParam()}, &frames));
 
-  auto decoder = Decoder::CreateDefaultDecoder();
   DecodeFramesAndCheckHashes(kHashFile, frames, decoder.get(), &cdm_);
 }
 

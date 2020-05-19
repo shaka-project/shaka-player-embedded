@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SHAKA_EMBEDDED_MEDIA_IOS_IOS_DECODER_H_
-#define SHAKA_EMBEDDED_MEDIA_IOS_IOS_DECODER_H_
+#ifndef SHAKA_EMBEDDED_MEDIA_APPLE_DECODER_H_
+#define SHAKA_EMBEDDED_MEDIA_APPLE_DECODER_H_
 
 #include <AudioToolbox/AudioToolbox.h>
 #include <VideoToolbox/VideoToolbox.h>
@@ -27,21 +27,21 @@
 #include "shaka/media/frames.h"
 #include "shaka/media/stream_info.h"
 #include "src/debug/mutex.h"
-#include "src/media/ios/ios_decoded_frame.h"
+#include "src/media/apple/apple_decoded_frame.h"
 #include "src/util/cfref.h"
 
 namespace shaka {
 namespace media {
-namespace ios {
+namespace apple {
 
 /**
  * An implementation of the Decoder type that uses AudioToolbox/VideoToolbox
- * decoder to decode frames.  This produces IosDecodedFrame objects.
+ * decoder to decode frames.  This produces AppleDecodedFrame objects.
  */
-class IosDecoder : public Decoder {
+class AppleDecoder : public Decoder {
  public:
-  IosDecoder();
-  ~IosDecoder() override;
+  AppleDecoder();
+  ~AppleDecoder() override;
 
   MediaCapabilitiesInfo DecodingInfo(
       const MediaDecodingConfiguration& config) const override;
@@ -89,8 +89,8 @@ class IosDecoder : public Decoder {
   AudioStreamPacketDescription audio_desc_;
 };
 
-}  // namespace ios
+}  // namespace apple
 }  // namespace media
 }  // namespace shaka
 
-#endif  // SHAKA_EMBEDDED_MEDIA_IOS_IOS_DECODER_H_
+#endif  // SHAKA_EMBEDDED_MEDIA_APPLE_DECODER_H_

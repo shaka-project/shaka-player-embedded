@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/media/ios/ios_decoder.h"
+#include "src/media/apple/apple_decoder.h"
 
 #include <algorithm>
 #include <unordered_map>
 #include <utility>
 
-#include "src/media/ios/ios_decoded_frame.h"
 #include "src/media/media_utils.h"
 #include "src/util/dynamic_buffer.h"
 #include "src/util/utils.h"
@@ -36,7 +35,7 @@
 
 namespace shaka {
 namespace media {
-namespace ios {
+namespace apple {
 
 namespace {
 
@@ -160,14 +159,17 @@ util::CFRef<CFMutableDictionaryRef> CreateBufferAttributes(int32_t width,
   CFDictionarySetValue(ret, kCVPixelBufferPixelFormatTypeKey, pix_fmt);
   CFDictionarySetValue(ret, kCVPixelBufferIOSurfacePropertiesKey,
                        surface_props);
-  CFDictionarySetValue(ret, kCVPixelBufferOpenGLESCompatibilityKey,
+  CFDictionarySetValue(ret, kCVPixelBufferCGImageCompatibilityKey,
                        kCFBooleanTrue);
 
   return ret;
 }
 
 std::vector<uint8_t> MakeH264ExtraData(const std::string& codec) {
-  long profile = strtol(codec.substr(5).c_str(), nullptr, 16);  // NOLINT
+  long profile = 0;  // NOLINT
+  auto pos = codec.find('.');
+  if (pos != std::string::npos)
+    profile = strtol(codec.substr(pos).c_str(), nullptr, 16);
   if (profile == 0)
     profile = 0x42001e;
 
@@ -376,13 +378,13 @@ OSStatus CreateAudioConverter(uint32_t sample_rate, uint32_t channel_count,
 
 }  // namespace
 
-IosDecoder::IosDecoder()
-    : mutex_("IosDecoder"), at_session_(nullptr, &AudioConverterDispose) {}
-IosDecoder::~IosDecoder() {
+AppleDecoder::AppleDecoder()
+    : mutex_("AppleDecoder"), at_session_(nullptr, &AudioConverterDispose) {}
+AppleDecoder::~AppleDecoder() {
   ResetDecoder();
 }
 
-MediaCapabilitiesInfo IosDecoder::DecodingInfo(
+MediaCapabilitiesInfo AppleDecoder::DecodingInfo(
     const MediaDecodingConfiguration& config) const {
   if (config.video.content_type.empty() == config.audio.content_type.empty())
     return MediaCapabilitiesInfo();
@@ -420,7 +422,7 @@ MediaCapabilitiesInfo IosDecoder::DecodingInfo(
     }
 
     VTDecompressionOutputCallbackRecord cb = {
-        .decompressionOutputCallback = &IosDecoder::OnNewVideoFrame,
+        .decompressionOutputCallback = &AppleDecoder::OnNewVideoFrame,
         .decompressionOutputRefCon = nullptr,
     };
     util::CFRef<CFDictionaryRef> decoder_config =
@@ -467,12 +469,12 @@ MediaCapabilitiesInfo IosDecoder::DecodingInfo(
   return ret;
 }
 
-void IosDecoder::ResetDecoder() {
+void AppleDecoder::ResetDecoder() {
   std::unique_lock<Mutex> lock(mutex_);
   ResetInternal();
 }
 
-MediaStatus IosDecoder::Decode(
+MediaStatus AppleDecoder::Decode(
     std::shared_ptr<EncodedFrame> input, const eme::Implementation* eme,
     std::vector<std::shared_ptr<DecodedFrame>>* frames,
     std::string* extra_info) {
@@ -495,9 +497,10 @@ MediaStatus IosDecoder::Decode(
   }
 
   const bool is_video = input->stream_info->is_video;
-  auto init =
-      is_video ? &IosDecoder::InitVideoDecoder : &IosDecoder::InitAudioDecoder;
-  auto decode = is_video ? &IosDecoder::DecodeVideo : &IosDecoder::DecodeAudio;
+  auto init = is_video ? &AppleDecoder::InitVideoDecoder
+                       : &AppleDecoder::InitAudioDecoder;
+  auto decode =
+      is_video ? &AppleDecoder::DecodeVideo : &AppleDecoder::DecodeAudio;
   auto has_session = is_video ? !!vt_session_ : !!at_session_;
 
   if (!has_session || input->stream_info != decoder_stream_info_) {
@@ -536,11 +539,11 @@ MediaStatus IosDecoder::Decode(
   return ret ? MediaStatus::Success : MediaStatus::FatalError;
 }
 
-void IosDecoder::OnNewVideoFrame(void* user, void* frameUser, OSStatus status,
-                                 VTDecodeInfoFlags /* flags */,
-                                 CVImageBufferRef buffer, CMTime pts,
-                                 CMTime duration) {
-  auto* decoder = reinterpret_cast<IosDecoder*>(user);
+void AppleDecoder::OnNewVideoFrame(void* user, void* frameUser, OSStatus status,
+                                   VTDecodeInfoFlags /* flags */,
+                                   CVImageBufferRef buffer, CMTime pts,
+                                   CMTime duration) {
+  auto* decoder = reinterpret_cast<AppleDecoder*>(user);
   auto* frame = decoder->input_;
   if (status != 0)
     return;
@@ -559,16 +562,16 @@ void IosDecoder::OnNewVideoFrame(void* user, void* frameUser, OSStatus status,
   else
     durationSec = frame ? frame->duration : 0;
 
-  decoder->output_->emplace_back(new IosDecodedFrame(
+  decoder->output_->emplace_back(new AppleDecodedFrame(
       decoder->decoder_stream_info_, time, durationSec, buffer));
 }
 
-OSStatus IosDecoder::AudioInputCallback(AudioConverterRef /* conv */,
-                                        UInt32* num_packets,
-                                        AudioBufferList* data,
-                                        AudioStreamPacketDescription** desc,
-                                        void* user) {
-  auto* decoder = reinterpret_cast<IosDecoder*>(user);
+OSStatus AppleDecoder::AudioInputCallback(AudioConverterRef /* conv */,
+                                          UInt32* num_packets,
+                                          AudioBufferList* data,
+                                          AudioStreamPacketDescription** desc,
+                                          void* user) {
+  auto* decoder = reinterpret_cast<AppleDecoder*>(user);
   if (!decoder->input_) {
     *num_packets = 0;
     return kNoMoreDataError;
@@ -592,7 +595,7 @@ OSStatus IosDecoder::AudioInputCallback(AudioConverterRef /* conv */,
   return 0;
 }
 
-void IosDecoder::ResetInternal() {
+void AppleDecoder::ResetInternal() {
   if (vt_session_) {
     VTDecompressionSessionInvalidate(vt_session_);
     vt_session_ = nullptr;
@@ -600,8 +603,8 @@ void IosDecoder::ResetInternal() {
   at_session_.reset();
 }
 
-bool IosDecoder::DecodeVideo(const uint8_t* data, size_t data_size,
-                             std::string* extra_info) {
+bool AppleDecoder::DecodeVideo(const uint8_t* data, size_t data_size,
+                               std::string* extra_info) {
   OSStatus status;
   if (data) {
     util::CFRef<CMSampleBufferRef> sample =
@@ -630,8 +633,8 @@ bool IosDecoder::DecodeVideo(const uint8_t* data, size_t data_size,
   return true;
 }
 
-bool IosDecoder::DecodeAudio(const uint8_t* data, size_t data_size,
-                             std::string* extra_info) {
+bool AppleDecoder::DecodeAudio(const uint8_t* data, size_t data_size,
+                               std::string* extra_info) {
   if (!data)
     return true;
 
@@ -651,8 +654,8 @@ bool IosDecoder::DecodeAudio(const uint8_t* data, size_t data_size,
     UInt32 output_size = kAudioSampleCount;
 
     status = AudioConverterFillComplexBuffer(
-        at_session_.get(), &IosDecoder::AudioInputCallback, this, &output_size,
-        &output, nullptr);
+        at_session_.get(), &AppleDecoder::AudioInputCallback, this,
+        &output_size, &output, nullptr);
     if (status != 0 && status != kNoMoreDataError) {
       LOG(DFATAL) << (*extra_info =
                           "Error converting audio: " + std::to_string(status));
@@ -667,17 +670,17 @@ bool IosDecoder::DecodeAudio(const uint8_t* data, size_t data_size,
   out_buffer.CopyDataTo(temp_buffer.data(), temp_buffer.size());
   const uint32_t sample_count =
       temp_buffer.size() / kAudioSampleSize / channel_count;
-  output_->emplace_back(new IosDecodedFrame(
+  output_->emplace_back(new AppleDecodedFrame(
       decoder_stream_info_, input->pts, input->duration, kAudioSampleFormat,
       sample_count, std::move(temp_buffer)));
 
   return true;
 }
 
-bool IosDecoder::InitVideoDecoder(std::shared_ptr<const StreamInfo> info,
-                                  std::string* extra_info) {
+bool AppleDecoder::InitVideoDecoder(std::shared_ptr<const StreamInfo> info,
+                                    std::string* extra_info) {
   VTDecompressionOutputCallbackRecord cb = {
-      .decompressionOutputCallback = &IosDecoder::OnNewVideoFrame,
+      .decompressionOutputCallback = &AppleDecoder::OnNewVideoFrame,
       .decompressionOutputRefCon = this,
   };
   util::CFRef<CFDictionaryRef> decoder_config =
@@ -702,8 +705,8 @@ bool IosDecoder::InitVideoDecoder(std::shared_ptr<const StreamInfo> info,
   return true;
 }
 
-bool IosDecoder::InitAudioDecoder(std::shared_ptr<const StreamInfo> info,
-                                  std::string* extra_info) {
+bool AppleDecoder::InitAudioDecoder(std::shared_ptr<const StreamInfo> info,
+                                    std::string* extra_info) {
   AudioConverterRef session = nullptr;
   auto status = CreateAudioConverter(info->sample_rate, info->channel_count,
                                      info->extra_data, &session);
@@ -724,6 +727,6 @@ bool IosDecoder::InitAudioDecoder(std::shared_ptr<const StreamInfo> info,
   return true;
 }
 
-}  // namespace ios
+}  // namespace apple
 }  // namespace media
 }  // namespace shaka

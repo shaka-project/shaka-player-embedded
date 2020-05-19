@@ -12,31 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/media/ios/ios_decoded_frame.h"
+#include "src/media/apple/apple_decoded_frame.h"
 
 #include <utility>
 
 namespace shaka {
 namespace media {
-namespace ios {
+namespace apple {
 
-IosDecodedFrame::IosDecodedFrame(std::shared_ptr<const StreamInfo> stream,
-                                 double time, double duration,
-                                 SampleFormat format, uint32_t sample_count,
-                                 std::vector<uint8_t> buffer)
+AppleDecodedFrame::AppleDecodedFrame(std::shared_ptr<const StreamInfo> stream,
+                                     double time, double duration,
+                                     SampleFormat format, uint32_t sample_count,
+                                     std::vector<uint8_t> buffer)
     : DecodedFrame(stream, time, time, duration, format, sample_count,
                    {buffer.data()}, {buffer.size()}),
       data_(std::move(buffer)) {}
 
-IosDecodedFrame::IosDecodedFrame(std::shared_ptr<const StreamInfo> stream,
-                                 double time, double duration,
-                                 CVImageBufferRef img)
+AppleDecodedFrame::AppleDecodedFrame(std::shared_ptr<const StreamInfo> stream,
+                                     double time, double duration,
+                                     CVImageBufferRef img)
     : DecodedFrame(stream, time, time, duration, PixelFormat::VideoToolbox, 0,
                    {reinterpret_cast<const uint8_t*>(img)}, {0}),
       img_(util::acquire_ref, img) {}
 
-IosDecodedFrame::~IosDecodedFrame() {}
+AppleDecodedFrame::~AppleDecodedFrame() {}
 
-}  // namespace ios
+}  // namespace apple
 }  // namespace media
 }  // namespace shaka

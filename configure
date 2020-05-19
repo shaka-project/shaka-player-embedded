@@ -680,7 +680,7 @@ def _CreateArgParser():
   media_parser.add_argument(
       '--ffmpeg-decoder', dest='decoder',
       action='store_const', const='ffmpeg',
-      help="On iOS, use the FFmpeg-based decoder instead of the iOS one.")
+      help="On Mac/iOS, use the FFmpeg-based decoder instead of the Apple one.")
   media_parser.add_argument(
       '--no-media-player', dest='has_media_player',
       action='store_false',
@@ -823,7 +823,7 @@ def _ParseArgs(args):
     parsed_args.sdl_video = False
 
   if not parsed_args.decoder:
-    parsed_args.decoder = 'ios' if is_ios else 'ffmpeg'
+    parsed_args.decoder = 'apple' if is_host_mac else 'ffmpeg'
 
   return parsed_args
 
