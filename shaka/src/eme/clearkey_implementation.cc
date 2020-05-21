@@ -215,10 +215,6 @@ ClearKeyImplementation::ClearKeyImplementation(ImplementationHelper* helper)
     : helper_(helper), cur_session_id_(0) {}
 ClearKeyImplementation::~ClearKeyImplementation() {}
 
-void ClearKeyImplementation::Destroy() {
-  delete this;
-}
-
 bool ClearKeyImplementation::GetExpiration(const std::string& session_id,
                                            int64_t* expiration) const {
   *expiration = -1;

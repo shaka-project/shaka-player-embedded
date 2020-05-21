@@ -49,13 +49,14 @@ MediaKeysRequirement ClearKeyImplementationFactory::PersistentState() const {
   return MediaKeysRequirement::NotAllowed;
 }
 
-Implementation* ClearKeyImplementationFactory::CreateImplementation(
+std::shared_ptr<Implementation>
+ClearKeyImplementationFactory::CreateImplementation(
     ImplementationHelper* helper,
     MediaKeysRequirement /* distinctive_identifier */,
     MediaKeysRequirement /* persistent_state */,
     const std::vector<std::string>& /* audio_robustness */,
     const std::vector<std::string>& /* video_robustness */) {
-  return new ClearKeyImplementation(helper);
+  return std::shared_ptr<Implementation>{new ClearKeyImplementation(helper)};
 }
 
 }  // namespace eme

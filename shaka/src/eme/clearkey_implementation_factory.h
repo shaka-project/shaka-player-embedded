@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_CLEARKEY_IMPLEMENTATION_FACTORY_H_
 #define SHAKA_EMBEDDED_MEDIA_CLEARKEY_IMPLEMENTATION_FACTORY_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -41,7 +42,7 @@ class ClearKeyImplementationFactory final : public ImplementationFactory {
 
   MediaKeysRequirement PersistentState() const override;
 
-  Implementation* CreateImplementation(
+  std::shared_ptr<Implementation> CreateImplementation(
       ImplementationHelper* helper,
       MediaKeysRequirement distinctive_identifier,
       MediaKeysRequirement persistent_state,

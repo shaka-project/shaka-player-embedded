@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_JS_EME_MEDIA_KEYS_H_
 #define SHAKA_EMBEDDED_JS_EME_MEDIA_KEYS_H_
 
+#include <memory>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -45,7 +46,8 @@ class MediaKeys : public BackingObject {
   DECLARE_TYPE_INFO(MediaKeys);
 
  public:
-  MediaKeys(ImplementationFactory* factory, const std::string& key_system,
+  MediaKeys(std::shared_ptr<ImplementationFactory> factory,
+            const std::string& key_system,
             const MediaKeySystemConfiguration& config);
 
   void Trace(memory::HeapTracer* tracer) const override;
@@ -58,7 +60,7 @@ class MediaKeys : public BackingObject {
 
   RefPtr<MediaKeySession> GetSession(const std::string& session_id);
   Implementation* GetCdm() const {
-    return implementation_;
+    return implementation_.get();
   }
 
   const std::string key_system;
@@ -68,8 +70,8 @@ class MediaKeys : public BackingObject {
   // TODO: These should be weak pointers.
   std::vector<Member<MediaKeySession>> sessions_;
   ImplementationHelperImpl helper_;
-  ImplementationFactory* factory_;
-  Implementation* implementation_;
+  std::shared_ptr<ImplementationFactory> factory_;
+  std::shared_ptr<Implementation> implementation_;
 };
 
 class MediaKeysFactory : public BackingObjectFactory<MediaKeys> {

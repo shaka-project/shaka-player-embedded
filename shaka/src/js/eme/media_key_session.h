@@ -16,6 +16,7 @@
 #define SHAKA_EMBEDDED_JS_EME_MEDIA_KEY_SESSION_H_
 
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <string>
 
@@ -24,7 +25,6 @@
 #include "shaka/eme/implementation_factory.h"
 
 #include "src/debug/mutex.h"
-#include "src/js/eme/implementation_helper_impl.h"
 #include "src/js/eme/media_key_system_configuration.h"
 #include "src/js/events/event_target.h"
 #include "src/mapping/backing_object_factory.h"
@@ -41,9 +41,9 @@ class MediaKeySession : public events::EventTarget {
   DECLARE_TYPE_INFO(MediaKeySession);
 
  public:
-  MediaKeySession(MediaKeySessionType type, ImplementationFactory* factory,
-                  Implementation* implementation,
-                  ImplementationHelperImpl* helper);
+  MediaKeySession(MediaKeySessionType type,
+                  std::shared_ptr<ImplementationFactory> factory,
+                  std::shared_ptr<Implementation> implementation);
 
   void Trace(memory::HeapTracer* tracer) const override;
 
@@ -67,9 +67,8 @@ class MediaKeySession : public events::EventTarget {
  private:
   mutable Mutex mutex_;
   std::string session_id_;
-  ImplementationFactory* const factory_;
-  Implementation* const implementation_;
-  ImplementationHelperImpl* const helper_;
+  const std::shared_ptr<ImplementationFactory> factory_;
+  const std::shared_ptr<Implementation> implementation_;
   const MediaKeySessionType type_;
   EmePromise closed_promise_;
 };

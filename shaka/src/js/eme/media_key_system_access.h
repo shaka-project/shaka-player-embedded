@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_JS_EME_MEDIA_KEY_SYSTEM_ACCESS_H_
 #define SHAKA_EMBEDDED_JS_EME_MEDIA_KEY_SYSTEM_ACCESS_H_
 
+#include <memory>
 #include <string>
 
 #include "shaka/eme/implementation_factory.h"
@@ -33,7 +34,7 @@ class MediaKeySystemAccess : public BackingObject {
  public:
   MediaKeySystemAccess(const std::string& key_system,
                        MediaKeySystemConfiguration config,
-                       ImplementationFactory* factory);
+                       std::shared_ptr<ImplementationFactory> factory);
 
   MediaKeySystemConfiguration GetConfiguration() const;
   Promise CreateMediaKeys();
@@ -42,7 +43,7 @@ class MediaKeySystemAccess : public BackingObject {
 
  private:
   const MediaKeySystemConfiguration config_;
-  ImplementationFactory* const factory_;
+  std::shared_ptr<ImplementationFactory> const factory_;
 };
 
 class MediaKeySystemAccessFactory

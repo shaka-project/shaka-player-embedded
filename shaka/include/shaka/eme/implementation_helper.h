@@ -70,7 +70,7 @@ class SHAKA_EXPORT ImplementationHelper {
   virtual void OnKeyStatusChange(const std::string& session_id) const = 0;
 
  protected:
-  virtual ~ImplementationHelper();
+  SHAKA_DECLARE_INTERFACE_METHODS(ImplementationHelper);
 };
 
 }  // namespace eme

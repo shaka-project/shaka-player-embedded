@@ -71,8 +71,10 @@ def GenerateFile(plugins, output):
         for plugin in plugins:
           for impl in plugin['implementations']:
             writer.Write('eme::ImplementationRegistry::AddImplementation(')
-            writer.Write('    "%s", new %s);', impl['key_system'],
-                         impl['factory_type'])
+            writer.Write('    "%s",', impl['key_system'])
+            writer.Write(
+                '    std::shared_ptr<eme::ImplementationFactory>{new %s});',
+                impl['factory_type'])
 
 
 def main(args):

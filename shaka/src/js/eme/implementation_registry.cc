@@ -27,28 +27,29 @@ namespace eme {
 namespace {
 
 BEGIN_ALLOW_COMPLEX_STATICS
-std::unordered_map<std::string, ImplementationFactory*> factories_;
+std::unordered_map<std::string, std::shared_ptr<ImplementationFactory>>
+    factories_;
 std::mutex mutex_;
 END_ALLOW_COMPLEX_STATICS
 
 }  // namespace
 
-void ImplementationRegistry::AddImplementation(const std::string& key_system,
-                                               ImplementationFactory* factory) {
+void ImplementationRegistry::AddImplementation(
+    const std::string& key_system,
+    std::shared_ptr<ImplementationFactory> factory) {
   std::unique_lock<std::mutex> lock(mutex_);
-
-  DCHECK(factories_.count(key_system) == 0)
-      << "There is already an implementation of " << key_system;
-  factories_.emplace(key_system, factory);
+  const auto it = factories_.find(key_system);
+  if (it != factories_.end())
+    it->second = factory;
+  else
+    factories_.emplace(key_system, factory);
 }
 
-ImplementationFactory* ImplementationRegistry::GetImplementation(
-    const std::string& key_system) {
+std::shared_ptr<ImplementationFactory>
+ImplementationRegistry::GetImplementation(const std::string& key_system) {
   std::unique_lock<std::mutex> lock(mutex_);
-
-  if (factories_.count(key_system) == 0)
-    return nullptr;
-  return factories_.at(key_system);
+  auto it = factories_.find(key_system);
+  return it != factories_.end() ? it->second : nullptr;
 }
 
 }  // namespace eme

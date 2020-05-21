@@ -89,13 +89,7 @@ class SHAKA_EXPORT Implementation {
   // changed without breaking ABI compatibility.  This includes adding
   // new virtual methods.
 
-  virtual ~Implementation();
-
-  /**
-   * Destroys the object and frees up any memory (including |*this|).  This will
-   * be called when the respective EME instances are garbage collected.
-   */
-  virtual void Destroy() = 0;
+  SHAKA_DECLARE_INTERFACE_METHODS(Implementation);
 
 
   /**

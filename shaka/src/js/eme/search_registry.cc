@@ -14,6 +14,7 @@
 
 #include "src/js/eme/search_registry.h"
 
+#include <memory>
 #include <utility>
 
 #include "shaka/eme/implementation.h"
@@ -41,7 +42,7 @@ bool SupportsContentType(const std::string& content_type) {
 }
 
 bool GetSupportedConfiguration(
-    const ImplementationFactory* implementation,
+    std::shared_ptr<ImplementationFactory> implementation,
     const MediaKeySystemConfiguration& candidate_config,
     MediaKeySystemConfiguration* supported_config) {
   // 1. Let accumulated configuration be a new MediaKeySystemConfiguration
@@ -274,7 +275,7 @@ void SearchRegistry::operator()() {
   // reject promise with a NotSupportedError. String comparison is
   // case-sensitive.
   // 2. Let implementation be the implementation of keySystem.
-  auto* implementation = ImplementationRegistry::GetImplementation(key_system_);
+  auto implementation = ImplementationRegistry::GetImplementation(key_system_);
   if (!implementation) {
     VLOG(1) << "No implementation found for: " << key_system_;
     promise_->RejectWith(JsError::DOMException(

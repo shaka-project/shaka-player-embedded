@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_EME_IMPLEMENTATION_REGISTRY_H_
 #define SHAKA_EMBEDDED_EME_IMPLEMENTATION_REGISTRY_H_
 
+#include <memory>
 #include <string>
 
 #include "../macros.h"
@@ -35,15 +36,14 @@ class ImplementationFactory;
 class SHAKA_EXPORT ImplementationRegistry final {
  public:
   /**
-   * Adds an EME implementation to the registry.  The caller retains ownership
-   * of the pointer and it must remain valid for the entire lifetime of the
-   * program.
+   * Adds an EME implementation to the registry.  This replaces any existing
+   * factory.  Existing Implementation instances will remain alive and in use.
    */
   static void AddImplementation(const std::string& key_system,
-                                ImplementationFactory* factory);
+                                std::shared_ptr<ImplementationFactory> factory);
 
   /** @returns The implementation of the given key system, or nullptr. */
-  static ImplementationFactory* GetImplementation(
+  static std::shared_ptr<ImplementationFactory> GetImplementation(
       const std::string& key_system);
 
  private:

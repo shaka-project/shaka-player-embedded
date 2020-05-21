@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_EME_IMPLEMENTATION_FACTORY_H_
 #define SHAKA_EMBEDDED_EME_IMPLEMENTATION_FACTORY_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -42,7 +43,7 @@ class SHAKA_EXPORT ImplementationFactory {
   // changed without breaking ABI compatibility.  This includes adding
   // new virtual methods.
 
-  virtual ~ImplementationFactory();
+  SHAKA_DECLARE_INTERFACE_METHODS(ImplementationFactory);
 
   /** @return Whether this implementation supports the given session type. */
   virtual bool SupportsSessionType(MediaKeySessionType type) const = 0;
@@ -76,7 +77,7 @@ class SHAKA_EXPORT ImplementationFactory {
    * @param video_robustness The video robustness requirements.
    * @return A new implementation instance, or nullptr if not supported.
    */
-  virtual Implementation* CreateImplementation(
+  virtual std::shared_ptr<Implementation> CreateImplementation(
       ImplementationHelper* helper,
       MediaKeysRequirement distinctive_identifier,
       MediaKeysRequirement persistent_state,

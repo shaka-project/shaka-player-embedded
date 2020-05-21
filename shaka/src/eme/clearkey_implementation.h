@@ -41,8 +41,6 @@ class ClearKeyImplementation final : public Implementation {
   explicit ClearKeyImplementation(ImplementationHelper* helper);
   ~ClearKeyImplementation() override;
 
-  void Destroy() override;
-
   bool GetExpiration(const std::string& session_id,
                      int64_t* expiration) const override;
 

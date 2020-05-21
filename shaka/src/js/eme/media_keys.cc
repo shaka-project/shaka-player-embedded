@@ -22,7 +22,7 @@ namespace shaka {
 namespace js {
 namespace eme {
 
-MediaKeys::MediaKeys(ImplementationFactory* factory,
+MediaKeys::MediaKeys(std::shared_ptr<ImplementationFactory> factory,
                      const std::string& key_system,
                      const MediaKeySystemConfiguration& config)
     : key_system(key_system), helper_(key_system, this), factory_(factory) {
@@ -41,12 +41,7 @@ MediaKeys::MediaKeys(ImplementationFactory* factory,
 }
 
 // \cond Doxygen_Skip
-MediaKeys::~MediaKeys() {
-  if (implementation_) {
-    implementation_->Destroy();
-    implementation_ = nullptr;
-  }
-}
+MediaKeys::~MediaKeys() {}
 // \endcond Doxygen_Skip
 
 void MediaKeys::Trace(memory::HeapTracer* tracer) const {
@@ -57,7 +52,7 @@ void MediaKeys::Trace(memory::HeapTracer* tracer) const {
 }
 
 bool MediaKeys::valid() const {
-  return implementation_;
+  return implementation_ != nullptr;
 }
 
 ExceptionOr<RefPtr<MediaKeySession>> MediaKeys::CreateSession(
@@ -71,7 +66,7 @@ ExceptionOr<RefPtr<MediaKeySession>> MediaKeys::CreateSession(
 
   std::unique_lock<std::mutex> lock(mutex_);
   RefPtr<MediaKeySession> session =
-      new MediaKeySession(type, factory_, implementation_, &helper_);
+      new MediaKeySession(type, factory_, implementation_);
   sessions_.emplace_back(session);
   return session;
 }

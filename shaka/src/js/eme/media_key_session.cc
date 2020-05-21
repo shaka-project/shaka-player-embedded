@@ -24,14 +24,12 @@ namespace js {
 namespace eme {
 
 MediaKeySession::MediaKeySession(MediaKeySessionType type,
-                                 ImplementationFactory* factory,
-                                 Implementation* implementation,
-                                 ImplementationHelperImpl* helper)
+                                 std::shared_ptr<ImplementationFactory> factory,
+                                 std::shared_ptr<Implementation> implementation)
     : closed(Promise::PendingPromise()),
       mutex_("MediaKeySession"),
       factory_(factory),
       implementation_(implementation),
-      helper_(helper),
       type_(type),
       closed_promise_(closed, /* has_value */ false) {
   AddListenerField(EventType::KeyStatusesChange, &on_key_statuses_change);

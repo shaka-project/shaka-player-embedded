@@ -20,11 +20,16 @@
 namespace shaka {
 namespace eme {
 
+// \cond Doxygen_Skip
+Implementation::Implementation() {}
 Implementation::~Implementation() {}
 
+ImplementationFactory::ImplementationFactory() {}
 ImplementationFactory::~ImplementationFactory() {}
 
+ImplementationHelper::ImplementationHelper() {}
 ImplementationHelper::~ImplementationHelper() {}
+// \endcond Doxygen_Skip
 
 }  // namespace eme
 }  // namespace shaka

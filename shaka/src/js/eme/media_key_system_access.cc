@@ -23,9 +23,9 @@ namespace shaka {
 namespace js {
 namespace eme {
 
-MediaKeySystemAccess::MediaKeySystemAccess(const std::string& key_system,
-                                           MediaKeySystemConfiguration config,
-                                           ImplementationFactory* factory)
+MediaKeySystemAccess::MediaKeySystemAccess(
+    const std::string& key_system, MediaKeySystemConfiguration config,
+    std::shared_ptr<ImplementationFactory> factory)
     : key_system(key_system), config_(std::move(config)), factory_(factory) {}
 
 // \cond Doxygen_Skip
