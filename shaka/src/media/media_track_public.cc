@@ -17,6 +17,8 @@
 namespace shaka {
 namespace media {
 
+class MediaTrack::Impl {};
+
 MediaTrack::MediaTrack(MediaTrackKind kind, const std::string& label,
                        const std::string& language, const std::string& id)
     : label(label), language(language), id(id), kind(kind), enabled_(false) {}

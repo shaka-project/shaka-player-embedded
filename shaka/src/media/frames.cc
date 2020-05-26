@@ -110,6 +110,8 @@ size_t GetPlaneCount(variant<PixelFormat, SampleFormat> format,
 }
 
 
+class BaseFrame::Impl {};
+
 BaseFrame::BaseFrame(std::shared_ptr<const StreamInfo> stream_info, double pts,
                      double dts, double duration, bool is_key_frame)
     : stream_info(stream_info),
@@ -120,9 +122,11 @@ BaseFrame::BaseFrame(std::shared_ptr<const StreamInfo> stream_info, double pts,
 BaseFrame::~BaseFrame() {}
 
 size_t BaseFrame::EstimateSize() const {
-  return sizeof(*this);
+  return sizeof(*this) + sizeof(Impl);
 }
 
+
+class EncodedFrame::Impl {};
 
 EncodedFrame::EncodedFrame(
     std::shared_ptr<const StreamInfo> stream, double pts, double dts,
@@ -156,9 +160,14 @@ MediaStatus EncodedFrame::Decrypt(const eme::Implementation* implementation,
 }
 
 size_t EncodedFrame::EstimateSize() const {
-  return sizeof(*this) + data_size;
+  // BaseFrame::EstimateSize includes sizeof(BaseFrame) and so does
+  // sizeof(this), so we need to remove the extra.
+  return BaseFrame::EstimateSize() + sizeof(*this) - sizeof(BaseFrame) +
+         data_size + sizeof(Impl);
 }
 
+
+class DecodedFrame::Impl {};
 
 DecodedFrame::DecodedFrame(std::shared_ptr<const StreamInfo> stream, double pts,
                            double dts, double duration,
@@ -174,7 +183,10 @@ DecodedFrame::DecodedFrame(std::shared_ptr<const StreamInfo> stream, double pts,
 DecodedFrame::~DecodedFrame() {}
 
 size_t DecodedFrame::EstimateSize() const {
-  size_t ret = sizeof(*this);
+  // BaseFrame::EstimateSize includes sizeof(BaseFrame) and so does
+  // sizeof(this), so we need to remove the extra.
+  size_t ret = BaseFrame::EstimateSize() + sizeof(*this) - sizeof(BaseFrame) +
+               sizeof(Impl);
   for (size_t line : linesize) {
     if (holds_alternative<PixelFormat>(format))
       ret += line * stream_info->height;

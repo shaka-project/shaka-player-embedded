@@ -16,6 +16,7 @@
 #define SHAKA_EMBEDDED_MEDIA_FRAMES_H_
 
 #include <iostream>
+#include <memory>
 #include <vector>
 
 #include "../eme/configuration.h"
@@ -217,6 +218,10 @@ class SHAKA_EXPORT BaseFrame {
    * @return The estimated size of the frame, in bytes.
    */
   virtual size_t EstimateSize() const;
+
+ private:
+  class Impl;
+  std::unique_ptr<Impl> impl_;
 };
 
 /**
@@ -264,6 +269,10 @@ class SHAKA_EXPORT EncodedFrame : public BaseFrame {
 
 
   size_t EstimateSize() const override;
+
+ private:
+  class Impl;
+  std::unique_ptr<Impl> impl_;
 };
 
 /**
@@ -317,6 +326,10 @@ class SHAKA_EXPORT DecodedFrame : public BaseFrame {
 
 
   size_t EstimateSize() const override;
+
+ private:
+  class Impl;
+  std::unique_ptr<Impl> impl_;
 };
 
 }  // namespace media

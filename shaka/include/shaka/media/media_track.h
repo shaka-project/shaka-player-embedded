@@ -104,6 +104,8 @@ class SHAKA_EXPORT MediaTrack {
   virtual void SetEnabled(bool enabled);
 
  private:
+  class Impl;
+  std::unique_ptr<Impl> impl_;
   bool enabled_;
 };
 
