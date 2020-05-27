@@ -1,4 +1,20 @@
 var searchData=
 [
-  ['user_5fagent',['USER_AGENT',['../navigator_8h.html#a8d49ab2f38a55ccc4f12fd9e5d29c07b',1,'navigator.h']]]
+  ['shaka_5fdeclare_5finterface_5fmethods',['SHAKA_DECLARE_INTERFACE_METHODS',['../include_2shaka_2macros_8h.html#a9167cac5e3ba13a592c950b82f3e2242',1,'macros.h']]],
+  ['shaka_5fdeclare_5fstruct_5fspecial_5fmethods',['SHAKA_DECLARE_STRUCT_SPECIAL_METHODS',['../include_2shaka_2macros_8h.html#aa18cafefe17fd17232932e3305a01e9a',1,'macros.h']]],
+  ['shaka_5fdefault_5fmedia_5fplayer',['SHAKA_DEFAULT_MEDIA_PLAYER',['../shaka__config_8h.html#a0896daaeb1d02898a6561fcbd3d7212e',1,'shaka_config.h']]],
+  ['shaka_5fexport',['SHAKA_EXPORT',['../include_2shaka_2macros_8h.html#a2fbeaa276f2c47cb71d7fc31974d6936',1,'macros.h']]],
+  ['shaka_5fmake_5fstring_5f',['SHAKA_MAKE_STRING_',['../config__names_8h.html#a68657fe4416534dc82aa9fbd8143e0fa',1,'config_names.h']]],
+  ['shaka_5fmax',['SHAKA_MAX',['../variant_8h.html#a92f3fc5de300140ac5ff04087b7e7a81',1,'variant.h']]],
+  ['shaka_5fnon_5fcopyable_5for_5fmovable_5ftype',['SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE',['../include_2shaka_2macros_8h.html#ae506145449340eb98f64be806a070bae',1,'macros.h']]],
+  ['shaka_5fnon_5fcopyable_5ftype',['SHAKA_NON_COPYABLE_TYPE',['../include_2shaka_2macros_8h.html#ac933785290889b53e14d62c66f28af2a',1,'macros.h']]],
+  ['shaka_5fnon_5fmovable_5ftype',['SHAKA_NON_MOVABLE_TYPE',['../include_2shaka_2macros_8h.html#a72bfcb58a8fe34e943f2068c4cdbb35e',1,'macros.h']]],
+  ['shaka_5fsdl_5faudio',['SHAKA_SDL_AUDIO',['../shaka__config_8h.html#ad3a27c6b6ceaf473835063c38f65e978',1,'shaka_config.h']]],
+  ['shaka_5fsdl_5fvideo',['SHAKA_SDL_VIDEO',['../shaka__config_8h.html#a67fc04296ec29655ac34aac7fe8dc695',1,'shaka_config.h']]],
+  ['shaka_5fversion_5fint',['SHAKA_VERSION_INT',['../version_8h.html#a2f76d074b45bf930beb9bb85132e61bd',1,'version.h']]],
+  ['shaka_5fversion_5fmajor',['SHAKA_VERSION_MAJOR',['../version_8h.html#a14d52fcd8918bacaca187ef5f9529ce9',1,'version.h']]],
+  ['shaka_5fversion_5fminor',['SHAKA_VERSION_MINOR',['../version_8h.html#a4b171fadc28aec3dba6c440b41c3da6e',1,'version.h']]],
+  ['shaka_5fversion_5frevision',['SHAKA_VERSION_REVISION',['../version_8h.html#a419d99732d6b90f563159135dca58082',1,'version.h']]],
+  ['shaka_5fversion_5fstr',['SHAKA_VERSION_STR',['../version_8h.html#a7bfd17e04f83b0fafcf305b442f75a24',1,'version.h']]],
+  ['shaka_5fversion_5ftag',['SHAKA_VERSION_TAG',['../version_8h.html#a42a426b48025608e277f2b1796a1ae63',1,'version.h']]]
 ];

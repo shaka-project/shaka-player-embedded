@@ -66,7 +66,7 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classshaka_1_1media_1_1Renderer-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">shaka::media::Renderer Class Reference</div>  </div>
+<div class="title">shaka::media::Renderer Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span><div class="ingroups"><a class="el" href="group__exported.html">Public Types</a> &raquo; <a class="el" href="group__media.html">MediaPlayer Implementations</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 
@@ -77,29 +77,68 @@ Inheritance diagram for shaka::media::Renderer:</div>
  <div class="center">
   <img src="classshaka_1_1media_1_1Renderer.png" usemap="#shaka::media::Renderer_map" alt=""/>
   <map id="shaka::media::Renderer_map" name="shaka::media::Renderer_map">
-<area href="classshaka_1_1media_1_1AudioRenderer.html" alt="shaka::media::AudioRenderer" shape="rect" coords="0,56,176,80"/>
-<area href="classshaka_1_1media_1_1VideoRenderer.html" alt="shaka::media::VideoRenderer" shape="rect" coords="186,56,362,80"/>
+<area href="classshaka_1_1media_1_1AudioRenderer.html" alt="shaka::media::AudioRenderer" shape="rect" coords="274,56,538,80"/>
+<area href="classshaka_1_1media_1_1VideoRenderer.html" alt="shaka::media::VideoRenderer" shape="rect" coords="1096,56,1360,80"/>
+<area href="classshaka_1_1media_1_1AppleAudioRenderer.html" alt="shaka::media::AppleAudioRenderer" shape="rect" coords="0,112,264,136"/>
+<area href="classshaka_1_1media_1_1AudioRendererCommon.html" alt="shaka::media::AudioRendererCommon" shape="rect" coords="274,112,538,136"/>
+<area href="classshaka_1_1media_1_1SdlAudioRenderer.html" alt="shaka::media::SdlAudioRenderer" shape="rect" coords="548,112,812,136"/>
+<area href="classshaka_1_1media_1_1AppleVideoRenderer.html" alt="shaka::media::AppleVideoRenderer" shape="rect" coords="822,112,1086,136"/>
+<area href="classshaka_1_1media_1_1SdlManualVideoRenderer.html" alt="shaka::media::SdlManualVideoRenderer" shape="rect" coords="1096,112,1360,136"/>
+<area href="classshaka_1_1media_1_1VideoRendererCommon.html" alt="shaka::media::VideoRendererCommon" shape="rect" coords="1507,112,1771,136"/>
+<area href="classshaka_1_1media_1_1AppleAudioRenderer_1_1Impl.html" alt="shaka::media::AppleAudioRenderer::Impl" shape="rect" coords="137,168,401,192"/>
+<area href="classshaka_1_1media_1_1SdlAudioRenderer_1_1Impl.html" alt="shaka::media::SdlAudioRenderer::Impl" shape="rect" coords="411,168,675,192"/>
+<area href="classshaka_1_1media_1_1SdlThreadVideoRenderer.html" alt="shaka::media::SdlThreadVideoRenderer" shape="rect" coords="1096,168,1360,192"/>
+<area href="classshaka_1_1media_1_1AppleVideoRenderer_1_1Impl.html" alt="shaka::media::AppleVideoRenderer::Impl" shape="rect" coords="1370,168,1634,192"/>
+<area href="classshaka_1_1media_1_1SdlManualVideoRenderer_1_1Impl.html" alt="shaka::media::SdlManualVideoRenderer::Impl" shape="rect" coords="1644,168,1908,192"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a53d88a3fa9a0b9805298babd488719b7"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a53d88a3fa9a0b9805298babd488719b7">~Renderer</a> ()</td></tr>
-<tr class="separator:a53d88a3fa9a0b9805298babd488719b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54f708de25cdbc1db39f77ffe82ea216"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classshaka_1_1Frame.html">Frame</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a54f708de25cdbc1db39f77ffe82ea216">DrawFrame</a> (int *dropped_frame_count, bool *is_new_frame, double *delay)</td></tr>
-<tr class="separator:a54f708de25cdbc1db39f77ffe82ea216"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a44bbf499d8ae3446a89828d227e8c48c"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a44bbf499d8ae3446a89828d227e8c48c">OnSeek</a> ()</td></tr>
-<tr class="separator:a44bbf499d8ae3446a89828d227e8c48c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63fc3349227ea1966c49ad49799476e6"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a63fc3349227ea1966c49ad49799476e6">OnSeekDone</a> ()</td></tr>
-<tr class="separator:a63fc3349227ea1966c49ad49799476e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26806911dfa1513a88b59396fe7da514"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a26806911dfa1513a88b59396fe7da514">Renderer</a> ()</td></tr>
+<tr class="separator:a26806911dfa1513a88b59396fe7da514"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea571fc81405644526494c9c6e4a6557"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#aea571fc81405644526494c9c6e4a6557">~ Renderer</a> ()</td></tr>
+<tr class="separator:aea571fc81405644526494c9c6e4a6557"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3b2ca9c0cd413151080179853541a48"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#aa3b2ca9c0cd413151080179853541a48">Renderer</a> (const <a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> &amp;)=delete</td></tr>
+<tr class="separator:aa3b2ca9c0cd413151080179853541a48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ea536be68fbf09d3270ad57818eac61"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a4ea536be68fbf09d3270ad57818eac61">operator=</a> (const <a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> &amp;)=delete</td></tr>
+<tr class="separator:a4ea536be68fbf09d3270ad57818eac61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91f5c72a2e8e477a0dd775ec916934b7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a91f5c72a2e8e477a0dd775ec916934b7">Renderer</a> (<a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> &amp;&amp;)=delete</td></tr>
+<tr class="separator:a91f5c72a2e8e477a0dd775ec916934b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50708db70ffbfdd548c6957ea9eebc75"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a50708db70ffbfdd548c6957ea9eebc75">operator=</a> (<a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> &amp;&amp;)=delete</td></tr>
+<tr class="separator:a50708db70ffbfdd548c6957ea9eebc75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d68e3bcb23687ece8375f9ecdf0b5db"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a8d68e3bcb23687ece8375f9ecdf0b5db">SetPlayer</a> (const <a class="el" href="classshaka_1_1media_1_1MediaPlayer.html">MediaPlayer</a> *player)=0</td></tr>
+<tr class="separator:a8d68e3bcb23687ece8375f9ecdf0b5db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07266070cdcbec264d817e9d5da8a5f0"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a07266070cdcbec264d817e9d5da8a5f0">Attach</a> (const <a class="el" href="namespaceshaka_1_1media.html#a86c9bd2a954374e5fdd38df707b649f6">DecodedStream</a> *stream)=0</td></tr>
+<tr class="separator:a07266070cdcbec264d817e9d5da8a5f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35e5f6d6f6f3ede709f10c7b764f0352"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Renderer.html#a35e5f6d6f6f3ede709f10c7b764f0352">Detach</a> ()=0</td></tr>
+<tr class="separator:a35e5f6d6f6f3ede709f10c7b764f0352"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Defines a base class for a renderer. Derived classes will handle rendering the decompressed frames. For example, video streams will draw frames to a texture so the app can draw it to the screen. </p>
+<div class="textblock"><p>Defines an interface for rendering. This type will handle pulling frames from a DecodedStream object and rendering them to their destination. This is expected to periodically pull frames as needed to render, which may require spawning background threads.</p>
+<p>Methods on this object should not be called by the app; these will be handled by the <a class="el" href="classshaka_1_1media_1_1DefaultMediaPlayer.html">DefaultMediaPlayer</a>. Methods on this object can be called from any thread. </p>
 
-<p>Definition at line <a class="el" href="renderer_8h_source.html#l00028">28</a> of file <a class="el" href="renderer_8h_source.html">renderer.h</a>.</p>
+<p>Definition at line <a class="el" href="renderer_8h_source.html#l00037">37</a> of file <a class="el" href="renderer_8h_source.html">renderer.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a53d88a3fa9a0b9805298babd488719b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a53d88a3fa9a0b9805298babd488719b7">&sect;&nbsp;</a></span>~Renderer()</h2>
+<a id="a26806911dfa1513a88b59396fe7da514"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26806911dfa1513a88b59396fe7da514">&sect;&nbsp;</a></span>Renderer() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">shaka::media::Renderer::Renderer </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aea571fc81405644526494c9c6e4a6557"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea571fc81405644526494c9c6e4a6557">&sect;&nbsp;</a></span>~ Renderer()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -108,7 +147,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual shaka::media::Renderer::~Renderer </td>
+          <td class="memname">virtual shaka::media::Renderer::~ <a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -116,18 +155,68 @@ Public Member Functions</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="renderer_8h_source.html#l00030">30</a> of file <a class="el" href="renderer_8h_source.html">renderer.h</a>.</p>
+</div>
+</div>
+<a id="aa3b2ca9c0cd413151080179853541a48"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3b2ca9c0cd413151080179853541a48">&sect;&nbsp;</a></span>Renderer() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">shaka::media::Renderer::Renderer </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a91f5c72a2e8e477a0dd775ec916934b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a91f5c72a2e8e477a0dd775ec916934b7">&sect;&nbsp;</a></span>Renderer() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">shaka::media::Renderer::Renderer </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> &amp;&amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a54f708de25cdbc1db39f77ffe82ea216"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54f708de25cdbc1db39f77ffe82ea216">&sect;&nbsp;</a></span>DrawFrame()</h2>
+<a id="a07266070cdcbec264d817e9d5da8a5f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07266070cdcbec264d817e9d5da8a5f0">&sect;&nbsp;</a></span>Attach()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -136,53 +225,33 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classshaka_1_1Frame.html">Frame</a> shaka::media::Renderer::DrawFrame </td>
+          <td class="memname">virtual void shaka::media::Renderer::Attach </td>
           <td>(</td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>dropped_frame_count</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const <a class="el" href="namespaceshaka_1_1media.html#a86c9bd2a954374e5fdd38df707b649f6">DecodedStream</a> *&#160;</td>
+          <td class="paramname"><em>stream</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>is_new_frame</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>delay</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>For a video renderer, this will draw a frame to a texture and return it. For other renderers, this returns an invalid frame.</p>
+<p>Attaches to the given stream. This object will now pull full-frames from the given stream to play content. The stream will live as long as this object, or until a call to Detach.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">dropped_frame_count</td><td>[OUT] Will contain the number of frames that were dropped since the last call to DrawFrame. </td></tr>
-    <tr><td class="paramname">is_new_frame</td><td>[OUT] Will contain whether this frame is a different frame than the previous call to DrawFrame. </td></tr>
-    <tr><td class="paramname">delay</td><td>[OUT] Optional, will contain the delay, in seconds, until the next frame should be drawn. </td></tr>
+    <tr><td class="paramname">stream</td><td>The stream to pull frames from. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Reimplemented in <a class="el" href="classshaka_1_1media_1_1VideoRenderer.html#abcb75a3c7f9ed8dab5bf6e6afbf9147d">shaka::media::VideoRenderer</a>.</p>
-
-<p>Definition at line <a class="el" href="renderer_8cc_source.html#l00020">20</a> of file <a class="el" href="renderer_8cc_source.html">renderer.cc</a>.</p>
+<p>Implemented in <a class="el" href="classshaka_1_1media_1_1SdlManualVideoRenderer.html#a6f553238baad795ef7185e2670359447">shaka::media::SdlManualVideoRenderer</a>, <a class="el" href="classshaka_1_1media_1_1AudioRendererCommon.html#a47b8320d27ed82f685c19d72d056507c">shaka::media::AudioRendererCommon</a>, <a class="el" href="classshaka_1_1media_1_1AppleVideoRenderer.html#a24077ae33a5bc2f6b404c9ff7f3f0e40">shaka::media::AppleVideoRenderer</a>, <a class="el" href="classshaka_1_1media_1_1SdlAudioRenderer.html#ac71357f9003191a555ce61e8b7fc5111">shaka::media::SdlAudioRenderer</a>, <a class="el" href="classshaka_1_1media_1_1VideoRendererCommon.html#a37213d433906f1480b257677360f360e">shaka::media::VideoRendererCommon</a>, and <a class="el" href="classshaka_1_1media_1_1AppleAudioRenderer.html#adac7973d168c8ef70ca7cbaef7f7bc13">shaka::media::AppleAudioRenderer</a>.</p>
 
 </div>
 </div>
-<a id="a44bbf499d8ae3446a89828d227e8c48c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a44bbf499d8ae3446a89828d227e8c48c">&sect;&nbsp;</a></span>OnSeek()</h2>
+<a id="a35e5f6d6f6f3ede709f10c7b764f0352"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35e5f6d6f6f3ede709f10c7b764f0352">&sect;&nbsp;</a></span>Detach()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -191,7 +260,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void shaka::media::Renderer::OnSeek </td>
+          <td class="memname">virtual void shaka::media::Renderer::Detach </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -199,20 +268,18 @@ Public Member Functions</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Called when the video seeks. </p>
+<p>Detaches playback from the current stream. The current stream will no longer be used to play content. </p>
 
-<p>Reimplemented in <a class="el" href="classshaka_1_1media_1_1AudioRenderer.html#a399b912b20836a3bdf83d30937ed0256">shaka::media::AudioRenderer</a>, and <a class="el" href="classshaka_1_1media_1_1VideoRenderer.html#aaa395349d10a9c1f8ab1aa12b374ce50">shaka::media::VideoRenderer</a>.</p>
-
-<p>Definition at line <a class="el" href="renderer_8cc_source.html#l00025">25</a> of file <a class="el" href="renderer_8cc_source.html">renderer.cc</a>.</p>
+<p>Implemented in <a class="el" href="classshaka_1_1media_1_1SdlAudioRenderer_1_1Impl.html#a9df601e49580b1f14e550a32d9d7e005">shaka::media::SdlAudioRenderer::Impl</a>, <a class="el" href="classshaka_1_1media_1_1SdlManualVideoRenderer.html#a76ec44b6a4beea007f2fbf497002f0d5">shaka::media::SdlManualVideoRenderer</a>, <a class="el" href="classshaka_1_1media_1_1AudioRendererCommon.html#a376bcb20c9b8b2223c664e7a0f136295">shaka::media::AudioRendererCommon</a>, <a class="el" href="classshaka_1_1media_1_1AppleVideoRenderer.html#a9a13e48a14a314a86f7899fb73ef5236">shaka::media::AppleVideoRenderer</a>, <a class="el" href="classshaka_1_1media_1_1SdlAudioRenderer.html#a063f9622cbbe75ae81582c6fb24837a7">shaka::media::SdlAudioRenderer</a>, <a class="el" href="classshaka_1_1media_1_1VideoRendererCommon.html#abafc590dc5cb6ec769b3725605954e81">shaka::media::VideoRendererCommon</a>, and <a class="el" href="classshaka_1_1media_1_1AppleAudioRenderer.html#ab8fe3a7352a53b95196d2584a5eb947d">shaka::media::AppleAudioRenderer</a>.</p>
 
 </div>
 </div>
-<a id="a63fc3349227ea1966c49ad49799476e6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a63fc3349227ea1966c49ad49799476e6">&sect;&nbsp;</a></span>OnSeekDone()</h2>
+<a id="a50708db70ffbfdd548c6957ea9eebc75"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50708db70ffbfdd548c6957ea9eebc75">&sect;&nbsp;</a></span>operator=() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -221,29 +288,85 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void shaka::media::Renderer::OnSeekDone </td>
+          <td class="memname"><a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a>&amp; shaka::media::Renderer::operator= </td>
           <td>(</td>
+          <td class="paramtype"><a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> &amp;&amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">delete</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Called when a seek has been completed. This happens once the first frame at the new time has been decoded. </p>
-
-<p>Reimplemented in <a class="el" href="classshaka_1_1media_1_1AudioRenderer.html#a10586c6248f63b1f57c78a96514c6848">shaka::media::AudioRenderer</a>, and <a class="el" href="classshaka_1_1media_1_1VideoRenderer.html#a195e54f0c478c6ab7746a03a652d3b04">shaka::media::VideoRenderer</a>.</p>
-
-<p>Definition at line <a class="el" href="renderer_8cc_source.html#l00027">27</a> of file <a class="el" href="renderer_8cc_source.html">renderer.cc</a>.</p>
 
 </div>
 </div>
-<hr/>The documentation for this class was generated from the following files:<ul>
-<li>shaka/src/media/<a class="el" href="renderer_8h_source.html">renderer.h</a></li>
-<li>shaka/src/media/<a class="el" href="renderer_8cc_source.html">renderer.cc</a></li>
+<a id="a4ea536be68fbf09d3270ad57818eac61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ea536be68fbf09d3270ad57818eac61">&sect;&nbsp;</a></span>operator=() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a>&amp; shaka::media::Renderer::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8d68e3bcb23687ece8375f9ecdf0b5db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d68e3bcb23687ece8375f9ecdf0b5db">&sect;&nbsp;</a></span>SetPlayer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void shaka::media::Renderer::SetPlayer </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classshaka_1_1media_1_1MediaPlayer.html">MediaPlayer</a> *&#160;</td>
+          <td class="paramname"><em>player</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Sets the <a class="el" href="classshaka_1_1media_1_1MediaPlayer.html">MediaPlayer</a> that is controlling this renderer. This will be used by the <a class="el" href="classshaka_1_1media_1_1Renderer.html">Renderer</a> to query the current time and playback state.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">player</td><td>The <a class="el" href="classshaka_1_1media_1_1MediaPlayer.html">MediaPlayer</a> instance controlling this object. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="classshaka_1_1media_1_1SdlManualVideoRenderer.html#a7a26450a2982254faf863049184f4df0">shaka::media::SdlManualVideoRenderer</a>, <a class="el" href="classshaka_1_1media_1_1AudioRendererCommon.html#aeb50e357d52f955b8e881e23de4dedd1">shaka::media::AudioRendererCommon</a>, <a class="el" href="classshaka_1_1media_1_1AppleVideoRenderer.html#afe8b8c1a1e1880221d1230dbb7b76398">shaka::media::AppleVideoRenderer</a>, <a class="el" href="classshaka_1_1media_1_1SdlAudioRenderer.html#aced802a92dd9737d01d249fb40d9afb7">shaka::media::SdlAudioRenderer</a>, <a class="el" href="classshaka_1_1media_1_1VideoRendererCommon.html#a37cbe8dedd6d18d63bf73885aec0a595">shaka::media::VideoRendererCommon</a>, and <a class="el" href="classshaka_1_1media_1_1AppleAudioRenderer.html#a745b70dbbe9b51d7e84cd8ed969440ce">shaka::media::AppleAudioRenderer</a>.</p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>shaka/include/shaka/media/<a class="el" href="renderer_8h_source.html">renderer.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

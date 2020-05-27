@@ -1,9 +1,12 @@
 var searchData=
 [
   ['datacloneerror',['DataCloneError',['../namespaceshaka.html#ae8d497a0b741d2f5fbcf5410aae341e5a5d1bff706f83ecb757c2385bf0b1b93d',1,'shaka']]],
+  ['dataerror',['DataError',['../namespaceshaka.html#ae8d497a0b741d2f5fbcf5410aae341e5a4e300474fa23b3a1705f20a87cda4e33',1,'shaka']]],
+  ['dataview',['DataView',['../namespaceshaka_1_1proto.html#a66e9de11650d6353870963e3c6f18f9fab3ab533ab5da75d111a150db2234b05a',1,'shaka::proto']]],
   ['debug',['Debug',['../classshaka_1_1Player.html#a363ca0f21cc4784a510b1f9f3baf7503aa603905470e2a5b8c13e96b579ef0dba',1,'shaka::Player']]],
-  ['descriptions',['Descriptions',['../group__player.html#ggaf38694d5ea45613525fc764e2b17aba5a8bc84316c4078bf66723fd019616d920',1,'shaka']]],
-  ['disabled',['Disabled',['../group__player.html#ggad1d74ca3e5b95e051acb4319cb1545b9ab9f5c797ebbf55adccdd8539a65a0241',1,'shaka']]],
+  ['descriptions',['Descriptions',['../group__media.html#gga7ba173ffc4198f2a7fa8b395880fdadda8bc84316c4078bf66723fd019616d920',1,'shaka::media::Descriptions()'],['../group__media.html#gga8d5f6087277f4426c7a1c32bef6ffcd7a8bc84316c4078bf66723fd019616d920',1,'shaka::media::Descriptions()']]],
+  ['detached',['Detached',['../group__media.html#gga14a5c10af9c461da5695387e0b88be46a41cc07ca5bb4a5988322245a665a16f8',1,'shaka::media']]],
+  ['disabled',['Disabled',['../group__media.html#gga008a5f8eca825cd10c7eca853bbaa5e7ab9f5c797ebbf55adccdd8539a65a0241',1,'shaka::media']]],
   ['document_5ffragment_5fnode',['DOCUMENT_FRAGMENT_NODE',['../classshaka_1_1js_1_1dom_1_1Node.html#adf985af5baff080f53b667301d781623aea2509e84f718ab291961fc945db1595',1,'shaka::js::dom::Node']]],
   ['document_5fnode',['DOCUMENT_NODE',['../classshaka_1_1js_1_1dom_1_1Node.html#adf985af5baff080f53b667301d781623aa9b9f086122a826c89e607d56e9a557f',1,'shaka::js::dom::Node']]],
   ['document_5fposition_5fcontained_5fby',['DOCUMENT_POSITION_CONTAINED_BY',['../classshaka_1_1js_1_1dom_1_1Node.html#a913039d59ead97c1bd66f1a679ed6861ac835908559d7f4d8be11c79a63fd4750',1,'shaka::js::dom::Node']]],
@@ -13,5 +16,5 @@ var searchData=
   ['document_5fposition_5fimplementation_5fspecific',['DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC',['../classshaka_1_1js_1_1dom_1_1Node.html#a913039d59ead97c1bd66f1a679ed6861a0bd42e0cec9c26de84a44f582f0eee89',1,'shaka::js::dom::Node']]],
   ['document_5fposition_5fpreceding',['DOCUMENT_POSITION_PRECEDING',['../classshaka_1_1js_1_1dom_1_1Node.html#a913039d59ead97c1bd66f1a679ed6861a272ba95e92f9041dc33360c4886ef4ac',1,'shaka::js::dom::Node']]],
   ['document_5ftype_5fnode',['DOCUMENT_TYPE_NODE',['../classshaka_1_1js_1_1dom_1_1Node.html#adf985af5baff080f53b667301d781623a912847e255a393c6e568e2be2f3faf71',1,'shaka::js::dom::Node']]],
-  ['done',['DONE',['../classshaka_1_1js_1_1XMLHttpRequest.html#a5a7bfed6934ba80319805bd55944e077ad7cfc921f0e3d96a681d8f33d93e0234',1,'shaka::js::XMLHttpRequest']]]
+  ['done',['Done',['../classshaka_1_1js_1_1XMLHttpRequest.html#a5a7bfed6934ba80319805bd55944e077af92965e2c8a7afb3c1b9a5c09a263636',1,'shaka::js::XMLHttpRequest::Done()'],['../namespaceshaka_1_1js_1_1idb.html#a8d3f38ebe7e83a630bb9d94786bbe847a2ba22e58ca17bb728d522bba36cf8350',1,'shaka::js::idb::DONE()']]]
 ];

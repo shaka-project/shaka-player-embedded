@@ -60,6 +60,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">Utilities<div class="ingroups"><a class="el" href="group__exported.html">Public Types</a></div></div>  </div>
@@ -70,60 +71,194 @@ $(function() {
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1SdlFrameDrawer.html">shaka::SdlFrameDrawer</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1ShakaRect.html">shaka::ShakaRect</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1ShakaRect.html">shaka::ShakaRect&lt; T &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1Rational.html">shaka::Rational&lt; T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ga647fb15ad5aea4067f28f4ad782fc398"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#ga647fb15ad5aea4067f28f4ad782fc398">shaka::VideoFillMode</a> : uint8_t { <a class="el" href="group__utils.html#gga647fb15ad5aea4067f28f4ad782fc398a5dbac7cb001ffd122c3a29094973d360">shaka::VideoFillMode::MaintainRatio</a>, 
+<a class="el" href="group__utils.html#gga647fb15ad5aea4067f28f4ad782fc398afbb09a82eafab60150d0996e8fe46560">shaka::VideoFillMode::Stretch</a>, 
+<a class="el" href="group__utils.html#gga647fb15ad5aea4067f28f4ad782fc398a4252b72e6ebcd4d4b4c2e46a786f03d2">shaka::VideoFillMode::Zoom</a>
+ }</td></tr>
+<tr class="separator:ga647fb15ad5aea4067f28f4ad782fc398"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga6a17dc11d2476b6c3eaa1542eb7f1261"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#ga6a17dc11d2476b6c3eaa1542eb7f1261">shaka::FitVideoToWindow</a> (int video_width, int video_height, int window_width, int window_height, int window_x=0, int window_y=0)</td></tr>
-<tr class="separator:ga6a17dc11d2476b6c3eaa1542eb7f1261"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3cc4e8542f2a445c65744dd334ea18f3"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga3cc4e8542f2a445c65744dd334ea18f3"><td class="memTemplItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__utils.html#ga3cc4e8542f2a445c65744dd334ea18f3">shaka::operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&lt; T &gt; &amp;rect)</td></tr>
+<tr class="separator:ga3cc4e8542f2a445c65744dd334ea18f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6b7bc531b848d66711955a469e9ea1cb"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga6b7bc531b848d66711955a469e9ea1cb"><td class="memTemplItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__utils.html#ga6b7bc531b848d66711955a469e9ea1cb">shaka::operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt; T &gt; &amp;bar)</td></tr>
+<tr class="separator:ga6b7bc531b848d66711955a469e9ea1cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae1d5391bbb1457d947330332016b48c7"><td class="memTemplParams" colspan="2">template&lt;typename T , typename U , typename  = typename std::enable_if&lt;std::is_arithmetic&lt;T&gt;::value&gt;::type&gt; </td></tr>
+<tr class="memitem:gae1d5391bbb1457d947330332016b48c7"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt; typename std::common_type&lt; T, U &gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__utils.html#gae1d5391bbb1457d947330332016b48c7">shaka::operator*</a> (T a, const <a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt; U &gt; &amp;b)</td></tr>
+<tr class="separator:gae1d5391bbb1457d947330332016b48c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga08590b147ef544784825b0d817e310dd"><td class="memTemplParams" colspan="2">template&lt;typename T , typename U , typename  = typename std::enable_if&lt;std::is_arithmetic&lt;T&gt;::value&gt;::type&gt; </td></tr>
+<tr class="memitem:ga08590b147ef544784825b0d817e310dd"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt; typename std::common_type&lt; T, U &gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__utils.html#ga08590b147ef544784825b0d817e310dd">shaka::operator/</a> (T a, const <a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt; U &gt; &amp;b)</td></tr>
+<tr class="separator:ga08590b147ef544784825b0d817e310dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96138fb5c2bb486328b1bf118ceba9a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#ga96138fb5c2bb486328b1bf118ceba9a2">shaka::FitVideoToRegion</a> (<a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&lt; uint32_t &gt; <a class="el" href="apple__video__renderer_8cc.html#a493352026b08ddb62de53cbd5bd7685e">frame</a>, <a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&lt; uint32_t &gt; bounds, <a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt; uint32_t &gt; sample_aspect_ratio, <a class="el" href="group__utils.html#ga647fb15ad5aea4067f28f4ad782fc398">VideoFillMode</a> mode, <a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&lt; uint32_t &gt; *src, <a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&lt; uint32_t &gt; *<a class="el" href="media__utils_8cc.html#ad447182ef5af9e4ff1446dbe2507f630">dest</a>)</td></tr>
+<tr class="separator:ga96138fb5c2bb486328b1bf118ceba9a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad7ec935b709789a81807388ccb4d1aab"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#gad7ec935b709789a81807388ccb4d1aab">shaka::EscapeKeySystem</a> (const std::string &amp;key_system)</td></tr>
+<tr class="separator:gad7ec935b709789a81807388ccb4d1aab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga43eac1388e49f21e215742adb2065c96"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#ga43eac1388e49f21e215742adb2065c96">shaka::LicenseServerConfig</a> (const std::string &amp;key_system)</td></tr>
 <tr class="separator:ga43eac1388e49f21e215742adb2065c96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac2cdacb2c96fc79d81dac66eea16422e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#gac2cdacb2c96fc79d81dac66eea16422e">shaka::AdvancedDrmConfig</a> (const std::string &amp;key_system, const std::string &amp;property)</td></tr>
+<tr class="separator:gac2cdacb2c96fc79d81dac66eea16422e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>A number of utility methods that an app may want to use. </p>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="ga647fb15ad5aea4067f28f4ad782fc398"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga647fb15ad5aea4067f28f4ad782fc398">&sect;&nbsp;</a></span>VideoFillMode</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__utils.html#ga647fb15ad5aea4067f28f4ad782fc398">shaka::VideoFillMode</a> : uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Defines possible fill modes for the video. When drawing the video onto a region, this determines how the video gets resized to fit. The video frame will always be centered within the region. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga647fb15ad5aea4067f28f4ad782fc398a5dbac7cb001ffd122c3a29094973d360"></a>MaintainRatio&#160;</td><td class="fielddoc"><p>Maintain the aspect ratio of the original video and size the video based on the smaller of the extents. There will be black bars around the video if the region's aspect ratio isn't the same as the video's </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga647fb15ad5aea4067f28f4ad782fc398afbb09a82eafab60150d0996e8fe46560"></a>Stretch&#160;</td><td class="fielddoc"><p>Stretch the video to completely fill the region. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga647fb15ad5aea4067f28f4ad782fc398a4252b72e6ebcd4d4b4c2e46a786f03d2"></a>Zoom&#160;</td><td class="fielddoc"><p>Maintain the aspect ratio of the original video and size the video based on the larger of the extents. This will cause the video to be cropped to fit in the region, but there won't be any black bars around the video. </p>
+</td></tr>
+</table>
+
+<p>Definition at line <a class="el" href="include_2shaka_2utils_8h_source.html#l00041">41</a> of file <a class="el" href="include_2shaka_2utils_8h_source.html">utils.h</a>.</p>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ga6a17dc11d2476b6c3eaa1542eb7f1261"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6a17dc11d2476b6c3eaa1542eb7f1261">&sect;&nbsp;</a></span>FitVideoToWindow()</h2>
+<a id="gac2cdacb2c96fc79d81dac66eea16422e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac2cdacb2c96fc79d81dac66eea16422e">&sect;&nbsp;</a></span>AdvancedDrmConfig()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string shaka::AdvancedDrmConfig </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key_system</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>property</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>This creates a configuration key for advanced DRM configuration.</p>
+<div class="fragment"><div class="line">player.Configure(<a class="code" href="group__utils.html#gac2cdacb2c96fc79d81dac66eea16422e">AdvancedDrmConfig</a>(<span class="stringliteral">&quot;com.widevine.alpha&quot;</span>, <span class="stringliteral">&quot;videoRobustness&quot;</span>),</div><div class="line">                 <span class="stringliteral">&quot;SW_SECURE_DECODE&quot;</span>);</div></div><!-- fragment --> 
+<p>Definition at line <a class="el" href="include_2shaka_2utils_8h_source.html#l00284">284</a> of file <a class="el" href="include_2shaka_2utils_8h_source.html">utils.h</a>.</p>
+
+</div>
+</div>
+<a id="gad7ec935b709789a81807388ccb4d1aab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad7ec935b709789a81807388ccb4d1aab">&sect;&nbsp;</a></span>EscapeKeySystem()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string shaka::EscapeKeySystem </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key_system</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Escapes the given key-system name so it can appear in a config name path. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key_system</td><td>The key system name (e.g. <code>com.widevine.alpha</code>). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A name path usable as part of <a class="el" href="classshaka_1_1Player.html#a668b7d4c6f5f81da865827ab8719b1ef">Player::Configure</a>. </dd></dl>
+
+<p>Definition at line <a class="el" href="include_2shaka_2utils_8h_source.html#l00253">253</a> of file <a class="el" href="include_2shaka_2utils_8h_source.html">utils.h</a>.</p>
+
+</div>
+</div>
+<a id="ga96138fb5c2bb486328b1bf118ceba9a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga96138fb5c2bb486328b1bf118ceba9a2">&sect;&nbsp;</a></span>FitVideoToRegion()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a> shaka::FitVideoToWindow </td>
+          <td class="memname">void shaka::FitVideoToRegion </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>video_width</em>, </td>
+          <td class="paramtype"><a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&lt; uint32_t &gt;&#160;</td>
+          <td class="paramname"><em>frame</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>video_height</em>, </td>
+          <td class="paramtype"><a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&lt; uint32_t &gt;&#160;</td>
+          <td class="paramname"><em>bounds</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>window_width</em>, </td>
+          <td class="paramtype"><a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt; uint32_t &gt;&#160;</td>
+          <td class="paramname"><em>sample_aspect_ratio</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>window_height</em>, </td>
+          <td class="paramtype"><a class="el" href="group__utils.html#ga647fb15ad5aea4067f28f4ad782fc398">VideoFillMode</a>&#160;</td>
+          <td class="paramname"><em>mode</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>window_x</em> = <code>0</code>, </td>
+          <td class="paramtype"><a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&lt; uint32_t &gt; *&#160;</td>
+          <td class="paramname"><em>src</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>window_y</em> = <code>0</code>&#160;</td>
+          <td class="paramtype"><a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&lt; uint32_t &gt; *&#160;</td>
+          <td class="paramname"><em>dest</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -132,20 +267,20 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Creates a rectangle that can be used as a rendering destination to draw the video while maintaining aspect ratio. This will produce a rectangle that will fit inside the window area, but will maintain the aspect ratio of the video.</p>
+<p>Creates two rectangles that can be used as rendering destination to draw a video with the given fill mode. If the video exceeds the bounds specified, this will use the <em>src</em> attribute to specify the region of the frame to draw; otherwise that stores the full bounds of the frame. The <em>dest</em> field will contain the bounds to draw on the window.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">video_width</td><td>The width of the video. </td></tr>
-    <tr><td class="paramname">video_height</td><td>The height of the video. </td></tr>
-    <tr><td class="paramname">window_width</td><td>The width of the window, or the portion to use. </td></tr>
-    <tr><td class="paramname">window_height</td><td>The height of the window, or the portion to use. </td></tr>
-    <tr><td class="paramname">window_x</td><td>The X offset of the window region to use. </td></tr>
-    <tr><td class="paramname">window_y</td><td>The Y offset of the window region to use. </td></tr>
+    <tr><td class="paramname">frame</td><td>The bounds of the video. </td></tr>
+    <tr><td class="paramname">bounds</td><td>The bounds to draw the frame within. </td></tr>
+    <tr><td class="paramname">sample_aspect_ratio</td><td>The sample aspect ratio; this is the aspect ratio of the pixels in the image. (0, 0) is treated as (1, 1). </td></tr>
+    <tr><td class="paramname">mode</td><td>The fill mode to fit to. </td></tr>
+    <tr><td class="paramname">src</td><td>Where to put the source rectangle. This represents the sub-region of the frame to draw. </td></tr>
+    <tr><td class="paramname">dest</td><td>Where to put the destination rectangle. This represents the region on the window to draw to. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="shaka__utils_8cc_source.html#l00019">19</a> of file <a class="el" href="shaka__utils_8cc_source.html">shaka_utils.cc</a>.</p>
+<p>Definition at line <a class="el" href="shaka__utils_8cc_source.html#l00023">23</a> of file <a class="el" href="shaka__utils_8cc_source.html">shaka_utils.cc</a>.</p>
 
 </div>
 </div>
@@ -174,7 +309,135 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>This creates a configuration key that sets the license server URL for the given key system.</p>
 <div class="fragment"><div class="line">player.Configure(<a class="code" href="group__utils.html#ga43eac1388e49f21e215742adb2065c96">LicenseServerConfig</a>(<span class="stringliteral">&quot;com.widevine.alpha&quot;</span>),</div><div class="line">                 <span class="stringliteral">&quot;https://example.com/server&quot;</span>);</div></div><!-- fragment --> 
-<p>Definition at line <a class="el" href="include_2shaka_2utils_8h_source.html#l00070">70</a> of file <a class="el" href="include_2shaka_2utils_8h_source.html">utils.h</a>.</p>
+<p>Definition at line <a class="el" href="include_2shaka_2utils_8h_source.html#l00272">272</a> of file <a class="el" href="include_2shaka_2utils_8h_source.html">utils.h</a>.</p>
+
+</div>
+</div>
+<a id="gae1d5391bbb1457d947330332016b48c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae1d5391bbb1457d947330332016b48c7">&sect;&nbsp;</a></span>operator*()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename U , typename  = typename std::enable_if&lt;std::is_arithmetic&lt;T&gt;::value&gt;::type&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt;typename std::common_type&lt;T, U&gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>&gt; shaka::operator* </td>
+          <td>(</td>
+          <td class="paramtype">T&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt; U &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="include_2shaka_2utils_8h_source.html#l00210">210</a> of file <a class="el" href="include_2shaka_2utils_8h_source.html">utils.h</a>.</p>
+
+</div>
+</div>
+<a id="ga08590b147ef544784825b0d817e310dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga08590b147ef544784825b0d817e310dd">&sect;&nbsp;</a></span>operator/()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename U , typename  = typename std::enable_if&lt;std::is_arithmetic&lt;T&gt;::value&gt;::type&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt;typename std::common_type&lt;T, U&gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>&gt; shaka::operator/ </td>
+          <td>(</td>
+          <td class="paramtype">T&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt; U &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="include_2shaka_2utils_8h_source.html#l00218">218</a> of file <a class="el" href="include_2shaka_2utils_8h_source.html">utils.h</a>.</p>
+
+</div>
+</div>
+<a id="ga3cc4e8542f2a445c65744dd334ea18f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3cc4e8542f2a445c65744dd334ea18f3">&sect;&nbsp;</a></span>operator<<() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::ostream&amp; shaka::operator&lt;&lt; </td>
+          <td>(</td>
+          <td class="paramtype">std::ostream &amp;&#160;</td>
+          <td class="paramname"><em>os</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structshaka_1_1ShakaRect.html">ShakaRect</a>&lt; T &gt; &amp;&#160;</td>
+          <td class="paramname"><em>rect</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="include_2shaka_2utils_8h_source.html#l00083">83</a> of file <a class="el" href="include_2shaka_2utils_8h_source.html">utils.h</a>.</p>
+
+</div>
+</div>
+<a id="ga6b7bc531b848d66711955a469e9ea1cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6b7bc531b848d66711955a469e9ea1cb">&sect;&nbsp;</a></span>operator<<() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::ostream&amp; shaka::operator&lt;&lt; </td>
+          <td>(</td>
+          <td class="paramtype">std::ostream &amp;&#160;</td>
+          <td class="paramname"><em>os</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structshaka_1_1Rational.html">Rational</a>&lt; T &gt; &amp;&#160;</td>
+          <td class="paramname"><em>bar</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="include_2shaka_2utils_8h_source.html#l00203">203</a> of file <a class="el" href="include_2shaka_2utils_8h_source.html">utils.h</a>.</p>
 
 </div>
 </div>

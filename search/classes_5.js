@@ -3,6 +3,7 @@ var searchData=
   ['element',['Element',['../classshaka_1_1js_1_1dom_1_1Element.html',1,'shaka::js::dom']]],
   ['elementfactory',['ElementFactory',['../classshaka_1_1js_1_1dom_1_1ElementFactory.html',1,'shaka::js::dom']]],
   ['emepromise',['EmePromise',['../classshaka_1_1eme_1_1EmePromise.html',1,'shaka::eme']]],
+  ['encodedframe',['EncodedFrame',['../classshaka_1_1media_1_1EncodedFrame.html',1,'shaka::media']]],
   ['encryptionpattern',['EncryptionPattern',['../structshaka_1_1eme_1_1EncryptionPattern.html',1,'shaka::eme']]],
   ['enumconverter',['EnumConverter',['../classshaka_1_1impl_1_1EnumConverter.html',1,'shaka::impl']]],
   ['environment',['Environment',['../classshaka_1_1Environment.html',1,'shaka']]],

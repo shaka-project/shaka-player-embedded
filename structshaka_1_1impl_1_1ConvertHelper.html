@@ -69,14 +69,14 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="convert__js_8h_source.html">convert_js.h</a>&gt;</code></p>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;typename T, typename = typename std::conditional&lt;                          util::is_number&lt;T&gt;::value, _number_identifier,                          typename std::conditional&lt;                              std::is_base_of&lt;GenericConverter, T&gt;::value,                              _generic_converter_identifier, void&gt;::type&gt;::type&gt;<br />
+<div class="textblock"><h3>template&lt;typename T, typename = typename _SelectSpecialTypes&lt;T&gt;::type&gt;<br />
 struct shaka::impl::ConvertHelper&lt; T, typename &gt;</h3>
 
 <p>A template type that defines two conversion functions to convert between C++ and JavaScript. This should be instantiated with a single type argument for the type being converted (without cv-qualifiers or references). The second template argument is deduced based on the first. It is used to select which specialization to use.</p>
 <p>It is fine to add more specializations after this, so long as it appears before it is being used. If the specialization is for a specific type (e.g. MyType), or it is for a templated type (e.g. std::vector&lt;T&gt;), you can just add a new specialization:</p>
-<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;&gt; <span class="keyword">struct </span>ConvertHelper&lt;MyType, void&gt; { ... };</div><div class="line"><span class="comment">// -or-</span></div><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">struct </span>ConvertHelper&lt;<a class="code" href="namespacestd.html">std</a>::vector&lt;T&gt;, void&gt; { ... };</div></div><!-- fragment --><p>If the specialization is for a "category" of types (e.g. numbers, where the type would be T), then you need to add a new identifier above and a new selector to the conditions here. </p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;&gt; <span class="keyword">struct </span>ConvertHelper&lt;MyType, void&gt; { ... };</div><div class="line"><span class="comment">// -or-</span></div><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">struct </span>ConvertHelper&lt;<a class="code" href="namespacestd.html">std</a>::vector&lt;T&gt;, void&gt; { ... };</div></div><!-- fragment --><p>If the specialization is for a "category" of types (e.g. numbers, where the type would be T), then you need to add a new identifier and specialization above. </p>
 
-<p>Definition at line <a class="el" href="convert__js_8h_source.html#l00069">69</a> of file <a class="el" href="convert__js_8h_source.html">convert_js.h</a>.</p>
+<p>Definition at line <a class="el" href="convert__js_8h_source.html#l00082">82</a> of file <a class="el" href="convert__js_8h_source.html">convert_js.h</a>.</p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>shaka/src/mapping/<a class="el" href="convert__js_8h_source.html">convert_js.h</a></li>
 </ul>

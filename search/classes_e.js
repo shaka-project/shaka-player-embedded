@@ -2,6 +2,7 @@ var searchData=
 [
   ['navigator',['Navigator',['../classshaka_1_1js_1_1Navigator.html',1,'shaka::js']]],
   ['navigatorfactory',['NavigatorFactory',['../classshaka_1_1js_1_1NavigatorFactory.html',1,'shaka::js']]],
+  ['networkfilters',['NetworkFilters',['../classshaka_1_1NetworkFilters.html',1,'shaka']]],
   ['networkthread',['NetworkThread',['../classshaka_1_1NetworkThread.html',1,'shaka']]],
   ['node',['Node',['../classshaka_1_1js_1_1dom_1_1Node.html',1,'shaka::js::dom']]],
   ['nodefactory',['NodeFactory',['../classshaka_1_1js_1_1dom_1_1NodeFactory.html',1,'shaka::js::dom']]],

@@ -64,7 +64,8 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">objc_utils.h File Reference</div>  </div>
 </div><!--header-->
@@ -72,8 +73,14 @@ $(function() {
 <div class="textblock"><code>#include &lt;Foundation/Foundation.h&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;type_traits&gt;</code><br />
+<code>#include &lt;unordered_map&gt;</code><br />
+<code>#include &lt;utility&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
+<code>#include &quot;<a class="el" href="async__results_8h_source.html">shaka/async_results.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="error__objc_8h_source.html">shaka/error_objc.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="optional_8h_source.html">shaka/optional.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="variant_8h_source.html">shaka/variant.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="error__objc_09Internal_8h_source.html">src/public/error_objc+Internal.h</a>&quot;</code><br />
 </div>
 <p><a href="objc__utils_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -87,13 +94,17 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1ObjcConverter_3_01double_01_4.html">shaka::util::ObjcConverter&lt; double &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1ObjcConverter_3_01optional_3_01bool_01_4_01_4.html">shaka::util::ObjcConverter&lt; optional&lt; bool &gt; &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1ObjcConverter_3_01optional_3_01double_01_4_01_4.html">shaka::util::ObjcConverter&lt; optional&lt; double &gt; &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1ObjcConverter_3_01optional_3_01std_1_1string_01_4_01_4.html">shaka::util::ObjcConverter&lt; optional&lt; std::string &gt; &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1ObjcConverter_3_01std_1_1vector_3_01T_01_4_01_4.html">shaka::util::ObjcConverter&lt; std::vector&lt; T &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1ObjcConverter_3_01std_1_1unordered__map_3_01std_1_1string_00_01T_01_4_01_4.html">shaka::util::ObjcConverter&lt; std::unordered_map&lt; std::string, T &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1impl_1_1BlockInvoker.html">shaka::util::impl::BlockInvoker&lt; Ret &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1impl_1_1BlockInvoker_3_01void_01_4.html">shaka::util::impl::BlockInvoker&lt; void &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -102,6 +113,17 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceshaka_1_1util"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util.html">shaka::util</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceshaka_1_1util_1_1impl"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util_1_1impl.html">shaka::util::impl</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a8efa757fbafce0b7689c060dd6a044c4"><td class="memTemplParams" colspan="2">template&lt;typename... Args&gt; </td></tr>
+<tr class="memitem:a8efa757fbafce0b7689c060dd6a044c4"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util.html#a8efa757fbafce0b7689c060dd6a044c4">shaka::util::DispatchObjcEvent</a> (__weak id weak_client, SEL selector, Args... args)</td></tr>
+<tr class="separator:a8efa757fbafce0b7689c060dd6a044c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed2f7c9d88fdb4313a35d2fc1e658725"><td class="memTemplParams" colspan="2">template&lt;typename This , typename Ret , typename Func &gt; </td></tr>
+<tr class="memitem:aed2f7c9d88fdb4313a35d2fc1e658725"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util.html#aed2f7c9d88fdb4313a35d2fc1e658725">shaka::util::CallBlockForFuture</a> (This that, AsyncResults&lt; Ret &gt; future, Func block)</td></tr>
+<tr class="separator:aed2f7c9d88fdb4313a35d2fc1e658725"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

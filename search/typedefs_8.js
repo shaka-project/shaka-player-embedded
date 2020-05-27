@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['mutex_5ftype',['mutex_type',['../classshaka_1_1util_1_1shared__lock.html#a256fd0553fe0e054bad3b33721997753',1,'shaka::util::shared_lock']]]
+  ['idbkeytype',['IdbKeyType',['../namespaceshaka_1_1js_1_1idb.html#ab599f0b103d448103e28833405ae76ab',1,'shaka::js::idb']]],
+  ['inttype',['IntType',['../structshaka_1_1impl_1_1NumberEnumConverter.html#a362c00cf1827aadf1246866e834c6a45',1,'shaka::impl::NumberEnumConverter']]]
 ];

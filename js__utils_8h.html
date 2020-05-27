@@ -69,9 +69,17 @@ $(function() {
 <div class="title">js_utils.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;string&gt;</code><br />
+<div class="textblock"><code>#include &lt;functional&gt;</code><br />
+<code>#include &lt;future&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;utility&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
+<code>#include &quot;<a class="el" href="error_8h_source.html">shaka/error.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="optional_8h_source.html">shaka/optional.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ref__ptr_8h_source.html">src/core/ref_ptr.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="js__wrappers_8h_source.html">src/mapping/js_wrappers.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="promise_8h_source.html">src/mapping/promise.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="object__tracker_8h_source.html">src/memory/object_tracker.h</a>&quot;</code><br />
 </div>
 <p><a href="js__utils_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -84,6 +92,11 @@ Namespaces</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:adec6625339d8dfaeafb0f0a6f8cfe3ee"><td class="memItemLeft" align="right" valign="top">ReturnVal&lt; JsValue &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#adec6625339d8dfaeafb0f0a6f8cfe3ee">shaka::GetDescendant</a> (Handle&lt; JsObject &gt; root, const std::vector&lt; std::string &gt; &amp;names)</td></tr>
 <tr class="separator:adec6625339d8dfaeafb0f0a6f8cfe3ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a959d01d5ca753b8e061a05311f7d5ba1"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Args&gt; </td></tr>
+<tr class="memitem:a959d01d5ca753b8e061a05311f7d5ba1"><td class="memTemplItemLeft" align="right" valign="top">RefPtr&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a959d01d5ca753b8e061a05311f7d5ba1">shaka::MakeJsRef</a> (Args &amp;&amp;... args)</td></tr>
+<tr class="separator:a959d01d5ca753b8e061a05311f7d5ba1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7630ff9fe4f8fb08dc77dc6e1918912c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a7630ff9fe4f8fb08dc77dc6e1918912c">shaka::HandleNetworkFuture</a> (Promise promise, std::future&lt; optional&lt; Error &gt;&gt; future, std::function&lt; void()&gt; on_done)</td></tr>
+<tr class="separator:a7630ff9fe4f8fb08dc77dc6e1918912c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

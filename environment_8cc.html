@@ -77,10 +77,6 @@ $(function() {
 <code>#include &lt;string&gt;</code><br />
 <code>#include &quot;<a class="el" href="implementation__registry_8h_source.html">shaka/eme/implementation_registry.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="js__manager__impl_8h_source.html">src/core/js_manager_impl.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="js__engine_8h_source.html">src/mapping/js_engine.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="js__wrappers_8h_source.html">src/mapping/js_wrappers.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="register__member_8h_source.html">src/mapping/register_member.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="media__processor_8h_source.html">src/media/media_processor.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="base__64_8h_source.html">src/js/base_64.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="console_8h_source.html">src/js/console.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="debug_8h_source.html">src/js/debug.h</a>&quot;</code><br />
@@ -91,6 +87,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="document_8h_source.html">src/js/dom/document.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="dom__exception_8h_source.html">src/js/dom/dom_exception.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="dom__parser_8h_source.html">src/js/dom/dom_parser.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="dom__string__list_8h_source.html">src/js/dom/dom_string_list.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="element_8h_source.html">src/js/dom/element.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="node_8h_source.html">src/js/dom/node.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="text_8h_source.html">src/js/dom/text.h</a>&quot;</code><br />
@@ -102,12 +99,23 @@ $(function() {
 <code>#include &quot;<a class="el" href="media__encrypted__event_8h_source.html">src/js/events/media_encrypted_event.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="media__key__message__event_8h_source.html">src/js/events/media_key_message_event.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="progress__event_8h_source.html">src/js/events/progress_event.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="version__change__event_8h_source.html">src/js/events/version_change_event.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="cursor_8h_source.html">src/js/idb/cursor.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="database_8h_source.html">src/js/idb/database.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="idb__factory_8h_source.html">src/js/idb/idb_factory.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="object__store_8h_source.html">src/js/idb/object_store.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="open__db__request_8h_source.html">src/js/idb/open_db_request.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="request_8h_source.html">src/js/idb/request.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="transaction_8h_source.html">src/js/idb/transaction.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="location_8h_source.html">src/js/location.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="media__element_8h_source.html">src/js/mse/media_element.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="media__error_8h_source.html">src/js/mse/media_error.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="media__source_8h_source.html">src/js/mse/media_source.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="src_2js_2mse_2media__track_8h_source.html">src/js/mse/media_track.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="source__buffer_8h_source.html">src/js/mse/source_buffer.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2js_2mse_2text__track_8h_source.html">src/js/mse/text_track.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="time__ranges_8h_source.html">src/js/mse/time_ranges.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="track__list_8h_source.html">src/js/mse/track_list.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="video__element_8h_source.html">src/js/mse/video_element.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="navigator_8h_source.html">src/js/navigator.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="test__type_8h_source.html">src/js/test_type.h</a>&quot;</code><br />
@@ -115,6 +123,9 @@ $(function() {
 <code>#include &quot;<a class="el" href="url_8h_source.html">src/js/url.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2js_2vtt__cue_8h_source.html">src/js/vtt_cue.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="xml__http__request_8h_source.html">src/js/xml_http_request.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="js__engine_8h_source.html">src/mapping/js_engine.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="js__wrappers_8h_source.html">src/mapping/js_wrappers.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="register__member_8h_source.html">src/mapping/register_member.h</a>&quot;</code><br />
 </div>
 <p><a href="environment_8cc_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -165,7 +176,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">BackingObjectFactoryBase* type::factory()<span class="keyword"> const </span>{               \</div><div class="line">    return BackingObjectFactoryRegistry&lt;type&gt;::CheckedInstance(); \</div><div class="line">  }</div></div><!-- fragment -->
-<p>Definition at line <a class="el" href="environment_8cc_source.html#l00177">177</a> of file <a class="el" href="environment_8cc_source.html">environment.cc</a>.</p>
+<p>Definition at line <a class="el" href="environment_8cc_source.html#l00202">202</a> of file <a class="el" href="environment_8cc_source.html">environment.cc</a>.</p>
 
 </div>
 </div>

@@ -64,7 +64,6 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">js_wrappers.h File Reference</div>  </div>
@@ -74,6 +73,7 @@ $(function() {
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 <code>#include &quot;<a class="el" href="src_2util_2macros_8h_source.html">src/util/macros.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="database_8pb_8h_source.html">src/js/idb/database.pb.h</a>&quot;</code><br />
 </div>
 <p><a href="js__wrappers_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -84,23 +84,16 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespaceshaka_1_1util"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util.html">shaka::util</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a40fa1d0408449b247deba03205dc0549"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="js__wrappers_8h.html#a40fa1d0408449b247deba03205dc0549">DEFINE_ENUM_</a>(DEFINE)</td></tr>
-<tr class="separator:a40fa1d0408449b247deba03205dc0549"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a5248573d4bfde501c90962057e7f9e67"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a5248573d4bfde501c90962057e7f9e67">shaka::DEFINE_ENUM_AND_TO_STRING</a> (JSValueType, <a class="el" href="types_8h.html#a40fa1d0408449b247deba03205dc0549">DEFINE_ENUM_</a>)</td></tr>
-<tr class="separator:a5248573d4bfde501c90962057e7f9e67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad932cc0f01f73f28e58c11f4a6e1a209"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#ad932cc0f01f73f28e58c11f4a6e1a209">shaka::ArgumentCount</a> (const CallbackArguments &amp;arguments)</td></tr>
 <tr class="separator:ad932cc0f01f73f28e58c11f4a6e1a209"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a410643b2789cecef5a2cb1c6c9d366"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a2a410643b2789cecef5a2cb1c6c9d366">shaka::GetMemberNames</a> (Handle&lt; JsObject &gt; object)</td></tr>
 <tr class="separator:a2a410643b2789cecef5a2cb1c6c9d366"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34c6c58c47fe8bb694b9517abed046a1"><td class="memItemLeft" align="right" valign="top">ReturnVal&lt; JsValue &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a34c6c58c47fe8bb694b9517abed046a1">shaka::GetMemberRaw</a> (Handle&lt; JsObject &gt; object, const std::string &amp;<a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>)</td></tr>
-<tr class="separator:a34c6c58c47fe8bb694b9517abed046a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16c567af2483e1dd4c166c1d23382958"><td class="memItemLeft" align="right" valign="top">ReturnVal&lt; JsValue &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a16c567af2483e1dd4c166c1d23382958">shaka::GetArrayIndexRaw</a> (Handle&lt; JsObject &gt; object, size_t index)</td></tr>
-<tr class="separator:a16c567af2483e1dd4c166c1d23382958"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f28a8c188857613b5945adf20064e2f"><td class="memItemLeft" align="right" valign="top">ReturnVal&lt; JsValue &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a3f28a8c188857613b5945adf20064e2f">shaka::GetMemberRaw</a> (Handle&lt; JsObject &gt; object, const std::string &amp;<a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, LocalVar&lt; JsValue &gt; *exception=nullptr)</td></tr>
+<tr class="separator:a3f28a8c188857613b5945adf20064e2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa987696a552091d146207d8c7fc35b3a"><td class="memItemLeft" align="right" valign="top">ReturnVal&lt; JsValue &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#aa987696a552091d146207d8c7fc35b3a">shaka::GetArrayIndexRaw</a> (Handle&lt; JsObject &gt; object, size_t index, LocalVar&lt; JsValue &gt; *exception=nullptr)</td></tr>
+<tr class="separator:aa987696a552091d146207d8c7fc35b3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada8d40961fa5d6cc6f080ee091dbc3d7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#ada8d40961fa5d6cc6f080ee091dbc3d7">shaka::SetMemberRaw</a> (Handle&lt; JsObject &gt; object, const std::string &amp;<a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, Handle&lt; JsValue &gt; value)</td></tr>
 <tr class="separator:ada8d40961fa5d6cc6f080ee091dbc3d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca67c5f2e9f788daaa18d5be68dcf628"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#aca67c5f2e9f788daaa18d5be68dcf628">shaka::SetArrayIndexRaw</a> (Handle&lt; JsObject &gt; object, size_t i, Handle&lt; JsValue &gt; value)</td></tr>
@@ -129,6 +122,8 @@ Functions</h2></td></tr>
 <tr class="separator:ae0f29425ae4ba41fb769a6f97d778a44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d7d5fdb3845c000258a55bc22db8575"><td class="memItemLeft" align="right" valign="top">ReturnVal&lt; JsString &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a0d7d5fdb3845c000258a55bc22db8575">shaka::JsStringFromUtf8</a> (const std::string &amp;str)</td></tr>
 <tr class="separator:a0d7d5fdb3845c000258a55bc22db8575"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aebeff9226e697d414d0408cc7719870d"><td class="memItemLeft" align="right" valign="top">ReturnVal&lt; JsString &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#aebeff9226e697d414d0408cc7719870d">shaka::JsStringFromUtf8</a> (const uint8_t *data, size_t size)</td></tr>
+<tr class="separator:aebeff9226e697d414d0408cc7719870d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a312f192c5569459d307a3b8c24eb92fb"><td class="memItemLeft" align="right" valign="top">ReturnVal&lt; JsValue &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a312f192c5569459d307a3b8c24eb92fb">shaka::JsUndefined</a> ()</td></tr>
 <tr class="separator:a312f192c5569459d307a3b8c24eb92fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4db7b62da41a3c8ce983449a242b3257"><td class="memItemLeft" align="right" valign="top">ReturnVal&lt; JsValue &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a4db7b62da41a3c8ce983449a242b3257">shaka::JsNull</a> ()</td></tr>
@@ -147,8 +142,8 @@ Functions</h2></td></tr>
 <tr class="separator:a73e39f67965396a70475f7c3d70c4af7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a29185b1ce9c8283f37ba7748a5259e32"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a29185b1ce9c8283f37ba7748a5259e32">shaka::IsBuiltInObject</a> (Handle&lt; JsObject &gt; object)</td></tr>
 <tr class="separator:a29185b1ce9c8283f37ba7748a5259e32"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab5f2d9b1ad5f58816a6a2d6e34736a9e"><td class="memItemLeft" align="right" valign="top">JSValueType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#ab5f2d9b1ad5f58816a6a2d6e34736a9e">shaka::GetValueType</a> (Handle&lt; JsValue &gt; value)</td></tr>
-<tr class="separator:ab5f2d9b1ad5f58816a6a2d6e34736a9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8e42f2e737adbb287d9470099273c7c"><td class="memItemLeft" align="right" valign="top">proto::ValueType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#af8e42f2e737adbb287d9470099273c7c">shaka::GetValueType</a> (Handle&lt; JsValue &gt; value)</td></tr>
+<tr class="separator:af8e42f2e737adbb287d9470099273c7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4be78c2e54b46e7a05d72b600c235e37"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a4be78c2e54b46e7a05d72b600c235e37">shaka::ArrayLength</a> (Handle&lt; JsObject &gt; value)</td></tr>
 <tr class="separator:a4be78c2e54b46e7a05d72b600c235e37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ff7344b9bd6a675b9cb3dab54145d64"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a1ff7344b9bd6a675b9cb3dab54145d64">shaka::NumberFromValue</a> (Handle&lt; JsValue &gt; value)</td></tr>
@@ -164,30 +159,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ab301085ee510544d7c8c7b63de1e626a"><td class="memTemplItemLeft" align="right" valign="top">ReturnVal&lt; JsValue &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#ab301085ee510544d7c8c7b63de1e626a">shaka::RawToJsValue</a> (Handle&lt; T &gt; <a class="el" href="media__utils_8cc.html#af2ed45b90afa2ef4ec6e09625335a082">source</a>)</td></tr>
 <tr class="separator:ab301085ee510544d7c8c7b63de1e626a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a40fa1d0408449b247deba03205dc0549"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a40fa1d0408449b247deba03205dc0549">&sect;&nbsp;</a></span>DEFINE_ENUM_</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DEFINE_ENUM_</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">DEFINE</td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>This defines several types that are used to represent JavaScript values.</p>
-<p>Handle&lt;T&gt; represents a handle to a JavaScript value. LocalVar&lt;T&gt; represents a local variable that holds a JavaScript value. ReturnVal&lt;T&gt; is a JavaScript value that is returned from a C++ function. This is NOT a Handle&lt;T&gt;.</p>
-<p>For compatibility, you should not pass a ReturnVal&lt;T&gt; as an argument. Store it in a LocalVar&lt;T&gt; first before passing. Also, different types should be incompatible with each other (i.e. a JsString is not a JsValue). </p>
-
-<p>Definition at line <a class="el" href="js__wrappers_8h_source.html#l00201">201</a> of file <a class="el" href="js__wrappers_8h_source.html">js_wrappers.h</a>.</p>
-
-</div>
-</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

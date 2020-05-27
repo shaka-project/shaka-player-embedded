@@ -66,9 +66,7 @@ $(function() {
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#enum-members">Enumerations</a>  </div>
   <div class="headertitle">
 <div class="title">task_runner.h File Reference</div>  </div>
 </div><!--header-->
@@ -85,7 +83,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="mutex_8h_source.html">src/debug/mutex.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="thread_8h_source.html">src/debug/thread.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="thread__event_8h_source.html">src/debug/thread_event.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="heap__tracer_8h_source.html">src/memory/heap_tracer.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="clock_8h_source.html">src/util/clock.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2util_2utils_8h_source.html">src/util/utils.h</a>&quot;</code><br />
 </div>
 <p><a href="task__runner_8h_source.html">Go to the source code of this file.</a></p>
@@ -96,9 +94,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1impl_1_1PendingTask.html">shaka::impl::PendingTask&lt; Func &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html">shaka::impl::PlainCallbackTaskImpl&lt; Func &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1impl_1_1FutureResolver.html">shaka::impl::FutureResolver&lt; T &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1impl_1_1MemberCallbackTaskImpl.html">shaka::impl::MemberCallbackTaskImpl&lt; This, Member &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1impl_1_1FutureResolver_3_01void_01_4.html">shaka::impl::FutureResolver&lt; void &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1TaskRunner.html">shaka::TaskRunner</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -124,20 +122,6 @@ Enumerations</h2></td></tr>
 <a class="el" href="namespaceshaka.html#afb31385377bd6568435d62be1bea27d8a43f6615bbb2c40a5306ff804094420b1">shaka::TaskPriority::Immediate</a>
  }</td></tr>
 <tr class="separator:afb31385377bd6568435d62be1bea27d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:a1248cfab6af117af6ae3c685955ddc68"><td class="memTemplParams" colspan="2">template&lt;typename Func &gt; </td></tr>
-<tr class="memitem:a1248cfab6af117af6ae3c685955ddc68"><td class="memTemplItemLeft" align="right" valign="top">impl::PlainCallbackTaskImpl&lt; Func &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#a1248cfab6af117af6ae3c685955ddc68">shaka::PlainCallbackTask</a> (Func &amp;&amp;callback)</td></tr>
-<tr class="separator:a1248cfab6af117af6ae3c685955ddc68"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8a5c66d7dd5783c2e1ca9df029a3990"><td class="memTemplParams" colspan="2">template&lt;typename That , typename Member &gt; </td></tr>
-<tr class="memitem:ab8a5c66d7dd5783c2e1ca9df029a3990"><td class="memTemplItemLeft" align="right" valign="top">impl::MemberCallbackTaskImpl&lt; That, Member &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#ab8a5c66d7dd5783c2e1ca9df029a3990">shaka::MemberCallbackTask</a> (That *that, Member member)</td></tr>
-<tr class="separator:ab8a5c66d7dd5783c2e1ca9df029a3990"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:adc9e4799dbb7e394d4a84759eb1a8a75"><td class="memItemLeft" align="right" valign="top">constexpr const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html#adc9e4799dbb7e394d4a84759eb1a8a75">shaka::kMinTimerDelay</a> = 4</td></tr>
-<tr class="separator:adc9e4799dbb7e394d4a84759eb1a8a75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

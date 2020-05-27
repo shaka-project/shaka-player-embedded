@@ -1,10 +1,20 @@
 var searchData=
 [
-  ['name',['name',['../structshaka_1_1impl_1_1InternalCallbackData.html#a44e88506f6ad00b08bb68b49cd3555b0',1,'shaka::impl::InternalCallbackData::name()'],['../dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb',1,'name():&#160;dom_exception.cc']]],
-  ['namespace_5fprefix',['namespace_prefix',['../classshaka_1_1js_1_1dom_1_1Attr.html#ab0dce52b1f9b75a4fd046f1aa3ab2763',1,'shaka::js::dom::Attr::namespace_prefix()'],['../classshaka_1_1js_1_1dom_1_1Element.html#ab1b92d3432bedbd3b8175c1a8034a042',1,'shaka::js::dom::Element::namespace_prefix()']]],
-  ['namespace_5furi',['namespace_uri',['../classshaka_1_1js_1_1dom_1_1Attr.html#a40e7170ef65fc4479f4baf78b8854edd',1,'shaka::js::dom::Attr::namespace_uri()'],['../classshaka_1_1js_1_1dom_1_1Element.html#a95b2b7e71e3f55f22262132896de42b4',1,'shaka::js::dom::Element::namespace_uri()']]],
-  ['native_5fcode',['native_code',['../dom__exception_8cc.html#a1d0b2426c889171dbac1dbf1a92575b8',1,'dom_exception.cc']]],
-  ['navigator',['navigator',['../structshaka_1_1Environment_1_1Impl.html#a63139ca639a0658b21aa0d573198545a',1,'shaka::Environment::Impl']]],
-  ['node',['node',['../structshaka_1_1Environment_1_1Impl.html#ab237a87b5abd5cbf6f8d12c7e5e6e8f2',1,'shaka::Environment::Impl']]],
-  ['nullopt',['nullopt',['../namespaceshaka.html#ac0d213c636d71eecd39dacccd83384dd',1,'shaka']]]
+  ['media_5felement',['media_element',['../structshaka_1_1Environment_1_1Impl.html#af933e6147cf9b4c55327c635e756c067',1,'shaka::Environment::Impl']]],
+  ['media_5fencrypted_5fevent',['media_encrypted_event',['../structshaka_1_1Environment_1_1Impl.html#adbad19cc91834642ab70a918d5638a78',1,'shaka::Environment::Impl']]],
+  ['media_5ferror',['media_error',['../structshaka_1_1Environment_1_1Impl.html#a6d2cf1008710218e2ad166216c129d9e',1,'shaka::Environment::Impl']]],
+  ['media_5fkey_5fmessage_5fevent',['media_key_message_event',['../structshaka_1_1Environment_1_1Impl.html#af0672da78f397a3e0513096bc7ada5df',1,'shaka::Environment::Impl']]],
+  ['media_5fkey_5fsession',['media_key_session',['../structshaka_1_1Environment_1_1Impl.html#a59b64c2fe31b41684a0d9f8a235e7b61',1,'shaka::Environment::Impl']]],
+  ['media_5fkey_5fsystem_5faccess',['media_key_system_access',['../structshaka_1_1Environment_1_1Impl.html#a4874962e331fe8c49b058ac6605fb5d0',1,'shaka::Environment::Impl']]],
+  ['media_5fkeys',['media_keys',['../structshaka_1_1Environment_1_1Impl.html#aebb7be6492e5037acc78351e1347506d',1,'shaka::Environment::Impl::media_keys()'],['../classshaka_1_1js_1_1mse_1_1HTMLMediaElement.html#aaee15ad034f9e731256d3d36ac08eac2',1,'shaka::js::mse::HTMLMediaElement::media_keys()']]],
+  ['media_5fsource',['media_source',['../structshaka_1_1Environment_1_1Impl.html#a312f4df61c4bf45adea2bd1e6d755054',1,'shaka::Environment::Impl']]],
+  ['message',['message',['../classshaka_1_1Error.html#a4b14e143be955b890f3e0af15bbd8530',1,'shaka::Error::message()'],['../classshaka_1_1js_1_1dom_1_1DOMException.html#a2cd7e0751fb98511c682362215e34fd6',1,'shaka::js::dom::DOMException::message()'],['../classshaka_1_1js_1_1events_1_1MediaKeyMessageEvent.html#aa0c637a06a67a9c11068b5a16d360012',1,'shaka::js::events::MediaKeyMessageEvent::message()'],['../classshaka_1_1js_1_1mse_1_1MediaError.html#abdd59bfdbffc9eb19b66bcd943bcc0b4',1,'shaka::js::mse::MediaError::message()'],['../dom__exception_8cc.html#a254bf0858da09c96a48daf64404eb4f8',1,'message():&#160;dom_exception.cc']]],
+  ['message_5ftype',['message_type',['../classshaka_1_1js_1_1events_1_1MediaKeyMessageEvent.html#a2b6e3df3ff529771e03cba8c31eca6da',1,'shaka::js::events::MediaKeyMessageEvent']]],
+  ['method',['method',['../classshaka_1_1Request.html#a7db77557c8979b0c1e94d513800e817c',1,'shaka::Request']]],
+  ['mime_5ftype',['mime_type',['../classshaka_1_1media_1_1StreamInfo.html#a1719209f7a7f9be65260963c2b28fb69',1,'shaka::media::StreamInfo']]],
+  ['mimetype',['mimeType',['../classshaka_1_1Track_1_1Impl.html#aa1186dff726381e441208bbdfa05f091',1,'shaka::Track::Impl']]],
+  ['mode',['mode',['../classshaka_1_1js_1_1idb_1_1IDBTransaction.html#ab5b6755300d0c0f3bdfd3f456f8340b0',1,'shaka::js::idb::IDBTransaction::mode()'],['../classshaka_1_1js_1_1mse_1_1SourceBuffer.html#a330835c526218b40e353419c5560e5fb',1,'shaka::js::mse::SourceBuffer::mode()'],['../classshaka_1_1media_1_1TextTrack_1_1Impl.html#ab1e9569b9a328048c4c653a1ddb0cb05',1,'shaka::media::TextTrack::Impl::mode()']]],
+  ['mse_5fplayer',['mse_player',['../classshaka_1_1media_1_1DefaultMediaPlayer_1_1Impl.html#ac668a8b8f505fdaa4e6d63a9adc8c191',1,'shaka::media::DefaultMediaPlayer::Impl']]],
+  ['muted',['muted',['../classshaka_1_1media_1_1ProxyMediaPlayer_1_1Impl.html#a83e5f6867d9493041d5207ffa9c971c3',1,'shaka::media::ProxyMediaPlayer::Impl']]],
+  ['mutex',['mutex',['../classshaka_1_1media_1_1DefaultMediaPlayer_1_1Impl.html#af7d9c00a23e7355f36a61a16faaa0c08',1,'shaka::media::DefaultMediaPlayer::Impl::mutex()'],['../classshaka_1_1media_1_1MediaPlayer_1_1ClientList_1_1Impl.html#a36607e1b58dba2f42253e876378898b5',1,'shaka::media::MediaPlayer::ClientList::Impl::mutex()'],['../classshaka_1_1media_1_1ProxyMediaPlayer_1_1Impl.html#affa8633ba9de5c90200cfa302d93a7e1',1,'shaka::media::ProxyMediaPlayer::Impl::mutex()'],['../classshaka_1_1media_1_1StreamBase_1_1Impl.html#aef1e59edf3810b50a7a88c3a1b5d88ca',1,'shaka::media::StreamBase::Impl::mutex()'],['../classshaka_1_1media_1_1TextTrack_1_1Impl.html#ac83259a50b476c0a32ea2f6a42c1a8c7',1,'shaka::media::TextTrack::Impl::mutex()']]]
 ];

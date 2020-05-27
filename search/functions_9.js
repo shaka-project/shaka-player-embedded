@@ -7,8 +7,9 @@ var searchData=
   ['jsmanager',['JsManager',['../classshaka_1_1JsManager.html#a5209a5f06004a27918ce05d84f1b5dc4',1,'shaka::JsManager::JsManager()'],['../classshaka_1_1JsManager.html#a7d8be3b01a55399365a00f7aaba4e61b',1,'shaka::JsManager::JsManager(const StartupOptions &amp;options)'],['../classshaka_1_1JsManager.html#a50989013d70e08f1efefdb9eb64e28e1',1,'shaka::JsManager::JsManager(JsManager &amp;&amp;)'],['../classshaka_1_1JsManager.html#af40850f9bc3570bb2400ba2ff6475544',1,'shaka::JsManager::JsManager(const JsManager &amp;)=delete']]],
   ['jsmanagerimpl',['JsManagerImpl',['../classshaka_1_1JsManagerImpl.html#a25b211a228f10a0ab035c573239e15dd',1,'shaka::JsManagerImpl']]],
   ['jsnull',['JsNull',['../namespaceshaka.html#a4db7b62da41a3c8ce983449a242b3257',1,'shaka']]],
-  ['jsstringfromutf8',['JsStringFromUtf8',['../namespaceshaka.html#a0d7d5fdb3845c000258a55bc22db8575',1,'shaka']]],
-  ['jsthis',['JsThis',['../classshaka_1_1BackingObject.html#adf7114abd010cf369c5720efdb2ab837',1,'shaka::BackingObject']]],
+  ['jsobjectwrapper',['JsObjectWrapper',['../classshaka_1_1JsObjectWrapper.html#a77866100375ec37527c05af229d55507',1,'shaka::JsObjectWrapper']]],
+  ['jsstringfromutf8',['JsStringFromUtf8',['../namespaceshaka.html#a0d7d5fdb3845c000258a55bc22db8575',1,'shaka::JsStringFromUtf8(const std::string &amp;str)'],['../namespaceshaka.html#aebeff9226e697d414d0408cc7719870d',1,'shaka::JsStringFromUtf8(const uint8_t *data, size_t size)']]],
+  ['jsthis',['JsThis',['../classshaka_1_1BackingObject.html#a405de982cc37d8141a0e5454bced06a2',1,'shaka::BackingObject']]],
   ['jsundefined',['JsUndefined',['../namespaceshaka.html#a312f192c5569459d307a3b8c24eb92fb',1,'shaka']]],
   ['jswrapper',['JSWrapper',['../classshaka_1_1util_1_1JSWrapper.html#af9b061497328229082811ef59efe437b',1,'shaka::util::JSWrapper']]]
 ];

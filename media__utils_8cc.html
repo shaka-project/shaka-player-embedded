@@ -70,12 +70,10 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="media__utils_8h_source.html">src/media/media_utils.h</a>&quot;</code><br />
-<code>#include &lt;glog/logging.h&gt;</code><br />
-<code>#include &lt;libavcodec/avcodec.h&gt;</code><br />
-<code>#include &lt;libavformat/avformat.h&gt;</code><br />
 <code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;cstdlib&gt;</code><br />
 <code>#include &lt;type_traits&gt;</code><br />
-<code>#include &quot;<a class="el" href="hardware__support_8h_source.html">src/media/hardware_support.h</a>&quot;</code><br />
+<code>#include &lt;utility&gt;</code><br />
 <code>#include &quot;<a class="el" href="src_2util_2macros_8h_source.html">src/util/macros.h</a>&quot;</code><br />
 </div>
 <p><a href="media__utils_8cc_source.html">Go to the source code of this file.</a></p>
@@ -91,16 +89,16 @@ Namespaces</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:a19c82753b2812975c0fd8c5c8d3ae8ba"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a19c82753b2812975c0fd8c5c8d3ae8ba">shaka::media::ParseMimeType</a> (const std::string &amp;<a class="el" href="media__utils_8cc.html#af2ed45b90afa2ef4ec6e09625335a082">source</a>, std::string *<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>, std::string *subtype, std::unordered_map&lt; std::string, std::string &gt; *params)</td></tr>
 <tr class="separator:a19c82753b2812975c0fd8c5c8d3ae8ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad590862044689a202840a32758402cd5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#ad590862044689a202840a32758402cd5">shaka::media::IsTypeSupported</a> (const std::string &amp;container, const std::string &amp;codecs, int <a class="el" href="sdl__frame__drawer_8cc.html#a2474a5474cbff19523a51eb1de01cda4">width</a>, int <a class="el" href="sdl__frame__drawer_8cc.html#ad12fc34ce789bce6c8a05d8a17138534">height</a>)</td></tr>
-<tr class="separator:ad590862044689a202840a32758402cd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a25de156c95faaebab052c9211dc31ef5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a25de156c95faaebab052c9211dc31ef5">shaka::media::ParseMimeAndCheckSupported</a> (const std::string &amp;mime_type, SourceType *source_type, std::string *container, std::string *<a class="el" href="hardware__support_8cc.html#af4ddf5f0c6c5f6d5433bc4062022fa09">codec</a>)</td></tr>
-<tr class="separator:a25de156c95faaebab052c9211dc31ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c5c2be21f921e4954109ab75c602edf"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a1c5c2be21f921e4954109ab75c602edf">shaka::media::NormalizeContainer</a> (const std::string &amp;container)</td></tr>
 <tr class="separator:a1c5c2be21f921e4954109ab75c602edf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad243b364173e63a745c4cd1df13da565"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#ad243b364173e63a745c4cd1df13da565">shaka::media::NormalizeCodec</a> (const std::string &amp;<a class="el" href="hardware__support_8cc.html#af4ddf5f0c6c5f6d5433bc4062022fa09">codec</a>)</td></tr>
+<tr class="memitem:ad243b364173e63a745c4cd1df13da565"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#ad243b364173e63a745c4cd1df13da565">shaka::media::NormalizeCodec</a> (const std::string &amp;codec)</td></tr>
 <tr class="separator:ad243b364173e63a745c4cd1df13da565"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3545ca80748b750fa265bab7c2525d0b"><td class="memItemLeft" align="right" valign="top">BufferedRanges&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a3545ca80748b750fa265bab7c2525d0b">shaka::media::IntersectionOfBufferedRanges</a> (const std::vector&lt; BufferedRanges &gt; &amp;sources)</td></tr>
 <tr class="separator:a3545ca80748b750fa265bab7c2525d0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a822a9ce48ac3f673e1e5fc4f53a90a5a"><td class="memItemLeft" align="right" valign="top">MediaDecodingConfiguration&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a822a9ce48ac3f673e1e5fc4f53a90a5a">shaka::media::ConvertMimeToDecodingConfiguration</a> (const std::string &amp;mime_type, MediaDecodingType <a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>)</td></tr>
+<tr class="separator:a822a9ce48ac3f673e1e5fc4f53a90a5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3144c8d5ca28c31963b0e3751bdf1740"><td class="memItemLeft" align="right" valign="top">std::pair&lt; uint32_t, uint32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a3144c8d5ca28c31963b0e3751bdf1740">shaka::media::GetScreenResolution</a> ()</td></tr>
+<tr class="separator:a3144c8d5ca28c31963b0e3751bdf1740"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Variable Documentation</h2>
 <a id="ad447182ef5af9e4ff1446dbe2507f630"></a>
@@ -115,7 +113,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="media__utils_8cc_source.html#l00037">37</a> of file <a class="el" href="media__utils_8cc_source.html">media_utils.cc</a>.</p>
+<p>Definition at line <a class="el" href="media__utils_8cc_source.html#l00031">31</a> of file <a class="el" href="media__utils_8cc_source.html">media_utils.cc</a>.</p>
 
 </div>
 </div>
@@ -131,7 +129,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="media__utils_8cc_source.html#l00036">36</a> of file <a class="el" href="media__utils_8cc_source.html">media_utils.cc</a>.</p>
+<p>Definition at line <a class="el" href="media__utils_8cc_source.html#l00030">30</a> of file <a class="el" href="media__utils_8cc_source.html">media_utils.cc</a>.</p>
 
 </div>
 </div>

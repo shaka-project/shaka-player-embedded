@@ -65,19 +65,26 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">utils.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;string&gt;</code><br />
+<div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;iostream&gt;</code><br />
+<code>#include &lt;limits&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;type_traits&gt;</code><br />
 <code>#include &quot;<a class="el" href="include_2shaka_2macros_8h_source.html">macros.h</a>&quot;</code><br />
 </div>
 <p><a href="include_2shaka_2utils_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1ShakaRect.html">shaka::ShakaRect</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1ShakaRect.html">shaka::ShakaRect&lt; T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1Rational.html">shaka::Rational&lt; T &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -85,12 +92,36 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespaceshaka"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka.html">shaka</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ga647fb15ad5aea4067f28f4ad782fc398"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#ga647fb15ad5aea4067f28f4ad782fc398">shaka::VideoFillMode</a> : uint8_t { <a class="el" href="group__utils.html#gga647fb15ad5aea4067f28f4ad782fc398a5dbac7cb001ffd122c3a29094973d360">shaka::VideoFillMode::MaintainRatio</a>, 
+<a class="el" href="group__utils.html#gga647fb15ad5aea4067f28f4ad782fc398afbb09a82eafab60150d0996e8fe46560">shaka::VideoFillMode::Stretch</a>, 
+<a class="el" href="group__utils.html#gga647fb15ad5aea4067f28f4ad782fc398a4252b72e6ebcd4d4b4c2e46a786f03d2">shaka::VideoFillMode::Zoom</a>
+ }</td></tr>
+<tr class="separator:ga647fb15ad5aea4067f28f4ad782fc398"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga6a17dc11d2476b6c3eaa1542eb7f1261"><td class="memItemLeft" align="right" valign="top">ShakaRect&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#ga6a17dc11d2476b6c3eaa1542eb7f1261">shaka::FitVideoToWindow</a> (int video_width, int video_height, int window_width, int window_height, int window_x=0, int window_y=0)</td></tr>
-<tr class="separator:ga6a17dc11d2476b6c3eaa1542eb7f1261"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3cc4e8542f2a445c65744dd334ea18f3"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga3cc4e8542f2a445c65744dd334ea18f3"><td class="memTemplItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__utils.html#ga3cc4e8542f2a445c65744dd334ea18f3">shaka::operator&lt;&lt;</a> (std::ostream &amp;os, const ShakaRect&lt; T &gt; &amp;rect)</td></tr>
+<tr class="separator:ga3cc4e8542f2a445c65744dd334ea18f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6b7bc531b848d66711955a469e9ea1cb"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga6b7bc531b848d66711955a469e9ea1cb"><td class="memTemplItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__utils.html#ga6b7bc531b848d66711955a469e9ea1cb">shaka::operator&lt;&lt;</a> (std::ostream &amp;os, const Rational&lt; T &gt; &amp;bar)</td></tr>
+<tr class="separator:ga6b7bc531b848d66711955a469e9ea1cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae1d5391bbb1457d947330332016b48c7"><td class="memTemplParams" colspan="2">template&lt;typename T , typename U , typename  = typename std::enable_if&lt;std::is_arithmetic&lt;T&gt;::value&gt;::type&gt; </td></tr>
+<tr class="memitem:gae1d5391bbb1457d947330332016b48c7"><td class="memTemplItemLeft" align="right" valign="top">Rational&lt; typename std::common_type&lt; T, U &gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__utils.html#gae1d5391bbb1457d947330332016b48c7">shaka::operator*</a> (T a, const Rational&lt; U &gt; &amp;b)</td></tr>
+<tr class="separator:gae1d5391bbb1457d947330332016b48c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga08590b147ef544784825b0d817e310dd"><td class="memTemplParams" colspan="2">template&lt;typename T , typename U , typename  = typename std::enable_if&lt;std::is_arithmetic&lt;T&gt;::value&gt;::type&gt; </td></tr>
+<tr class="memitem:ga08590b147ef544784825b0d817e310dd"><td class="memTemplItemLeft" align="right" valign="top">Rational&lt; typename std::common_type&lt; T, U &gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__utils.html#ga08590b147ef544784825b0d817e310dd">shaka::operator/</a> (T a, const Rational&lt; U &gt; &amp;b)</td></tr>
+<tr class="separator:ga08590b147ef544784825b0d817e310dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96138fb5c2bb486328b1bf118ceba9a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#ga96138fb5c2bb486328b1bf118ceba9a2">shaka::FitVideoToRegion</a> (ShakaRect&lt; uint32_t &gt; <a class="el" href="apple__video__renderer_8cc.html#a493352026b08ddb62de53cbd5bd7685e">frame</a>, ShakaRect&lt; uint32_t &gt; bounds, Rational&lt; uint32_t &gt; sample_aspect_ratio, VideoFillMode mode, ShakaRect&lt; uint32_t &gt; *src, ShakaRect&lt; uint32_t &gt; *<a class="el" href="media__utils_8cc.html#ad447182ef5af9e4ff1446dbe2507f630">dest</a>)</td></tr>
+<tr class="separator:ga96138fb5c2bb486328b1bf118ceba9a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad7ec935b709789a81807388ccb4d1aab"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#gad7ec935b709789a81807388ccb4d1aab">shaka::EscapeKeySystem</a> (const std::string &amp;key_system)</td></tr>
+<tr class="separator:gad7ec935b709789a81807388ccb4d1aab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga43eac1388e49f21e215742adb2065c96"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#ga43eac1388e49f21e215742adb2065c96">shaka::LicenseServerConfig</a> (const std::string &amp;key_system)</td></tr>
 <tr class="separator:ga43eac1388e49f21e215742adb2065c96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac2cdacb2c96fc79d81dac66eea16422e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#gac2cdacb2c96fc79d81dac66eea16422e">shaka::AdvancedDrmConfig</a> (const std::string &amp;key_system, const std::string &amp;property)</td></tr>
+<tr class="separator:gac2cdacb2c96fc79d81dac66eea16422e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

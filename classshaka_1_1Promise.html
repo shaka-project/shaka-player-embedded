@@ -126,6 +126,8 @@ Public Member Functions</h2></td></tr>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ae6effb0dceda2838978095fc2a954ef8"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1Promise.html#ae6effb0dceda2838978095fc2a954ef8">name</a> ()</td></tr>
 <tr class="separator:ae6effb0dceda2838978095fc2a954ef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5652b2409cdadbf22cb1517cb324f73e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classshaka_1_1Promise.html">Promise</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1Promise.html#a5652b2409cdadbf22cb1517cb324f73e">PendingPromise</a> ()</td></tr>
+<tr class="separator:a5652b2409cdadbf22cb1517cb324f73e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b7706665a1d010a11e2e8347fba2719"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classshaka_1_1Promise.html">Promise</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1Promise.html#a0b7706665a1d010a11e2e8347fba2719">Resolved</a> ()</td></tr>
 <tr class="separator:a0b7706665a1d010a11e2e8347fba2719"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d776af2abc54f2c20c82ad835445bfb"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classshaka_1_1Promise.html">Promise</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1Promise.html#a5d776af2abc54f2c20c82ad835445bfb">Resolved</a> (Handle&lt; JsValue &gt; value)</td></tr>
@@ -158,9 +160,9 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>A <em>pending</em> <a class="el" href="classshaka_1_1Promise.html">Promise</a> that can be resolved/rejected by us. </p>
+<p>An <em>invalid</em> <a class="el" href="classshaka_1_1Promise.html">Promise</a>; you must use TryConvert or the assignment operator to get a valid <a class="el" href="classshaka_1_1Promise.html">Promise</a>. </p>
 
-<p>Definition at line <a class="el" href="promise_8cc_source.html#l00060">60</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="promise_8cc_source.html#l00065">65</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
 
 </div>
 </div>
@@ -187,7 +189,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="promise_8cc_source.html#l00065">65</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="promise_8cc_source.html#l00066">66</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
 
 </div>
 </div>
@@ -268,7 +270,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Whether the <a class="el" href="classshaka_1_1Promise.html">Promise</a> can be resolved/rejected. </p>
 
-<p>Definition at line <a class="el" href="promise_8h_source.html#l00077">77</a> of file <a class="el" href="promise_8h_source.html">promise.h</a>.</p>
+<p>Definition at line <a class="el" href="promise_8h_source.html#l00088">88</a> of file <a class="el" href="promise_8h_source.html">promise.h</a>.</p>
 
 </div>
 </div>
@@ -351,6 +353,34 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="a5652b2409cdadbf22cb1517cb324f73e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5652b2409cdadbf22cb1517cb324f73e">&sect;&nbsp;</a></span>PendingPromise()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classshaka_1_1Promise.html">Promise</a> shaka::Promise::PendingPromise </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Creates a <a class="el" href="classshaka_1_1Promise.html">Promise</a> that represents a pending <a class="el" href="classshaka_1_1Promise.html">Promise</a>. The ResolveWith/RejectWith methods can be use to complete it. </p>
+
+<p>Definition at line <a class="el" href="promise_8h_source.html#l00054">54</a> of file <a class="el" href="promise_8h_source.html">promise.h</a>.</p>
+
+</div>
+</div>
 <a id="ae4732fb199ecfee7bf5ee02644558dd2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae4732fb199ecfee7bf5ee02644558dd2">&sect;&nbsp;</a></span>Rejected()</h2>
 
@@ -375,7 +405,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="promise_8h_source.html#l00066">66</a> of file <a class="el" href="promise_8h_source.html">promise.h</a>.</p>
+<p>Definition at line <a class="el" href="promise_8h_source.html#l00077">77</a> of file <a class="el" href="promise_8h_source.html">promise.h</a>.</p>
 
 </div>
 </div>
@@ -405,7 +435,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="promise_8cc_source.html#l00120">120</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="promise_8cc_source.html#l00121">121</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
 
 </div>
 </div>
@@ -432,7 +462,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="promise_8h_source.html#l00053">53</a> of file <a class="el" href="promise_8h_source.html">promise.h</a>.</p>
+<p>Definition at line <a class="el" href="promise_8h_source.html#l00064">64</a> of file <a class="el" href="promise_8h_source.html">promise.h</a>.</p>
 
 </div>
 </div>
@@ -460,7 +490,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="promise_8h_source.html#l00060">60</a> of file <a class="el" href="promise_8h_source.html">promise.h</a>.</p>
+<p>Definition at line <a class="el" href="promise_8h_source.html#l00071">71</a> of file <a class="el" href="promise_8h_source.html">promise.h</a>.</p>
 
 </div>
 </div>
@@ -491,7 +521,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Resolves the <a class="el" href="classshaka_1_1Promise.html">Promise</a> with the given value. This can only be called if the contained <a class="el" href="classshaka_1_1Promise.html">Promise</a> was created by us. Promises loaded from JavaScript (even if they were originally created by us) can't call this. </p>
 
-<p>Definition at line <a class="el" href="promise_8cc_source.html#l00100">100</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="promise_8cc_source.html#l00101">101</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
 
 </div>
 </div>
@@ -522,7 +552,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Adds callbacks that are invoked once this <a class="el" href="classshaka_1_1Promise.html">Promise</a> is resolved/rejected. These are called on the event thread. Like in JavaScript, if the <a class="el" href="classshaka_1_1Promise.html">Promise</a> is already resolved/rejected, these will be called on the next loop. </p>
 
-<p>Definition at line <a class="el" href="promise_8cc_source.html#l00138">138</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="promise_8cc_source.html#l00139">139</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
 
 </div>
 </div>
@@ -552,7 +582,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="classshaka_1_1GenericConverter.html#a62e89d9cad3090cad3b48260bdfe12b7">shaka::GenericConverter</a>.</p>
 
-<p>Definition at line <a class="el" href="promise_8cc_source.html#l00086">86</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="promise_8cc_source.html#l00087">87</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
 
 </div>
 </div>
@@ -583,7 +613,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="classshaka_1_1memory_1_1Traceable.html#a3fd016e5cc632af2ce87d0df3407c5c4">shaka::memory::Traceable</a>.</p>
 
-<p>Definition at line <a class="el" href="promise_8cc_source.html#l00090">90</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="promise_8cc_source.html#l00091">91</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
 
 </div>
 </div>
@@ -614,7 +644,7 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Implements <a class="el" href="classshaka_1_1GenericConverter.html#a1601f0df839f44eff02889c7da55463c">shaka::GenericConverter</a>.</p>
 
-<p>Definition at line <a class="el" href="promise_8cc_source.html#l00072">72</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="promise_8cc_source.html#l00073">73</a> of file <a class="el" href="promise_8cc_source.html">promise.cc</a>.</p>
 
 </div>
 </div>

@@ -113,9 +113,10 @@ Friends</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Defines a wrapper around a JavaScript <a class="el" href="classshaka_1_1Promise.html">Promise</a> object.</p>
-<p>EME APIs are always given valid <a class="el" href="classshaka_1_1Promise.html">Promise</a> objects; but if you use the default constructor or use std::move(), it will create an invalid <a class="el" href="classshaka_1_1Promise.html">Promise</a> object. You can't call any methods on an invalid object except for <a class="el" href="classshaka_1_1eme_1_1EmePromise.html#aac198500f727f97c0b7eebe87322b838">valid()</a>. </p>
+<p>EME APIs are always given valid <a class="el" href="classshaka_1_1Promise.html">Promise</a> objects; but if you use the default constructor or use std::move(), it will create an invalid <a class="el" href="classshaka_1_1Promise.html">Promise</a> object. You can't call any methods on an invalid object except for <a class="el" href="classshaka_1_1eme_1_1EmePromise.html#aac198500f727f97c0b7eebe87322b838">valid()</a>.</p>
+<p>This type is not thread-safe. </p>
 
-<p>Definition at line <a class="el" href="eme__promise_8h_source.html#l00045">45</a> of file <a class="el" href="eme__promise_8h_source.html">eme_promise.h</a>.</p>
+<p>Definition at line <a class="el" href="eme__promise_8h_source.html#l00047">47</a> of file <a class="el" href="eme__promise_8h_source.html">eme_promise.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ae68eb9144d1193a4e769892b924c07d3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae68eb9144d1193a4e769892b924c07d3">&sect;&nbsp;</a></span>EmePromise() <span class="overload">[1/3]</span></h2>
@@ -133,7 +134,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 <p>Creates an <em>invalid</em> <a class="el" href="classshaka_1_1Promise.html">Promise</a> object. The members of this object can't be used unless a valid <a class="el" href="classshaka_1_1Promise.html">Promise</a> is moved/copied into this. </p>
 
-<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00156">156</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00119">119</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
 
 </div>
 </div>
@@ -204,7 +205,7 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00162">162</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00125">125</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
 
 </div>
 </div>
@@ -288,7 +289,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 <p>Rejects the <a class="el" href="classshaka_1_1Promise.html">Promise</a> with the given error. If the <a class="el" href="classshaka_1_1Promise.html">Promise</a> has already been resolved/rejected, this call is ignored. </p>
 
-<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00179">179</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00142">142</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
 
 </div>
 </div>
@@ -308,7 +309,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 <p>Resolves the <a class="el" href="classshaka_1_1Promise.html">Promise</a>. If the <a class="el" href="classshaka_1_1Promise.html">Promise</a> has already been resolved/rejected, this call is ignored. </p>
 
-<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00171">171</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00134">134</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
 
 </div>
 </div>
@@ -329,7 +330,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 <p>Resolves the <a class="el" href="classshaka_1_1Promise.html">Promise</a> with the given value. If the <a class="el" href="classshaka_1_1Promise.html">Promise</a> has already been resolved/rejected, this call is ignored. </p>
 
-<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00175">175</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00138">138</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
 
 </div>
 </div>
@@ -349,7 +350,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>Whether this object is valid and can be resolved/rejected. </dd></dl>
 
-<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00167">167</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
+<p>Definition at line <a class="el" href="eme__promise_8cc_source.html#l00130">130</a> of file <a class="el" href="eme__promise_8cc_source.html">eme_promise.cc</a>.</p>
 
 </div>
 </div>
@@ -374,7 +375,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="eme__promise_8h_source.html#l00082">82</a> of file <a class="el" href="eme__promise_8h_source.html">eme_promise.h</a>.</p>
+<p>Definition at line <a class="el" href="eme__promise_8h_source.html#l00084">84</a> of file <a class="el" href="eme__promise_8h_source.html">eme_promise.h</a>.</p>
 
 </div>
 </div>
@@ -398,7 +399,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="eme__promise_8h_source.html#l00085">85</a> of file <a class="el" href="eme__promise_8h_source.html">eme_promise.h</a>.</p>
+<p>Definition at line <a class="el" href="eme__promise_8h_source.html#l00087">87</a> of file <a class="el" href="eme__promise_8h_source.html">eme_promise.h</a>.</p>
 
 </div>
 </div>
@@ -422,7 +423,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="eme__promise_8h_source.html#l00086">86</a> of file <a class="el" href="eme__promise_8h_source.html">eme_promise.h</a>.</p>
+<p>Definition at line <a class="el" href="eme__promise_8h_source.html#l00088">88</a> of file <a class="el" href="eme__promise_8h_source.html">eme_promise.h</a>.</p>
 
 </div>
 </div>

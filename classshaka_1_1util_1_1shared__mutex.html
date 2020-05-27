@@ -87,8 +87,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ad1c8f43d11ae8aca72a4a9144f1d455b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acab594012691f6c1e482076bdc1e6aa8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1util_1_1shared__mutex.html#acab594012691f6c1e482076bdc1e6aa8">~shared_mutex</a> ()</td></tr>
 <tr class="separator:acab594012691f6c1e482076bdc1e6aa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ce2fbc2a948ae750934800f57e43db1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1util_1_1shared__mutex.html#a5ce2fbc2a948ae750934800f57e43db1">NON_COPYABLE_OR_MOVABLE_TYPE</a> (<a class="el" href="classshaka_1_1util_1_1shared__mutex.html">shared_mutex</a>)</td></tr>
-<tr class="separator:a5ce2fbc2a948ae750934800f57e43db1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92bd94b64f311cf809d2cba814e32f69"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1util_1_1shared__mutex.html#a92bd94b64f311cf809d2cba814e32f69">SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE</a> (<a class="el" href="classshaka_1_1util_1_1shared__mutex.html">shared_mutex</a>)</td></tr>
+<tr class="separator:a92bd94b64f311cf809d2cba814e32f69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a34cff5763c4c418620c02d31e66d12d0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1util_1_1shared__mutex.html#a34cff5763c4c418620c02d31e66d12d0">lock</a> ()</td></tr>
 <tr class="separator:a34cff5763c4c418620c02d31e66d12d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abcd3cdd600cfe24e74911084fbe57892"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1util_1_1shared__mutex.html#abcd3cdd600cfe24e74911084fbe57892">try_lock</a> ()</td></tr>
@@ -112,7 +112,7 @@ Public Member Functions</h2></td></tr>
 <div class="fragment"><div class="line">std::unique_lock&lt;shared_mutex&gt; <a class="code" href="classshaka_1_1util_1_1shared__mutex.html#a34cff5763c4c418620c02d31e66d12d0">lock</a>(mutex);</div><div class="line"><span class="comment">// In exclusive mode.</span></div></div><!-- fragment --><p>Or you can use <a class="el" href="classshaka_1_1util_1_1shared__lock.html">shared_lock</a> to lock in shared mode:</p>
 <div class="fragment"><div class="line">shared_lock&lt;shared_mutex&gt; <a class="code" href="classshaka_1_1util_1_1shared__mutex.html#a34cff5763c4c418620c02d31e66d12d0">lock</a>(mutex);</div><div class="line"><span class="comment">// In shared mode.</span></div></div><!-- fragment --><p>This implements the Lockable, <a class="el" href="classshaka_1_1Mutex.html">Mutex</a>, and <a class="el" href="classshaka_1_1SharedMutex.html">SharedMutex</a> concepts. </p>
 
-<p>Definition at line <a class="el" href="shared__lock_8h_source.html#l00054">54</a> of file <a class="el" href="shared__lock_8h_source.html">shared_lock.h</a>.</p>
+<p>Definition at line <a class="el" href="shared__lock_8h_source.html#l00057">57</a> of file <a class="el" href="shared__lock_8h_source.html">shared_lock.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ad1c8f43d11ae8aca72a4a9144f1d455b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad1c8f43d11ae8aca72a4a9144f1d455b">&sect;&nbsp;</a></span>shared_mutex()</h2>
@@ -129,7 +129,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="shared__lock_8cc_source.html#l00020">20</a> of file <a class="el" href="shared__lock_8cc_source.html">shared_lock.cc</a>.</p>
+<p>Definition at line <a class="el" href="shared__lock_8cc_source.html#l00022">22</a> of file <a class="el" href="shared__lock_8cc_source.html">shared_lock.cc</a>.</p>
 
 </div>
 </div>
@@ -148,7 +148,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="shared__lock_8cc_source.html#l00022">22</a> of file <a class="el" href="shared__lock_8cc_source.html">shared_lock.cc</a>.</p>
+<p>Definition at line <a class="el" href="shared__lock_8cc_source.html#l00028">28</a> of file <a class="el" href="shared__lock_8cc_source.html">shared_lock.cc</a>.</p>
 
 </div>
 </div>
@@ -177,7 +177,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Locks the mutex for exclusive access. </p>
 
-<p>Definition at line <a class="el" href="shared__lock_8h_source.html#l00062">62</a> of file <a class="el" href="shared__lock_8h_source.html">shared_lock.h</a>.</p>
+<p>Definition at line <a class="el" href="shared__lock_8h_source.html#l00065">65</a> of file <a class="el" href="shared__lock_8h_source.html">shared_lock.h</a>.</p>
 
 </div>
 </div>
@@ -205,18 +205,18 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Locks the mutex for shared access. </p>
 
-<p>Definition at line <a class="el" href="shared__lock_8h_source.html#l00076">76</a> of file <a class="el" href="shared__lock_8h_source.html">shared_lock.h</a>.</p>
+<p>Definition at line <a class="el" href="shared__lock_8h_source.html#l00079">79</a> of file <a class="el" href="shared__lock_8h_source.html">shared_lock.h</a>.</p>
 
 </div>
 </div>
-<a id="a5ce2fbc2a948ae750934800f57e43db1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ce2fbc2a948ae750934800f57e43db1">&sect;&nbsp;</a></span>NON_COPYABLE_OR_MOVABLE_TYPE()</h2>
+<a id="a92bd94b64f311cf809d2cba814e32f69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92bd94b64f311cf809d2cba814e32f69">&sect;&nbsp;</a></span>SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">shaka::util::shared_mutex::NON_COPYABLE_OR_MOVABLE_TYPE </td>
+          <td class="memname">shaka::util::shared_mutex::SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classshaka_1_1util_1_1shared__mutex.html">shared_mutex</a>&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -251,7 +251,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Tries to lock the mutex for exclusive access in a non-blocking way. </p>
 
-<p>Definition at line <a class="el" href="shared__lock_8h_source.html#l00067">67</a> of file <a class="el" href="shared__lock_8h_source.html">shared_lock.h</a>.</p>
+<p>Definition at line <a class="el" href="shared__lock_8h_source.html#l00070">70</a> of file <a class="el" href="shared__lock_8h_source.html">shared_lock.h</a>.</p>
 
 </div>
 </div>
@@ -279,7 +279,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Tries to lock the mutex for shared access in a non-blocking way. </p>
 
-<p>Definition at line <a class="el" href="shared__lock_8h_source.html#l00081">81</a> of file <a class="el" href="shared__lock_8h_source.html">shared_lock.h</a>.</p>
+<p>Definition at line <a class="el" href="shared__lock_8h_source.html#l00084">84</a> of file <a class="el" href="shared__lock_8h_source.html">shared_lock.h</a>.</p>
 
 </div>
 </div>
@@ -299,7 +299,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Unlocks the mutex from exclusive access. </p>
 
-<p>Definition at line <a class="el" href="shared__lock_8cc_source.html#l00027">27</a> of file <a class="el" href="shared__lock_8cc_source.html">shared_lock.cc</a>.</p>
+<p>Definition at line <a class="el" href="shared__lock_8cc_source.html#l00037">37</a> of file <a class="el" href="shared__lock_8cc_source.html">shared_lock.cc</a>.</p>
 
 </div>
 </div>
@@ -319,7 +319,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Unlocks the mutex from shared access. </p>
 
-<p>Definition at line <a class="el" href="shared__lock_8cc_source.html#l00037">37</a> of file <a class="el" href="shared__lock_8cc_source.html">shared_lock.cc</a>.</p>
+<p>Definition at line <a class="el" href="shared__lock_8cc_source.html#l00051">51</a> of file <a class="el" href="shared__lock_8cc_source.html">shared_lock.cc</a>.</p>
 
 </div>
 </div>

@@ -65,16 +65,16 @@ $(function() {
 : <a class="el" href="classshaka_1_1JsManagerImpl.html#aeb4ea8d30c81a8d6f753894e858aeb64">shaka::JsManagerImpl</a>
 </li>
 <li>MakeFrame()
-: <a class="el" href="classshaka_1_1media_1_1FFmpegEncodedFrame.html#af230e14656a3304488d2f6ca7c329c4d">shaka::media::FFmpegEncodedFrame</a>
+: <a class="el" href="classshaka_1_1media_1_1ffmpeg_1_1FFmpegEncodedFrame.html#a690d09508bf39abfdfd2c06eb0ac10fc">shaka::media::ffmpeg::FFmpegEncodedFrame</a>
 </li>
-<li>media::FrameDrawer
-: <a class="el" href="classshaka_1_1Frame.html#ae13830e12e1171266e025d0c5ccbd414">shaka::Frame</a>
+<li>media::DecoderDecryptIntegration
+: <a class="el" href="classshaka_1_1eme_1_1ClearKeyImplementation.html#ab59c563c5deedd3aa03f6c89405142ab">shaka::eme::ClearKeyImplementation</a>
 </li>
-<li>media::MediaProcessorDecryptIntegration
-: <a class="el" href="classshaka_1_1eme_1_1ClearKeyImplementation.html#a08c1e7d3144ea9eb218ddc8eb22cb044">shaka::eme::ClearKeyImplementation</a>
+<li>media::DecoderIntegration
+: <a class="el" href="classshaka_1_1eme_1_1ClearKeyImplementation.html#a3a52c2851b6fa84c3e7232751400b29a">shaka::eme::ClearKeyImplementation</a>
 </li>
-<li>media::MediaProcessorIntegration
-: <a class="el" href="classshaka_1_1eme_1_1ClearKeyImplementation.html#a9ab5d801795d29eddf24e7b4c2e1130e">shaka::eme::ClearKeyImplementation</a>
+<li>media_element
+: <a class="el" href="structshaka_1_1Environment_1_1Impl.html#af933e6147cf9b4c55327c635e756c067">shaka::Environment::Impl</a>
 </li>
 <li>media_encrypted_event
 : <a class="el" href="structshaka_1_1Environment_1_1Impl.html#adbad19cc91834642ab70a918d5638a78">shaka::Environment::Impl</a>
@@ -93,10 +93,19 @@ $(function() {
 </li>
 <li>media_keys
 : <a class="el" href="structshaka_1_1Environment_1_1Impl.html#aebb7be6492e5037acc78351e1347506d">shaka::Environment::Impl</a>
-, <a class="el" href="classshaka_1_1js_1_1mse_1_1HTMLVideoElement.html#adac93212950105b185ef65b5329dc0d7">shaka::js::mse::HTMLVideoElement</a>
+, <a class="el" href="classshaka_1_1js_1_1mse_1_1HTMLMediaElement.html#aaee15ad034f9e731256d3d36ac08eac2">shaka::js::mse::HTMLMediaElement</a>
 </li>
 <li>media_source
 : <a class="el" href="structshaka_1_1Environment_1_1Impl.html#a312f4df61c4bf45adea2bd1e6d755054">shaka::Environment::Impl</a>
+</li>
+<li>MediaCapabilitiesInfo()
+: <a class="el" href="structshaka_1_1media_1_1MediaCapabilitiesInfo.html#ac53ba7bd20392633627668cb3f4aa945">shaka::media::MediaCapabilitiesInfo</a>
+</li>
+<li>MediaCapabilitiesKeySystemConfiguration()
+: <a class="el" href="structshaka_1_1media_1_1MediaCapabilitiesKeySystemConfiguration.html#ac69a0e1c10819188904d525110356405">shaka::media::MediaCapabilitiesKeySystemConfiguration</a>
+</li>
+<li>MediaDecodingConfiguration()
+: <a class="el" href="structshaka_1_1media_1_1MediaDecodingConfiguration.html#a826012d16a356c6dd18383551f128aec">shaka::media::MediaDecodingConfiguration</a>
 </li>
 <li>MediaEncryptedEvent()
 : <a class="el" href="classshaka_1_1js_1_1events_1_1MediaEncryptedEvent.html#a6c605274bccdf7245f3dbfcd82200477">shaka::js::events::MediaEncryptedEvent</a>
@@ -110,6 +119,15 @@ $(function() {
 <li>MediaErrorFactory()
 : <a class="el" href="classshaka_1_1js_1_1mse_1_1MediaErrorFactory.html#a1b6de629697b71a1452b8c485cf0b36b">shaka::js::mse::MediaErrorFactory</a>
 </li>
+<li>MediaInfo()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo.html#a6af0f6d65a19901b0bbe2973f56ec6d6">shaka::proto::MediaInfo</a>
+</li>
+<li>MediaInfo_Frame()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo__Frame.html#a84f6b38e8a195be03d72de0ed8d34571">shaka::proto::MediaInfo_Frame</a>
+</li>
+<li>MediaInfo_Stream()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo__Stream.html#ac713f14cfbc1603b2ba37dad73310f83">shaka::proto::MediaInfo_Stream</a>
+</li>
 <li>MediaKeyMessageEvent()
 : <a class="el" href="classshaka_1_1js_1_1events_1_1MediaKeyMessageEvent.html#ab9e6368a6d4f548c7d0a79e5691bde50">shaka::js::events::MediaKeyMessageEvent</a>
 </li>
@@ -117,10 +135,10 @@ $(function() {
 : <a class="el" href="classshaka_1_1js_1_1events_1_1MediaKeyMessageEventFactory.html#a58eb31d1795e00e520010d2bc3f88f6e">shaka::js::events::MediaKeyMessageEventFactory</a>
 </li>
 <li>MediaKeys()
-: <a class="el" href="classshaka_1_1js_1_1eme_1_1MediaKeys.html#a2f7f9d66cd829e352d7544932c2f914b">shaka::js::eme::MediaKeys</a>
+: <a class="el" href="classshaka_1_1js_1_1eme_1_1MediaKeys.html#aabe9acdce3671ce2ffa799d8bb1b56e9">shaka::js::eme::MediaKeys</a>
 </li>
 <li>MediaKeySession()
-: <a class="el" href="classshaka_1_1js_1_1eme_1_1MediaKeySession.html#aa8b1e83dda08e40e58231bfbc03d9774">shaka::js::eme::MediaKeySession</a>
+: <a class="el" href="classshaka_1_1js_1_1eme_1_1MediaKeySession.html#a010b7fb92ac35baf43b9e384ef37bec8">shaka::js::eme::MediaKeySession</a>
 </li>
 <li>MediaKeySessionFactory()
 : <a class="el" href="classshaka_1_1js_1_1eme_1_1MediaKeySessionFactory.html#a44070a65bf7661931a5c563d61cbf645">shaka::js::eme::MediaKeySessionFactory</a>
@@ -129,16 +147,17 @@ $(function() {
 : <a class="el" href="classshaka_1_1js_1_1eme_1_1MediaKeysFactory.html#ab1c1e1068d14596fb81994eab1c5fe93">shaka::js::eme::MediaKeysFactory</a>
 </li>
 <li>MediaKeySystemAccess()
-: <a class="el" href="classshaka_1_1js_1_1eme_1_1MediaKeySystemAccess.html#adce137864d4e687d113a0cb7fbe7c953">shaka::js::eme::MediaKeySystemAccess</a>
+: <a class="el" href="classshaka_1_1js_1_1eme_1_1MediaKeySystemAccess.html#a6318d8e7d4f23413e21a5d9efcfb360a">shaka::js::eme::MediaKeySystemAccess</a>
 </li>
 <li>MediaKeySystemAccessFactory()
 : <a class="el" href="classshaka_1_1js_1_1eme_1_1MediaKeySystemAccessFactory.html#aa1c5d835380fee3cd1101cad1a0e24d9">shaka::js::eme::MediaKeySystemAccessFactory</a>
 </li>
-<li>MediaKeySystemConfiguration()
-: <a class="el" href="structshaka_1_1js_1_1eme_1_1MediaKeySystemConfiguration.html#a2c08729dc0390a5ff22f5e3e680be5ea">shaka::js::eme::MediaKeySystemConfiguration</a>
+<li>MediaPlayer()
+: <a class="el" href="classshaka_1_1media_1_1MediaPlayer.html#a4a732f08f51fd5f4d3ea86a6fb63d3d2">shaka::media::MediaPlayer</a>
 </li>
-<li>MediaProcessor()
-: <a class="el" href="classshaka_1_1media_1_1MediaProcessor.html#a8337308c137392f36c3e76afe4eb5d66">shaka::media::MediaProcessor</a>
+<li>mediaPlayer
+: <a class="el" href="categoryShakaPlayer_07Internal_08.html#ac690f372b0d4043d3c1e38578afe37b0">ShakaPlayer(Internal)</a>
+, <a class="el" href="interfaceShakaPlayer.html#ac690f372b0d4043d3c1e38578afe37b0">ShakaPlayer</a>
 </li>
 <li>MediaSource()
 : <a class="el" href="classshaka_1_1js_1_1mse_1_1MediaSource.html#a1f597d9ec33051c34396f9dbbb917ce9">shaka::js::mse::MediaSource</a>
@@ -146,45 +165,148 @@ $(function() {
 <li>MediaSourceFactory()
 : <a class="el" href="classshaka_1_1js_1_1mse_1_1MediaSourceFactory.html#abc27a2d1b3a1362032236063af8e92ce">shaka::js::mse::MediaSourceFactory</a>
 </li>
-<li>Member()
-: <a class="el" href="classshaka_1_1Member.html#a3fed21ec6783a1148015269c3a4c6503">shaka::Member&lt; T &gt;</a>
+<li>MediaTrack()
+: <a class="el" href="classshaka_1_1js_1_1mse_1_1MediaTrack.html#a60493b98f980f2a2423a7b1736b44621">shaka::js::mse::MediaTrack</a>
+, <a class="el" href="classshaka_1_1media_1_1MediaTrack.html#a2fe489e6faac65fb134b0883d65bad51">shaka::media::MediaTrack</a>
 </li>
-<li>MemberCallbackTaskImpl()
-: <a class="el" href="classshaka_1_1impl_1_1MemberCallbackTaskImpl.html#ab0aa5e284d218e883092d428dec9ef28">shaka::impl::MemberCallbackTaskImpl&lt; This, Member &gt;</a>
+<li>Member()
+: <a class="el" href="classshaka_1_1Member.html#a4d8274ae500aaccaaca008d40c2df7f1">shaka::Member&lt; T &gt;</a>
 </li>
 <li>memory::ObjectTracker
 : <a class="el" href="classshaka_1_1BackingObject.html#a97c013a3b957a28225ef5ff289e101e2">shaka::BackingObject</a>
+</li>
+<li>MergeFrom()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo.html#a3f03125f998c6dfbedfa2e23d9d81d18">shaka::proto::MediaInfo</a>
+, <a class="el" href="classshaka_1_1proto_1_1MediaInfo__Frame.html#ae4adfd3c347acd0c88bf6e65c61546f1">shaka::proto::MediaInfo_Frame</a>
+, <a class="el" href="classshaka_1_1proto_1_1MediaInfo__Stream.html#ac95be86060592f7bde687573e775bee6">shaka::proto::MediaInfo_Stream</a>
+, <a class="el" href="classshaka_1_1proto_1_1Object.html#ac8b3c7a0755c3f881f3f7c612437af73">shaka::proto::Object</a>
+, <a class="el" href="classshaka_1_1proto_1_1Object__Entry.html#aea3e20cd72ba392c152d888d25048234">shaka::proto::Object_Entry</a>
+, <a class="el" href="classshaka_1_1proto_1_1Value.html#a09cf8f32def428435f3d3ef295302bcf">shaka::proto::Value</a>
+</li>
+<li>MergePartialFromCodedStream()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo.html#abd3200dadac091e2a84dd5025e63a32f">shaka::proto::MediaInfo</a>
+, <a class="el" href="classshaka_1_1proto_1_1MediaInfo__Frame.html#a2ea35aa65ec968dcdb0406adf26f8c23">shaka::proto::MediaInfo_Frame</a>
+, <a class="el" href="classshaka_1_1proto_1_1MediaInfo__Stream.html#a4f149653c9823a96ab585ce2f27389d2">shaka::proto::MediaInfo_Stream</a>
+, <a class="el" href="classshaka_1_1proto_1_1Object.html#a7c054544ad2c10c2563de5520cd4b127">shaka::proto::Object</a>
+, <a class="el" href="classshaka_1_1proto_1_1Object__Entry.html#a17576a483994347db88736d062df7051">shaka::proto::Object_Entry</a>
+, <a class="el" href="classshaka_1_1proto_1_1Value.html#a4992433919f1bdeb50c5fcecf439b381">shaka::proto::Value</a>
 </li>
 <li>message
 : <a class="el" href="classshaka_1_1Error.html#a4b14e143be955b890f3e0af15bbd8530">shaka::Error</a>
 , <a class="el" href="classshaka_1_1js_1_1dom_1_1DOMException.html#a2cd7e0751fb98511c682362215e34fd6">shaka::js::dom::DOMException</a>
 , <a class="el" href="classshaka_1_1js_1_1events_1_1MediaKeyMessageEvent.html#aa0c637a06a67a9c11068b5a16d360012">shaka::js::events::MediaKeyMessageEvent</a>
 , <a class="el" href="classshaka_1_1js_1_1mse_1_1MediaError.html#abdd59bfdbffc9eb19b66bcd943bcc0b4">shaka::js::mse::MediaError</a>
+, <a class="el" href="interfaceShakaPlayerError.html#a804292d557e8aafc4b39dc8a9919d7d5">ShakaPlayerError</a>
 </li>
 <li>message_type
 : <a class="el" href="classshaka_1_1js_1_1events_1_1MediaKeyMessageEvent.html#a2b6e3df3ff529771e03cba8c31eca6da">shaka::js::events::MediaKeyMessageEvent</a>
 </li>
-<li>mime_type()
-: <a class="el" href="classshaka_1_1Track.html#a6c2288406dce5a48d29cb21239de147c">shaka::Track</a>
+<li>method
+: <a class="el" href="classshaka_1_1Request.html#a7db77557c8979b0c1e94d513800e817c">shaka::Request</a>
+, <a class="el" href="interfaceShakaPlayerRequest.html#af0c33e643e4be8770bd86665562d90e4">ShakaPlayerRequest</a>
+</li>
+<li>mime()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo.html#a77ed39a7f3022fb089488aef6c17dc31">shaka::proto::MediaInfo</a>
+</li>
+<li>mime_type
+: <a class="el" href="classshaka_1_1media_1_1StreamInfo.html#a1719209f7a7f9be65260963c2b28fb69">shaka::media::StreamInfo</a>
+, <a class="el" href="classshaka_1_1Track.html#a6c2288406dce5a48d29cb21239de147c">shaka::Track</a>
 </li>
 <li>mimeType
-: <a class="el" href="interfaceShakaTrack.html#adf6b590f55033987616870dabd9d21cf">ShakaTrack</a>
+: <a class="el" href="classshaka_1_1Track_1_1Impl.html#aa1186dff726381e441208bbdfa05f091">shaka::Track::Impl</a>
+, <a class="el" href="interfaceShakaTrack.html#adf6b590f55033987616870dabd9d21cf">ShakaTrack</a>
 </li>
 <li>mode
-: <a class="el" href="classshaka_1_1js_1_1mse_1_1SourceBuffer.html#a330835c526218b40e353419c5560e5fb">shaka::js::mse::SourceBuffer</a>
-, <a class="el" href="classshaka_1_1js_1_1mse_1_1TextTrack.html#afecbdcf5e33fa8097412185cccfcbde5">shaka::js::mse::TextTrack</a>
-, <a class="el" href="classshaka_1_1TextTrack.html#aad728a2121a75e5428001be62e72981e">shaka::TextTrack</a>
+: <a class="el" href="classshaka_1_1js_1_1idb_1_1IDBTransaction.html#ab5b6755300d0c0f3bdfd3f456f8340b0">shaka::js::idb::IDBTransaction</a>
+, <a class="el" href="classshaka_1_1js_1_1mse_1_1SourceBuffer.html#a330835c526218b40e353419c5560e5fb">shaka::js::mse::SourceBuffer</a>
+, <a class="el" href="classshaka_1_1js_1_1mse_1_1TextTrack.html#a9c1349fbfe0caf31f52725b9b2ffc342">shaka::js::mse::TextTrack</a>
+, <a class="el" href="classshaka_1_1media_1_1ios_1_1AvTextTrack.html#a30ef79d0cf6023de7c53c660dc2ca332">shaka::media::ios::AvTextTrack</a>
+, <a class="el" href="classshaka_1_1media_1_1TextTrack_1_1Impl.html#ab1e9569b9a328048c4c653a1ddb0cb05">shaka::media::TextTrack::Impl</a>
+, <a class="el" href="classshaka_1_1media_1_1TextTrack.html#a0da02b595110f2d14b0d7cc952e8b733">shaka::media::TextTrack</a>
 </li>
 <li>move()
 : <a class="el" href="classshaka_1_1impl_1_1union__.html#a61a36b5d901f02fa4e5e0a414ea18f02">shaka::impl::union_&lt; T, Rest &gt;</a>
 , <a class="el" href="classshaka_1_1impl_1_1union___3_01T_01_4.html#a159a8ac534082cb22293ff50b600c1f6">shaka::impl::union_&lt; T &gt;</a>
 </li>
+<li>mse_player
+: <a class="el" href="classshaka_1_1media_1_1DefaultMediaPlayer_1_1Impl.html#ac668a8b8f505fdaa4e6d63a9adc8c191">shaka::media::DefaultMediaPlayer::Impl</a>
+</li>
+<li>MseEndOfStream()
+: <a class="el" href="classshaka_1_1media_1_1ios_1_1AvMediaPlayer.html#a3c888e75030613fe33fd59c4f832b3f7">shaka::media::ios::AvMediaPlayer</a>
+, <a class="el" href="classshaka_1_1media_1_1MediaPlayer.html#af26d38e0b9a988d5acf66500ab3d4f69">shaka::media::MediaPlayer</a>
+, <a class="el" href="classshaka_1_1media_1_1MseMediaPlayer.html#a48a93e7621cc4ca36ada775fc3552d6d">shaka::media::MseMediaPlayer</a>
+, <a class="el" href="classshaka_1_1media_1_1ProxyMediaPlayer.html#abd4239698f13c428fb0b1ee7e9032842">shaka::media::ProxyMediaPlayer</a>
+</li>
+<li>MseMediaPlayer()
+: <a class="el" href="classshaka_1_1media_1_1MseMediaPlayer.html#aef9bb8ed52c96918bd68ef81d048999d">shaka::media::MseMediaPlayer</a>
+</li>
+<li>mutable_data_hash()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo__Frame.html#af593d8f458bc38543eb81fd0ec89be15">shaka::proto::MediaInfo_Frame</a>
+</li>
+<li>mutable_entries()
+: <a class="el" href="classshaka_1_1proto_1_1Object.html#a8950cc353cb76f169f2d1151cde1d044">shaka::proto::Object</a>
+</li>
+<li>mutable_extra_data_hash()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo__Stream.html#a09db0d31efb98e09b455267a34d2cd37">shaka::proto::MediaInfo_Stream</a>
+</li>
+<li>mutable_frames()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo.html#acb17aa399d63dfa79fe1ddd68217ff47">shaka::proto::MediaInfo</a>
+</li>
+<li>mutable_key()
+: <a class="el" href="classshaka_1_1proto_1_1Object__Entry.html#a430a50873f144dec27f025e6e8bca67f">shaka::proto::Object_Entry</a>
+</li>
+<li>mutable_mime()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo.html#af973882e6f4933f271ad5ae518a711a8">shaka::proto::MediaInfo</a>
+</li>
+<li>mutable_stream()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo.html#a532cee89c83d529adab72c3d66da065c">shaka::proto::MediaInfo</a>
+</li>
+<li>mutable_unknown_fields()
+: <a class="el" href="classshaka_1_1proto_1_1MediaInfo.html#a33b69f94872680c12767cb7e982f702d">shaka::proto::MediaInfo</a>
+, <a class="el" href="classshaka_1_1proto_1_1MediaInfo__Frame.html#adbe3cab53ca891ec5c5d705c47c99a27">shaka::proto::MediaInfo_Frame</a>
+, <a class="el" href="classshaka_1_1proto_1_1MediaInfo__Stream.html#a647792e6fa55d2dd7c5b04ccbef4f1df">shaka::proto::MediaInfo_Stream</a>
+, <a class="el" href="classshaka_1_1proto_1_1Object.html#a98d8ba10189d8d7f368a3410a2c0b890">shaka::proto::Object</a>
+, <a class="el" href="classshaka_1_1proto_1_1Object__Entry.html#a06a762282e1b5c147e3d0a5c9fcd65b7">shaka::proto::Object_Entry</a>
+, <a class="el" href="classshaka_1_1proto_1_1Value.html#a5cee135a67e1c14c6cb8ea488fae90b1">shaka::proto::Value</a>
+</li>
+<li>mutable_value()
+: <a class="el" href="classshaka_1_1proto_1_1Object__Entry.html#a88089abafa8141f8ede6e7db4847dbd7">shaka::proto::Object_Entry</a>
+</li>
+<li>mutable_value_bytes()
+: <a class="el" href="classshaka_1_1proto_1_1Value.html#afee2e673ca358ba9b48c73b71fc7df5b">shaka::proto::Value</a>
+</li>
+<li>mutable_value_object()
+: <a class="el" href="classshaka_1_1proto_1_1Value.html#a903ffa3a59d90708c848e6cb1ea6f203">shaka::proto::Value</a>
+</li>
+<li>mutable_value_string()
+: <a class="el" href="classshaka_1_1proto_1_1Value.html#a71dcbae16846dc36d700f20003fb7097">shaka::proto::Value</a>
+</li>
 <li>Muted()
-: <a class="el" href="classshaka_1_1js_1_1mse_1_1HTMLVideoElement.html#aa35f3cd7897633fc2c975c17b08dee91">shaka::js::mse::HTMLVideoElement</a>
-, <a class="el" href="classshaka_1_1Video.html#a61036b1866deca69aa9a00750408a3a3">shaka::Video</a>
+: <a class="el" href="classshaka_1_1js_1_1mse_1_1HTMLMediaElement.html#a88c458498c90ce7cad803def5404794e">shaka::js::mse::HTMLMediaElement</a>
+, <a class="el" href="classshaka_1_1media_1_1AppleAudioRenderer.html#a9fc731928bd01c00435defd6abd02dd9">shaka::media::AppleAudioRenderer</a>
+, <a class="el" href="classshaka_1_1media_1_1AudioRenderer.html#acae3f71fe0f3105d08a25da90de7f470">shaka::media::AudioRenderer</a>
+, <a class="el" href="classshaka_1_1media_1_1AudioRendererCommon.html#ae4bb8efdfa57500a3450fa25013b8b31">shaka::media::AudioRendererCommon</a>
+, <a class="el" href="classshaka_1_1media_1_1ios_1_1AvMediaPlayer.html#a91ddfbfc276e788a99e1974b31e31e88">shaka::media::ios::AvMediaPlayer</a>
+, <a class="el" href="classshaka_1_1media_1_1MediaPlayer.html#a0931757a8b000ee61701739b770de1bd">shaka::media::MediaPlayer</a>
+, <a class="el" href="classshaka_1_1media_1_1MseMediaPlayer.html#a9927086bdffe609b4615fb324f22170b">shaka::media::MseMediaPlayer</a>
 </li>
 <li>muted
-: <a class="el" href="interfaceShakaPlayerView.html#a88ff2420d4d4d4d90b07e2c193bcf71c">ShakaPlayerView</a>
+: <a class="el" href="classshaka_1_1media_1_1ProxyMediaPlayer_1_1Impl.html#a83e5f6867d9493041d5207ffa9c971c3">shaka::media::ProxyMediaPlayer::Impl</a>
+</li>
+<li>Muted()
+: <a class="el" href="classshaka_1_1media_1_1ProxyMediaPlayer.html#a091adf6b105a4192500f02768f2e9ea4">shaka::media::ProxyMediaPlayer</a>
+, <a class="el" href="classshaka_1_1media_1_1SdlAudioRenderer.html#a8dce79349a64ce2cbc5435c758fbcd3c">shaka::media::SdlAudioRenderer</a>
+</li>
+<li>muted
+: <a class="el" href="interfaceShakaPlayer.html#a652fadc38e4862e13deb5c2b6b74b8ad">ShakaPlayer</a>
+, <a class="el" href="interfaceShakaPlayerUiInfo.html#a1f830dfa23d6edc8eb970bcfbac78101">ShakaPlayerUiInfo</a>
+</li>
+<li>mutex
+: <a class="el" href="classshaka_1_1media_1_1DefaultMediaPlayer_1_1Impl.html#af7d9c00a23e7355f36a61a16faaa0c08">shaka::media::DefaultMediaPlayer::Impl</a>
+, <a class="el" href="classshaka_1_1media_1_1MediaPlayer_1_1ClientList_1_1Impl.html#a36607e1b58dba2f42253e876378898b5">shaka::media::MediaPlayer::ClientList::Impl</a>
+, <a class="el" href="classshaka_1_1media_1_1ProxyMediaPlayer_1_1Impl.html#affa8633ba9de5c90200cfa302d93a7e1">shaka::media::ProxyMediaPlayer::Impl</a>
+, <a class="el" href="classshaka_1_1media_1_1StreamBase_1_1Impl.html#aef1e59edf3810b50a7a88c3a1b5d88ca">shaka::media::StreamBase::Impl</a>
+, <a class="el" href="classshaka_1_1media_1_1TextTrack_1_1Impl.html#ac83259a50b476c0a32ea2f6a42c1a8c7">shaka::media::TextTrack::Impl</a>
 </li>
 <li>Mutex()
 : <a class="el" href="classshaka_1_1Mutex.html#aa209f6165ef31a2f4252634e256ac10c">shaka::Mutex</a>

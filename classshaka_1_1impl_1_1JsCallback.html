@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Shaka Player Embedded: shaka::impl::JsCallback&lt; Ret, Args &gt; Class Template Reference</title>
+<title>Shaka Player Embedded: shaka::impl::JsCallback&lt; Func &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -65,19 +65,19 @@ $(function() {
   <div class="summary">
 <a href="classshaka_1_1impl_1_1JsCallback-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">shaka::impl::JsCallback&lt; Ret, Args &gt; Class Template Reference</div>  </div>
+<div class="title">shaka::impl::JsCallback&lt; Func &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
 <p><code>#include &lt;<a class="el" href="register__member_8h_source.html">register_member.h</a>&gt;</code></p>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;typename Ret, typename... Args&gt;<br />
-class shaka::impl::JsCallback&lt; Ret, Args &gt;</h3>
+<div class="textblock"><h3>template&lt;typename Func&gt;<br />
+class shaka::impl::JsCallback&lt; Func &gt;</h3>
 
 <p>Pulls internal data |Data| from the given arguments structure. The internal data must be a POD type because it is stored as a binary blob in an ArrayBuffer.</p>
 <p>This needs to accept |T| to avoid invalid reinterpret_cast&lt;T&gt; usages. In V8, we store the type directly in the void*; in JSC, the void* stores the base type. </p>
 
-<p>Definition at line <a class="el" href="register__member_8h_source.html#l00398">398</a> of file <a class="el" href="register__member_8h_source.html">register_member.h</a>.</p>
+<p>Definition at line <a class="el" href="register__member_8h_source.html#l00417">417</a> of file <a class="el" href="register__member_8h_source.html">register_member.h</a>.</p>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>shaka/src/mapping/<a class="el" href="register__member_8h_source.html">register_member.h</a></li>
 </ul>

@@ -74,20 +74,22 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a48a6bfe2d60b3dd541ab87f5f3cb0ce4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1PipelineMonitor.html#a48a6bfe2d60b3dd541ab87f5f3cb0ce4">PipelineMonitor</a> (std::function&lt; <a class="el" href="namespaceshaka_1_1media.html#a907c0d43ea89e6cc0f52458a1d144bb4">BufferedRanges</a>()&gt; get_buffered, std::function&lt; <a class="el" href="namespaceshaka_1_1media.html#a907c0d43ea89e6cc0f52458a1d144bb4">BufferedRanges</a>()&gt; get_decoded, std::function&lt; void(<a class="el" href="namespaceshaka_1_1media.html#a265fb76aa4381b1301633f32d7945081">MediaReadyState</a>)&gt; ready_state_changed, const <a class="el" href="classshaka_1_1util_1_1Clock.html">util::Clock</a> *clock, <a class="el" href="classshaka_1_1media_1_1PipelineManager.html">PipelineManager</a> *pipeline)</td></tr>
-<tr class="separator:a48a6bfe2d60b3dd541ab87f5f3cb0ce4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa439af33e3aa0592ef7676f627f7c3b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1PipelineMonitor.html#afa439af33e3aa0592ef7676f627f7c3b">PipelineMonitor</a> (std::function&lt; <a class="el" href="namespaceshaka_1_1media.html#a907c0d43ea89e6cc0f52458a1d144bb4">BufferedRanges</a>()&gt; get_buffered, std::function&lt; <a class="el" href="namespaceshaka_1_1media.html#a907c0d43ea89e6cc0f52458a1d144bb4">BufferedRanges</a>()&gt; get_decoded, std::function&lt; void(<a class="el" href="group__media.html#ga3620c097822ad8eaa90ed6f20f83b211">VideoReadyState</a>)&gt; ready_state_changed, const <a class="el" href="classshaka_1_1util_1_1Clock.html">util::Clock</a> *clock, <a class="el" href="classshaka_1_1media_1_1PipelineManager.html">PipelineManager</a> *pipeline)</td></tr>
+<tr class="separator:afa439af33e3aa0592ef7676f627f7c3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7cb1a94de6038e1c6176c2d00375740c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1PipelineMonitor.html#a7cb1a94de6038e1c6176c2d00375740c">~PipelineMonitor</a> ()</td></tr>
 <tr class="separator:a7cb1a94de6038e1c6176c2d00375740c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31e301d2dbd12c984dd1787660fa5abe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1PipelineMonitor.html#a31e301d2dbd12c984dd1787660fa5abe">Start</a> ()</td></tr>
+<tr class="separator:a31e301d2dbd12c984dd1787660fa5abe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a5b6ea07c0ec069a5ca03129f09bc98"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1PipelineMonitor.html#a0a5b6ea07c0ec069a5ca03129f09bc98">Stop</a> ()</td></tr>
 <tr class="separator:a0a5b6ea07c0ec069a5ca03129f09bc98"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This manages a thread that monitors the media pipeline and updates the state based on the currently buffered content. This also handles transitioning to ended. </p>
 
-<p>Definition at line <a class="el" href="pipeline__monitor_8h_source.html#l00034">34</a> of file <a class="el" href="pipeline__monitor_8h_source.html">pipeline_monitor.h</a>.</p>
+<p>Definition at line <a class="el" href="pipeline__monitor_8h_source.html#l00036">36</a> of file <a class="el" href="pipeline__monitor_8h_source.html">pipeline_monitor.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a48a6bfe2d60b3dd541ab87f5f3cb0ce4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a48a6bfe2d60b3dd541ab87f5f3cb0ce4">&sect;&nbsp;</a></span>PipelineMonitor()</h2>
+<a id="afa439af33e3aa0592ef7676f627f7c3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa439af33e3aa0592ef7676f627f7c3b">&sect;&nbsp;</a></span>PipelineMonitor()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -107,7 +109,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::function&lt; void(<a class="el" href="namespaceshaka_1_1media.html#a265fb76aa4381b1301633f32d7945081">MediaReadyState</a>)&gt;&#160;</td>
+          <td class="paramtype">std::function&lt; void(<a class="el" href="group__media.html#ga3620c097822ad8eaa90ed6f20f83b211">VideoReadyState</a>)&gt;&#160;</td>
           <td class="paramname"><em>ready_state_changed</em>, </td>
         </tr>
         <tr>
@@ -130,7 +132,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline__monitor_8cc_source.html#l00048">48</a> of file <a class="el" href="pipeline__monitor_8cc_source.html">pipeline_monitor.cc</a>.</p>
+<p>Definition at line <a class="el" href="pipeline__monitor_8cc_source.html#l00049">49</a> of file <a class="el" href="pipeline__monitor_8cc_source.html">pipeline_monitor.cc</a>.</p>
 
 </div>
 </div>
@@ -149,11 +151,31 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="pipeline__monitor_8cc_source.html#l00063">63</a> of file <a class="el" href="pipeline__monitor_8cc_source.html">pipeline_monitor.cc</a>.</p>
+<p>Definition at line <a class="el" href="pipeline__monitor_8cc_source.html#l00067">67</a> of file <a class="el" href="pipeline__monitor_8cc_source.html">pipeline_monitor.cc</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a31e301d2dbd12c984dd1787660fa5abe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31e301d2dbd12c984dd1787660fa5abe">&sect;&nbsp;</a></span>Start()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void shaka::media::PipelineMonitor::Start </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Starts monitoring the current state. </p>
+
+<p>Definition at line <a class="el" href="pipeline__monitor_8cc_source.html#l00076">76</a> of file <a class="el" href="pipeline__monitor_8cc_source.html">pipeline_monitor.cc</a>.</p>
+
+</div>
+</div>
 <a id="a0a5b6ea07c0ec069a5ca03129f09bc98"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0a5b6ea07c0ec069a5ca03129f09bc98">&sect;&nbsp;</a></span>Stop()</h2>
 
@@ -168,9 +190,9 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Stops the background thread and joins it. </p>
+<p>Stops monitoring and waits for a call to start. </p>
 
-<p>Definition at line <a class="el" href="pipeline__monitor_8cc_source.html#l00067">67</a> of file <a class="el" href="pipeline__monitor_8cc_source.html">pipeline_monitor.cc</a>.</p>
+<p>Definition at line <a class="el" href="pipeline__monitor_8cc_source.html#l00083">83</a> of file <a class="el" href="pipeline__monitor_8cc_source.html">pipeline_monitor.cc</a>.</p>
 
 </div>
 </div>

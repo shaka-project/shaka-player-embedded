@@ -75,8 +75,58 @@ $(function() {
 Macros</h2></td></tr>
 <tr class="memitem:a2fbeaa276f2c47cb71d7fc31974d6936"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2shaka_2macros_8h.html#a2fbeaa276f2c47cb71d7fc31974d6936">SHAKA_EXPORT</a></td></tr>
 <tr class="separator:a2fbeaa276f2c47cb71d7fc31974d6936"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa18cafefe17fd17232932e3305a01e9a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2shaka_2macros_8h.html#aa18cafefe17fd17232932e3305a01e9a">SHAKA_DECLARE_STRUCT_SPECIAL_METHODS</a>(Type)</td></tr>
+<tr class="separator:aa18cafefe17fd17232932e3305a01e9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac933785290889b53e14d62c66f28af2a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2shaka_2macros_8h.html#ac933785290889b53e14d62c66f28af2a">SHAKA_NON_COPYABLE_TYPE</a>(Type)</td></tr>
+<tr class="separator:ac933785290889b53e14d62c66f28af2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72bfcb58a8fe34e943f2068c4cdbb35e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2shaka_2macros_8h.html#a72bfcb58a8fe34e943f2068c4cdbb35e">SHAKA_NON_MOVABLE_TYPE</a>(Type)</td></tr>
+<tr class="separator:a72bfcb58a8fe34e943f2068c4cdbb35e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae506145449340eb98f64be806a070bae"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2shaka_2macros_8h.html#ae506145449340eb98f64be806a070bae">SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE</a>(Type)</td></tr>
+<tr class="separator:ae506145449340eb98f64be806a070bae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9167cac5e3ba13a592c950b82f3e2242"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2shaka_2macros_8h.html#a9167cac5e3ba13a592c950b82f3e2242">SHAKA_DECLARE_INTERFACE_METHODS</a>(Type)</td></tr>
+<tr class="separator:a9167cac5e3ba13a592c950b82f3e2242"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a9167cac5e3ba13a592c950b82f3e2242"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9167cac5e3ba13a592c950b82f3e2242">&sect;&nbsp;</a></span>SHAKA_DECLARE_INTERFACE_METHODS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SHAKA_DECLARE_INTERFACE_METHODS</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Type</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">Type();                                     \</div><div class="line">  virtual ~Type();                            \</div><div class="line">  SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE(Type)</div></div><!-- fragment -->
+<p>Definition at line <a class="el" href="include_2shaka_2macros_8h_source.html#l00055">55</a> of file <a class="el" href="include_2shaka_2macros_8h_source.html">macros.h</a>.</p>
+
+</div>
+</div>
+<a id="aa18cafefe17fd17232932e3305a01e9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa18cafefe17fd17232932e3305a01e9a">&sect;&nbsp;</a></span>SHAKA_DECLARE_STRUCT_SPECIAL_METHODS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SHAKA_DECLARE_STRUCT_SPECIAL_METHODS</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Type</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">Type();                                          \</div><div class="line">  Type(<span class="keyword">const</span> Type&amp;);                               \</div><div class="line">  Type(Type&amp;&amp;);                                    \</div><div class="line">  ~Type();                                         \</div><div class="line">  Type&amp; operator=(<span class="keyword">const</span> Type&amp;);                    \</div><div class="line">  Type&amp; operator=(Type&amp;&amp;)</div></div><!-- fragment -->
+<p>Definition at line <a class="el" href="include_2shaka_2macros_8h_source.html#l00034">34</a> of file <a class="el" href="include_2shaka_2macros_8h_source.html">macros.h</a>.</p>
+
+</div>
+</div>
 <a id="a2fbeaa276f2c47cb71d7fc31974d6936"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2fbeaa276f2c47cb71d7fc31974d6936">&sect;&nbsp;</a></span>SHAKA_EXPORT</h2>
 
@@ -90,6 +140,67 @@ Macros</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Definition at line <a class="el" href="include_2shaka_2macros_8h_source.html#l00030">30</a> of file <a class="el" href="include_2shaka_2macros_8h_source.html">macros.h</a>.</p>
+
+</div>
+</div>
+<a id="ae506145449340eb98f64be806a070bae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae506145449340eb98f64be806a070bae">&sect;&nbsp;</a></span>SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Type</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><a class="code" href="include_2shaka_2macros_8h.html#ac933785290889b53e14d62c66f28af2a">SHAKA_NON_COPYABLE_TYPE</a>(Type);                 \</div><div class="line">  SHAKA_NON_MOVABLE_TYPE(Type)</div><div class="ttc" id="include_2shaka_2macros_8h_html_ac933785290889b53e14d62c66f28af2a"><div class="ttname"><a href="include_2shaka_2macros_8h.html#ac933785290889b53e14d62c66f28af2a">SHAKA_NON_COPYABLE_TYPE</a></div><div class="ttdeci">#define SHAKA_NON_COPYABLE_TYPE(Type)</div><div class="ttdef"><b>Definition:</b> <a href="include_2shaka_2macros_8h_source.html#l00043">macros.h:43</a></div></div>
+</div><!-- fragment -->
+<p>Definition at line <a class="el" href="include_2shaka_2macros_8h_source.html#l00051">51</a> of file <a class="el" href="include_2shaka_2macros_8h_source.html">macros.h</a>.</p>
+
+</div>
+</div>
+<a id="ac933785290889b53e14d62c66f28af2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac933785290889b53e14d62c66f28af2a">&sect;&nbsp;</a></span>SHAKA_NON_COPYABLE_TYPE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SHAKA_NON_COPYABLE_TYPE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Type</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">Type(<span class="keyword">const</span> Type&amp;) = <span class="keyword">delete</span>;         \</div><div class="line">  Type&amp; operator=(<span class="keyword">const</span> Type&amp;) = <span class="keyword">delete</span></div></div><!-- fragment -->
+<p>Definition at line <a class="el" href="include_2shaka_2macros_8h_source.html#l00043">43</a> of file <a class="el" href="include_2shaka_2macros_8h_source.html">macros.h</a>.</p>
+
+</div>
+</div>
+<a id="a72bfcb58a8fe34e943f2068c4cdbb35e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72bfcb58a8fe34e943f2068c4cdbb35e">&sect;&nbsp;</a></span>SHAKA_NON_MOVABLE_TYPE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SHAKA_NON_MOVABLE_TYPE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Type</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">Type(Type&amp;&amp;) = <span class="keyword">delete</span>;        \</div><div class="line">  Type&amp; operator=(Type&amp;&amp;) = <span class="keyword">delete</span></div></div><!-- fragment -->
+<p>Definition at line <a class="el" href="include_2shaka_2macros_8h_source.html#l00047">47</a> of file <a class="el" href="include_2shaka_2macros_8h_source.html">macros.h</a>.</p>
 
 </div>
 </div>

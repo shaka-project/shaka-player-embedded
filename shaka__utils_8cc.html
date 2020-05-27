@@ -69,7 +69,9 @@ $(function() {
 <div class="title">shaka_utils.cc File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="include_2shaka_2utils_8h_source.html">shaka/utils.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &lt;glog/logging.h&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &quot;<a class="el" href="include_2shaka_2utils_8h_source.html">shaka/utils.h</a>&quot;</code><br />
 </div>
 <p><a href="shaka__utils_8cc_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -80,8 +82,8 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga6a17dc11d2476b6c3eaa1542eb7f1261"><td class="memItemLeft" align="right" valign="top">ShakaRect&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#ga6a17dc11d2476b6c3eaa1542eb7f1261">shaka::FitVideoToWindow</a> (int video_width, int video_height, int window_width, int window_height, int window_x=0, int window_y=0)</td></tr>
-<tr class="separator:ga6a17dc11d2476b6c3eaa1542eb7f1261"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96138fb5c2bb486328b1bf118ceba9a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__utils.html#ga96138fb5c2bb486328b1bf118ceba9a2">shaka::FitVideoToRegion</a> (ShakaRect&lt; uint32_t &gt; <a class="el" href="apple__video__renderer_8cc.html#a493352026b08ddb62de53cbd5bd7685e">frame</a>, ShakaRect&lt; uint32_t &gt; bounds, Rational&lt; uint32_t &gt; sample_aspect_ratio, VideoFillMode mode, ShakaRect&lt; uint32_t &gt; *src, ShakaRect&lt; uint32_t &gt; *<a class="el" href="media__utils_8cc.html#ad447182ef5af9e4ff1446dbe2507f630">dest</a>)</td></tr>
+<tr class="separator:ga96138fb5c2bb486328b1bf118ceba9a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -64,6 +64,7 @@ $(function() {
 <div class="contents">
 <div class="textblock"><p>Shaka Player Embedded is a framework that runs <a href="https://www.github.com/google/shaka-player">Shaka Player</a> in native (C++) apps. This gives a cross-platform interface to Shaka Player allowing native apps to use the player. Your native apps can now be built with the same features, behavior, and API as your Shaka-based web apps.</p>
 <p>In addition to the C++ API, we provide a high-level wrapper for iOS called <a class="el" href="interfaceShakaPlayerView.html">ShakaPlayerView</a> which can be used from either Objective-C or Swift.</p>
+<p>See our <a href="https://google.github.io/shaka-player-embedded/">documentation</a> and <a href="https://google.github.io/shaka-player-embedded/md_shaka_docs_tutorial_setup.html">iOS tutorial</a>.</p>
 <h2>Platform support</h2>
 <p>We only support iOS at this time, but other platforms could be added.</p>
 <p>Because many on our team use Linux, there is a Linux port included to make it easier to work on non-iOS-specific features. Linux is not, however, a first-class target platform at this time.</p>
@@ -102,10 +103,16 @@ $(function() {
 <ol type="1">
 <li>Configure and Build</li>
 </ol>
-<p>You need to run <code>configure</code> to setup configuration settings. You can pass &ndash;help to see some of the options you can use. We don't support in-tree builds; you can either run <code>configure</code> in another directory or use the &ndash;config-name parameter. If you use &ndash;config-name, it will create a directory in the source root to hold the data.</p>
-<p>Once <code>configure</code> is done, you can build using <code>build.py</code>. There is a Makefile that will run the script for you if you prefer. If you used &ndash;config-name, you'll need to use that option in <code>build.py</code> (the Makefile will do this for you).</p>
-<div class="fragment"><div class="line">./configure --config-name Debug</div><div class="line">make</div></div><!-- fragment --><p>Or</p>
-<div class="fragment"><div class="line">mkdir foo</div><div class="line">cd foo</div><div class="line">../configure</div><div class="line">make</div></div><!-- fragment --><h2>Running the checks</h2>
+<p>You need to run <code>configure</code> to setup configuration settings. You can pass &ndash;help to see some of the options you can use. We don't support in-tree builds; you need to run <code>configure</code> in another directory.</p>
+<p>Once <code>configure</code> is done, you can build using <code>build.py</code>. There is a Makefile that will run the script for you if you prefer.</p>
+<div class="fragment"><div class="line">mkdir foo</div><div class="line">cd foo</div><div class="line">../configure</div><div class="line">make</div></div><!-- fragment --><ol type="1">
+<li>Copy the shared library</li>
+</ol>
+<p>Once it is built, you can use the resulting shared library.</p>
+<p>On iOS, there will be a <code>ShakaPlayerEmbedded.framework</code> folder that you use; there is also a <code>ShakaPlayerEmbedded.FFmpeg.framework</code> bundle that you need to include in your app, but you shouldn't use it directly since we don't maintain ABI for it.</p>
+<p>On other platforms, there is a <code>libshaka-player-embedded.dylib</code> or a <code>libshaka-player-embedded.so</code> file you can use. Like iOS, there is a <code>libshaka-player-embedded.ffmpeg.*</code> file you need to include too.</p>
+<p>If you are using a custom <code>--eme-impl</code>, you need to copy the respective shared libraries too, if needed.</p>
+<h2>Running the checks</h2>
 <p>If you intend to send a pull-request, you need to ensure the code complies with style guidelines. This is done with the <code>shaka/tools/presubmit.py</code> script, which can be run with <code>make check</code>.</p>
 <p>To run all the checks, you also have to have <code>clang-tidy</code> installed. It needs to be installed on <code>PATH</code>, or you can pass <code>--clang-tidy</code> to the script to tell it where to find the binary. </p>
 </div></div><!-- contents -->

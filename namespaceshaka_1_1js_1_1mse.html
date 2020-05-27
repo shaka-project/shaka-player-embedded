@@ -64,7 +64,9 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#enum-members">Enumerations</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">shaka::js::mse Namespace Reference</div>  </div>
 </div><!--header-->
@@ -72,6 +74,16 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1AudioTrack.html">AudioTrack</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1AudioTrackFactory.html">AudioTrackFactory</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1AudioTrackList.html">AudioTrackList</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1HTMLMediaElement.html">HTMLMediaElement</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1HTMLMediaElementFactory.html">HTMLMediaElementFactory</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1HTMLVideoElement.html">HTMLVideoElement</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1HTMLVideoElementFactory.html">HTMLVideoElementFactory</a></td></tr>
@@ -84,6 +96,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1MediaSourceFactory.html">MediaSourceFactory</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1MediaTrack.html">MediaTrack</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1SourceBuffer.html">SourceBuffer</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1SourceBufferFactory.html">SourceBufferFactory</a></td></tr>
@@ -92,13 +106,41 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1TextTrackFactory.html">TextTrackFactory</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1TextTrackList.html">TextTrackList</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1TimeRanges.html">TimeRanges</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1TimeRangesFactory.html">TimeRangesFactory</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1TrackList.html">TrackList</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1TrackListFactory.html">TrackListFactory</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1js_1_1mse_1_1VideoPlaybackQuality.html">VideoPlaybackQuality</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1VideoTrack.html">VideoTrack</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1VideoTrackFactory.html">VideoTrackFactory</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1js_1_1mse_1_1VideoTrackList.html">VideoTrackList</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a020269e6a39f5fa8b2a958931f0716ab"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1js_1_1mse.html#a020269e6a39f5fa8b2a958931f0716ab">AudioTrackListFactory</a> = <a class="el" href="classshaka_1_1js_1_1mse_1_1TrackListFactory.html">TrackListFactory</a>&lt; <a class="el" href="classshaka_1_1js_1_1mse_1_1AudioTrackList.html">AudioTrackList</a> &gt;</td></tr>
+<tr class="separator:a020269e6a39f5fa8b2a958931f0716ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ff76a551f2d61f6c3daf475a76d04ce"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1js_1_1mse.html#a8ff76a551f2d61f6c3daf475a76d04ce">VideoTrackListFactory</a> = <a class="el" href="classshaka_1_1js_1_1mse_1_1TrackListFactory.html">TrackListFactory</a>&lt; <a class="el" href="classshaka_1_1js_1_1mse_1_1VideoTrackList.html">VideoTrackList</a> &gt;</td></tr>
+<tr class="separator:a8ff76a551f2d61f6c3daf475a76d04ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32d07b665e8a33dd28dbc997bcfb83a4"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1js_1_1mse.html#a32d07b665e8a33dd28dbc997bcfb83a4">TextTrackListFactory</a> = <a class="el" href="classshaka_1_1js_1_1mse_1_1TrackListFactory.html">TrackListFactory</a>&lt; <a class="el" href="classshaka_1_1js_1_1mse_1_1TextTrackList.html">TextTrackList</a> &gt;</td></tr>
+<tr class="separator:a32d07b665e8a33dd28dbc997bcfb83a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:adb28a87ef6e3a4968f4e8d6ee205fc16"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1js_1_1mse.html#adb28a87ef6e3a4968f4e8d6ee205fc16">CanPlayTypeEnum</a> { <a class="el" href="namespaceshaka_1_1js_1_1mse.html#adb28a87ef6e3a4968f4e8d6ee205fc16aba2b45bdc11e2a4a6e86aab2ac693cbb">CanPlayTypeEnum::EMPTY</a>, 
+<a class="el" href="namespaceshaka_1_1js_1_1mse.html#adb28a87ef6e3a4968f4e8d6ee205fc16a2bdc01416a885dbb723dc23f956b78f2">CanPlayTypeEnum::MAYBE</a>, 
+<a class="el" href="namespaceshaka_1_1js_1_1mse.html#adb28a87ef6e3a4968f4e8d6ee205fc16abf43d39e5e51611b9062de5c8e829266">CanPlayTypeEnum::PROBABLY</a>
+ }</td></tr>
+<tr class="separator:adb28a87ef6e3a4968f4e8d6ee205fc16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a21388e4e8e71a107865997f772414029"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1js_1_1mse.html#a21388e4e8e71a107865997f772414029">MediaErrorCode</a> { <a class="el" href="namespaceshaka_1_1js_1_1mse.html#a21388e4e8e71a107865997f772414029a4ef538e69c161f8591eb3d052839e1e5">MEDIA_ERR_ABORTED</a> = 1, 
 <a class="el" href="namespaceshaka_1_1js_1_1mse.html#a21388e4e8e71a107865997f772414029a101f497d21978e2076861506cf2f6a61">MEDIA_ERR_NETWORK</a> = 2, 
 <a class="el" href="namespaceshaka_1_1js_1_1mse.html#a21388e4e8e71a107865997f772414029aef6db6d97f30ad74870dd50dcd4f7258">MEDIA_ERR_DECODE</a> = 3, 
@@ -114,12 +156,61 @@ Enumerations</h2></td></tr>
 <a class="el" href="namespaceshaka_1_1js_1_1mse.html#a9178d64f05ada7255454c9fefa182a04a2cb198a10d0a4c217ff4c15e98a97215">AppendMode::SEQUENCE</a>
  }</td></tr>
 <tr class="separator:a9178d64f05ada7255454c9fefa182a04"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adb28a87ef6e3a4968f4e8d6ee205fc16"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1js_1_1mse.html#adb28a87ef6e3a4968f4e8d6ee205fc16">CanPlayTypeEnum</a> { <a class="el" href="namespaceshaka_1_1js_1_1mse.html#adb28a87ef6e3a4968f4e8d6ee205fc16aba2b45bdc11e2a4a6e86aab2ac693cbb">CanPlayTypeEnum::EMPTY</a>, 
-<a class="el" href="namespaceshaka_1_1js_1_1mse.html#adb28a87ef6e3a4968f4e8d6ee205fc16a2bdc01416a885dbb723dc23f956b78f2">CanPlayTypeEnum::MAYBE</a>, 
-<a class="el" href="namespaceshaka_1_1js_1_1mse.html#adb28a87ef6e3a4968f4e8d6ee205fc16abf43d39e5e51611b9062de5c8e829266">CanPlayTypeEnum::PROBABLY</a>
- }</td></tr>
-<tr class="separator:adb28a87ef6e3a4968f4e8d6ee205fc16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a24b0233e5b3e5eed7e8713b0eacc817e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="src_2util_2macros_8h.html#a07f9c2b264732fa10c6fb19e1625ff0c">END_ALLOW_COMPLEX_STATICS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1js_1_1mse.html#a24b0233e5b3e5eed7e8713b0eacc817e">DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE</a> (<a class="el" href="structshaka_1_1js_1_1mse_1_1VideoPlaybackQuality.html">VideoPlaybackQuality</a>)</td></tr>
+<tr class="separator:a24b0233e5b3e5eed7e8713b0eacc817e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="a020269e6a39f5fa8b2a958931f0716ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a020269e6a39f5fa8b2a958931f0716ab">&sect;&nbsp;</a></span>AudioTrackListFactory</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceshaka_1_1js_1_1mse.html#a020269e6a39f5fa8b2a958931f0716ab">shaka::js::mse::AudioTrackListFactory</a> = typedef <a class="el" href="classshaka_1_1js_1_1mse_1_1TrackListFactory.html">TrackListFactory</a>&lt;<a class="el" href="classshaka_1_1js_1_1mse_1_1AudioTrackList.html">AudioTrackList</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="track__list_8h_source.html#l00170">170</a> of file <a class="el" href="track__list_8h_source.html">track_list.h</a>.</p>
+
+</div>
+</div>
+<a id="a32d07b665e8a33dd28dbc997bcfb83a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a32d07b665e8a33dd28dbc997bcfb83a4">&sect;&nbsp;</a></span>TextTrackListFactory</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceshaka_1_1js_1_1mse.html#a32d07b665e8a33dd28dbc997bcfb83a4">shaka::js::mse::TextTrackListFactory</a> = typedef <a class="el" href="classshaka_1_1js_1_1mse_1_1TrackListFactory.html">TrackListFactory</a>&lt;<a class="el" href="classshaka_1_1js_1_1mse_1_1TextTrackList.html">TextTrackList</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="track__list_8h_source.html#l00172">172</a> of file <a class="el" href="track__list_8h_source.html">track_list.h</a>.</p>
+
+</div>
+</div>
+<a id="a8ff76a551f2d61f6c3daf475a76d04ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ff76a551f2d61f6c3daf475a76d04ce">&sect;&nbsp;</a></span>VideoTrackListFactory</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceshaka_1_1js_1_1mse.html#a8ff76a551f2d61f6c3daf475a76d04ce">shaka::js::mse::VideoTrackListFactory</a> = typedef <a class="el" href="classshaka_1_1js_1_1mse_1_1TrackListFactory.html">TrackListFactory</a>&lt;<a class="el" href="classshaka_1_1js_1_1mse_1_1VideoTrackList.html">VideoTrackList</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="track__list_8h_source.html#l00171">171</a> of file <a class="el" href="track__list_8h_source.html">track_list.h</a>.</p>
+
+</div>
+</div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
 <a id="a9178d64f05ada7255454c9fefa182a04"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9178d64f05ada7255454c9fefa182a04">&sect;&nbsp;</a></span>AppendMode</h2>
@@ -145,7 +236,7 @@ Enumerations</h2></td></tr>
 <tr><td class="fieldname"><a id="a9178d64f05ada7255454c9fefa182a04a2cb198a10d0a4c217ff4c15e98a97215"></a>SEQUENCE&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p>Definition at line <a class="el" href="source__buffer_8h_source.html#l00032">32</a> of file <a class="el" href="source__buffer_8h_source.html">source_buffer.h</a>.</p>
+<p>Definition at line <a class="el" href="source__buffer_8h_source.html#l00038">38</a> of file <a class="el" href="source__buffer_8h_source.html">source_buffer.h</a>.</p>
 
 </div>
 </div>
@@ -174,7 +265,7 @@ Enumerations</h2></td></tr>
 <tr><td class="fieldname"><a id="adb28a87ef6e3a4968f4e8d6ee205fc16abf43d39e5e51611b9062de5c8e829266"></a>PROBABLY&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p>Definition at line <a class="el" href="video__element_8h_source.html#l00043">43</a> of file <a class="el" href="video__element_8h_source.html">video_element.h</a>.</p>
+<p>Definition at line <a class="el" href="media__element_8h_source.html#l00046">46</a> of file <a class="el" href="media__element_8h_source.html">media_element.h</a>.</p>
 
 </div>
 </div>
@@ -225,7 +316,26 @@ Enumerations</h2></td></tr>
 <tr><td class="fieldname"><a id="a156a7a96b3682c04da8c4ff6f79af9e6a3032bcfd5e671852750a0304cd2b024a"></a>ENDED&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p>Definition at line <a class="el" href="media__source_8h_source.html#l00039">39</a> of file <a class="el" href="media__source_8h_source.html">media_source.h</a>.</p>
+<p>Definition at line <a class="el" href="media__source_8h_source.html#l00040">40</a> of file <a class="el" href="media__source_8h_source.html">media_source.h</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a24b0233e5b3e5eed7e8713b0eacc817e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24b0233e5b3e5eed7e8713b0eacc817e">&sect;&nbsp;</a></span>DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="src_2util_2macros_8h.html#a07f9c2b264732fa10c6fb19e1625ff0c">END_ALLOW_COMPLEX_STATICS</a> shaka::js::mse::DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structshaka_1_1js_1_1mse_1_1VideoPlaybackQuality.html">VideoPlaybackQuality</a>&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

@@ -8,8 +8,8 @@ var searchData=
   ['player_2eh',['player.h',['../player_8h.html',1,'']]],
   ['player_5fexterns_2binternal_2eh',['player_externs+Internal.h',['../player__externs_09Internal_8h.html',1,'']]],
   ['player_5fexterns_2ecc',['player_externs.cc',['../player__externs_8cc.html',1,'']]],
-  ['player_5fexterns_2eh',['player_externs.h',['../src_2js_2player__externs_8h.html',1,'']]],
   ['player_5fexterns_2eh',['player_externs.h',['../player__externs_8h.html',1,'']]],
+  ['player_5fexterns_2eh',['player_externs.h',['../src_2js_2player__externs_8h.html',1,'']]],
   ['player_5fexterns_5fjs_2ecc',['player_externs_js.cc',['../player__externs__js_8cc.html',1,'']]],
   ['player_5fexterns_5fobjc_2eh',['player_externs_objc.h',['../player__externs__objc_8h.html',1,'']]],
   ['player_5fexterns_5fobjc_2emm',['player_externs_objc.mm',['../player__externs__objc_8mm.html',1,'']]],
@@ -17,5 +17,7 @@ var searchData=
   ['progress_5fevent_2eh',['progress_event.h',['../progress__event_8h.html',1,'']]],
   ['promise_2ecc',['promise.cc',['../promise_8cc.html',1,'']]],
   ['promise_2eh',['promise.h',['../promise_8h.html',1,'']]],
+  ['proxy_5fmedia_5fplayer_2ecc',['proxy_media_player.cc',['../proxy__media__player_8cc.html',1,'']]],
+  ['proxy_5fmedia_5fplayer_2eh',['proxy_media_player.h',['../proxy__media__player_8h.html',1,'']]],
   ['pseudo_5fsingleton_2eh',['pseudo_singleton.h',['../pseudo__singleton_8h.html',1,'']]]
 ];

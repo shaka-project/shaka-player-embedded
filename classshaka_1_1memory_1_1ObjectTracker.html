@@ -84,8 +84,12 @@ Inheritance diagram for shaka::memory::ObjectTracker:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a83b5780a8fcdf8d2fbf5b35611c10eb4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classshaka_1_1memory_1_1HeapTracer.html">HeapTracer</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html#a83b5780a8fcdf8d2fbf5b35611c10eb4">heap_tracer</a> ()</td></tr>
-<tr class="separator:a83b5780a8fcdf8d2fbf5b35611c10eb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6c747751db972647ad0200428ae9083"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html#ad6c747751db972647ad0200428ae9083">ObjectTracker</a> (<a class="el" href="classshaka_1_1memory_1_1HeapTracer.html">HeapTracer</a> *tracer)</td></tr>
+<tr class="separator:ad6c747751db972647ad0200428ae9083"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fe1bd5738d58826bbb3a2edae144d88"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html#a0fe1bd5738d58826bbb3a2edae144d88">~ObjectTracker</a> ()</td></tr>
+<tr class="separator:a0fe1bd5738d58826bbb3a2edae144d88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26900e42c738713c7608c32b4d32da5a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html#a26900e42c738713c7608c32b4d32da5a">SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE</a> (<a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html">ObjectTracker</a>)</td></tr>
+<tr class="separator:a26900e42c738713c7608c32b4d32da5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63093c3a007f924f6a24eaed360935ae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html#a63093c3a007f924f6a24eaed360935ae">RegisterObject</a> (<a class="el" href="classshaka_1_1memory_1_1Traceable.html">Traceable</a> *object)</td></tr>
 <tr class="separator:a63093c3a007f924f6a24eaed360935ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b9039c995ee071791a3152d8617a85c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html#a3b9039c995ee071791a3152d8617a85c">ForceAlive</a> (const <a class="el" href="classshaka_1_1memory_1_1Traceable.html">Traceable</a> *ptr)</td></tr>
@@ -108,12 +112,6 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
-<tr class="memitem:a153832dc0680eb0c9644ca2b770b6810"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html#a153832dc0680eb0c9644ca2b770b6810">eme::ClearKeyImplementationTest</a></td></tr>
-<tr class="separator:a153832dc0680eb0c9644ca2b770b6810"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0c3d792d1b364af7b1b8bfa15670e89e"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html#a0c3d792d1b364af7b1b8bfa15670e89e">HeapTracerTest</a></td></tr>
-<tr class="separator:a0c3d792d1b364af7b1b8bfa15670e89e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f716e6a05f0175217dd80eee7866f70"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html#a8f716e6a05f0175217dd80eee7866f70">ObjectTrackerIntegration</a></td></tr>
-<tr class="separator:a8f716e6a05f0175217dd80eee7866f70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb3625361522f1bfb408fd57e56d6052"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html#acb3625361522f1bfb408fd57e56d6052">ObjectTrackerTest</a></td></tr>
 <tr class="separator:acb3625361522f1bfb408fd57e56d6052"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -128,8 +126,56 @@ Additional Inherited Members</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Defines a dynamic object tracker. This is a singleton class. This is used to track the dynamic backing objects that we create so we can free them when they are no longer used. Deriving from BackingObjectBase will automatically use this as the backing store for 'new' usages. Objects allocated using this should not use 'delete'. </p>
 
-<p>Definition at line <a class="el" href="object__tracker_8h_source.html#l00048">48</a> of file <a class="el" href="object__tracker_8h_source.html">object_tracker.h</a>.</p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+<p>Definition at line <a class="el" href="object__tracker_8h_source.html#l00051">51</a> of file <a class="el" href="object__tracker_8h_source.html">object_tracker.h</a>.</p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="ad6c747751db972647ad0200428ae9083"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6c747751db972647ad0200428ae9083">&sect;&nbsp;</a></span>ObjectTracker()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">shaka::memory::ObjectTracker::ObjectTracker </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classshaka_1_1memory_1_1HeapTracer.html">HeapTracer</a> *&#160;</td>
+          <td class="paramname"><em>tracer</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00097">97</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
+
+</div>
+</div>
+<a id="a0fe1bd5738d58826bbb3a2edae144d88"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0fe1bd5738d58826bbb3a2edae144d88">&sect;&nbsp;</a></span>~ObjectTracker()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">shaka::memory::ObjectTracker::~ObjectTracker </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00100">100</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a id="ad8edf6f78fefd86b936b4a5660ef8048"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad8edf6f78fefd86b936b4a5660ef8048">&sect;&nbsp;</a></span>AddRef()</h2>
 
@@ -147,7 +193,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Increment the reference count of the given object. </p>
 
-<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00041">41</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
+<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00040">40</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
 
 </div>
 </div>
@@ -167,7 +213,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Releases all object this owns. This is called as part of shutdown. </p>
 
-<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00139">139</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
+<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00121">121</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
 
 </div>
 </div>
@@ -188,7 +234,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classshaka_1_1memory_1_1HeapTracer.html#a00c4c9c8faa747be0729ef6ebf25578e">HeapTracer::ForceAlive</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00036">36</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
+<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00035">35</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
 
 </div>
 </div>
@@ -214,7 +260,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00080">80</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
+<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00078">78</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
 
 </div>
 </div>
@@ -234,34 +280,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Get all the objects that have a non-zero ref count. </p>
 
-<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00068">68</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
-
-</div>
-</div>
-<a id="a83b5780a8fcdf8d2fbf5b35611c10eb4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a83b5780a8fcdf8d2fbf5b35611c10eb4">&sect;&nbsp;</a></span>heap_tracer()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classshaka_1_1memory_1_1HeapTracer.html">HeapTracer</a>* shaka::memory::ObjectTracker::heap_tracer </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="object__tracker_8h_source.html#l00050">50</a> of file <a class="el" href="object__tracker_8h_source.html">object_tracker.h</a>.</p>
+<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00067">67</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
 
 </div>
 </div>
@@ -282,7 +301,7 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Registers the given object to be tracked. </p>
 
-<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00026">26</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
+<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00025">25</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
 
 </div>
 </div>
@@ -303,83 +322,29 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 <p>Decrement the reference count of the given object. </p>
 
-<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00052">52</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
+<p>Definition at line <a class="el" href="object__tracker_8cc_source.html#l00051">51</a> of file <a class="el" href="object__tracker_8cc_source.html">object_tracker.cc</a>.</p>
+
+</div>
+</div>
+<a id="a26900e42c738713c7608c32b4d32da5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26900e42c738713c7608c32b4d32da5a">&sect;&nbsp;</a></span>SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">shaka::memory::ObjectTracker::SHAKA_NON_COPYABLE_OR_MOVABLE_TYPE </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classshaka_1_1memory_1_1ObjectTracker.html">ObjectTracker</a>&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
 <h2 class="groupheader">Friends And Related Function Documentation</h2>
-<a id="a153832dc0680eb0c9644ca2b770b6810"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a153832dc0680eb0c9644ca2b770b6810">&sect;&nbsp;</a></span>eme::ClearKeyImplementationTest</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">friend class eme::ClearKeyImplementationTest</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="object__tracker_8h_source.html#l00084">84</a> of file <a class="el" href="object__tracker_8h_source.html">object_tracker.h</a>.</p>
-
-</div>
-</div>
-<a id="a0c3d792d1b364af7b1b8bfa15670e89e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0c3d792d1b364af7b1b8bfa15670e89e">&sect;&nbsp;</a></span>HeapTracerTest</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">friend class HeapTracerTest</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="object__tracker_8h_source.html#l00085">85</a> of file <a class="el" href="object__tracker_8h_source.html">object_tracker.h</a>.</p>
-
-</div>
-</div>
-<a id="a8f716e6a05f0175217dd80eee7866f70"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8f716e6a05f0175217dd80eee7866f70">&sect;&nbsp;</a></span>ObjectTrackerIntegration</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">friend class ObjectTrackerIntegration</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="object__tracker_8h_source.html#l00086">86</a> of file <a class="el" href="object__tracker_8h_source.html">object_tracker.h</a>.</p>
-
-</div>
-</div>
 <a id="acb3625361522f1bfb408fd57e56d6052"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acb3625361522f1bfb408fd57e56d6052">&sect;&nbsp;</a></span>ObjectTrackerTest</h2>
 
@@ -400,7 +365,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="object__tracker_8h_source.html#l00087">87</a> of file <a class="el" href="object__tracker_8h_source.html">object_tracker.h</a>.</p>
+<p>Definition at line <a class="el" href="object__tracker_8h_source.html#l00084">84</a> of file <a class="el" href="object__tracker_8h_source.html">object_tracker.h</a>.</p>
 
 </div>
 </div>

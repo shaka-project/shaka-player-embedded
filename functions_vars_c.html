@@ -65,7 +65,7 @@ $(function() {
 : <a class="el" href="structshaka_1_1util_1_1Finally.html#a9cac8b011e2f2a310ee18cca34e8ba2f">shaka::util::Finally</a>
 </li>
 <li>callback
-: <a class="el" href="structshaka_1_1impl_1_1InternalCallbackData.html#af502ec5b6f06d8c7fd1826475dc8ca01">shaka::impl::InternalCallbackData&lt; Ret, Args &gt;</a>
+: <a class="el" href="structshaka_1_1impl_1_1InternalCallbackData.html#a7a5b5d9076d93f165fd627867741cf74">shaka::impl::InternalCallbackData&lt; Func &gt;</a>
 , <a class="el" href="classshaka_1_1impl_1_1PendingTask.html#a8f92d68e3ca5d3bd1a800fb4c9542028">shaka::impl::PendingTask&lt; Func &gt;</a>
 , <a class="el" href="classshaka_1_1js_1_1TestType.html#af1d287fd549721fce59b8daf0e565a8c">shaka::js::TestType</a>
 </li>
@@ -75,11 +75,28 @@ $(function() {
 <li>category
 : <a class="el" href="classshaka_1_1Error.html#a895fc9addf05f5ca4b6b42e63ac47eb4">shaka::Error</a>
 </li>
+<li>channel_count
+: <a class="el" href="classshaka_1_1media_1_1StreamInfo.html#a492bccbf86faf5a9607061f22cdedd80">shaka::media::StreamInfo</a>
+</li>
+<li>channels
+: <a class="el" href="structshaka_1_1media_1_1AudioConfiguration.html#a9fcbb35006935b82d7d5fc1cf77585af">shaka::media::AudioConfiguration</a>
+</li>
+<li>channelsCount
+: <a class="el" href="classshaka_1_1Track_1_1Impl.html#a8599722e46ea36ab1a5c79f7f0c447ff">shaka::Track::Impl</a>
+</li>
 <li>character_data
 : <a class="el" href="structshaka_1_1Environment_1_1Impl.html#a14a779dad2270a67a4ccc60af0b7e698">shaka::Environment::Impl</a>
 </li>
 <li>clear_blocks
 : <a class="el" href="structshaka_1_1eme_1_1EncryptionPattern.html#ab7363c3fb7fefef0fafca4948f662dc6">shaka::eme::EncryptionPattern</a>
+</li>
+<li>clear_bytes
+: <a class="el" href="structshaka_1_1eme_1_1SubsampleInfo.html#a51560d5bd687fa728d9ee92790b9da75">shaka::eme::SubsampleInfo</a>
+</li>
+<li>clients
+: <a class="el" href="classshaka_1_1media_1_1MediaPlayer_1_1ClientList_1_1Impl.html#a6b1213481e0f417f6a92cc6cd2b10192">shaka::media::MediaPlayer::ClientList::Impl</a>
+, <a class="el" href="classshaka_1_1media_1_1ProxyMediaPlayer_1_1Impl.html#a3852d9ed85b359e2aede83fd6672cb16">shaka::media::ProxyMediaPlayer::Impl</a>
+, <a class="el" href="classshaka_1_1media_1_1TextTrack_1_1Impl.html#a1704fac9a2a711401ffe9a7927404c75">shaka::media::TextTrack::Impl</a>
 </li>
 <li>closed
 : <a class="el" href="classshaka_1_1js_1_1eme_1_1MediaKeySession.html#afc44897d544dcbd53672efaaef985455">shaka::js::eme::MediaKeySession</a>
@@ -88,6 +105,15 @@ $(function() {
 : <a class="el" href="classshaka_1_1Error.html#a7eb54639cf4ee749a3b31f408143ff84">shaka::Error</a>
 , <a class="el" href="classshaka_1_1js_1_1dom_1_1DOMException.html#af4706ecfad9d71060d02c9728da91318">shaka::js::dom::DOMException</a>
 , <a class="el" href="classshaka_1_1js_1_1mse_1_1MediaError.html#ad2923502f3472c75ae4decf38e3e53e9">shaka::js::mse::MediaError</a>
+</li>
+<li>codec
+: <a class="el" href="classshaka_1_1media_1_1StreamInfo.html#adf62c6528cab74a584091cedb0449ea0">shaka::media::StreamInfo</a>
+</li>
+<li>codecs
+: <a class="el" href="classshaka_1_1Track_1_1Impl.html#a21c31fabab5a67238ddbdfb681f0e4b5">shaka::Track::Impl</a>
+</li>
+<li>color_gamut
+: <a class="el" href="structshaka_1_1media_1_1VideoConfiguration.html#ac67bf4ad5c6828b374d3ed685761f07c">shaka::media::VideoConfiguration</a>
 </li>
 <li>comment
 : <a class="el" href="structshaka_1_1Environment_1_1Impl.html#a5de6f10fe38d602b6505cfd1ec7c19f1">shaka::Environment::Impl</a>
@@ -98,17 +124,27 @@ $(function() {
 <li>container_node
 : <a class="el" href="structshaka_1_1Environment_1_1Impl.html#a1d9955cd7584e52ef1c246ed197893e2">shaka::Environment::Impl</a>
 </li>
-<li>converter
-: <a class="el" href="classshaka_1_1Frame_1_1Impl.html#a210ef44979639fbed968421bb7bf2a76">shaka::Frame::Impl</a>
+<li>content_type
+: <a class="el" href="structshaka_1_1media_1_1AudioConfiguration.html#a71e5be4472d5202d54f9b5ee8acbcba4">shaka::media::AudioConfiguration</a>
+, <a class="el" href="structshaka_1_1media_1_1VideoConfiguration.html#a60b20044887a435f8075d1fcee9c396c">shaka::media::VideoConfiguration</a>
+</li>
+<li>corrupted_video_frames
+: <a class="el" href="structshaka_1_1media_1_1VideoPlaybackQuality.html#a02ecf347069cd515aac3ff43ab9bfeed">shaka::media::VideoPlaybackQuality</a>
+</li>
+<li>count
+: <a class="el" href="classshaka_1_1js_1_1idb_1_1IDBIterateCursorRequest.html#a385929e6de9a62a20f9af3094d83d23b">shaka::js::idb::IDBIterateCursorRequest</a>
 </li>
 <li>ctx
 : <a class="el" href="structshaka_1_1util_1_1Decryptor_1_1Impl.html#adc1da04886afb4ed1b13e2540f8d5250">shaka::util::Decryptor::Impl</a>
 </li>
 <li>cues
-: <a class="el" href="classshaka_1_1js_1_1mse_1_1TextTrack.html#aa7e163adbc90136b9932074f1669872e">shaka::js::mse::TextTrack</a>
+: <a class="el" href="classshaka_1_1media_1_1TextTrack_1_1Impl.html#aab6b6c0aa349c1ffd5a4aac312e51173">shaka::media::TextTrack::Impl</a>
 </li>
 <li>current_target
 : <a class="el" href="classshaka_1_1js_1_1events_1_1Event.html#af0794e3fa0ca15e4d967dcf9236c75e4">shaka::js::events::Event</a>
+</li>
+<li>current_time
+: <a class="el" href="classshaka_1_1media_1_1ProxyMediaPlayer_1_1Impl.html#a9744c91564c3f0550104e1355b0f16c2">shaka::media::ProxyMediaPlayer::Impl</a>
 </li>
 </ul>
 </div><!-- contents -->

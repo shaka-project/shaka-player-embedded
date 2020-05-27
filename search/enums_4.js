@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['frametype',['FrameType',['../namespaceshaka_1_1media.html#a4beddf609e34b6c21be00fc83158a25a',1,'shaka::media']]]
+  ['framelocation',['FrameLocation',['../namespaceshaka_1_1media.html#ac0f5ff90f4c46433a8ea3878a84d91d3',1,'shaka::media']]]
 ];

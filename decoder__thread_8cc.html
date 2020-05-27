@@ -63,21 +63,20 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#namespaces">Namespaces</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#namespaces">Namespaces</a>  </div>
   <div class="headertitle">
 <div class="title">decoder_thread.cc File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="decoder__thread_8h_source.html">src/media/decoder_thread.h</a>&quot;</code><br />
-<code>#include &lt;chrono&gt;</code><br />
+<code>#include &lt;glog/logging.h&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;cmath&gt;</code><br />
 <code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;utility&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
-<code>#include &quot;<a class="el" href="media__processor_8h_source.html">src/media/media_processor.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="pipeline__manager_8h_source.html">src/media/pipeline_manager.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="stream_8h_source.html">src/media/stream.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="clock_8h_source.html">src/util/clock.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="src_2util_2utils_8h_source.html">src/util/utils.h</a>&quot;</code><br />
 </div>
 <p><a href="decoder__thread_8cc_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -87,13 +86,6 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceshaka_1_1media"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html">shaka::media</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:a7d449e753ea413acd571aa5b48eb8508"><td class="memItemLeft" align="right" valign="top">constexpr const double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a7d449e753ea413acd571aa5b48eb8508">shaka::media::kDecodeBufferSize</a> = 1</td></tr>
-<tr class="separator:a7d449e753ea413acd571aa5b48eb8508"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad8093872c91e3ede2c363a886d618927"><td class="memItemLeft" align="right" valign="top">constexpr const double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#ad8093872c91e3ede2c363a886d618927">shaka::media::kEndDelta</a> = 0.1</td></tr>
-<tr class="separator:ad8093872c91e3ede2c363a886d618927"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

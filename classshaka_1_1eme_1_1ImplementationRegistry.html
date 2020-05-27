@@ -74,18 +74,19 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:abf84d4d7e7ddc89e7fd9532d77d20e5f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1eme_1_1ImplementationRegistry.html#abf84d4d7e7ddc89e7fd9532d77d20e5f">AddImplementation</a> (const std::string &amp;key_system, <a class="el" href="classshaka_1_1eme_1_1ImplementationFactory.html">ImplementationFactory</a> *factory)</td></tr>
-<tr class="separator:abf84d4d7e7ddc89e7fd9532d77d20e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a083756d56f9956ee3e169a438bb01ea7"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classshaka_1_1eme_1_1ImplementationFactory.html">ImplementationFactory</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1eme_1_1ImplementationRegistry.html#a083756d56f9956ee3e169a438bb01ea7">GetImplementation</a> (const std::string &amp;key_system)</td></tr>
-<tr class="separator:a083756d56f9956ee3e169a438bb01ea7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fb6be52af6f60fa25bc7a2cdd256d75"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1eme_1_1ImplementationRegistry.html#a5fb6be52af6f60fa25bc7a2cdd256d75">AddImplementation</a> (const std::string &amp;key_system, std::shared_ptr&lt; <a class="el" href="classshaka_1_1eme_1_1ImplementationFactory.html">ImplementationFactory</a> &gt; factory)</td></tr>
+<tr class="separator:a5fb6be52af6f60fa25bc7a2cdd256d75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2615ff1f410bec716c6c41d3a912ad5a"><td class="memItemLeft" align="right" valign="top">static std::shared_ptr&lt; <a class="el" href="classshaka_1_1eme_1_1ImplementationFactory.html">ImplementationFactory</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1eme_1_1ImplementationRegistry.html#a2615ff1f410bec716c6c41d3a912ad5a">GetImplementation</a> (const std::string &amp;key_system)</td></tr>
+<tr class="separator:a2615ff1f410bec716c6c41d3a912ad5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Defines a registry for implementations of EME. During system startup all implementations should be registered with this type to make them available. </p>
+<div class="textblock"><p>Defines a registry for implementations of EME. During system startup all implementations should be registered with this type to make them available.</p>
+<p>These methods are thread-safe. </p>
 
-<p>Definition at line <a class="el" href="implementation__registry_8h_source.html#l00033">33</a> of file <a class="el" href="implementation__registry_8h_source.html">implementation_registry.h</a>.</p>
+<p>Definition at line <a class="el" href="implementation__registry_8h_source.html#l00036">36</a> of file <a class="el" href="implementation__registry_8h_source.html">implementation_registry.h</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="abf84d4d7e7ddc89e7fd9532d77d20e5f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf84d4d7e7ddc89e7fd9532d77d20e5f">&sect;&nbsp;</a></span>AddImplementation()</h2>
+<a id="a5fb6be52af6f60fa25bc7a2cdd256d75"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fb6be52af6f60fa25bc7a2cdd256d75">&sect;&nbsp;</a></span>AddImplementation()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -102,7 +103,7 @@ Static Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classshaka_1_1eme_1_1ImplementationFactory.html">ImplementationFactory</a> *&#160;</td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classshaka_1_1eme_1_1ImplementationFactory.html">ImplementationFactory</a> &gt;&#160;</td>
           <td class="paramname"><em>factory</em>&#160;</td>
         </tr>
         <tr>
@@ -117,14 +118,14 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Adds an EME implementation to the registry. The caller retains ownership of the pointer and it must remain valid for the entire lifetime of the program. </p>
+<p>Adds an EME implementation to the registry. This replaces any existing factory. Existing <a class="el" href="classshaka_1_1eme_1_1Implementation.html">Implementation</a> instances will remain alive and in use. </p>
 
-<p>Definition at line <a class="el" href="implementation__registry_8cc_source.html#l00036">36</a> of file <a class="el" href="implementation__registry_8cc_source.html">implementation_registry.cc</a>.</p>
+<p>Definition at line <a class="el" href="implementation__registry_8cc_source.html#l00037">37</a> of file <a class="el" href="implementation__registry_8cc_source.html">implementation_registry.cc</a>.</p>
 
 </div>
 </div>
-<a id="a083756d56f9956ee3e169a438bb01ea7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a083756d56f9956ee3e169a438bb01ea7">&sect;&nbsp;</a></span>GetImplementation()</h2>
+<a id="a2615ff1f410bec716c6c41d3a912ad5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2615ff1f410bec716c6c41d3a912ad5a">&sect;&nbsp;</a></span>GetImplementation()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -133,7 +134,7 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classshaka_1_1eme_1_1ImplementationFactory.html">ImplementationFactory</a> * shaka::eme::ImplementationRegistry::GetImplementation </td>
+          <td class="memname">std::shared_ptr&lt; <a class="el" href="classshaka_1_1eme_1_1ImplementationFactory.html">ImplementationFactory</a> &gt; shaka::eme::ImplementationRegistry::GetImplementation </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>key_system</em></td><td>)</td>
@@ -148,7 +149,7 @@ Static Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>The implementation of the given key system, or nullptr. </dd></dl>
 
-<p>Definition at line <a class="el" href="implementation__registry_8cc_source.html#l00045">45</a> of file <a class="el" href="implementation__registry_8cc_source.html">implementation_registry.cc</a>.</p>
+<p>Definition at line <a class="el" href="implementation__registry_8cc_source.html#l00049">49</a> of file <a class="el" href="implementation__registry_8cc_source.html">implementation_registry.cc</a>.</p>
 
 </div>
 </div>

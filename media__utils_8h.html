@@ -64,7 +64,8 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">media_utils.h File Reference</div>  </div>
 </div><!--header-->
@@ -72,7 +73,9 @@ $(function() {
 <div class="textblock"><code>#include &lt;iostream&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;unordered_map&gt;</code><br />
+<code>#include &lt;utility&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
+<code>#include &quot;<a class="el" href="media__capabilities_8h_source.html">shaka/media/media_capabilities.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="js__error_8h_source.html">src/js/js_error.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="types_8h_source.html">src/media/types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2util_2utils_8h_source.html">src/util/utils.h</a>&quot;</code><br />
@@ -90,16 +93,21 @@ Namespaces</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:a19c82753b2812975c0fd8c5c8d3ae8ba"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a19c82753b2812975c0fd8c5c8d3ae8ba">shaka::media::ParseMimeType</a> (const std::string &amp;<a class="el" href="media__utils_8cc.html#af2ed45b90afa2ef4ec6e09625335a082">source</a>, std::string *<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>, std::string *subtype, std::unordered_map&lt; std::string, std::string &gt; *params)</td></tr>
 <tr class="separator:a19c82753b2812975c0fd8c5c8d3ae8ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad590862044689a202840a32758402cd5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#ad590862044689a202840a32758402cd5">shaka::media::IsTypeSupported</a> (const std::string &amp;container, const std::string &amp;codecs, int <a class="el" href="sdl__frame__drawer_8cc.html#a2474a5474cbff19523a51eb1de01cda4">width</a>, int <a class="el" href="sdl__frame__drawer_8cc.html#ad12fc34ce789bce6c8a05d8a17138534">height</a>)</td></tr>
-<tr class="separator:ad590862044689a202840a32758402cd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a25de156c95faaebab052c9211dc31ef5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a25de156c95faaebab052c9211dc31ef5">shaka::media::ParseMimeAndCheckSupported</a> (const std::string &amp;mime_type, SourceType *source_type, std::string *container, std::string *<a class="el" href="hardware__support_8cc.html#af4ddf5f0c6c5f6d5433bc4062022fa09">codec</a>)</td></tr>
-<tr class="separator:a25de156c95faaebab052c9211dc31ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c5c2be21f921e4954109ab75c602edf"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a1c5c2be21f921e4954109ab75c602edf">shaka::media::NormalizeContainer</a> (const std::string &amp;container)</td></tr>
 <tr class="separator:a1c5c2be21f921e4954109ab75c602edf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad243b364173e63a745c4cd1df13da565"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#ad243b364173e63a745c4cd1df13da565">shaka::media::NormalizeCodec</a> (const std::string &amp;<a class="el" href="hardware__support_8cc.html#af4ddf5f0c6c5f6d5433bc4062022fa09">codec</a>)</td></tr>
+<tr class="memitem:ad243b364173e63a745c4cd1df13da565"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#ad243b364173e63a745c4cd1df13da565">shaka::media::NormalizeCodec</a> (const std::string &amp;codec)</td></tr>
 <tr class="separator:ad243b364173e63a745c4cd1df13da565"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3545ca80748b750fa265bab7c2525d0b"><td class="memItemLeft" align="right" valign="top">BufferedRanges&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a3545ca80748b750fa265bab7c2525d0b">shaka::media::IntersectionOfBufferedRanges</a> (const std::vector&lt; BufferedRanges &gt; &amp;sources)</td></tr>
 <tr class="separator:a3545ca80748b750fa265bab7c2525d0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a822a9ce48ac3f673e1e5fc4f53a90a5a"><td class="memItemLeft" align="right" valign="top">MediaDecodingConfiguration&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a822a9ce48ac3f673e1e5fc4f53a90a5a">shaka::media::ConvertMimeToDecodingConfiguration</a> (const std::string &amp;mime_type, MediaDecodingType <a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>)</td></tr>
+<tr class="separator:a822a9ce48ac3f673e1e5fc4f53a90a5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3144c8d5ca28c31963b0e3751bdf1740"><td class="memItemLeft" align="right" valign="top">std::pair&lt; uint32_t, uint32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#a3144c8d5ca28c31963b0e3751bdf1740">shaka::media::GetScreenResolution</a> ()</td></tr>
+<tr class="separator:a3144c8d5ca28c31963b0e3751bdf1740"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:adc3069f25c767363ca2fc45f6dfed143"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1media.html#adc3069f25c767363ca2fc45f6dfed143">shaka::media::kCodecMimeParam</a> = &quot;codecs&quot;</td></tr>
+<tr class="separator:adc3069f25c767363ca2fc45f6dfed143"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

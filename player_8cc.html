@@ -65,32 +65,40 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#define-members">Macros</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">player.cc File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="player_8h_source.html">shaka/player.h</a>&quot;</code><br />
+<code>#include &lt;functional&gt;</code><br />
+<code>#include &lt;list&gt;</code><br />
+<code>#include &quot;<a class="el" href="version_8h_source.html">shaka/version.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="js__manager__impl_8h_source.html">src/core/js_manager_impl.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="thread__event_8h_source.html">src/debug/thread_event.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="js__object__wrapper_8h_source.html">src/core/js_object_wrapper.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="mutex_8h_source.html">src/debug/mutex.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="document_8h_source.html">src/js/dom/document.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2js_2manifest_8h_source.html">src/js/manifest.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="video__element_8h_source.html">src/js/mse/video_element.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="src_2js_2net_8h_source.html">src/js/net.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2js_2player__externs_8h_source.html">src/js/player_externs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2js_2stats_8h_source.html">src/js/stats.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2js_2track_8h_source.html">src/js/track.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="any_8h_source.html">src/mapping/any.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="byte__buffer_8h_source.html">src/mapping/byte_buffer.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="convert__js_8h_source.html">src/mapping/convert_js.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="js__engine_8h_source.html">src/mapping/js_engine.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="js__utils_8h_source.html">src/mapping/js_utils.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="js__wrappers_8h_source.html">src/mapping/js_wrappers.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="struct_8h_source.html">src/mapping/struct.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="promise_8h_source.html">src/mapping/promise.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="src_2util_2macros_8h_source.html">src/util/macros.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2util_2utils_8h_source.html">src/util/utils.h</a>&quot;</code><br />
 </div>
 <p><a href="player_8cc_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1impl_1_1ConvertHelper_3_01DefaultValueType_01_4.html">shaka::impl::ConvertHelper&lt; DefaultValueType &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1impl_1_1ConvertHelper_3_01Player_1_1LogLevel_01_4.html">shaka::impl::ConvertHelper&lt; Player::LogLevel &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1Player_1_1Impl.html">shaka::Player::Impl</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -104,6 +112,11 @@ Namespaces</h2></td></tr>
 Macros</h2></td></tr>
 <tr class="memitem:a99579cc77e2c8622d67161001230dddc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="player_8cc.html#a99579cc77e2c8622d67161001230dddc">ATTACH</a>(<a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>,  call)</td></tr>
 <tr class="separator:a99579cc77e2c8622d67161001230dddc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:af2481881bd937e229cc6a685fedb4f71"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="player_8cc.html#af2481881bd937e229cc6a685fedb4f71">GetShakaEmbeddedVersion</a> (void)</td></tr>
+<tr class="separator:af2481881bd937e229cc6a685fedb4f71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a99579cc77e2c8622d67161001230dddc"></a>
@@ -131,8 +144,30 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                                                                \</div><div class="line">    const <span class="keyword">auto</span> ret = AttachEventListener(player, <a class="code" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, client, call); \</div><div class="line">    if (holds_alternative&lt;Error&gt;(ret))                                \</div><div class="line">      return get&lt;Error&gt;(ret);                                         \</div><div class="line">  } <span class="keywordflow">while</span> (<span class="keyword">false</span>)</div><div class="ttc" id="dom__exception_8cc_html_a8f8f80d37794cde9472343e4487ba3eb"><div class="ttname"><a href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a></div><div class="ttdeci">const char * name</div><div class="ttdef"><b>Definition:</b> <a href="dom__exception_8cc_source.html#l00033">dom_exception.cc:33</a></div></div>
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                                                                    \</div><div class="line">    const <span class="keyword">auto</span> ret = AttachEventListener(                                 \</div><div class="line">        <a class="code" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, std::bind(&amp;Client::OnError, client, std::placeholders::_1), \</div><div class="line">        call);                                                            \</div><div class="line">    if (holds_alternative&lt;Error&gt;(ret))                                    \</div><div class="line">      return get&lt;Error&gt;(ret);                                             \</div><div class="line">  } <span class="keywordflow">while</span> (<span class="keyword">false</span>)</div><div class="ttc" id="dom__exception_8cc_html_a8f8f80d37794cde9472343e4487ba3eb"><div class="ttname"><a href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a></div><div class="ttdeci">const char * name</div><div class="ttdef"><b>Definition:</b> <a href="dom__exception_8cc_source.html#l00035">dom_exception.cc:35</a></div></div>
 </div><!-- fragment -->
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="af2481881bd937e229cc6a685fedb4f71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2481881bd937e229cc6a685fedb4f71">&sect;&nbsp;</a></span>GetShakaEmbeddedVersion()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* GetShakaEmbeddedVersion </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>The runtime version of the library. </dd></dl>
+
+<p>Definition at line <a class="el" href="player_8cc_source.html#l00041">41</a> of file <a class="el" href="player_8cc_source.html">player.cc</a>.</p>
+
 </div>
 </div>
 </div><!-- contents -->

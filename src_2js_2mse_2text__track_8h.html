@@ -70,14 +70,17 @@ $(function() {
 <div class="title">text_track.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;string&gt;</code><br />
+<div class="textblock"><code>#include &lt;memory&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;unordered_map&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
-<code>#include &quot;<a class="el" href="include_2shaka_2text__track_8h_source.html">include/shaka/text_track.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="include_2shaka_2media_2text__track_8h_source.html">shaka/media/text_track.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="include_2shaka_2media_2vtt__cue_8h_source.html">shaka/media/vtt_cue.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="member_8h_source.html">src/core/member.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="ref__ptr_8h_source.html">src/core/ref_ptr.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="mutex_8h_source.html">src/debug/mutex.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="event__target_8h_source.html">src/js/events/event_target.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2js_2vtt__cue_8h_source.html">src/js/vtt_cue.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="backing__object_8h_source.html">src/mapping/backing_object.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="backing__object__factory_8h_source.html">src/mapping/backing_object_factory.h</a>&quot;</code><br />
 </div>
 <p><a href="src_2js_2mse_2text__track_8h_source.html">Go to the source code of this file.</a></p>
@@ -100,14 +103,14 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a332a85e34b971f6ecd0169c49c1e1105"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="src_2js_2mse_2text__track_8h.html#a332a85e34b971f6ecd0169c49c1e1105">DEFINE_ENUM_MAPPING</a> (shaka, TextTrackKind)</td></tr>
-<tr class="separator:a332a85e34b971f6ecd0169c49c1e1105"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad6db2ac885f9b25387d14389e621af43"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="src_2js_2mse_2text__track_8h.html#ad6db2ac885f9b25387d14389e621af43">DEFINE_ENUM_MAPPING</a> (shaka, TextTrackMode)</td></tr>
-<tr class="separator:ad6db2ac885f9b25387d14389e621af43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42d9ac265fd749546068b5ce5e876bde"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="src_2js_2mse_2text__track_8h.html#a42d9ac265fd749546068b5ce5e876bde">DEFINE_ENUM_MAPPING</a> (shaka::media, TextTrackKind)</td></tr>
+<tr class="separator:a42d9ac265fd749546068b5ce5e876bde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0aacf18f15606e88718cda430ed319a9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="src_2js_2mse_2text__track_8h.html#a0aacf18f15606e88718cda430ed319a9">DEFINE_ENUM_MAPPING</a> (shaka::media, TextTrackMode)</td></tr>
+<tr class="separator:a0aacf18f15606e88718cda430ed319a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a332a85e34b971f6ecd0169c49c1e1105"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a332a85e34b971f6ecd0169c49c1e1105">&sect;&nbsp;</a></span>DEFINE_ENUM_MAPPING() <span class="overload">[1/2]</span></h2>
+<a id="a42d9ac265fd749546068b5ce5e876bde"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42d9ac265fd749546068b5ce5e876bde">&sect;&nbsp;</a></span>DEFINE_ENUM_MAPPING() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -115,7 +118,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">DEFINE_ENUM_MAPPING </td>
           <td>(</td>
-          <td class="paramtype">shaka&#160;</td>
+          <td class="paramtype">shaka::media&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
@@ -132,12 +135,12 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="src_2js_2mse_2text__track_8h_source.html#l00074">74</a> of file <a class="el" href="src_2js_2mse_2text__track_8h_source.html">text_track.h</a>.</p>
+<p>Definition at line <a class="el" href="src_2js_2mse_2text__track_8h_source.html#l00080">80</a> of file <a class="el" href="src_2js_2mse_2text__track_8h_source.html">text_track.h</a>.</p>
 
 </div>
 </div>
-<a id="ad6db2ac885f9b25387d14389e621af43"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad6db2ac885f9b25387d14389e621af43">&sect;&nbsp;</a></span>DEFINE_ENUM_MAPPING() <span class="overload">[2/2]</span></h2>
+<a id="a0aacf18f15606e88718cda430ed319a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0aacf18f15606e88718cda430ed319a9">&sect;&nbsp;</a></span>DEFINE_ENUM_MAPPING() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -145,7 +148,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">DEFINE_ENUM_MAPPING </td>
           <td>(</td>
-          <td class="paramtype">shaka&#160;</td>
+          <td class="paramtype">shaka::media&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
@@ -162,7 +165,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="src_2js_2mse_2text__track_8h_source.html#l00082">82</a> of file <a class="el" href="src_2js_2mse_2text__track_8h_source.html">text_track.h</a>.</p>
+<p>Definition at line <a class="el" href="src_2js_2mse_2text__track_8h_source.html#l00088">88</a> of file <a class="el" href="src_2js_2mse_2text__track_8h_source.html">text_track.h</a>.</p>
 
 </div>
 </div>

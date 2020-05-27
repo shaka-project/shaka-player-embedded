@@ -63,6 +63,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classshaka_1_1impl_1_1PlainCallbackTaskImpl-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -81,14 +82,21 @@ Inheritance diagram for shaka::impl::PlainCallbackTaskImpl&lt; Func &gt;:</div>
 </map>
  </div></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a8bb110cfa59658582b992e5f3defbedf"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#a8bb110cfa59658582b992e5f3defbedf">func_type</a> = typename std::decay&lt; Func &gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a></td></tr>
+<tr class="separator:a8bb110cfa59658582b992e5f3defbedf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1bbd49fba80a7c4635aa5380fb8e702b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#a1bbd49fba80a7c4635aa5380fb8e702b">return_type</a> = decltype(std::declval&lt; <a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#a8bb110cfa59658582b992e5f3defbedf">func_type</a> &gt;()())</td></tr>
+<tr class="separator:a1bbd49fba80a7c4635aa5380fb8e702b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:acfa436b52cefadf5c243843dab840b46"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#acfa436b52cefadf5c243843dab840b46">PlainCallbackTaskImpl</a> (Func &amp;&amp;callback)</td></tr>
 <tr class="separator:acfa436b52cefadf5c243843dab840b46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd51ba9feef8c703eeb553e4823288f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#afd51ba9feef8c703eeb553e4823288f8">Trace</a> (<a class="el" href="classshaka_1_1memory_1_1HeapTracer.html">memory::HeapTracer</a> *) const override</td></tr>
 <tr class="separator:afd51ba9feef8c703eeb553e4823288f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5c7871b5fea47f8262d17c6884cece7"><td class="memItemLeft" align="right" valign="top">std::result_of&lt; Func()&gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#ad5c7871b5fea47f8262d17c6884cece7">operator()</a> ()</td></tr>
-<tr class="separator:ad5c7871b5fea47f8262d17c6884cece7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96112fa57ff3d14b8f02ec5d4fa19fc7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#a1bbd49fba80a7c4635aa5380fb8e702b">return_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#a96112fa57ff3d14b8f02ec5d4fa19fc7">operator()</a> ()</td></tr>
+<tr class="separator:a96112fa57ff3d14b8f02ec5d4fa19fc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classshaka_1_1memory_1_1Traceable"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classshaka_1_1memory_1_1Traceable')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classshaka_1_1memory_1_1Traceable.html">shaka::memory::Traceable</a></td></tr>
 <tr class="memitem:a13d4f98ff1791752a65b5d38fdb97710 inherit pub_methods_classshaka_1_1memory_1_1Traceable"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1memory_1_1Traceable.html#a13d4f98ff1791752a65b5d38fdb97710">~Traceable</a> ()</td></tr>
 <tr class="separator:a13d4f98ff1791752a65b5d38fdb97710 inherit pub_methods_classshaka_1_1memory_1_1Traceable"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -108,8 +116,45 @@ Additional Inherited Members</h2></td></tr>
 class shaka::impl::PlainCallbackTaskImpl&lt; Func &gt;</h3>
 
 
-<p>Definition at line <a class="el" href="task__runner_8h_source.html#l00136">136</a> of file <a class="el" href="task__runner_8h_source.html">task_runner.h</a>.</p>
-</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<p>Definition at line <a class="el" href="task__runner_8h_source.html#l00139">139</a> of file <a class="el" href="task__runner_8h_source.html">task_runner.h</a>.</p>
+</div><h2 class="groupheader">Member Typedef Documentation</h2>
+<a id="a8bb110cfa59658582b992e5f3defbedf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8bb110cfa59658582b992e5f3defbedf">&sect;&nbsp;</a></span>func_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Func &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html">shaka::impl::PlainCallbackTaskImpl</a>&lt; Func &gt;::<a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#a8bb110cfa59658582b992e5f3defbedf">func_type</a> =  typename std::decay&lt;Func&gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="task__runner_8h_source.html#l00141">141</a> of file <a class="el" href="task__runner_8h_source.html">task_runner.h</a>.</p>
+
+</div>
+</div>
+<a id="a1bbd49fba80a7c4635aa5380fb8e702b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1bbd49fba80a7c4635aa5380fb8e702b">&sect;&nbsp;</a></span>return_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Func &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html">shaka::impl::PlainCallbackTaskImpl</a>&lt; Func &gt;::<a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#a1bbd49fba80a7c4635aa5380fb8e702b">return_type</a> =  decltype(std::declval&lt;<a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#a8bb110cfa59658582b992e5f3defbedf">func_type</a>&gt;()())</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="task__runner_8h_source.html#l00142">142</a> of file <a class="el" href="task__runner_8h_source.html">task_runner.h</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="acfa436b52cefadf5c243843dab840b46"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acfa436b52cefadf5c243843dab840b46">&sect;&nbsp;</a></span>PlainCallbackTaskImpl()</h2>
 
@@ -136,13 +181,13 @@ template&lt;typename Func &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="task__runner_8h_source.html#l00138">138</a> of file <a class="el" href="task__runner_8h_source.html">task_runner.h</a>.</p>
+<p>Definition at line <a class="el" href="task__runner_8h_source.html#l00144">144</a> of file <a class="el" href="task__runner_8h_source.html">task_runner.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ad5c7871b5fea47f8262d17c6884cece7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad5c7871b5fea47f8262d17c6884cece7">&sect;&nbsp;</a></span>operator()()</h2>
+<a id="a96112fa57ff3d14b8f02ec5d4fa19fc7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96112fa57ff3d14b8f02ec5d4fa19fc7">&sect;&nbsp;</a></span>operator()()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -153,7 +198,7 @@ template&lt;typename Func &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::result_of&lt;Func()&gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a> <a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html">shaka::impl::PlainCallbackTaskImpl</a>&lt; Func &gt;::operator() </td>
+          <td class="memname"><a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html#a1bbd49fba80a7c4635aa5380fb8e702b">return_type</a> <a class="el" href="classshaka_1_1impl_1_1PlainCallbackTaskImpl.html">shaka::impl::PlainCallbackTaskImpl</a>&lt; Func &gt;::operator() </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -166,7 +211,7 @@ template&lt;typename Func &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="task__runner_8h_source.html#l00143">143</a> of file <a class="el" href="task__runner_8h_source.html">task_runner.h</a>.</p>
+<p>Definition at line <a class="el" href="task__runner_8h_source.html#l00149">149</a> of file <a class="el" href="task__runner_8h_source.html">task_runner.h</a>.</p>
 
 </div>
 </div>
@@ -199,7 +244,7 @@ template&lt;typename Func &gt; </div>
 
 <p>Implements <a class="el" href="classshaka_1_1memory_1_1Traceable.html#a3fd016e5cc632af2ce87d0df3407c5c4">shaka::memory::Traceable</a>.</p>
 
-<p>Definition at line <a class="el" href="task__runner_8h_source.html#l00141">141</a> of file <a class="el" href="task__runner_8h_source.html">task_runner.h</a>.</p>
+<p>Definition at line <a class="el" href="task__runner_8h_source.html#l00147">147</a> of file <a class="el" href="task__runner_8h_source.html">task_runner.h</a>.</p>
 
 </div>
 </div>

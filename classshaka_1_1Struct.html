@@ -85,16 +85,21 @@ Inheritance diagram for shaka::Struct:</div>
 <area href="structshaka_1_1js_1_1DrmInfo.html" alt="shaka::js::DrmInfo" shape="rect" coords="439,224,722,248"/>
 <area href="structshaka_1_1js_1_1eme_1_1MediaKeySystemConfiguration.html" alt="shaka::js::eme::MediaKeySystemConfiguration" shape="rect" coords="439,280,722,304"/>
 <area href="structshaka_1_1js_1_1eme_1_1MediaKeySystemMediaCapability.html" alt="shaka::js::eme::MediaKeySystemMediaCapability" shape="rect" coords="439,336,722,360"/>
-<area href="structshaka_1_1js_1_1events_1_1MediaEncryptedEventInit.html" alt="shaka::js::events::MediaEncryptedEventInit" shape="rect" coords="439,392,722,416"/>
-<area href="structshaka_1_1js_1_1events_1_1MediaKeyMessageEventInit.html" alt="shaka::js::events::MediaKeyMessageEventInit" shape="rect" coords="439,448,722,472"/>
-<area href="structshaka_1_1js_1_1InitDataOverride.html" alt="shaka::js::InitDataOverride" shape="rect" coords="439,504,722,528"/>
-<area href="structshaka_1_1js_1_1LanguageRole.html" alt="shaka::js::LanguageRole" shape="rect" coords="439,560,722,584"/>
-<area href="structshaka_1_1js_1_1StateChange.html" alt="shaka::js::StateChange" shape="rect" coords="439,616,722,640"/>
-<area href="structshaka_1_1js_1_1Stats.html" alt="shaka::js::Stats" shape="rect" coords="439,672,722,696"/>
-<area href="structshaka_1_1js_1_1TestTypeOptions.html" alt="shaka::js::TestTypeOptions" shape="rect" coords="439,728,722,752"/>
-<area href="structshaka_1_1js_1_1Track.html" alt="shaka::js::Track" shape="rect" coords="439,784,722,808"/>
-<area href="structshaka_1_1js_1_1TrackChoice.html" alt="shaka::js::TrackChoice" shape="rect" coords="439,840,722,864"/>
-<area href="structshaka_1_1media_1_1VideoPlaybackQuality.html" alt="shaka::media::VideoPlaybackQuality" shape="rect" coords="439,896,722,920"/>
+<area href="structshaka_1_1js_1_1events_1_1IDBVersionChangeEventInit.html" alt="shaka::js::events::IDBVersionChangeEventInit" shape="rect" coords="439,392,722,416"/>
+<area href="structshaka_1_1js_1_1events_1_1MediaEncryptedEventInit.html" alt="shaka::js::events::MediaEncryptedEventInit" shape="rect" coords="439,448,722,472"/>
+<area href="structshaka_1_1js_1_1events_1_1MediaKeyMessageEventInit.html" alt="shaka::js::events::MediaKeyMessageEventInit" shape="rect" coords="439,504,722,528"/>
+<area href="structshaka_1_1js_1_1idb_1_1IDBObjectStoreParameters.html" alt="shaka::js::idb::IDBObjectStoreParameters" shape="rect" coords="439,560,722,584"/>
+<area href="structshaka_1_1js_1_1InitDataOverride.html" alt="shaka::js::InitDataOverride" shape="rect" coords="439,616,722,640"/>
+<area href="structshaka_1_1js_1_1LanguageRole.html" alt="shaka::js::LanguageRole" shape="rect" coords="439,672,722,696"/>
+<area href="structshaka_1_1js_1_1mse_1_1VideoPlaybackQuality.html" alt="shaka::js::mse::VideoPlaybackQuality" shape="rect" coords="439,728,722,752"/>
+<area href="structshaka_1_1js_1_1Request.html" alt="shaka::js::Request" shape="rect" coords="439,784,722,808"/>
+<area href="structshaka_1_1js_1_1Response.html" alt="shaka::js::Response" shape="rect" coords="439,840,722,864"/>
+<area href="structshaka_1_1js_1_1StateChange.html" alt="shaka::js::StateChange" shape="rect" coords="439,896,722,920"/>
+<area href="structshaka_1_1js_1_1Stats.html" alt="shaka::js::Stats" shape="rect" coords="439,952,722,976"/>
+<area href="structshaka_1_1js_1_1StoredContent.html" alt="shaka::js::StoredContent" shape="rect" coords="439,1008,722,1032"/>
+<area href="structshaka_1_1js_1_1TestTypeOptions.html" alt="shaka::js::TestTypeOptions" shape="rect" coords="439,1064,722,1088"/>
+<area href="structshaka_1_1js_1_1Track.html" alt="shaka::js::Track" shape="rect" coords="439,1120,722,1144"/>
+<area href="structshaka_1_1js_1_1TrackChoice.html" alt="shaka::js::TrackChoice" shape="rect" coords="439,1176,722,1200"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -144,9 +149,10 @@ Additional Inherited Members</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Defines the base class for struct objects. These are JavaScript objects that have specific members. Passing in any JavaScript object is valid and the respective members will be converted. <a class="el" href="classshaka_1_1Any.html">Any</a> extra members will not be copied.</p>
 <p>This is a forgiving type, namely it will try to convert each field if possible. If it is not possible, the field will be the default. However, if the argument is not an object, it is invalid. This is non-nullable, so to accept null, use optional&lt;Struct&gt;.</p>
-<p>In addition to deriving from this type, a <a class="el" href="classshaka_1_1Struct.html">Struct</a> must also have a static |name| method. This is similar to BackingObjects, but you should NOT use DECLARE_TYPE_INFO. It is required to have a default (argument-less) constructor which can be implicit or user defined. If it is defined you CANNOT have member initialization (field assignments before the '{'), you MUST use assignment within the constructor body, otherwise the field will not be registered (see the macro above). </p>
+<p>In addition to deriving from this type, a <a class="el" href="classshaka_1_1Struct.html">Struct</a> must also have a static |name| method. This is similar to BackingObjects, but you should NOT use DECLARE_TYPE_INFO. It is required to have a default (argument-less) constructor which can be implicit or user defined. If it is defined you CANNOT have member initialization (field assignments before the '{'), you MUST use assignment within the constructor body, otherwise the field will not be registered (see the macro above).</p>
+<p>This stores the original JavaScript object this came from. ToJsValue will return that if this came from JavaScript; otherwise this creates a new JavaScript object to return. <a class="el" href="classshaka_1_1Any.html">Any</a> fields that are changed in C++ will be updated when returned back to JavaScript. </p>
 
-<p>Definition at line <a class="el" href="struct_8h_source.html#l00126">126</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
+<p>Definition at line <a class="el" href="struct_8h_source.html#l00166">166</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a3607431b864a520064599f0847cd4e91"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3607431b864a520064599f0847cd4e91">&sect;&nbsp;</a></span>Struct() <span class="overload">[1/3]</span></h2>
@@ -283,7 +289,7 @@ template&lt;typename Parent , typename Field &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="struct_8h_source.html#l00144">144</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
+<p>Definition at line <a class="el" href="struct_8h_source.html#l00184">184</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
 
 </div>
 </div>
@@ -365,7 +371,7 @@ template&lt;typename Parent , typename Field &gt; </div>
 
 <p>Implements <a class="el" href="classshaka_1_1GenericConverter.html#a62e89d9cad3090cad3b48260bdfe12b7">shaka::GenericConverter</a>.</p>
 
-<p>Definition at line <a class="el" href="struct_8cc_source.html#l00038">38</a> of file <a class="el" href="struct_8cc_source.html">struct.cc</a>.</p>
+<p>Definition at line <a class="el" href="struct_8cc_source.html#l00040">40</a> of file <a class="el" href="struct_8cc_source.html">struct.cc</a>.</p>
 
 </div>
 </div>
@@ -396,7 +402,7 @@ template&lt;typename Parent , typename Field &gt; </div>
 
 <p>Implements <a class="el" href="classshaka_1_1memory_1_1Traceable.html#a3fd016e5cc632af2ce87d0df3407c5c4">shaka::memory::Traceable</a>.</p>
 
-<p>Definition at line <a class="el" href="struct_8cc_source.html#l00045">45</a> of file <a class="el" href="struct_8cc_source.html">struct.cc</a>.</p>
+<p>Definition at line <a class="el" href="struct_8cc_source.html#l00049">49</a> of file <a class="el" href="struct_8cc_source.html">struct.cc</a>.</p>
 
 </div>
 </div>

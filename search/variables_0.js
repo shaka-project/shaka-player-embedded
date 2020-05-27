@@ -1,11 +1,25 @@
 var searchData=
 [
-  ['_5fclient',['_client',['../categoryShakaPlayerView_07_08.html#a5506db6db87373f71fb96ee4b35da9b4',1,'ShakaPlayerView()']]],
-  ['_5fengine',['_engine',['../categoryShakaPlayerView_07_08.html#a1ed34e5664696b5ed5ddd1b176e8e23d',1,'ShakaPlayerView()']]],
+  ['_5faudio_5frenderer',['_audio_renderer',['../categoryShakaPlayer_07_08.html#af4899d8c64e40aa244cd44b081fc4b7c',1,'ShakaPlayer()']]],
+  ['_5favplayerlayer',['_avPlayerLayer',['../categoryShakaPlayerView_07_08.html#ad20dd783de0553cc659e2e17e6d6cee2',1,'ShakaPlayerView()']]],
+  ['_5fclient',['_client',['../categoryShakaPlayer_07_08.html#addae31e6ab4eb52cde1731320f2cf2ff',1,'ShakaPlayer()::_client()'],['../categoryShakaPlayerStorage_07_08.html#a91c427431fe3719b963206548a8b674d',1,'ShakaPlayerStorage()::_client()']]],
+  ['_5fcues',['_cues',['../categoryShakaPlayerView_07_08.html#aa39079838347cc7c2fa9694e2b381213',1,'ShakaPlayerView()']]],
+  ['_5fengine',['_engine',['../categoryShakaPlayer_07_08.html#a28662d080a39ff7adc5b45f0d1855af4',1,'ShakaPlayer()::_engine()'],['../categoryShakaPlayerStorage_07_08.html#a8a81750b074be346254d0281bd08e56e',1,'ShakaPlayerStorage()::_engine()']]],
+  ['_5ffilters',['_filters',['../categoryShakaPlayer_07_08.html#aad2e7e73876a6e03e96fc7e48ea9eb2b',1,'ShakaPlayer()']]],
+  ['_5fgravity',['_gravity',['../categoryShakaPlayerView_07_08.html#a8bf475f82e2760f2b138d009f642f01a',1,'ShakaPlayerView()']]],
   ['_5fimagelayer',['_imageLayer',['../categoryShakaPlayerView_07_08.html#a5a6a05c1a986b4f3337738558871d676',1,'ShakaPlayerView()']]],
-  ['_5fplayer',['_player',['../categoryShakaPlayerView_07_08.html#a7786b62db8e2026441748f7763d57220',1,'ShakaPlayerView()']]],
-  ['_5fremaketextlayer',['_remakeTextLayer',['../categoryShakaPlayerView_07_08.html#ae82d9ba9c9019e856eff2bdfdcca343f',1,'ShakaPlayerView()']]],
-  ['_5frenderlooptimer',['_renderLoopTimer',['../categoryShakaPlayerView_07_08.html#a714817a3065c34d95ed9a370f428d213',1,'ShakaPlayerView()']]],
+  ['_5finstance',['_instance',['../classshaka_1_1proto_1_1Object__EntryDefaultTypeInternal.html#a31a88f178d2a3fe7aeae7d9923fe0cf3',1,'shaka::proto::Object_EntryDefaultTypeInternal::_instance()'],['../classshaka_1_1proto_1_1ObjectDefaultTypeInternal.html#a235ff305fc30a8e79b1245c1c67153a8',1,'shaka::proto::ObjectDefaultTypeInternal::_instance()'],['../classshaka_1_1proto_1_1ValueDefaultTypeInternal.html#ae7e3307eeceb70361f0078f7a5bb4b4a',1,'shaka::proto::ValueDefaultTypeInternal::_instance()'],['../classshaka_1_1proto_1_1MediaInfo__FrameDefaultTypeInternal.html#a72692c1c9fffb35db85e191fe5767ba5',1,'shaka::proto::MediaInfo_FrameDefaultTypeInternal::_instance()'],['../classshaka_1_1proto_1_1MediaInfo__StreamDefaultTypeInternal.html#ac0ff7e3f19de1cb4159a537a95829ed2',1,'shaka::proto::MediaInfo_StreamDefaultTypeInternal::_instance()'],['../classshaka_1_1proto_1_1MediaInfoDefaultTypeInternal.html#a143176d46420fc8443ebe77f60e138f4',1,'shaka::proto::MediaInfoDefaultTypeInternal::_instance()']]],
+  ['_5fmedia_5fplayer',['_media_player',['../categoryShakaPlayer_07_08.html#aa544c4e967755b87a7f39ae42e93447b',1,'ShakaPlayer()']]],
+  ['_5fmediainfo_5fdefault_5finstance_5f',['_MediaInfo_default_instance_',['../namespaceshaka_1_1proto.html#aea916bbcee9ebf352bd344a85aa6c552',1,'shaka::proto']]],
+  ['_5fmediainfo_5fframe_5fdefault_5finstance_5f',['_MediaInfo_Frame_default_instance_',['../namespaceshaka_1_1proto.html#a7659f43fc554c5110fcc57dee94a5b61',1,'shaka::proto']]],
+  ['_5fmediainfo_5fstream_5fdefault_5finstance_5f',['_MediaInfo_Stream_default_instance_',['../namespaceshaka_1_1proto.html#aeaa5f27159fe59d160fa6dfccb0c8be6',1,'shaka::proto']]],
+  ['_5fobject_5fdefault_5finstance_5f',['_Object_default_instance_',['../namespaceshaka_1_1proto.html#a22aaf3b75b660d0e2a7389ae417f1e6a',1,'shaka::proto']]],
+  ['_5fobject_5fentry_5fdefault_5finstance_5f',['_Object_Entry_default_instance_',['../namespaceshaka_1_1proto.html#a90f6b47907f7d2e56e0d3ac004543aff',1,'shaka::proto']]],
+  ['_5fplayer',['_player',['../categoryShakaPlayer_07_08.html#a48237d4fcc17f80faab98ac74490700e',1,'ShakaPlayer()::_player()'],['../categoryShakaPlayerView_07_08.html#a2b1f1ea15c9bcd3efef0e61fb5821aaf',1,'ShakaPlayerView()::_player()']]],
+  ['_5frenderdisplaylink',['_renderDisplayLink',['../categoryShakaPlayerView_07_08.html#ae429c7016d05c7a3a18d9ea9fffc7aba',1,'ShakaPlayerView()']]],
+  ['_5fstorage',['_storage',['../categoryShakaPlayerStorage_07_08.html#a94636be7449bf980fa8781fc619819bb',1,'ShakaPlayerStorage()']]],
   ['_5ftextlayer',['_textLayer',['../categoryShakaPlayerView_07_08.html#ac976f9cfb127e095124ac5a62c27e82f',1,'ShakaPlayerView()']]],
-  ['_5fvideo',['_video',['../categoryShakaPlayerView_07_08.html#ada4f4a8d180b28149d2493caa0bba9f6',1,'ShakaPlayerView()']]]
+  ['_5ftextlooptimer',['_textLoopTimer',['../categoryShakaPlayerView_07_08.html#af2922d6664b85ae919673b9ea63f1c5e',1,'ShakaPlayerView()']]],
+  ['_5fvalue_5fdefault_5finstance_5f',['_Value_default_instance_',['../namespaceshaka_1_1proto.html#ae87a30017297ceadea3d4a4342bc8cb1',1,'shaka::proto']]],
+  ['_5fvideo_5frenderer',['_video_renderer',['../categoryShakaPlayer_07_08.html#aaffc609ad3f4954c649da2b9a66d18ce',1,'ShakaPlayer()']]]
 ];

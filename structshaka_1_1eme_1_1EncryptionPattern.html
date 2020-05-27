@@ -63,6 +63,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="structshaka_1_1eme_1_1EncryptionPattern-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -72,6 +73,13 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="configuration_8h_source.html">configuration.h</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:abf38dd448958a654721ce643792dd2cb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1eme_1_1EncryptionPattern.html#abf38dd448958a654721ce643792dd2cb">EncryptionPattern</a> ()</td></tr>
+<tr class="separator:abf38dd448958a654721ce643792dd2cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac42a8bfa06f319bb5224c447e03be42e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1eme_1_1EncryptionPattern.html#ac42a8bfa06f319bb5224c447e03be42e">EncryptionPattern</a> (uint32_t <a class="el" href="structshaka_1_1eme_1_1EncryptionPattern.html#ae39e1e6e9c37b2176e22bf99482384eb">encrypted_blocks</a>, uint32_t <a class="el" href="structshaka_1_1eme_1_1EncryptionPattern.html#ab7363c3fb7fefef0fafca4948f662dc6">clear_blocks</a>)</td></tr>
+<tr class="separator:ac42a8bfa06f319bb5224c447e03be42e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:ae39e1e6e9c37b2176e22bf99482384eb"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1eme_1_1EncryptionPattern.html#ae39e1e6e9c37b2176e22bf99482384eb">encrypted_blocks</a></td></tr>
@@ -81,8 +89,58 @@ Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p>Definition at line <a class="el" href="configuration_8h_source.html#l00090">90</a> of file <a class="el" href="configuration_8h_source.html">configuration.h</a>.</p>
-</div><h2 class="groupheader">Member Data Documentation</h2>
+<p>Definition at line <a class="el" href="configuration_8h_source.html#l00092">92</a> of file <a class="el" href="configuration_8h_source.html">configuration.h</a>.</p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="abf38dd448958a654721ce643792dd2cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf38dd448958a654721ce643792dd2cb">&sect;&nbsp;</a></span>EncryptionPattern() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">shaka::eme::EncryptionPattern::EncryptionPattern </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="configuration_8cc_source.html#l00020">20</a> of file <a class="el" href="configuration_8cc_source.html">configuration.cc</a>.</p>
+
+</div>
+</div>
+<a id="ac42a8bfa06f319bb5224c447e03be42e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac42a8bfa06f319bb5224c447e03be42e">&sect;&nbsp;</a></span>EncryptionPattern() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">shaka::eme::EncryptionPattern::EncryptionPattern </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>encrypted_blocks</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>clear_blocks</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="configuration_8cc_source.html#l00022">22</a> of file <a class="el" href="configuration_8cc_source.html">configuration.cc</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
 <a id="ab7363c3fb7fefef0fafca4948f662dc6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab7363c3fb7fefef0fafca4948f662dc6">&sect;&nbsp;</a></span>clear_blocks</h2>
 
@@ -96,7 +154,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>The number of 16-byte blocks that are clear. </p>
 
-<p>Definition at line <a class="el" href="configuration_8h_source.html#l00094">94</a> of file <a class="el" href="configuration_8h_source.html">configuration.h</a>.</p>
+<p>Definition at line <a class="el" href="configuration_8h_source.html#l00099">99</a> of file <a class="el" href="configuration_8h_source.html">configuration.h</a>.</p>
 
 </div>
 </div>
@@ -113,12 +171,13 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>The number of 16-byte blocks that are encrypted. </p>
 
-<p>Definition at line <a class="el" href="configuration_8h_source.html#l00092">92</a> of file <a class="el" href="configuration_8h_source.html">configuration.h</a>.</p>
+<p>Definition at line <a class="el" href="configuration_8h_source.html#l00097">97</a> of file <a class="el" href="configuration_8h_source.html">configuration.h</a>.</p>
 
 </div>
 </div>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<hr/>The documentation for this struct was generated from the following files:<ul>
 <li>shaka/include/shaka/eme/<a class="el" href="configuration_8h_source.html">configuration.h</a></li>
+<li>shaka/src/eme/<a class="el" href="configuration_8cc_source.html">configuration.cc</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

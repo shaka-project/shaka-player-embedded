@@ -9,7 +9,6 @@ var searchData=
   ['jserror',['JsError',['../classshaka_1_1js_1_1JsError.html',1,'shaka::js']]],
   ['jsmanager',['JsManager',['../classshaka_1_1JsManager.html',1,'shaka']]],
   ['jsmanagerimpl',['JsManagerImpl',['../classshaka_1_1JsManagerImpl.html',1,'shaka']]],
-  ['jswrapper',['JSWrapper',['../classshaka_1_1util_1_1JSWrapper.html',1,'shaka::util']]],
-  ['jswrapper_3c_20jstexttrack_20_3e',['JSWrapper&lt; JSTextTrack &gt;',['../classshaka_1_1util_1_1JSWrapper.html',1,'shaka::util']]],
-  ['jswrapper_3c_20jsvideo_20_3e',['JSWrapper&lt; JSVideo &gt;',['../classshaka_1_1util_1_1JSWrapper.html',1,'shaka::util']]]
+  ['jsobjectwrapper',['JsObjectWrapper',['../classshaka_1_1JsObjectWrapper.html',1,'shaka']]],
+  ['jswrapper',['JSWrapper',['../classshaka_1_1util_1_1JSWrapper.html',1,'shaka::util']]]
 ];

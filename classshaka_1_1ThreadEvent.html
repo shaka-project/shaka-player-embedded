@@ -104,11 +104,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab61a5bd35c33e0bb64c5ec795fce0d84"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classshaka_1_1ThreadEvent.html#ab61a5bd35c33e0bb64c5ec795fce0d84">SignalAll</a> (U &amp;&amp;value)</td></tr>
 <tr class="separator:ab61a5bd35c33e0bb64c5ec795fce0d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader"></div></td></tr>
-<tr class="memitem:a063d023059cd2a921beedba993087947"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1ThreadEvent.html#a063d023059cd2a921beedba993087947">SignalAllIfNotSet</a> ()</td></tr>
-<tr class="separator:a063d023059cd2a921beedba993087947"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa78375f59c75f467589ba4b34eb01d24"><td class="memTemplParams" colspan="2">template&lt;typename U &gt; </td></tr>
-<tr class="memitem:aa78375f59c75f467589ba4b34eb01d24"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classshaka_1_1ThreadEvent.html#aa78375f59c75f467589ba4b34eb01d24">SignalAllIfNotSet</a> (U &amp;&amp;value)</td></tr>
-<tr class="separator:aa78375f59c75f467589ba4b34eb01d24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c5c18277128b05cdaf8a8ff9ab072a4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1ThreadEvent.html#a6c5c18277128b05cdaf8a8ff9ab072a4">SignalAllIfNotSet</a> ()</td></tr>
+<tr class="separator:a6c5c18277128b05cdaf8a8ff9ab072a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbf55534b7be46902d6978a3f6040129"><td class="memTemplParams" colspan="2">template&lt;typename U &gt; </td></tr>
+<tr class="memitem:acbf55534b7be46902d6978a3f6040129"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classshaka_1_1ThreadEvent.html#acbf55534b7be46902d6978a3f6040129">SignalAllIfNotSet</a> (U &amp;&amp;value)</td></tr>
+<tr class="separator:acbf55534b7be46902d6978a3f6040129"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classshaka_1_1ThreadEventBase"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classshaka_1_1ThreadEventBase')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classshaka_1_1ThreadEventBase.html">shaka::ThreadEventBase</a></td></tr>
 <tr class="memitem:a215f287e5ae4a2c781d8915a5282a160 inherit pub_methods_classshaka_1_1ThreadEventBase"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1ThreadEventBase.html#a215f287e5ae4a2c781d8915a5282a160">ThreadEventBase</a> (const std::string &amp;<a class="el" href="classshaka_1_1Waitable.html#a17ef7ad28f0bf497c11e983aea02e055">name</a>)</td></tr>
 <tr class="separator:a215f287e5ae4a2c781d8915a5282a160 inherit pub_methods_classshaka_1_1ThreadEventBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -281,7 +281,7 @@ template&lt;typename T&gt; </div>
 <p>Resets the internal future so it can be used again. This asserts that there are no waiting threads, so it is important to call <a class="el" href="classshaka_1_1ThreadEvent.html#a0c85cf1ce88ef05cc27d7e89304fbf18">SignalAll()</a> before this so any waiting threads will get the value.</p>
 <p>Calls to <a class="el" href="namespaceshaka.html#ab7b84ebfd6c60b71636f8231669962f5">get()</a> after this call will need to wait until the next call to <a class="el" href="classshaka_1_1ThreadEvent.html#a0c85cf1ce88ef05cc27d7e89304fbf18">SignalAll()</a>. </p>
 
-<p>Definition at line <a class="el" href="thread__event_8h_source.html#l00173">173</a> of file <a class="el" href="thread__event_8h_source.html">thread_event.h</a>.</p>
+<p>Definition at line <a class="el" href="thread__event_8h_source.html#l00180">180</a> of file <a class="el" href="thread__event_8h_source.html">thread_event.h</a>.</p>
 
 </div>
 </div>
@@ -378,12 +378,12 @@ template&lt;typename U &gt; </div>
 </div><div class="memdoc">
 <p>Sets the result of the event. This can only be called once per-Reset(). Calling <a class="el" href="classshaka_1_1ThreadEvent.html#ad4e05962c90844e1724f6fcc8fb2396d">Reset()</a> will allow this to be called again. </p>
 
-<p>Definition at line <a class="el" href="thread__event_8h_source.html#l00135">135</a> of file <a class="el" href="thread__event_8h_source.html">thread_event.h</a>.</p>
+<p>Definition at line <a class="el" href="thread__event_8h_source.html#l00132">132</a> of file <a class="el" href="thread__event_8h_source.html">thread_event.h</a>.</p>
 
 </div>
 </div>
-<a id="a063d023059cd2a921beedba993087947"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a063d023059cd2a921beedba993087947">&sect;&nbsp;</a></span>SignalAllIfNotSet() <span class="overload">[1/2]</span></h2>
+<a id="a6c5c18277128b05cdaf8a8ff9ab072a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c5c18277128b05cdaf8a8ff9ab072a4">&sect;&nbsp;</a></span>SignalAllIfNotSet() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -394,7 +394,7 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classshaka_1_1ThreadEvent.html">shaka::ThreadEvent</a>&lt; T &gt;::SignalAllIfNotSet </td>
+          <td class="memname">bool <a class="el" href="classshaka_1_1ThreadEvent.html">shaka::ThreadEvent</a>&lt; T &gt;::SignalAllIfNotSet </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -406,14 +406,14 @@ template&lt;typename T&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Sets the result of the event if it has not already been set. If this has already been set, this has no effect. </p>
+<p>Sets the result of the event if it has not already been set. If this has already been set, this has no effect. </p><dl class="section return"><dt>Returns</dt><dd>True if a signal was set, false if we were already set. </dd></dl>
 
-<p>Definition at line <a class="el" href="thread__event_8h_source.html#l00148">148</a> of file <a class="el" href="thread__event_8h_source.html">thread_event.h</a>.</p>
+<p>Definition at line <a class="el" href="thread__event_8h_source.html#l00143">143</a> of file <a class="el" href="thread__event_8h_source.html">thread_event.h</a>.</p>
 
 </div>
 </div>
-<a id="aa78375f59c75f467589ba4b34eb01d24"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa78375f59c75f467589ba4b34eb01d24">&sect;&nbsp;</a></span>SignalAllIfNotSet() <span class="overload">[2/2]</span></h2>
+<a id="acbf55534b7be46902d6978a3f6040129"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acbf55534b7be46902d6978a3f6040129">&sect;&nbsp;</a></span>SignalAllIfNotSet() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -426,7 +426,7 @@ template&lt;typename U &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classshaka_1_1ThreadEvent.html">shaka::ThreadEvent</a>&lt; T &gt;::SignalAllIfNotSet </td>
+          <td class="memname">bool <a class="el" href="classshaka_1_1ThreadEvent.html">shaka::ThreadEvent</a>&lt; T &gt;::SignalAllIfNotSet </td>
           <td>(</td>
           <td class="paramtype">U &amp;&amp;&#160;</td>
           <td class="paramname"><em>value</em></td><td>)</td>
@@ -439,9 +439,9 @@ template&lt;typename U &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Sets the result of the event if it has not already been set. If this has already been set, this has no effect. </p>
+<p>Sets the result of the event if it has not already been set. If this has already been set, this has no effect. </p><dl class="section return"><dt>Returns</dt><dd>True if a signal was set, false if we were already set. </dd></dl>
 
-<p>Definition at line <a class="el" href="thread__event_8h_source.html#l00156">156</a> of file <a class="el" href="thread__event_8h_source.html">thread_event.h</a>.</p>
+<p>Definition at line <a class="el" href="thread__event_8h_source.html#l00158">158</a> of file <a class="el" href="thread__event_8h_source.html">thread_event.h</a>.</p>
 
 </div>
 </div>

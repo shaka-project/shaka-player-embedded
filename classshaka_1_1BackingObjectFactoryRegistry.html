@@ -80,8 +80,10 @@ Inheritance diagram for shaka::BackingObjectFactoryRegistry&lt; T &gt;:</div>
   <img src="classshaka_1_1BackingObjectFactoryRegistry.png" usemap="#shaka::BackingObjectFactoryRegistry_3C_20T_20_3E_map" alt=""/>
   <map id="shaka::BackingObjectFactoryRegistry_3C_20T_20_3E_map" name="shaka::BackingObjectFactoryRegistry&lt; T &gt;_map">
 <area href="classshaka_1_1BackingObjectFactoryBase.html" alt="shaka::BackingObjectFactoryBase" shape="rect" coords="0,0,372,24"/>
-<area href="classshaka_1_1PseudoSingleton.html" alt="shaka::PseudoSingleton&lt; T &gt;" shape="rect" coords="382,0,754,24"/>
-<area href="classshaka_1_1BackingObjectFactory.html" alt="shaka::BackingObjectFactory&lt; T, Base &gt;" shape="rect" coords="191,112,563,136"/>
+<area href="classshaka_1_1PseudoSingleton.html" alt="shaka::PseudoSingleton&lt; BackingObjectFactoryRegistry&lt; T &gt; &gt;" shape="rect" coords="382,0,754,24"/>
+<area href="classshaka_1_1BackingObjectFactory.html" alt="shaka::BackingObjectFactory&lt; T, events::EventTarget &gt;" shape="rect" coords="0,112,372,136"/>
+<area href="classshaka_1_1BackingObjectFactory.html" alt="shaka::BackingObjectFactory&lt; T, Base &gt;" shape="rect" coords="382,112,754,136"/>
+<area href="classshaka_1_1js_1_1mse_1_1TrackListFactory.html" alt="shaka::js::mse::TrackListFactory&lt; T &gt;" shape="rect" coords="0,168,372,192"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -161,7 +163,7 @@ class shaka::BackingObjectFactoryRegistry&lt; T &gt;</h3>
 
 <p>An intermediate type that allows getting the singleton instance for a given <a class="el" href="classshaka_1_1BackingObject.html">BackingObject</a> type. The instance can't be stored in <a class="el" href="classshaka_1_1BackingObjectFactory.html">BackingObjectFactory</a> since doing so would require knowing the base type. To be able to be used in this way, it is valid to use the <a class="el" href="classshaka_1_1PseudoSingleton.html#acc4530aa66dc6eef8bc80ddc78cde884">Instance()</a> method when T is void, but it is invalid to create an instance when T is void. </p>
 
-<p>Definition at line <a class="el" href="backing__object__factory_8h_source.html#l00378">378</a> of file <a class="el" href="backing__object__factory_8h_source.html">backing_object_factory.h</a>.</p>
+<p>Definition at line <a class="el" href="backing__object__factory_8h_source.html#l00377">377</a> of file <a class="el" href="backing__object__factory_8h_source.html">backing_object_factory.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a26ead4e1a3ecca868ac60902a9839c2b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a26ead4e1a3ecca868ac60902a9839c2b">&sect;&nbsp;</a></span>BackingObjectFactoryRegistry()</h2>
@@ -189,7 +191,7 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="backing__object__factory_8h_source.html#l00382">382</a> of file <a class="el" href="backing__object__factory_8h_source.html">backing_object_factory.h</a>.</p>
+<p>Definition at line <a class="el" href="backing__object__factory_8h_source.html#l00381">381</a> of file <a class="el" href="backing__object__factory_8h_source.html">backing_object_factory.h</a>.</p>
 
 </div>
 </div>
@@ -220,7 +222,7 @@ template&lt;typename T&gt; </div>
 </div><div class="memdoc">
 <p>Returns the instance of the factory that will generate objects of type T. <a class="el" href="classshaka_1_1PseudoSingleton.html#acc4530aa66dc6eef8bc80ddc78cde884">Instance()</a> will CHECK for the value not being null. There is a specialization below for T == void so this will still return null on that case. </p>
 
-<p>Definition at line <a class="el" href="backing__object__factory_8h_source.html#l00392">392</a> of file <a class="el" href="backing__object__factory_8h_source.html">backing_object_factory.h</a>.</p>
+<p>Definition at line <a class="el" href="backing__object__factory_8h_source.html#l00391">391</a> of file <a class="el" href="backing__object__factory_8h_source.html">backing_object_factory.h</a>.</p>
 
 </div>
 </div>
@@ -249,7 +251,7 @@ template&lt;&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="backing__object__factory_8h_source.html#l00401">401</a> of file <a class="el" href="backing__object__factory_8h_source.html">backing_object_factory.h</a>.</p>
+<p>Definition at line <a class="el" href="backing__object__factory_8h_source.html#l00400">400</a> of file <a class="el" href="backing__object__factory_8h_source.html">backing_object_factory.h</a>.</p>
 
 </div>
 </div>
@@ -276,7 +278,7 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="backing__object__factory_8h_source.html#l00397">397</a> of file <a class="el" href="backing__object__factory_8h_source.html">backing_object_factory.h</a>.</p>
+<p>Definition at line <a class="el" href="backing__object__factory_8h_source.html#l00396">396</a> of file <a class="el" href="backing__object__factory_8h_source.html">backing_object_factory.h</a>.</p>
 
 </div>
 </div>

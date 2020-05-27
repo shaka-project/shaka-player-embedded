@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['clearkeyimplementationtest',['ClearKeyImplementationTest',['../classshaka_1_1memory_1_1ObjectTracker.html#a153832dc0680eb0c9644ca2b770b6810',1,'shaka::memory::ObjectTracker']]]
+  ['audiorenderercommontest',['AudioRendererCommonTest',['../classshaka_1_1media_1_1AudioRendererCommon.html#aa1c74ae3e159e64475c90ce984ec6921',1,'shaka::media::AudioRendererCommon']]]
 ];

@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['bandwidth',['bandwidth',['../interfaceShakaTrackChoice.html#af1b817260221db50c9b428b5c1976cc1',1,'ShakaTrackChoice::bandwidth()'],['../interfaceShakaTrack.html#af36205e52bc69211693f79b24594b062',1,'ShakaTrack::bandwidth()']]],
-  ['bufferedinfo',['bufferedInfo',['../interfaceShakaPlayerView.html#a90679de0294a466cb36b01f4de4c60b7',1,'ShakaPlayerView']]],
-  ['bufferingcallback',['bufferingCallback',['../interfaceShakaPlayerView.html#aa201f498ebbe0dd29db4e3fe306d07a6',1,'ShakaPlayerView']]],
+  ['bandwidth',['bandwidth',['../interfaceShakaTrackChoice.html#a0f952d0d738886bbe4581675a7667bbb',1,'ShakaTrackChoice::bandwidth()'],['../interfaceShakaTrack.html#af36205e52bc69211693f79b24594b062',1,'ShakaTrack::bandwidth()']]],
+  ['body',['body',['../interfaceShakaPlayerRequest.html#a4925a9f423f5ee4daea61d13a867e902',1,'ShakaPlayerRequest']]],
+  ['bufferedinfo',['bufferedInfo',['../interfaceShakaPlayerUiInfo.html#a4307ad83c3806de5034c3ef937d33887',1,'ShakaPlayerUiInfo']]],
   ['bufferingtime',['bufferingTime',['../interfaceShakaStats.html#a28328633ad0acaa1e63efd7954e48264',1,'ShakaStats']]]
 ];

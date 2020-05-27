@@ -1,12 +1,24 @@
 var searchData=
 [
   ['second',['SECOND',['../namespaceshaka_1_1js.html#a01f48151ec21fd42df23dff081ceac2fa2200becb80f0019c4a2ccecec350d0db',1,'shaka::js']]],
+  ['securityerror',['SecurityError',['../namespaceshaka.html#ae8d497a0b741d2f5fbcf5410aae341e5ab00337f1c82cd595c83f0ed5696e305c',1,'shaka']]],
+  ['seeking',['Seeking',['../group__media.html#gga14a5c10af9c461da5695387e0b88be46adfa6bb51bca02efb16d45113cd76c1f4',1,'shaka::media']]],
+  ['segment',['Segment',['../namespaceshaka.html#ad8d6919b5dcc8557f2fc6f169f48496ca4b77e2a9d8e9cfc299f504b32d6e3d2b',1,'shaka']]],
   ['segments',['SEGMENTS',['../namespaceshaka_1_1js_1_1mse.html#a9178d64f05ada7255454c9fefa182a04ae46e6fdc5d56d75137e80454ff7ddbda',1,'shaka::js::mse']]],
   ['sequence',['SEQUENCE',['../namespaceshaka_1_1js_1_1mse.html#a9178d64f05ada7255454c9fefa182a04a2cb198a10d0a4c217ff4c15e98a97215',1,'shaka::js::mse']]],
-  ['shakaerror',['ShakaError',['../group__player.html#gga4aad14fb773aa936a8d628db80dee321afcc2240139dfaef19683a1406585267a',1,'shaka']]],
-  ['showing',['Showing',['../group__player.html#ggad1d74ca3e5b95e051acb4319cb1545b9ab4e6101378d2a08d80df7e5da0625128',1,'shaka']]],
-  ['start',['Start',['../group__player.html#gga317bf834dc278b1c3fc649401a43f1f6aa6122a65eaa676f700ae68d393054a37',1,'shaka::Start()'],['../group__player.html#gga1e597d20bbf5fec2a5e3cc42b75ba8acaa6122a65eaa676f700ae68d393054a37',1,'shaka::Start()']]],
+  ['showing',['Showing',['../group__media.html#gga008a5f8eca825cd10c7eca853bbaa5e7ab4e6101378d2a08d80df7e5da0625128',1,'shaka::media']]],
+  ['sign',['Sign',['../group__media.html#gga7ba173ffc4198f2a7fa8b395880fdadda31c6b3fdfaaa80dba2dbf92a4600524c',1,'shaka::media']]],
+  ['smptest2086',['SmpteSt2086',['../group__mediaCapabilities.html#gga66f9cebe528fd50520866e2c8de0c9e9a67fa729a718fcdc7f2ecfecd160a9702',1,'shaka::media']]],
+  ['smptest2094_5f10',['SmpteSt2094_10',['../group__mediaCapabilities.html#gga66f9cebe528fd50520866e2c8de0c9e9a617c010cb6895f31d98abe1781797f3e',1,'shaka::media']]],
+  ['smptest2094_5f40',['SmpteSt2094_40',['../group__mediaCapabilities.html#gga66f9cebe528fd50520866e2c8de0c9e9ac5f7b4257a159b56d070312ee3ff3be1',1,'shaka::media']]],
+  ['srgb',['SRGB',['../group__mediaCapabilities.html#ggaa02a053cb6ce5bd743daa606cbb78f1ca1f3f09bca5728eb7af4ea263ae84b9f1',1,'shaka::media::SRGB()'],['../group__mediaCapabilities.html#ggaba5deb65c15e9474dd33b4b17b80d188a1f3f09bca5728eb7af4ea263ae84b9f1',1,'shaka::media::SRGB()']]],
+  ['start',['Start',['../group__media.html#gga4bdb28c63bc3d9635eab8e7798900295aa6122a65eaa676f700ae68d393054a37',1,'shaka::media::Start()'],['../group__media.html#ggac64263a9cfea446c94931cc4fe594547aa6122a65eaa676f700ae68d393054a37',1,'shaka::media::Start()']]],
   ['statuspending',['StatusPending',['../group__eme.html#ggae4746fdb8db8ff35e1cb8ba92df649d0a60d860e784926623b5c335584d509225',1,'shaka::eme']]],
-  ['subtitles',['Subtitles',['../group__player.html#ggaf38694d5ea45613525fc764e2b17aba5a6a73085e389c48beca8b3f4629b4b1e4',1,'shaka']]],
-  ['success',['Success',['../group__eme.html#gga538e615366fe4f2044cd1166e186c5a6a505a83f220c02df2f85c3810cd9ceb38',1,'shaka::eme']]]
+  ['stretch',['Stretch',['../group__utils.html#gga647fb15ad5aea4067f28f4ad782fc398afbb09a82eafab60150d0996e8fe46560',1,'shaka']]],
+  ['string',['String',['../namespaceshaka_1_1proto.html#a66e9de11650d6353870963e3c6f18f9fa5a9ddd82d3fa1647c4e549dda44a5246',1,'shaka::proto']]],
+  ['stringobject',['StringObject',['../namespaceshaka_1_1proto.html#a66e9de11650d6353870963e3c6f18f9fa2ad9392b2ba62245d985555b2e9c9fc8',1,'shaka::proto']]],
+  ['subtitles',['Subtitles',['../group__media.html#gga7ba173ffc4198f2a7fa8b395880fdadda6a73085e389c48beca8b3f4629b4b1e4',1,'shaka::media::Subtitles()'],['../group__media.html#gga8d5f6087277f4426c7a1c32bef6ffcd7a6a73085e389c48beca8b3f4629b4b1e4',1,'shaka::media::Subtitles()']]],
+  ['success',['Success',['../group__eme.html#gga538e615366fe4f2044cd1166e186c5a6a505a83f220c02df2f85c3810cd9ceb38',1,'shaka::eme::Success()'],['../group__media.html#gga4a4c97c95a4366f46e1f812152ace42fa505a83f220c02df2f85c3810cd9ceb38',1,'shaka::media::Success()'],['../namespaceshaka_1_1js_1_1idb.html#a017e752abb22356ef65deed9b3198134a505a83f220c02df2f85c3810cd9ceb38',1,'shaka::js::idb::Success()']]],
+  ['symbol',['Symbol',['../namespaceshaka_1_1proto.html#a66e9de11650d6353870963e3c6f18f9fa078e39854bdedfd63b271edac54e5126',1,'shaka::proto']]],
+  ['syntaxerror',['SyntaxError',['../namespaceshaka.html#ae8d497a0b741d2f5fbcf5410aae341e5ac657dec346a132940733f1746f50ece7',1,'shaka']]]
 ];

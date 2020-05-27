@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['get_5fconst_5freference_5fat_5ft',['get_const_reference_at_t',['../namespaceshaka_1_1impl.html#a6c293e970053037e62c4ccde31147df2',1,'shaka::impl']]],
-  ['get_5ftype_5fat_5ft',['get_type_at_t',['../namespaceshaka_1_1impl.html#aaf9e10c69003eddd80ec2b7ba9ee65cc',1,'shaka::impl']]]
+  ['elementarystream',['ElementaryStream',['../namespaceshaka_1_1media.html#af014aba5866315c03050cae89e76748f',1,'shaka::media']]],
+  ['enable_5fif_5ft',['enable_if_t',['../namespaceshaka_1_1util.html#a23660ea15e44a28e83d6b1ed47c22e5f',1,'shaka::util']]],
+  ['entry',['Entry',['../classshaka_1_1proto_1_1Object.html#aca8e032d5d0cfcc6612365882d319be3',1,'shaka::proto::Object']]]
 ];

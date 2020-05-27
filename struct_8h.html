@@ -77,6 +77,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="convert__js_8h_source.html">src/mapping/convert_js.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="generic__converter_8h_source.html">src/mapping/generic_converter.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="js__wrappers_8h_source.html">src/mapping/js_wrappers.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="weak__js__ptr_8h_source.html">src/mapping/weak_js_ptr.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="heap__tracer_8h_source.html">src/memory/heap_tracer.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="templates_8h_source.html">src/util/templates.h</a>&quot;</code><br />
 </div>
@@ -102,14 +103,22 @@ Namespaces</h2></td></tr>
 Macros</h2></td></tr>
 <tr class="memitem:acac2bbad341e93473d24b69ab90b9064"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_8h.html#acac2bbad341e93473d24b69ab90b9064">THIS_TYPE</a>&#160;&#160;&#160;std::decay&lt;decltype(*this)&gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a></td></tr>
 <tr class="separator:acac2bbad341e93473d24b69ab90b9064"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb0133eb30cd09731bd1b1be3a2458ee"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_8h.html#aeb0133eb30cd09731bd1b1be3a2458ee">ADD_NAMED_DICT_FIELD</a>(Type,  member,  <a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>)&#160;&#160;&#160;Type member = CreateFieldConverter(<a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, &amp;THIS_TYPE::member)</td></tr>
-<tr class="separator:aeb0133eb30cd09731bd1b1be3a2458ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e2d0c2ccfac157f809f2dc9621d15d0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_8h.html#a3e2d0c2ccfac157f809f2dc9621d15d0">ADD_DICT_FIELD</a>(<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>,  member)&#160;&#160;&#160;<a class="el" href="struct_8h.html#aeb0133eb30cd09731bd1b1be3a2458ee">ADD_NAMED_DICT_FIELD</a>(<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>, member, #member)</td></tr>
-<tr class="separator:a3e2d0c2ccfac157f809f2dc9621d15d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83ac7e6c6a9b507848c8e1465012444f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_8h.html#a83ac7e6c6a9b507848c8e1465012444f">ADD_NAMED_DICT_FIELD</a>(member,  <a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, ...)&#160;&#160;&#160;__VA_ARGS__ member = CreateFieldConverter(<a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, &amp;THIS_TYPE::member)</td></tr>
+<tr class="separator:a83ac7e6c6a9b507848c8e1465012444f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05fdf8009d4e0a612220732fefdb970b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_8h.html#a05fdf8009d4e0a612220732fefdb970b">ADD_DICT_FIELD</a>(member, ...)&#160;&#160;&#160;<a class="el" href="struct_8h.html#a83ac7e6c6a9b507848c8e1465012444f">ADD_NAMED_DICT_FIELD</a>(member, #member, __VA_ARGS__)</td></tr>
+<tr class="separator:a05fdf8009d4e0a612220732fefdb970b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa55ccdb93f297c78a13922ce732c96a4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_8h.html#aa55ccdb93f297c78a13922ce732c96a4">DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE</a>(Type)</td></tr>
+<tr class="separator:aa55ccdb93f297c78a13922ce732c96a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fabfd7a02b70e486d82fb7654694904"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_8h.html#a3fabfd7a02b70e486d82fb7654694904">DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE</a>(Type)</td></tr>
+<tr class="separator:a3fabfd7a02b70e486d82fb7654694904"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaef5c4f23b6e87b468e97c624763112b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_8h.html#aaef5c4f23b6e87b468e97c624763112b">DECLARE_STRUCT_SPECIAL_METHODS_MOVE_ONLY</a>(Type)</td></tr>
+<tr class="separator:aaef5c4f23b6e87b468e97c624763112b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae627ad42d1d9eaf749ed54838cdafb3e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_8h.html#ae627ad42d1d9eaf749ed54838cdafb3e">DEFINE_STRUCT_SPECIAL_METHODS_MOVE_ONLY</a>(Type)</td></tr>
+<tr class="separator:ae627ad42d1d9eaf749ed54838cdafb3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a3e2d0c2ccfac157f809f2dc9621d15d0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e2d0c2ccfac157f809f2dc9621d15d0">&sect;&nbsp;</a></span>ADD_DICT_FIELD</h2>
+<a id="a05fdf8009d4e0a612220732fefdb970b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05fdf8009d4e0a612220732fefdb970b">&sect;&nbsp;</a></span>ADD_DICT_FIELD</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -118,28 +127,28 @@ Macros</h2></td></tr>
           <td class="memname">#define ADD_DICT_FIELD</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>, </td>
+          <td class="paramname">member, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">member&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="struct_8h.html#aeb0133eb30cd09731bd1b1be3a2458ee">ADD_NAMED_DICT_FIELD</a>(<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a>, member, #member)</td>
+          <td></td><td>&#160;&#160;&#160;<a class="el" href="struct_8h.html#a83ac7e6c6a9b507848c8e1465012444f">ADD_NAMED_DICT_FIELD</a>(member, #member, __VA_ARGS__)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="struct_8h_source.html#l00038">38</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
+<p>Definition at line <a class="el" href="struct_8h_source.html#l00039">39</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
 
 </div>
 </div>
-<a id="aeb0133eb30cd09731bd1b1be3a2458ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeb0133eb30cd09731bd1b1be3a2458ee">&sect;&nbsp;</a></span>ADD_NAMED_DICT_FIELD</h2>
+<a id="a83ac7e6c6a9b507848c8e1465012444f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83ac7e6c6a9b507848c8e1465012444f">&sect;&nbsp;</a></span>ADD_NAMED_DICT_FIELD</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -148,29 +157,111 @@ Macros</h2></td></tr>
           <td class="memname">#define ADD_NAMED_DICT_FIELD</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">Type, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
           <td class="paramname">member, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>&#160;</td>
+          <td class="paramname"><a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;Type member = CreateFieldConverter(<a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, &amp;THIS_TYPE::member)</td>
+          <td></td><td>&#160;&#160;&#160;__VA_ARGS__ member = CreateFieldConverter(<a class="el" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, &amp;THIS_TYPE::member)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="struct_8h_source.html#l00036">36</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
+<p>Definition at line <a class="el" href="struct_8h_source.html#l00037">37</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
+
+</div>
+</div>
+<a id="aa55ccdb93f297c78a13922ce732c96a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa55ccdb93f297c78a13922ce732c96a4">&sect;&nbsp;</a></span>DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DECLARE_STRUCT_SPECIAL_METHODS_COPYABLE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Type</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keyword">static</span> std::string <a class="code" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>() {                         \</div><div class="line">    return #Type;                                     \</div><div class="line">  }                                                   \</div><div class="line">  Type();                                             \</div><div class="line">  Type(<span class="keyword">const</span> Type&amp;);                                  \</div><div class="line">  Type(Type&amp;&amp;);                                       \</div><div class="line">  ~Type() <span class="keyword">override</span>;                                   \</div><div class="line">  Type&amp; operator=(<span class="keyword">const</span> Type&amp;);                       \</div><div class="line">  Type&amp; operator=(Type&amp;&amp;)</div><div class="ttc" id="dom__exception_8cc_html_a8f8f80d37794cde9472343e4487ba3eb"><div class="ttname"><a href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a></div><div class="ttdeci">const char * name</div><div class="ttdef"><b>Definition:</b> <a href="dom__exception_8cc_source.html#l00035">dom_exception.cc:35</a></div></div>
+</div><!-- fragment -->
+<p>Definition at line <a class="el" href="struct_8h_source.html#l00042">42</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
+
+</div>
+</div>
+<a id="aaef5c4f23b6e87b468e97c624763112b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaef5c4f23b6e87b468e97c624763112b">&sect;&nbsp;</a></span>DECLARE_STRUCT_SPECIAL_METHODS_MOVE_ONLY</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DECLARE_STRUCT_SPECIAL_METHODS_MOVE_ONLY</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Type</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keyword">static</span> std::string <a class="code" href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>() {                          \</div><div class="line">    return #Type;                                      \</div><div class="line">  }                                                    \</div><div class="line">  Type();                                              \</div><div class="line">  Type(<span class="keyword">const</span> Type&amp;) = <span class="keyword">delete</span>;                          \</div><div class="line">  Type(Type&amp;&amp;);                                        \</div><div class="line">  ~Type() <span class="keyword">override</span>;                                    \</div><div class="line">  Type&amp; operator=(<span class="keyword">const</span> Type&amp;) = <span class="keyword">delete</span>;               \</div><div class="line">  Type&amp; operator=(Type&amp;&amp;)</div><div class="ttc" id="dom__exception_8cc_html_a8f8f80d37794cde9472343e4487ba3eb"><div class="ttname"><a href="dom__exception_8cc.html#a8f8f80d37794cde9472343e4487ba3eb">name</a></div><div class="ttdeci">const char * name</div><div class="ttdef"><b>Definition:</b> <a href="dom__exception_8cc_source.html#l00035">dom_exception.cc:35</a></div></div>
+</div><!-- fragment -->
+<p>Definition at line <a class="el" href="struct_8h_source.html#l00059">59</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
+
+</div>
+</div>
+<a id="a3fabfd7a02b70e486d82fb7654694904"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3fabfd7a02b70e486d82fb7654694904">&sect;&nbsp;</a></span>DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DEFINE_STRUCT_SPECIAL_METHODS_COPYABLE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Type</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">Type::Type() {}                                    \</div><div class="line">  Type::Type(<span class="keyword">const</span> Type&amp;) = <span class="keywordflow">default</span>;                 \</div><div class="line">  Type::Type(Type&amp;&amp;) = <span class="keywordflow">default</span>;                      \</div><div class="line">  Type::~Type() {}                                   \</div><div class="line">  Type&amp; Type::operator=(<span class="keyword">const</span> Type&amp;) = <span class="keywordflow">default</span>;      \</div><div class="line">  Type&amp; Type::operator=(Type&amp;&amp;) = <span class="keywordflow">default</span></div></div><!-- fragment -->
+<p>Definition at line <a class="el" href="struct_8h_source.html#l00052">52</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
+
+</div>
+</div>
+<a id="ae627ad42d1d9eaf749ed54838cdafb3e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae627ad42d1d9eaf749ed54838cdafb3e">&sect;&nbsp;</a></span>DEFINE_STRUCT_SPECIAL_METHODS_MOVE_ONLY</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DEFINE_STRUCT_SPECIAL_METHODS_MOVE_ONLY</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Type</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">Type::Type() {}                                     \</div><div class="line">  Type::Type(Type&amp;&amp;) = <span class="keywordflow">default</span>;                       \</div><div class="line">  Type::~Type() {}                                    \</div><div class="line">  Type&amp; Type::operator=(Type&amp;&amp;) = <span class="keywordflow">default</span></div></div><!-- fragment -->
+<p>Definition at line <a class="el" href="struct_8h_source.html#l00069">69</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
 
 </div>
 </div>
@@ -186,7 +277,7 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="struct_8h_source.html#l00034">34</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
+<p>Definition at line <a class="el" href="struct_8h_source.html#l00035">35</a> of file <a class="el" href="struct_8h_source.html">struct.h</a>.</p>
 
 </div>
 </div>

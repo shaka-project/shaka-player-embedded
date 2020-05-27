@@ -1,8 +1,13 @@
 var searchData=
 [
-  ['text',['text',['../interfaceShakaBufferedInfo.html#aa03926487bbe1365b0dd0610b5113d4e',1,'ShakaBufferedInfo']]],
-  ['textlanguagesandroles',['textLanguagesAndRoles',['../interfaceShakaPlayerView.html#a4ac7af4c437a53af156d637daf61c20d',1,'ShakaPlayerView']]],
-  ['timestamp',['timestamp',['../interfaceShakaTrackChoice.html#ab6a75591429c39cb82eccf7bf9308f19',1,'ShakaTrackChoice::timestamp()'],['../interfaceShakaStateChange.html#a736dca4b4677e3032ce820fceeaf3626',1,'ShakaStateChange::timestamp()']]],
-  ['total',['total',['../interfaceShakaBufferedInfo.html#a83355b7e7c0c18ff8a4a7c3c6582e3a9',1,'ShakaBufferedInfo']]],
-  ['type',['type',['../interfaceShakaTrackChoice.html#ab7d9fca36aaeda13affdd9b95ded55f2',1,'ShakaTrackChoice::type()'],['../interfaceShakaTrack.html#a2e8ddd22558f6d2b68c2820a0b038d96',1,'ShakaTrack::type()']]]
+  ['seeking',['seeking',['../interfaceShakaPlayerUiInfo.html#ab0bec64153b8a2cb4e0f4c09457c2067',1,'ShakaPlayerUiInfo::seeking()'],['../interfaceShakaPlayer.html#aed39432828ba030dd89f9d2b8308ff2e',1,'ShakaPlayer::seeking()']]],
+  ['seekrange',['seekRange',['../interfaceShakaPlayerUiInfo.html#a266d1ed8754add043ea4f3c05070463f',1,'ShakaPlayerUiInfo']]],
+  ['severity',['severity',['../interfaceShakaPlayerError.html#a333bdcf1f927524f4c9df54f329ad5f4',1,'ShakaPlayerError']]],
+  ['size',['size',['../interfaceShakaStoredContent.html#ac1c8dc72a462b738e4f9b84a5e49a31c',1,'ShakaStoredContent']]],
+  ['start',['start',['../interfaceShakaBufferedRange.html#a424631bb9938dcfd5e087f6204f51ea6',1,'ShakaBufferedRange']]],
+  ['state',['state',['../interfaceShakaStateChange.html#a8f01a977dab7e1e176481c295d03ddd2',1,'ShakaStateChange']]],
+  ['statehistory',['stateHistory',['../interfaceShakaStats.html#a7844c033d62a6d61026111ca5e3eeee1',1,'ShakaStats']]],
+  ['storeinprogress',['storeInProgress',['../interfaceShakaPlayerStorage.html#af592f07acd4d743397747d38a124dc1d',1,'ShakaPlayerStorage']]],
+  ['streambandwidth',['streamBandwidth',['../interfaceShakaStats.html#ad24abf463805e4b485424a40bf934a54',1,'ShakaStats']]],
+  ['switchhistory',['switchHistory',['../interfaceShakaStats.html#aae263386d70b6f64e52f3bd45323d5ad',1,'ShakaStats']]]
 ];

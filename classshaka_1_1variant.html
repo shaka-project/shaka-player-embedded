@@ -77,7 +77,7 @@ $(function() {
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a16a144a70c233676d7a542f01dfe221e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1variant.html#a16a144a70c233676d7a542f01dfe221e">variant</a> ()</td></tr>
 <tr class="separator:a16a144a70c233676d7a542f01dfe221e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adce5aac7aa349671c0761985d6747df1"><td class="memTemplParams" colspan="2">template&lt;typename U , typename  = typename std::enable_if&lt;!impl::is_variant&lt;                typename std::remove_reference&lt;U&gt;::type&gt;::value&gt;::type&gt; </td></tr>
+<tr class="memitem:adce5aac7aa349671c0761985d6747df1"><td class="memTemplParams" colspan="2">template&lt;typename U , typename  = typename std::enable_if&lt;!impl::is_variant&lt;                            typename std::decay&lt;U&gt;::type&gt;::value&gt;::type&gt; </td></tr>
 <tr class="memitem:adce5aac7aa349671c0761985d6747df1"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classshaka_1_1variant.html#adce5aac7aa349671c0761985d6747df1">variant</a> (U &amp;&amp;value)</td></tr>
 <tr class="separator:adce5aac7aa349671c0761985d6747df1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9d37695440f89b118e9bb17efd1b3a8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1variant.html#af9d37695440f89b118e9bb17efd1b3a8">variant</a> (const <a class="el" href="classshaka_1_1variant.html">variant</a> &amp;other)</td></tr>
@@ -119,6 +119,9 @@ Friends</h2></td></tr>
 <tr class="memitem:a8aa3b23b0cde9968fb51ee2dafac7515"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Choices&gt; </td></tr>
 <tr class="memitem:a8aa3b23b0cde9968fb51ee2dafac7515"><td class="memTemplItemLeft" align="right" valign="top">T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classshaka_1_1variant.html#a8aa3b23b0cde9968fb51ee2dafac7515">get</a> (<a class="el" href="classshaka_1_1variant.html">variant</a>&lt; Choices... &gt; &amp;)</td></tr>
 <tr class="separator:a8aa3b23b0cde9968fb51ee2dafac7515"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaad81b4e130b7fd9e668aac9ba426031"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Choices&gt; </td></tr>
+<tr class="memitem:aaad81b4e130b7fd9e668aac9ba426031"><td class="memTemplItemLeft" align="right" valign="top">T &amp;&amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classshaka_1_1variant.html#aaad81b4e130b7fd9e668aac9ba426031">get</a> (<a class="el" href="classshaka_1_1variant.html">variant</a>&lt; Choices... &gt; &amp;&amp;)</td></tr>
+<tr class="separator:aaad81b4e130b7fd9e668aac9ba426031"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50eca0fc040cb1befd9cdc178c6f2193"><td class="memTemplParams" colspan="2">template&lt;size_t I, typename... Choices&gt; </td></tr>
 <tr class="memitem:a50eca0fc040cb1befd9cdc178c6f2193"><td class="memTemplItemLeft" align="right" valign="top">std::add_const&lt; <a class="el" href="namespaceshaka.html#ad86b884e3d044ea76807fbfb3654eeaf">variant_alternative_t</a>&lt; I, <a class="el" href="classshaka_1_1variant.html">variant</a>&lt; Choices... &gt; &gt; &gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a> *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classshaka_1_1variant.html#a50eca0fc040cb1befd9cdc178c6f2193">get_if</a> (const <a class="el" href="classshaka_1_1variant.html">variant</a>&lt; Choices... &gt; &amp;)</td></tr>
 <tr class="separator:a50eca0fc040cb1befd9cdc178c6f2193"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -139,7 +142,7 @@ class shaka::variant&lt; Types &gt;</h3>
 <p>This is a look-alike for the std::variant type. The most common usages of this type have been implemented, but this is not a general implementation. For example, this doesn't throw exceptions and instead asserts.</p>
 <dl class="section see"><dt>See also</dt><dd><a href="https://en.cppreference.com/w/cpp/utility/variant">https://en.cppreference.com/w/cpp/utility/variant</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00032">32</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00036">36</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a16a144a70c233676d7a542f01dfe221e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a16a144a70c233676d7a542f01dfe221e">&sect;&nbsp;</a></span>variant() <span class="overload">[1/4]</span></h2>
@@ -166,7 +169,7 @@ template&lt;typename... Types&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00290">290</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00303">303</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -178,7 +181,7 @@ template&lt;typename... Types&gt; </div>
 <div class="memtemplate">
 template&lt;typename... Types&gt; </div>
 <div class="memtemplate">
-template&lt;typename U , typename  = typename std::enable_if&lt;!impl::is_variant&lt;                typename std::remove_reference&lt;U&gt;::type&gt;::value&gt;::type&gt; </div>
+template&lt;typename U , typename  = typename std::enable_if&lt;!impl::is_variant&lt;                            typename std::decay&lt;U&gt;::type&gt;::value&gt;::type&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -198,7 +201,7 @@ template&lt;typename U , typename  = typename std::enable_if&lt;!impl::is_varian
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00297">297</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00309">309</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -228,7 +231,7 @@ template&lt;typename... Types&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00303">303</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00315">315</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -258,7 +261,7 @@ template&lt;typename... Types&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00307">307</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00319">319</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -287,7 +290,7 @@ template&lt;typename... Types&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00311">311</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00323">323</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -320,7 +323,7 @@ template&lt;typename T , typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00333">333</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00345">345</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -352,7 +355,7 @@ template&lt;size_t I, typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00342">342</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00354">354</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -381,7 +384,7 @@ template&lt;typename... Types&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00328">328</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00340">340</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -411,7 +414,7 @@ template&lt;typename... Types&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00315">315</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00327">327</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -441,13 +444,13 @@ template&lt;typename... Types&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00321">321</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00333">333</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Friends And Related Function Documentation</h2>
 <a id="a303b5c9aabd108e63921ee529f3eeab2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a303b5c9aabd108e63921ee529f3eeab2">&sect;&nbsp;</a></span>get <span class="overload">[1/4]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a303b5c9aabd108e63921ee529f3eeab2">&sect;&nbsp;</a></span>get <span class="overload">[1/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -474,12 +477,12 @@ template&lt;size_t I, typename... Choices&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00422">422</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00456">456</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
 <a id="aba5f8135de0fe33642bee3440a5c8731"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aba5f8135de0fe33642bee3440a5c8731">&sect;&nbsp;</a></span>get <span class="overload">[2/4]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aba5f8135de0fe33642bee3440a5c8731">&sect;&nbsp;</a></span>get <span class="overload">[2/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -506,12 +509,12 @@ template&lt;size_t I, typename... Choices&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00428">428</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00462">462</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
 <a id="a3e2f0f4745c7015cabc634336e00c879"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e2f0f4745c7015cabc634336e00c879">&sect;&nbsp;</a></span>get <span class="overload">[3/4]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e2f0f4745c7015cabc634336e00c879">&sect;&nbsp;</a></span>get <span class="overload">[3/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -538,12 +541,12 @@ template&lt;typename T , typename... Choices&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00422">422</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00456">456</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
 <a id="a8aa3b23b0cde9968fb51ee2dafac7515"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8aa3b23b0cde9968fb51ee2dafac7515">&sect;&nbsp;</a></span>get <span class="overload">[4/4]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8aa3b23b0cde9968fb51ee2dafac7515">&sect;&nbsp;</a></span>get <span class="overload">[4/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -570,7 +573,39 @@ template&lt;typename T , typename... Choices&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00428">428</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00462">462</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+
+</div>
+</div>
+<a id="aaad81b4e130b7fd9e668aac9ba426031"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaad81b4e130b7fd9e668aac9ba426031">&sect;&nbsp;</a></span>get <span class="overload">[5/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Types&gt; </div>
+<div class="memtemplate">
+template&lt;typename T , typename... Choices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T&amp;&amp; get </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classshaka_1_1variant.html">variant</a>&lt; Choices... &gt; &amp;&amp;&#160;</td>
+          <td class="paramname"><em>variant</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00480">480</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -602,7 +637,7 @@ template&lt;size_t I, typename... Choices&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00448">448</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00488">488</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -634,7 +669,7 @@ template&lt;size_t I, typename... Choices&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00456">456</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00496">496</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -666,7 +701,7 @@ template&lt;typename T , typename... Choices&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00448">448</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00488">488</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -698,7 +733,7 @@ template&lt;typename T , typename... Choices&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00456">456</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00496">496</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -740,7 +775,7 @@ template&lt;typename... Choices&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00402">402</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00436">436</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>
@@ -768,7 +803,7 @@ template&lt;typename... &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="variant_8h_source.html#l00351">351</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
+<p>Definition at line <a class="el" href="variant_8h_source.html#l00363">363</a> of file <a class="el" href="variant_8h_source.html">variant.h</a>.</p>
 
 </div>
 </div>

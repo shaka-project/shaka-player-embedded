@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['width',['width',['../interfaceShakaStats.html#a49955c3d04a872a9e7f90e586a77387c',1,'ShakaStats::width()'],['../interfaceShakaTrack.html#ab4156ab25312a7fd91f79f38fa0586c8',1,'ShakaTrack::width()']]]
+  ['uri',['uri',['../interfaceShakaPlayerResponse.html#a86547a704ef0858a6d7d234b56258f97',1,'ShakaPlayerResponse']]],
+  ['uris',['uris',['../interfaceShakaPlayerRequest.html#aef3fcc5c706bb9b7a3b654fd1096d9e7',1,'ShakaPlayerRequest']]]
 ];

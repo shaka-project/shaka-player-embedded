@@ -83,15 +83,13 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a95bf4d887800d8788a599cef816f98c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb48a531b21a75f3303d0d68965146e1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1RejectedPromiseHandler.html#aeb48a531b21a75f3303d0d68965146e1">RemovePromise</a> (Handle&lt; JsPromise &gt; promise)</td></tr>
 <tr class="separator:aeb48a531b21a75f3303d0d68965146e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f0cb437f15bf4a90da40d18abdc628a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1RejectedPromiseHandler.html#a4f0cb437f15bf4a90da40d18abdc628a">Trace</a> (<a class="el" href="classshaka_1_1memory_1_1HeapTracer.html">memory::HeapTracer</a> *tracer) const</td></tr>
-<tr class="separator:a4f0cb437f15bf4a90da40d18abdc628a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8bbb7c350700e7328d6e953eb25d1e29"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1RejectedPromiseHandler.html#a8bbb7c350700e7328d6e953eb25d1e29">LogPending</a> ()</td></tr>
-<tr class="separator:a8bbb7c350700e7328d6e953eb25d1e29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adfa6815945060b8b530dbd8a54c2ba3c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1RejectedPromiseHandler.html#adfa6815945060b8b530dbd8a54c2ba3c">LogUnhandledRejection</a> ()</td></tr>
+<tr class="separator:adfa6815945060b8b530dbd8a54c2ba3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A singleton class owned by the <a class="el" href="classshaka_1_1JsEngine.html">JsEngine</a> that handles printing errors about rejected Promises with no handlers. When a <a class="el" href="classshaka_1_1Promise.html">Promise</a> gets rejected without any handlers, a log message should be printed. However, we get a callback from the JavaScript engine immediately, so we need to delay the message so JavaScript can add handlers. </p>
 
-<p>Definition at line <a class="el" href="rejected__promise__handler_8h_source.html#l00032">32</a> of file <a class="el" href="rejected__promise__handler_8h_source.html">rejected_promise_handler.h</a>.</p>
+<p>Definition at line <a class="el" href="rejected__promise__handler_8h_source.html#l00033">33</a> of file <a class="el" href="rejected__promise__handler_8h_source.html">rejected_promise_handler.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="adeca027e292dd418337215816549f336"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adeca027e292dd418337215816549f336">&sect;&nbsp;</a></span>RejectedPromiseHandler()</h2>
@@ -108,7 +106,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00042">42</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
+<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00022">22</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
 
 </div>
 </div>
@@ -127,7 +125,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00044">44</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
+<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00024">24</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
 
 </div>
 </div>
@@ -165,27 +163,27 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00046">46</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
+<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00026">26</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
 
 </div>
 </div>
-<a id="a8bbb7c350700e7328d6e953eb25d1e29"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8bbb7c350700e7328d6e953eb25d1e29">&sect;&nbsp;</a></span>LogPending()</h2>
+<a id="adfa6815945060b8b530dbd8a54c2ba3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adfa6815945060b8b530dbd8a54c2ba3c">&sect;&nbsp;</a></span>LogUnhandledRejection()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void shaka::RejectedPromiseHandler::LogPending </td>
+          <td class="memname">void shaka::RejectedPromiseHandler::LogUnhandledRejection </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Called by the background task to log pending Promises. </p>
+<p>Called by the background task to log unhandled rejections. </p>
 
-<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00084">84</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
+<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00053">53</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
 
 </div>
 </div>
@@ -206,28 +204,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Indicates that the given <a class="el" href="classshaka_1_1Promise.html">Promise</a> had a handler added to it. </p>
 
-<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00056">56</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
-
-</div>
-</div>
-<a id="a4f0cb437f15bf4a90da40d18abdc628a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4f0cb437f15bf4a90da40d18abdc628a">&sect;&nbsp;</a></span>Trace()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void shaka::RejectedPromiseHandler::Trace </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classshaka_1_1memory_1_1HeapTracer.html">memory::HeapTracer</a> *&#160;</td>
-          <td class="paramname"><em>tracer</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Traces the objects owned by this instance. This isn't called by <a class="el" href="classshaka_1_1JsEngine.html">JsEngine</a> since <a class="el" href="classshaka_1_1JsEngine.html">JsEngine</a> isn't traced. This is called by the background task since this class only needs to be traced while there are pending Promises. </p>
-
-<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00077">77</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
+<p>Definition at line <a class="el" href="rejected__promise__handler_8cc_source.html#l00036">36</a> of file <a class="el" href="rejected__promise__handler_8cc_source.html">rejected_promise_handler.cc</a>.</p>
 
 </div>
 </div>

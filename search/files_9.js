@@ -9,6 +9,8 @@ var searchData=
   ['js_5fmanager_2eh',['js_manager.h',['../js__manager_8h.html',1,'']]],
   ['js_5fmanager_5fimpl_2ecc',['js_manager_impl.cc',['../js__manager__impl_8cc.html',1,'']]],
   ['js_5fmanager_5fimpl_2eh',['js_manager_impl.h',['../js__manager__impl_8h.html',1,'']]],
+  ['js_5fobject_5fwrapper_2ecc',['js_object_wrapper.cc',['../js__object__wrapper_8cc.html',1,'']]],
+  ['js_5fobject_5fwrapper_2eh',['js_object_wrapper.h',['../js__object__wrapper_8h.html',1,'']]],
   ['js_5futils_2ecc',['js_utils.cc',['../js__utils_8cc.html',1,'']]],
   ['js_5futils_2eh',['js_utils.h',['../js__utils_8h.html',1,'']]],
   ['js_5fwrapper_2eh',['js_wrapper.h',['../js__wrapper_8h.html',1,'']]],

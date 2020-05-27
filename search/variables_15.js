@@ -1,5 +1,29 @@
 var searchData=
 [
-  ['x',['x',['../structshaka_1_1ShakaRect.html#a85a64438f94feb9e9011b44aa47fc749',1,'shaka::ShakaRect']]],
-  ['xml_5fhttp_5frequest',['xml_http_request',['../structshaka_1_1Environment_1_1Impl.html#a44814fd87881f508c0288350de62f2c6',1,'shaka::Environment::Impl']]]
+  ['value',['value',['../classshaka_1_1js_1_1dom_1_1Attr.html#a4bcfd889d73e5da652ab3a0efdc1a11a',1,'shaka::js::dom::Attr::value()'],['../classshaka_1_1js_1_1idb_1_1IDBCursor.html#a2a1a8bbc8210581d420517d10003f3fa',1,'shaka::js::idb::IDBCursor::value()'],['../interfaceShakaBufferedInfo.html#a6c17c42117b652bb663c5ebb0017f3ac',1,'ShakaBufferedInfo::value()'],['../interfaceShakaBufferedRange.html#a699d18311df5de991dcf7f60ded38cb2',1,'ShakaBufferedRange::value()'],['../interfaceShakaDrmInfo.html#a8970c8f07c194b7fdada04ca47c0a437',1,'ShakaDrmInfo::value()'],['../interfaceShakaInitDataOverride.html#a5720ead6df4000a7e4bb1624e9bfab92',1,'ShakaInitDataOverride::value()'],['../interfaceShakaLanguageRole.html#a640661d97532f6ba8c20ab65ebf7218c',1,'ShakaLanguageRole::value()'],['../interfaceShakaStateChange.html#a6f1c466b2b03fdf04166e63cc55c4249',1,'ShakaStateChange::value()'],['../interfaceShakaStats.html#a4fda7336b53d831acdda8f5744729a22',1,'ShakaStats::value()'],['../interfaceShakaStoredContent.html#a0038ae842cb2d7d874dcfd4da33898ed',1,'ShakaStoredContent::value()'],['../interfaceShakaTrack.html#a922f4ae59f61646f62b3a938306a3aac',1,'ShakaTrack::value()'],['../interfaceShakaTrackChoice.html#a1e2851c184f20e8dafcdaa5a1ac8308b',1,'ShakaTrackChoice::value()']]],
+  ['value_5f',['value_',['../classshaka_1_1optional.html#a28732439ac030e3e68c5479cded81546',1,'shaka::optional::value_()'],['../classshaka_1_1impl_1_1union__.html#a5e3b0e38fd7641d0eaafb8cfcfb89e43',1,'shaka::impl::union_::value_()'],['../classshaka_1_1impl_1_1union___3_01T_01_4.html#a15a91a3fb37fe676b18f634df41dca88',1,'shaka::impl::union_&lt; T &gt;::value_()']]],
+  ['value_5fbool_5f',['value_bool_',['../classshaka_1_1proto_1_1ValueDefaultTypeInternal.html#af47e220dec889ab3ca5c80bff6a86096',1,'shaka::proto::ValueDefaultTypeInternal']]],
+  ['value_5fbytes_5f',['value_bytes_',['../classshaka_1_1proto_1_1ValueDefaultTypeInternal.html#adb81e08fd21da4c21cfd2544c6e4e257',1,'shaka::proto::ValueDefaultTypeInternal']]],
+  ['value_5fnumber_5f',['value_number_',['../classshaka_1_1proto_1_1ValueDefaultTypeInternal.html#acd2a0a1c7e40e3ecdaf325814e81c931',1,'shaka::proto::ValueDefaultTypeInternal']]],
+  ['value_5fobject_5f',['value_object_',['../classshaka_1_1proto_1_1ValueDefaultTypeInternal.html#a0cc77ee08c909eda7097a548be280069',1,'shaka::proto::ValueDefaultTypeInternal']]],
+  ['value_5fstring_5f',['value_string_',['../classshaka_1_1proto_1_1ValueDefaultTypeInternal.html#a40bbeff454f3f25daba88c4d0e6cc5a8',1,'shaka::proto::ValueDefaultTypeInternal']]],
+  ['valuetype_5farraysize',['ValueType_ARRAYSIZE',['../namespaceshaka_1_1proto.html#aebd9bd2352f65403a3ff82b11c85268f',1,'shaka::proto']]],
+  ['valuetype_5fmax',['ValueType_MAX',['../namespaceshaka_1_1proto.html#a0706f1679da201cb9ad5ac61f170e274',1,'shaka::proto']]],
+  ['valuetype_5fmin',['ValueType_MIN',['../namespaceshaka_1_1proto.html#a37a61121f6ab339d4e52627545df1ba0',1,'shaka::proto']]],
+  ['valuetype_5fstrings',['ValueType_strings',['../namespaceshaka_1_1proto.html#acc243d48105fc062197acc61f501d42c',1,'shaka::proto']]],
+  ['vendor',['vendor',['../classshaka_1_1js_1_1Navigator.html#a2baea754a7fad1ee89b8fd84a655992d',1,'shaka::js::Navigator']]],
+  ['vendor_5fsub',['vendor_sub',['../classshaka_1_1js_1_1Navigator.html#abef54b6d7e2a6a34ef194c83a80ef9cd',1,'shaka::js::Navigator']]],
+  ['version',['version',['../classshaka_1_1js_1_1idb_1_1IDBDatabase.html#a62cfaaad69a71d19c450dbf36a7cedc7',1,'shaka::js::idb::IDBDatabase']]],
+  ['version_5fchange_5fevent',['version_change_event',['../structshaka_1_1Environment_1_1Impl.html#a85fdd312c2ef94386984949411c68e66',1,'shaka::Environment::Impl']]],
+  ['video',['video',['../structshaka_1_1media_1_1MediaCapabilitiesKeySystemConfiguration.html#a525037fa00113e322fde8a1f5228a006',1,'shaka::media::MediaCapabilitiesKeySystemConfiguration::video()'],['../structshaka_1_1media_1_1MediaDecodingConfiguration.html#aa86451627fea9e9d09732d6370a745f6',1,'shaka::media::MediaDecodingConfiguration::video()'],['../classshaka_1_1BufferedInfo_1_1Impl.html#a3a79d34bc75a3eec7108977be7bc17bc',1,'shaka::BufferedInfo::Impl::video()']]],
+  ['video_5felement',['video_element',['../structshaka_1_1Environment_1_1Impl.html#a4486ae0e97e453b3536a33ef5b913c4e',1,'shaka::Environment::Impl']]],
+  ['video_5ftrack',['video_track',['../structshaka_1_1Environment_1_1Impl.html#a696e0f914e7a5c06bdbd050cddc130f1',1,'shaka::Environment::Impl']]],
+  ['video_5ftrack_5flist',['video_track_list',['../structshaka_1_1Environment_1_1Impl.html#a2925d22be1871b0d574492ab3a25849c',1,'shaka::Environment::Impl']]],
+  ['video_5ftracks',['video_tracks',['../classshaka_1_1js_1_1mse_1_1HTMLMediaElement.html#a208bf94d997db4beefc8ca86e9e2a222',1,'shaka::js::mse::HTMLMediaElement']]],
+  ['videobandwidth',['videoBandwidth',['../classshaka_1_1Track_1_1Impl.html#ae8a4acf9e1a728c0c806e5586c984515',1,'shaka::Track::Impl']]],
+  ['videocodec',['videoCodec',['../classshaka_1_1Track_1_1Impl.html#a4df921d75c19f46bfe941b4a7ae7b546',1,'shaka::Track::Impl']]],
+  ['videoid',['videoId',['../classshaka_1_1Track_1_1Impl.html#aadf598ffea314fa1828220f3c3dd9afe',1,'shaka::Track::Impl']]],
+  ['videorobustness',['videoRobustness',['../classshaka_1_1DrmInfo_1_1Impl.html#a418ef7734add2a88655dab5a47d71169',1,'shaka::DrmInfo::Impl']]],
+  ['volume',['volume',['../classshaka_1_1media_1_1ProxyMediaPlayer_1_1Impl.html#aa2c3dbea93e2665c9631a851611a217b',1,'shaka::media::ProxyMediaPlayer::Impl']]],
+  ['vtt_5fcue',['vtt_cue',['../structshaka_1_1Environment_1_1Impl.html#aa23567db17bc6ae667fbc5c7975ddd4f',1,'shaka::Environment::Impl']]]
 ];

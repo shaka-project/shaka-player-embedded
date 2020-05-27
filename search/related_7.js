@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['player',['Player',['../classshaka_1_1Video.html#a7f4241aa9ecc051c75f779af132a52ed',1,'shaka::Video::Player()'],['../classshaka_1_1InitDataOverride.html#a7f4241aa9ecc051c75f779af132a52ed',1,'shaka::InitDataOverride::Player()'],['../classshaka_1_1DrmInfo.html#a7f4241aa9ecc051c75f779af132a52ed',1,'shaka::DrmInfo::Player()'],['../classshaka_1_1BufferedRange.html#a7f4241aa9ecc051c75f779af132a52ed',1,'shaka::BufferedRange::Player()'],['../classshaka_1_1BufferedInfo.html#a7f4241aa9ecc051c75f779af132a52ed',1,'shaka::BufferedInfo::Player()'],['../classshaka_1_1LanguageRole.html#a7f4241aa9ecc051c75f779af132a52ed',1,'shaka::LanguageRole::Player()'],['../classshaka_1_1TrackChoice.html#a7f4241aa9ecc051c75f779af132a52ed',1,'shaka::TrackChoice::Player()'],['../classshaka_1_1StateChange.html#a7f4241aa9ecc051c75f779af132a52ed',1,'shaka::StateChange::Player()'],['../classshaka_1_1Stats.html#a7f4241aa9ecc051c75f779af132a52ed',1,'shaka::Stats::Player()'],['../classshaka_1_1Track.html#a7f4241aa9ecc051c75f779af132a52ed',1,'shaka::Track::Player()']]],
-  ['pseudosingleton_3c_20backingobjectfactoryregistry_3c_20t_20_3e_20_3e',['PseudoSingleton&lt; BackingObjectFactoryRegistry&lt; T &gt; &gt;',['../classshaka_1_1BackingObjectFactoryRegistry.html#a290bb3299f1b8c77880cdd504f839fd2',1,'shaka::BackingObjectFactoryRegistry']]]
+  ['objecttrackertest',['ObjectTrackerTest',['../classshaka_1_1memory_1_1ObjectTracker.html#acb3625361522f1bfb408fd57e56d6052',1,'shaka::memory::ObjectTracker']]],
+  ['operator_3d_3d',['operator==',['../classshaka_1_1variant.html#a3a4c406218b8bef97fe32e9b4da11e61',1,'shaka::variant']]],
+  ['optional',['optional',['../classshaka_1_1optional.html#aa756d67787488b1e2bba885ce4da6fe0',1,'shaka::optional']]]
 ];

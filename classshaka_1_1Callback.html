@@ -106,9 +106,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa35cbc9374d5e19db3eadd51a6576abb"><td class="memTemplParams" colspan="2">template&lt;typename... Args&gt; </td></tr>
 <tr class="memitem:aa35cbc9374d5e19db3eadd51a6576abb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classshaka_1_1Callback.html#aa35cbc9374d5e19db3eadd51a6576abb">operator()</a> (Args &amp;&amp;... args) const</td></tr>
 <tr class="separator:aa35cbc9374d5e19db3eadd51a6576abb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a823d12f46393bfa2877a29861654c9d3"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Args&gt; </td></tr>
-<tr class="memitem:a823d12f46393bfa2877a29861654c9d3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classshaka_1_1Callback.html#a823d12f46393bfa2877a29861654c9d3">CallWithThis</a> (T &amp;&amp;that, Args &amp;&amp;... args) const</td></tr>
-<tr class="separator:a823d12f46393bfa2877a29861654c9d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc85f2390ae9b924c98dd2eae4e60de5"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Args&gt; </td></tr>
+<tr class="memitem:acc85f2390ae9b924c98dd2eae4e60de5"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="src_2util_2macros_8h.html#afefbce768b9d0df9c9ebc30dd6d13fed">MUST_USE_RESULT</a> <a class="el" href="structshaka_1_1ExceptionOr.html">ExceptionOr</a>&lt; void &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classshaka_1_1Callback.html#acc85f2390ae9b924c98dd2eae4e60de5">CallWithThis</a> (T &amp;&amp;that, Args &amp;&amp;... args) const</td></tr>
+<tr class="separator:acc85f2390ae9b924c98dd2eae4e60de5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f6cdd225ecff48ac3d0fe948b889f88"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1Callback.html#a7f6cdd225ecff48ac3d0fe948b889f88">TryConvert</a> (Handle&lt; JsValue &gt; given) override</td></tr>
 <tr class="separator:a7f6cdd225ecff48ac3d0fe948b889f88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab68d3df42558692068248b3f51eb42e0"><td class="memItemLeft" align="right" valign="top">ReturnVal&lt; JsValue &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1Callback.html#ab68d3df42558692068248b3f51eb42e0">ToJsValue</a> () const override</td></tr>
@@ -138,9 +138,10 @@ Additional Inherited Members</h2></td></tr>
 <tr class="separator:a3075b7468436d9bbe36cfcf349c737b9 inherit pub_static_attribs_classshaka_1_1memory_1_1Traceable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Defines a helper type that is used to store and call JavaScript functions. This wraps a given callback and converts it into a C++ std::function. This will swallow exceptions, printing the stack trace in the debug log if one is thrown. </p>
+<div class="textblock"><p>Defines a helper type that is used to store and call JavaScript functions.</p>
+<p>This defines a call operator that will call the function and swallow exceptions, printing the stack trace in the debug log if one is thrown. This also defines a named function to call the JavaScript function and return any exception instead. </p>
 
-<p>Definition at line <a class="el" href="callback_8h_source.html#l00034">34</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
+<p>Definition at line <a class="el" href="callback_8h_source.html#l00038">38</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="acb8da0443a7882d62ce8092ad6f1138d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acb8da0443a7882d62ce8092ad6f1138d">&sect;&nbsp;</a></span>Callback() <span class="overload">[1/3]</span></h2>
@@ -241,8 +242,8 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a823d12f46393bfa2877a29861654c9d3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a823d12f46393bfa2877a29861654c9d3">&sect;&nbsp;</a></span>CallWithThis()</h2>
+<a id="acc85f2390ae9b924c98dd2eae4e60de5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc85f2390ae9b924c98dd2eae4e60de5">&sect;&nbsp;</a></span>CallWithThis()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -253,7 +254,7 @@ template&lt;typename T , typename... Args&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void shaka::Callback::CallWithThis </td>
+          <td class="memname"><a class="el" href="src_2util_2macros_8h.html#afefbce768b9d0df9c9ebc30dd6d13fed">MUST_USE_RESULT</a> <a class="el" href="structshaka_1_1ExceptionOr.html">ExceptionOr</a>&lt;void&gt; shaka::Callback::CallWithThis </td>
           <td>(</td>
           <td class="paramtype">T &amp;&amp;&#160;</td>
           <td class="paramname"><em>that</em>, </td>
@@ -277,7 +278,7 @@ template&lt;typename T , typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="callback_8h_source.html#l00075">75</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
+<p>Definition at line <a class="el" href="callback_8h_source.html#l00074">74</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
 
 </div>
 </div>
@@ -304,7 +305,7 @@ template&lt;typename T , typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="callback_8h_source.html#l00048">48</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
+<p>Definition at line <a class="el" href="callback_8h_source.html#l00052">52</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
 
 </div>
 </div>
@@ -331,7 +332,7 @@ template&lt;typename T , typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="callback_8h_source.html#l00036">36</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
+<p>Definition at line <a class="el" href="callback_8h_source.html#l00040">40</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
 
 </div>
 </div>
@@ -359,7 +360,7 @@ template&lt;typename T , typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="callback_8h_source.html#l00055">55</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
+<p>Definition at line <a class="el" href="callback_8h_source.html#l00059">59</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
 
 </div>
 </div>
@@ -389,7 +390,7 @@ template&lt;typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="callback_8h_source.html#l00060">60</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
+<p>Definition at line <a class="el" href="callback_8h_source.html#l00064">64</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
 
 </div>
 </div>
@@ -469,7 +470,7 @@ template&lt;typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="callback_8h_source.html#l00052">52</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
+<p>Definition at line <a class="el" href="callback_8h_source.html#l00056">56</a> of file <a class="el" href="callback_8h_source.html">callback.h</a>.</p>
 
 </div>
 </div>

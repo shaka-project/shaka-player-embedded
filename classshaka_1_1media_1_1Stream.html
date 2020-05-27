@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Shaka Player Embedded: shaka::media::Stream Class Reference</title>
+<title>Shaka Player Embedded: shaka::media::Stream&lt; T, OrderByDts &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -66,198 +66,163 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classshaka_1_1media_1_1Stream-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">shaka::media::Stream Class Reference</div>  </div>
+<div class="title">shaka::media::Stream&lt; T, OrderByDts &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__exported.html">Public Types</a> &raquo; <a class="el" href="group__media.html">MediaPlayer Implementations</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="stream_8h_source.html">stream.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="streams_8h_source.html">streams.h</a>&gt;</code></p>
+<div class="dynheader">
+Inheritance diagram for shaka::media::Stream&lt; T, OrderByDts &gt;:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="classshaka_1_1media_1_1Stream.png" usemap="#shaka::media::Stream_3C_20T_2C_20OrderByDts_20_3E_map" alt=""/>
+  <map id="shaka::media::Stream_3C_20T_2C_20OrderByDts_20_3E_map" name="shaka::media::Stream&lt; T, OrderByDts &gt;_map">
+<area href="classshaka_1_1media_1_1StreamBase.html" alt="shaka::media::StreamBase" shape="rect" coords="0,0,236,24"/>
+</map>
+ </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a212f09da0205492ab7a3738365da84da"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#a212f09da0205492ab7a3738365da84da">Stream</a> ()</td></tr>
-<tr class="separator:a212f09da0205492ab7a3738365da84da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60dc0d49d8ef6123409d49453c4eac8a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#a60dc0d49d8ef6123409d49453c4eac8a">~Stream</a> ()</td></tr>
-<tr class="separator:a60dc0d49d8ef6123409d49453c4eac8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec7be3aa0c9b650d8b2e127062f2d0ba"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#aec7be3aa0c9b650d8b2e127062f2d0ba">NON_COPYABLE_OR_MOVABLE_TYPE</a> (<a class="el" href="classshaka_1_1media_1_1Stream.html">Stream</a>)</td></tr>
-<tr class="separator:aec7be3aa0c9b650d8b2e127062f2d0ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac56c68a0cb8239de6e8ed5f6cb12c543"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#ac56c68a0cb8239de6e8ed5f6cb12c543">DecodedAheadOf</a> (double time) const</td></tr>
-<tr class="separator:ac56c68a0cb8239de6e8ed5f6cb12c543"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a4d34568197d05cac75e63e5aba3c32"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceshaka_1_1media.html#a907c0d43ea89e6cc0f52458a1d144bb4">BufferedRanges</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#a2a4d34568197d05cac75e63e5aba3c32">GetBufferedRanges</a> () const</td></tr>
-<tr class="separator:a2a4d34568197d05cac75e63e5aba3c32"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a189d510598c4dbd84d3c822f65b7a971"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classshaka_1_1media_1_1FrameBuffer.html">FrameBuffer</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#a189d510598c4dbd84d3c822f65b7a971">GetDemuxedFrames</a> ()</td></tr>
-<tr class="separator:a189d510598c4dbd84d3c822f65b7a971"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20f8cbffa840331b95d004df1d662fb7"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classshaka_1_1media_1_1FrameBuffer.html">FrameBuffer</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#a20f8cbffa840331b95d004df1d662fb7">GetDemuxedFrames</a> () const</td></tr>
-<tr class="separator:a20f8cbffa840331b95d004df1d662fb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5128c6fecc7692d311c0f0c78bb0dee1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classshaka_1_1media_1_1FrameBuffer.html">FrameBuffer</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#a5128c6fecc7692d311c0f0c78bb0dee1">GetDecodedFrames</a> ()</td></tr>
-<tr class="separator:a5128c6fecc7692d311c0f0c78bb0dee1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b1520f16d7d4860a065bd57a313f257"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classshaka_1_1media_1_1FrameBuffer.html">FrameBuffer</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#a6b1520f16d7d4860a065bd57a313f257">GetDecodedFrames</a> () const</td></tr>
-<tr class="separator:a6b1520f16d7d4860a065bd57a313f257"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8e1967ed35e08f14db5062bd13b1b86"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#ac8e1967ed35e08f14db5062bd13b1b86">Stream</a> ()</td></tr>
+<tr class="separator:ac8e1967ed35e08f14db5062bd13b1b86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa364ccd7be0f77d1d136ca0407d4e71c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#aa364ccd7be0f77d1d136ca0407d4e71c">AddFrame</a> (std::shared_ptr&lt; T &gt; <a class="el" href="apple__video__renderer_8cc.html#a493352026b08ddb62de53cbd5bd7685e">frame</a>)</td></tr>
+<tr class="separator:aa364ccd7be0f77d1d136ca0407d4e71c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaca90f6f46fa55dd42ba9dce1d96add7"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1Stream.html#aaca90f6f46fa55dd42ba9dce1d96add7">GetFrame</a> (double time, <a class="el" href="namespaceshaka_1_1media.html#ac0f5ff90f4c46433a8ea3878a84d91d3">FrameLocation</a> kind=<a class="el" href="namespaceshaka_1_1media.html#ac0f5ff90f4c46433a8ea3878a84d91d3a7bfcadb5535fe8aad5032762b7bfe159">FrameLocation::After</a>) const</td></tr>
+<tr class="separator:aaca90f6f46fa55dd42ba9dce1d96add7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classshaka_1_1media_1_1StreamBase"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classshaka_1_1media_1_1StreamBase')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classshaka_1_1media_1_1StreamBase.html">shaka::media::StreamBase</a></td></tr>
+<tr class="memitem:adf73efca323227f83a5197e1de0a3558 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#adf73efca323227f83a5197e1de0a3558">StreamBase</a> (bool order_by_dts)</td></tr>
+<tr class="separator:adf73efca323227f83a5197e1de0a3558 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8adb15bc6027cdf69438260c8a6582d9 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a8adb15bc6027cdf69438260c8a6582d9">~StreamBase</a> ()</td></tr>
+<tr class="separator:a8adb15bc6027cdf69438260c8a6582d9 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f1b1f9ca04f4aea98ea1e7f8081f369 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a8f1b1f9ca04f4aea98ea1e7f8081f369">StreamBase</a> (const <a class="el" href="classshaka_1_1media_1_1StreamBase.html">StreamBase</a> &amp;)=delete</td></tr>
+<tr class="separator:a8f1b1f9ca04f4aea98ea1e7f8081f369 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab49c3340e5db573dcae2296d24b30e2b inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classshaka_1_1media_1_1StreamBase.html">StreamBase</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#ab49c3340e5db573dcae2296d24b30e2b">operator=</a> (const <a class="el" href="classshaka_1_1media_1_1StreamBase.html">StreamBase</a> &amp;)=delete</td></tr>
+<tr class="separator:ab49c3340e5db573dcae2296d24b30e2b inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad560947a74e18079a1fbe9326fdcc6c3 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#ad560947a74e18079a1fbe9326fdcc6c3">StreamBase</a> (<a class="el" href="classshaka_1_1media_1_1StreamBase.html">StreamBase</a> &amp;&amp;)=delete</td></tr>
+<tr class="separator:ad560947a74e18079a1fbe9326fdcc6c3 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20d88133b0c84d0fd4aa8f967c4562ad inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classshaka_1_1media_1_1StreamBase.html">StreamBase</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a20d88133b0c84d0fd4aa8f967c4562ad">operator=</a> (<a class="el" href="classshaka_1_1media_1_1StreamBase.html">StreamBase</a> &amp;&amp;)=delete</td></tr>
+<tr class="separator:a20d88133b0c84d0fd4aa8f967c4562ad inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab53625f9b1648f771c57aca7de113f6e inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#ab53625f9b1648f771c57aca7de113f6e">CountFramesBetween</a> (double start, double end) const</td></tr>
+<tr class="separator:ab53625f9b1648f771c57aca7de113f6e inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea2395596cbe51f0aa02dde1222ab32a inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structshaka_1_1media_1_1BufferedRange.html">BufferedRange</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#aea2395596cbe51f0aa02dde1222ab32a">GetBufferedRanges</a> () const</td></tr>
+<tr class="separator:aea2395596cbe51f0aa02dde1222ab32a inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d0ce300feb5f3e087503a39756ab48d inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a8d0ce300feb5f3e087503a39756ab48d">EstimateSize</a> () const</td></tr>
+<tr class="separator:a8d0ce300feb5f3e087503a39756ab48d inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af157b7fb347a5044b820bcec00ea16d7 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#af157b7fb347a5044b820bcec00ea16d7">Remove</a> (double start, double end)</td></tr>
+<tr class="separator:af157b7fb347a5044b820bcec00ea16d7 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6657a34d3acafa7de4dfe423bc7cb576 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a6657a34d3acafa7de4dfe423bc7cb576">Clear</a> ()</td></tr>
+<tr class="separator:a6657a34d3acafa7de4dfe423bc7cb576 inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a265b9b822515745fb7204addfa772e4b inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a265b9b822515745fb7204addfa772e4b">DebugPrint</a> (bool all_frames) const</td></tr>
+<tr class="separator:a265b9b822515745fb7204addfa772e4b inherit pub_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_static_attribs_classshaka_1_1media_1_1StreamBase"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classshaka_1_1media_1_1StreamBase')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="classshaka_1_1media_1_1StreamBase.html">shaka::media::StreamBase</a></td></tr>
+<tr class="memitem:a7b41065d934ce59beb33d436ab20ed91 inherit pub_static_attribs_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">static constexpr const double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a7b41065d934ce59beb33d436ab20ed91">kMaxGapSize</a> = 0.15</td></tr>
+<tr class="separator:a7b41065d934ce59beb33d436ab20ed91 inherit pub_static_attribs_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_classshaka_1_1media_1_1StreamBase"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classshaka_1_1media_1_1StreamBase')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classshaka_1_1media_1_1StreamBase.html">shaka::media::StreamBase</a></td></tr>
+<tr class="memitem:a49274eaff65b20cfc41e82016a1eecd2 inherit pro_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classshaka_1_1media_1_1BaseFrame.html">BaseFrame</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a49274eaff65b20cfc41e82016a1eecd2">GetFrameInternal</a> (double time, <a class="el" href="namespaceshaka_1_1media.html#ac0f5ff90f4c46433a8ea3878a84d91d3">FrameLocation</a> kind) const</td></tr>
+<tr class="separator:a49274eaff65b20cfc41e82016a1eecd2 inherit pro_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23857f28693f4b1d449f1bd4b05421ee inherit pro_methods_classshaka_1_1media_1_1StreamBase"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a23857f28693f4b1d449f1bd4b05421ee">AddFrameInternal</a> (std::shared_ptr&lt; <a class="el" href="classshaka_1_1media_1_1BaseFrame.html">BaseFrame</a> &gt; <a class="el" href="apple__video__renderer_8cc.html#a493352026b08ddb62de53cbd5bd7685e">frame</a>)</td></tr>
+<tr class="separator:a23857f28693f4b1d449f1bd4b05421ee inherit pro_methods_classshaka_1_1media_1_1StreamBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>This maintains two buffers of media frames. One buffer (the demuxed buffer) contains demuxed, encoded media frames. The other (the decoded buffer) contains decoded, full media frames.</p>
-<p>The demuxed buffer defines the buffered ranges in MSE. This buffer is the larger of the two and the data will likely live longer. The data will only be freed when we run out of memory or if JavaScript tells us to through a call to remove().</p>
-<p>The decoded buffered is smaller and only contains frames slightly ahead of the playhead. When the playhead passes a frame, it is dropped.</p>
-<p>This class handles reordering frames as needed and controls the lifetime of the frames. Other classes will insert data into this object.</p>
-<p>This class is fully thread-safe. It is fine to append frames from background threads and remove them from others. </p>
+<div class="textblock"><h3>template&lt;typename T, bool OrderByDts&gt;<br />
+class shaka::media::Stream&lt; T, OrderByDts &gt;</h3>
 
-<p>Definition at line <a class="el" href="stream_8h_source.html#l00044">44</a> of file <a class="el" href="stream_8h_source.html">stream.h</a>.</p>
+<p>Defines a stream that contains frames of the given type and has the given frame ordering.</p>
+<p>This type is internally thread-safe. </p>
+
+<p>Definition at line <a class="el" href="streams_8h_source.html#l00182">182</a> of file <a class="el" href="streams_8h_source.html">streams.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a212f09da0205492ab7a3738365da84da"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a212f09da0205492ab7a3738365da84da">&sect;&nbsp;</a></span>Stream()</h2>
+<a id="ac8e1967ed35e08f14db5062bd13b1b86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac8e1967ed35e08f14db5062bd13b1b86">&sect;&nbsp;</a></span>Stream()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, bool OrderByDts&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">shaka::media::Stream::Stream </td>
+          <td class="memname"><a class="el" href="classshaka_1_1media_1_1Stream.html">shaka::media::Stream</a>&lt; T, OrderByDts &gt;::<a class="el" href="classshaka_1_1media_1_1Stream.html">Stream</a> </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="stream_8cc_source.html#l00022">22</a> of file <a class="el" href="stream_8cc_source.html">stream.cc</a>.</p>
-
-</div>
-</div>
-<a id="a60dc0d49d8ef6123409d49453c4eac8a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a60dc0d49d8ef6123409d49453c4eac8a">&sect;&nbsp;</a></span>~Stream()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">shaka::media::Stream::~Stream </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="stream_8cc_source.html#l00026">26</a> of file <a class="el" href="stream_8cc_source.html">stream.cc</a>.</p>
+<p>Definition at line <a class="el" href="streams_8h_source.html#l00184">184</a> of file <a class="el" href="streams_8h_source.html">streams.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ac56c68a0cb8239de6e8ed5f6cb12c543"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac56c68a0cb8239de6e8ed5f6cb12c543">&sect;&nbsp;</a></span>DecodedAheadOf()</h2>
+<a id="aa364ccd7be0f77d1d136ca0407d4e71c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa364ccd7be0f77d1d136ca0407d4e71c">&sect;&nbsp;</a></span>AddFrame()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, bool OrderByDts&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double shaka::media::Stream::DecodedAheadOf </td>
+          <td class="memname">void <a class="el" href="classshaka_1_1media_1_1Stream.html">shaka::media::Stream</a>&lt; T, OrderByDts &gt;::AddFrame </td>
+          <td>(</td>
+          <td class="paramtype">std::shared_ptr&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>frame</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a23857f28693f4b1d449f1bd4b05421ee">StreamBase::AddFrameInternal</a> </dd></dl>
+
+<p>Definition at line <a class="el" href="streams_8h_source.html#l00187">187</a> of file <a class="el" href="streams_8h_source.html">streams.h</a>.</p>
+
+</div>
+</div>
+<a id="aaca90f6f46fa55dd42ba9dce1d96add7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaca90f6f46fa55dd42ba9dce1d96add7">&sect;&nbsp;</a></span>GetFrame()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, bool OrderByDts&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt;T&gt; <a class="el" href="classshaka_1_1media_1_1Stream.html">shaka::media::Stream</a>&lt; T, OrderByDts &gt;::GetFrame </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>time</em></td><td>)</td>
-          <td> const</td>
+          <td class="paramname"><em>time</em>, </td>
         </tr>
-      </table>
-</div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd>The amount of time decoded ahead of the given time. </dd></dl>
-
-<p>Definition at line <a class="el" href="stream_8cc_source.html#l00028">28</a> of file <a class="el" href="stream_8cc_source.html">stream.cc</a>.</p>
-
-</div>
-</div>
-<a id="a2a4d34568197d05cac75e63e5aba3c32"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a4d34568197d05cac75e63e5aba3c32">&sect;&nbsp;</a></span>GetBufferedRanges()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespaceshaka_1_1media.html#a907c0d43ea89e6cc0f52458a1d144bb4">BufferedRanges</a> shaka::media::Stream::GetBufferedRanges </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd>The buffered ranges for the <a class="el" href="classshaka_1_1media_1_1Stream.html">Stream</a>. </dd></dl>
-
-<p>Definition at line <a class="el" href="stream_8h_source.html#l00055">55</a> of file <a class="el" href="stream_8h_source.html">stream.h</a>.</p>
-
-</div>
-</div>
-<a id="a5128c6fecc7692d311c0f0c78bb0dee1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5128c6fecc7692d311c0f0c78bb0dee1">&sect;&nbsp;</a></span>GetDecodedFrames() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classshaka_1_1media_1_1FrameBuffer.html">FrameBuffer</a>* shaka::media::Stream::GetDecodedFrames </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="namespaceshaka_1_1media.html#ac0f5ff90f4c46433a8ea3878a84d91d3">FrameLocation</a>&#160;</td>
+          <td class="paramname"><em>kind</em> = <code><a class="el" href="namespaceshaka_1_1media.html#ac0f5ff90f4c46433a8ea3878a84d91d3a7bfcadb5535fe8aad5032762b7bfe159">FrameLocation::After</a></code>&#160;</td>
         </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="stream_8h_source.html#l00065">65</a> of file <a class="el" href="stream_8h_source.html">stream.h</a>.</p>
-
-</div>
-</div>
-<a id="a6b1520f16d7d4860a065bd57a313f257"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6b1520f16d7d4860a065bd57a313f257">&sect;&nbsp;</a></span>GetDecodedFrames() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="classshaka_1_1media_1_1FrameBuffer.html">FrameBuffer</a>* shaka::media::Stream::GetDecodedFrames </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="stream_8h_source.html#l00068">68</a> of file <a class="el" href="stream_8h_source.html">stream.h</a>.</p>
-
-</div>
-</div>
-<a id="a189d510598c4dbd84d3c822f65b7a971"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a189d510598c4dbd84d3c822f65b7a971">&sect;&nbsp;</a></span>GetDemuxedFrames() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classshaka_1_1media_1_1FrameBuffer.html">FrameBuffer</a>* shaka::media::Stream::GetDemuxedFrames </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
           <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
         </tr>
       </table>
   </td>
@@ -266,59 +231,14 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classshaka_1_1media_1_1StreamBase.html#a49274eaff65b20cfc41e82016a1eecd2">StreamBase::GetFrameInternal</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="stream_8h_source.html#l00059">59</a> of file <a class="el" href="stream_8h_source.html">stream.h</a>.</p>
-
-</div>
-</div>
-<a id="a20f8cbffa840331b95d004df1d662fb7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a20f8cbffa840331b95d004df1d662fb7">&sect;&nbsp;</a></span>GetDemuxedFrames() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const <a class="el" href="classshaka_1_1media_1_1FrameBuffer.html">FrameBuffer</a>* shaka::media::Stream::GetDemuxedFrames </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="stream_8h_source.html#l00062">62</a> of file <a class="el" href="stream_8h_source.html">stream.h</a>.</p>
+<p>Definition at line <a class="el" href="streams_8h_source.html#l00192">192</a> of file <a class="el" href="streams_8h_source.html">streams.h</a>.</p>
 
 </div>
 </div>
-<a id="aec7be3aa0c9b650d8b2e127062f2d0ba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aec7be3aa0c9b650d8b2e127062f2d0ba">&sect;&nbsp;</a></span>NON_COPYABLE_OR_MOVABLE_TYPE()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">shaka::media::Stream::NON_COPYABLE_OR_MOVABLE_TYPE </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classshaka_1_1media_1_1Stream.html">Stream</a>&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<hr/>The documentation for this class was generated from the following files:<ul>
-<li>shaka/src/media/<a class="el" href="stream_8h_source.html">stream.h</a></li>
-<li>shaka/src/media/<a class="el" href="stream_8cc_source.html">stream.cc</a></li>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>shaka/include/shaka/media/<a class="el" href="streams_8h_source.html">streams.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

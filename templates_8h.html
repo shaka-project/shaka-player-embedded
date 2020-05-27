@@ -65,24 +65,38 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">templates.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;type_traits&gt;</code><br />
+<div class="textblock"><code>#include &lt;tuple&gt;</code><br />
+<code>#include &lt;type_traits&gt;</code><br />
 </div>
 <p><a href="templates_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classshaka_1_1optional.html">shaka::optional&lt; T &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1is__v8__type.html">shaka::util::is_v8_type&lt; T, typename &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1is__number.html">shaka::util::is_number&lt; T &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1decay__is__same.html">shaka::util::decay_is_same&lt; A, B &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1impl_1_1func__traits_3_01Func_00_01enable__if__t_3_01sizeof_07has__call__b72e4f80690cb836e65787fe8a4c94e1.html">shaka::util::impl::func_traits&lt; Func, enable_if_t&lt; sizeof(has_call_operator&lt; Func &gt;(0)) !=1 &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1impl_1_1func__traits_3_01Ret_07_5_08_07Args_8_8_8_08_00_01void_01_4.html">shaka::util::impl::func_traits&lt; Ret(*)(Args...), void &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1impl_1_1func__traits_3_01Ret_07This_1_1_5_08_07Args_8_8_8_08_00_01void_01_4.html">shaka::util::impl::func_traits&lt; Ret(This::*)(Args...), void &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1impl_1_1func__traits_3_01Ret_07This_1_1_5_08_07Args_8_8_8_08_01const_00_01void_01_4.html">shaka::util::impl::func_traits&lt; Ret(This::*)(Args...) const, void &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1func__traits.html">shaka::util::func_traits&lt; Func &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1is__callable.html">shaka::util::is_callable&lt; T, typename &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structshaka_1_1util_1_1is__callable_3_01T_00_01void__t_3_01typename_01func__traits_3_01T_01_4_1_1return__type_01_4_01_4.html">shaka::util::is_callable&lt; T, void_t&lt; typename func_traits&lt; T &gt;::return_type &gt; &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -91,12 +105,26 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceshaka_1_1util"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util.html">shaka::util</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceshaka_1_1util_1_1impl"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util_1_1impl.html">shaka::util::impl</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:a23660ea15e44a28e83d6b1ed47c22e5f"><td class="memTemplParams" colspan="2">template&lt;bool B, typename T  = void&gt; </td></tr>
 <tr class="memitem:a23660ea15e44a28e83d6b1ed47c22e5f"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util.html#a23660ea15e44a28e83d6b1ed47c22e5f">shaka::util::enable_if_t</a> = typename std::enable_if&lt; B, T &gt;::<a class="el" href="dom__exception_8cc.html#a413eab66b8192a2ac20583b419ab9d8a">type</a></td></tr>
 <tr class="separator:a23660ea15e44a28e83d6b1ed47c22e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4f9bdf764c5a29a74dc23bfa969702a"><td class="memTemplParams" colspan="2">template&lt;typename... &gt; </td></tr>
+<tr class="memitem:ac4f9bdf764c5a29a74dc23bfa969702a"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util.html#ac4f9bdf764c5a29a74dc23bfa969702a">shaka::util::void_t</a> = void</td></tr>
+<tr class="separator:ac4f9bdf764c5a29a74dc23bfa969702a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ad46b6d1af5786b65936a0c59458d30d9"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ad46b6d1af5786b65936a0c59458d30d9"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util_1_1impl.html#ad46b6d1af5786b65936a0c59458d30d9">shaka::util::impl::has_call_operator</a> (decltype(&amp;T::operator()))</td></tr>
+<tr class="separator:ad46b6d1af5786b65936a0c59458d30d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc778adfa897f4960e7d4baeab648a15"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:acc778adfa897f4960e7d4baeab648a15"><td class="memTemplItemLeft" align="right" valign="top">char&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceshaka_1_1util_1_1impl.html#acc778adfa897f4960e7d4baeab648a15">shaka::util::impl::has_call_operator</a> (...)</td></tr>
+<tr class="separator:acc778adfa897f4960e7d4baeab648a15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->
