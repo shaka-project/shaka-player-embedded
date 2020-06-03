@@ -1078,7 +1078,6 @@ if (is_ios) {
     if (is_ios) {
       # TODO: Add support for Mac builds.
       deps += [
-        ":eme_plugin_files",
         ":license_bundle",
         ":scripts_bundle",
       ]
