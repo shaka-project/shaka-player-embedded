@@ -92,7 +92,8 @@ def RunAbiTest(build_dir, parsed_args):
   if subprocess.call(['git', '-C', ROOT_DIR, 'checkout', parsed_args.ref]) != 0:
     return 1
   if _DoBuild(build_dir, parsed_args) != 0:
-    return 1
+    logging.warning("Skipping ABI test since parent commit doesn't compile")
+    return 0
   old_symbols = _GetSymbols(build_dir)
 
   if not old_symbols.issubset(symbols):
