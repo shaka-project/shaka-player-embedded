@@ -23,7 +23,6 @@
 #include "src/core/ref_ptr.h"
 #include "src/js/eme/media_key_system_access.h"
 #include "src/js/js_error.h"
-#include "src/js/mse/media_source.h"
 #include "src/mapping/js_utils.h"
 
 
@@ -35,10 +34,6 @@ namespace {
 
 bool IsPersistentSessionType(MediaKeySessionType type) {
   return type == MediaKeySessionType::PersistentLicense;
-}
-
-bool SupportsContentType(const std::string& content_type) {
-  return mse::MediaSource::IsTypeSupported(content_type);
 }
 
 bool GetSupportedConfiguration(
@@ -197,8 +192,9 @@ bool GetSupportedConfiguration(
   // 16. If the videoCapabilities member in candidate configuration is non-empty
   if (!candidate_config.videoCapabilities.empty()) {
     for (auto& video_cap : candidate_config.videoCapabilities) {
-      if (SupportsContentType(video_cap.contentType) &&
-          implementation->SupportsVideoRobustness(video_cap.robustness)) {
+      // TODO(#143): Add interface to query decrypt-decode support.  We
+      // currently only do decrypt to clear, so EME itself supports all content.
+      if (implementation->SupportsVideoRobustness(video_cap.robustness)) {
         supported_config->videoCapabilities.push_back(video_cap);
       }
     }
@@ -212,8 +208,8 @@ bool GetSupportedConfiguration(
   // 17. If the audioCapabilities member in candidate configuration is non-empty
   if (!candidate_config.audioCapabilities.empty()) {
     for (auto& audio_cap : candidate_config.audioCapabilities) {
-      if (SupportsContentType(audio_cap.contentType) &&
-          implementation->SupportsAudioRobustness(audio_cap.robustness)) {
+      // TODO(#143): Same as above.
+      if (implementation->SupportsAudioRobustness(audio_cap.robustness)) {
         supported_config->audioCapabilities.push_back(audio_cap);
       }
     }
