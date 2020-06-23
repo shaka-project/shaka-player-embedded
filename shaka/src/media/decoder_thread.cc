@@ -76,6 +76,7 @@ DecoderThread::~DecoderThread() {
 }
 
 void DecoderThread::Attach(const ElementaryStream* input) {
+  VLOG(2) << "Attach";
   std::unique_lock<Mutex> lock(mutex_);
   input_ = input;
   if (input && decoder_)
@@ -83,11 +84,13 @@ void DecoderThread::Attach(const ElementaryStream* input) {
 }
 
 void DecoderThread::Detach() {
+  VLOG(2) << "Detach";
   std::unique_lock<Mutex> lock(mutex_);
   input_ = nullptr;
 }
 
 void DecoderThread::OnSeek() {
+  VLOG(2) << "OnSeek";
   std::unique_lock<Mutex> lock(mutex_);
   last_frame_time_ = NAN;
   did_flush_ = false;
@@ -97,11 +100,13 @@ void DecoderThread::OnSeek() {
 }
 
 void DecoderThread::SetCdm(eme::Implementation* cdm) {
+  VLOG(2) << "SetCdm: " << cdm;
   std::unique_lock<Mutex> lock(mutex_);
   cdm_ = cdm;
 }
 
 void DecoderThread::SetDecoder(Decoder* decoder) {
+  VLOG(2) << "SetDecoder: " << decoder;
   std::unique_lock<Mutex> lock(mutex_);
   decoder_ = decoder;
   if (decoder && input_)
@@ -123,6 +128,7 @@ void DecoderThread::ThreadMain() {
     double last_time = last_frame_time_;
 
     if (DecodedAheadOf(output_, cur_time) > kDecodeBufferSize) {
+      VLOG(2) << "Enough buffered";
       util::Unlocker<Mutex> unlock(&lock);
       util::Clock::Instance.SleepSeconds(0.025);
       continue;
@@ -150,6 +156,8 @@ void DecoderThread::ThreadMain() {
         // flush the decoder.
         did_flush_ = true;
       } else {
+        const double time = std::isnan(last_time) ? cur_time : last_time;
+        VLOG(2) << "No frame available at: " << time;
         util::Unlocker<Mutex> unlock(&lock);
         util::Clock::Instance.SleepSeconds(0.025);
         continue;
@@ -161,6 +169,7 @@ void DecoderThread::ThreadMain() {
     const MediaStatus decode_status =
         decoder_->Decode(frame, cdm_, &decoded, &error);
     if (decode_status == MediaStatus::KeyNotFound) {
+      VLOG(2) << "Key not found";
       // If we don't have the required key, signal the <video> and wait.
       if (!raised_waiting_event_) {
         raised_waiting_event_ = true;
@@ -173,6 +182,7 @@ void DecoderThread::ThreadMain() {
       continue;
     }
     if (decode_status != MediaStatus::Success) {
+      VLOG(2) << "Decoder error: " << error;
       client_->OnError(error);
       break;
     }

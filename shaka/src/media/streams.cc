@@ -330,6 +330,10 @@ void StreamBase::Clear() {
 
 void StreamBase::DebugPrint(bool all_frames) const {
   std::unique_lock<Mutex> lock(impl_->mutex);
+  DebugPrintLocked(all_frames);
+}
+
+void StreamBase::DebugPrintLocked(bool all_frames) const {
   AssertRangesSorted();
 
   fprintf(stderr, "Stream order by %s:\n", impl_->order_by_dts ? "DTS" : "PTS");

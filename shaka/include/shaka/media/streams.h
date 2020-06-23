@@ -163,6 +163,7 @@ class SHAKA_EXPORT StreamBase {
   void AddFrameInternal(std::shared_ptr<BaseFrame> frame);
 
  private:
+  void DebugPrintLocked(bool all_frames) const;
   void AssertRangesSorted() const;
 
   class Impl;
