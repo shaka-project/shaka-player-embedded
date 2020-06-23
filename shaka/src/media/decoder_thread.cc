@@ -135,7 +135,10 @@ void DecoderThread::ThreadMain() {
     std::shared_ptr<EncodedFrame> frame;
     if (std::isnan(last_time)) {
       decoder_->ResetDecoder();
-      frame = input_->GetFrame(cur_time, FrameLocation::KeyFrameBefore);
+      // Move the time forward a bit to allow gaps at the start.  This will move
+      // backward to find a keyframe anyway.
+      frame = input_->GetFrame(cur_time + StreamBase::kMaxGapSize,
+                               FrameLocation::KeyFrameBefore);
     } else {
       frame = input_->GetFrame(last_time, FrameLocation::After);
     }
