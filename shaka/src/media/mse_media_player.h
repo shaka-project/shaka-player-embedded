@@ -15,6 +15,7 @@
 #ifndef SHAKA_EMBEDDED_MEDIA_MSE_MEDIA_PLAYER_H_
 #define SHAKA_EMBEDDED_MEDIA_MSE_MEDIA_PLAYER_H_
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,6 +25,7 @@
 #include "shaka/media/media_player.h"
 #include "shaka/media/renderer.h"
 #include "src/debug/mutex.h"
+#include "src/debug/thread.h"
 #include "src/media/decoder_thread.h"
 #include "src/media/pipeline_manager.h"
 #include "src/media/pipeline_monitor.h"
@@ -124,6 +126,8 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
   void OnWaitingForKey() override;
   std::vector<BufferedRange> GetDecoded() const;
 
+  void DebugThreadMain();
+
   mutable SharedMutex mutex_;
   PipelineManager pipeline_manager_;
   PipelineMonitor pipeline_monitor_;
@@ -136,6 +140,9 @@ class MseMediaPlayer final : public MediaPlayer, DecoderThread::Client {
   VideoRenderer* const video_renderer_;
   AudioRenderer* const audio_renderer_;
   ClientList* const clients_;
+
+  std::atomic<bool> debug_thread_shutdown_;
+  Thread debug_thread_;
 };
 
 }  // namespace media

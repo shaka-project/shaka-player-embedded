@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <functional>
 #include <thread>
 
@@ -45,47 +46,20 @@ MseMediaPlayer::MseMediaPlayer(ClientList* clients,
       audio_(this),
       video_renderer_(video_renderer),
       audio_renderer_(audio_renderer),
-      clients_(clients) {
+      clients_(clients),
+      debug_thread_shutdown_(false),
+      debug_thread_("MseMediaPlayer",
+                    std::bind(&MseMediaPlayer::DebugThreadMain, this)) {
   video_renderer_->SetPlayer(this);
   audio_renderer_->SetPlayer(this);
-
-#if 0
-  std::thread t([=]() {
-    auto printr = [](const char* prefix,
-                     const std::vector<BufferedRange>& ranges) {
-      printf("%s", prefix);
-      for (auto& range : ranges)
-        printf("%.1f-%.1f  ", range.start, range.end);
-      printf("\n");
-    };
-    auto print_stream = [&printr](const char* name, Source* stream) {
-      printf("  %s:\n", name);
-      printr("    Buffered:     ", stream->GetBuffered());
-      printr("    Decoded:      ",
-             stream->GetDecodedStream()->GetBufferedRanges());
-    };
-
-    while (true) {
-      util::Clock::Instance.SleepSeconds(1);
-
-      printf("Playback State:   %s\n", to_string(PlaybackState()).c_str());
-      printf("  Current time:   %.1f\n", CurrentTime());
-      printf("  Duration:       %.1f\n", Duration());
-      printf("  Playback rate:  %.1f\n", PlaybackRate());
-      printr("  Total Buffered: ", GetBuffered());
-
-      util::shared_lock<SharedMutex> lock(mutex_);
-      print_stream("Audio", &audio_);
-      print_stream("Video", &video_);
-    }
-  });
-  t.detach();
-#endif
 }
 
 MseMediaPlayer::~MseMediaPlayer() {
   video_renderer_->SetPlayer(nullptr);
   audio_renderer_->SetPlayer(nullptr);
+
+  debug_thread_shutdown_.store(true, std::memory_order_relaxed);
+  debug_thread_.join();
 }
 
 void MseMediaPlayer::SetDecoders(Decoder* video_decoder,
@@ -420,6 +394,40 @@ std::vector<BufferedRange> MseMediaPlayer::GetDecoded() const {
       ranges.emplace_back(ptr->GetDecodedStream()->GetBufferedRanges());
   }
   return IntersectionOfBufferedRanges(ranges);
+}
+
+void MseMediaPlayer::DebugThreadMain() {
+  const char* val = std::getenv("SHAKA_PRINT_MEDIA_STATE");
+  if (!val || val[0] == '\0' || (val[0] == '0' && val[1] == '\0'))
+    return;
+
+  auto printr = [](const char* prefix,
+                   const std::vector<BufferedRange>& ranges) {
+    printf("%s", prefix);
+    for (auto& range : ranges)
+      printf("%.1f-%.1f  ", range.start, range.end);
+    printf("\n");
+  };
+  auto print_stream = [&printr](const char* name, Source* stream) {
+    printf("  %s:\n", name);
+    printr("    Buffered:     ", stream->GetBuffered());
+    printr("    Decoded:      ",
+           stream->GetDecodedStream()->GetBufferedRanges());
+  };
+
+  while (!debug_thread_shutdown_.load(std::memory_order_relaxed)) {
+    util::Clock::Instance.SleepSeconds(1);
+
+    printf("Playback State:   %s\n", to_string(PlaybackState()).c_str());
+    printf("  Current time:   %.1f\n", CurrentTime());
+    printf("  Duration:       %.1f\n", Duration());
+    printf("  Playback rate:  %.1f\n", PlaybackRate());
+    printr("  Total Buffered: ", GetBuffered());
+
+    util::shared_lock<SharedMutex> lock(mutex_);
+    print_stream("Audio", &audio_);
+    print_stream("Video", &video_);
+  }
 }
 
 
