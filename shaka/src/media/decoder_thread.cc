@@ -87,16 +87,13 @@ void DecoderThread::Detach() {
   VLOG(2) << "Detach";
   std::unique_lock<Mutex> lock(mutex_);
   input_ = nullptr;
+  Reset();
 }
 
 void DecoderThread::OnSeek() {
   VLOG(2) << "OnSeek";
   std::unique_lock<Mutex> lock(mutex_);
-  last_frame_time_ = NAN;
-  did_flush_ = false;
-  // Remove all the existing frames.  We'll decode them again anyway and this
-  // ensures we don't keep future frames forever when seeking backwards.
-  output_->Remove(0, INFINITY);
+  Reset();
 }
 
 void DecoderThread::SetCdm(eme::Implementation* cdm) {
@@ -195,6 +192,14 @@ void DecoderThread::ThreadMain() {
     if (frame)
       last_frame_time_ = frame->dts;
   }
+}
+
+void DecoderThread::Reset() {
+  last_frame_time_ = NAN;
+  did_flush_ = false;
+  // Remove all the existing frames.  We'll decode them again anyway and this
+  // ensures we don't keep future frames forever when seeking backwards.
+  output_->Remove(0, INFINITY);
 }
 
 }  // namespace media

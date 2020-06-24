@@ -79,6 +79,7 @@ class DecoderThread {
 
  private:
   void ThreadMain();
+  void Reset();
 
   Mutex mutex_;
   ThreadEvent<void> signal_;
