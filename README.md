@@ -6,13 +6,14 @@ apps to use the player.  Your native apps can now be built with the same
 features, behavior, and API as your Shaka-based web apps.
 
 In addition to the C++ API, we provide a high-level wrapper for iOS called
-ShakaPlayerView which can be used from either Objective-C or Swift.
+`ShakaPlayer` and `ShakaPlayerView` which can be used from either Objective-C or
+Swift.
 
-See our [documentation][] and [iOS tutorial][].
+Documentation: <https://google.github.io/shaka-player-embedded/>
+Tutorials: <https://google.github.io/shaka-player-embedded/usergroup0.html>
+Releases: <https://github.com/google/shaka-player-embedded/releases>
 
 [Shaka Player]: https://www.github.com/google/shaka-player
-[documentation]: https://google.github.io/shaka-player-embedded/
-[iOS tutorial]: https://google.github.io/shaka-player-embedded/md_shaka_docs_tutorial_setup.html
 
 
 ## Platform support
@@ -24,11 +25,21 @@ easier to work on non-iOS-specific features.  Linux is not, however, a
 first-class target platform at this time.
 
 
-## Release status
+## API/ABI compatibility
 
-This project is currently in an open beta.  We would love to have your feedback
-on what we've built, but we are not yet feature-complete for v1.0.  As such,
-ABI compatibility is not yet guaranteed.
+This project follows [semantic versioning][], meaning we maintain backwards
+compatibility with all minor releases, including ABI.  This means you can drop
+in a newer version of the compiled library and not have to recompile your main
+app (you'll need to re-sign it due to Apple requirements).
+
+Minor releases (e.g. v1.1) will add new features in a reverse-compatible way,
+but major releases (e.g. v2.0) may break any compatibility.  We'll mark
+deprecated features with compiler attributes to give you warnings about features
+that will be removed later.  This may break API compatibility if you compile
+with `-Werror`, but you can suppress the warnings.  Features will only be
+removed in major releases.
+
+[semantic versioning]: https://semver.org/
 
 
 ## Announcements & Issues
@@ -48,8 +59,11 @@ Widevine support requires the Widevine CDM for iOS, which must be obtained
 separately [from Widevine](http://www.widevine.com/contact), under license.
 The Widevine CDM is not open-source.
 
-We don't have an exact release date yet, but the Widevine CDM for iOS should be
-available by the time we tag v1.0 of Shaka Player Embedded.
+Adding Widevine support requires compiling from source; you cannot use the
+pre-built versions.  Follow the instructions in the Widevine CDM repo for how
+to build it.
+
+This requires the use of at least v15.2.3 of the Widevine CDM.
 
 
 ## Setting up for development
