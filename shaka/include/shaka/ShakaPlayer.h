@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
  *        withString:@"https://example.com/server"];
  * \endcode
  */
-NSString *ShakaPlayerLicenseServerConfig(const NSString *key_system);
+SHAKA_EXPORT NSString *ShakaPlayerLicenseServerConfig(const NSString *key_system);
 
 /**
  * This creates a configuration key that sets advanced DRM configuration for the
@@ -69,7 +69,8 @@ NSString *ShakaPlayerLicenseServerConfig(const NSString *key_system);
  *        withString:@"SW_SECURE_DECODE"];
  * \endcode
  */
-NSString *ShakaPlayerAdvancedDrmConfig(const NSString *key_system, const NSString *config);
+SHAKA_EXPORT NSString *ShakaPlayerAdvancedDrmConfig(const NSString *key_system,
+                                                    const NSString *config);
 
 
 /**
