@@ -15,6 +15,11 @@
 
 set -e
 
+if [[ -z $PROJECT_DIR ]]; then
+  echo "Cannot be run directly, only as part of Xcode."
+  exit 1
+fi
+
 # Work around a change to script environment variables in XCode 10.
 export arch=$ARCHS
 
