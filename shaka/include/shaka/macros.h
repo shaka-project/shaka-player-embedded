@@ -15,6 +15,12 @@
 #ifndef SHAKA_EMBEDDED_MACROS_H_
 #define SHAKA_EMBEDDED_MACROS_H_
 
+#ifdef __cplusplus
+#  define SHAKA_EXTERN_C extern "C"
+#else
+#  define SHAKA_EXTERN_C
+#endif
+
 #ifdef BUILDING_SHAKA
 #  if __GNUC__ >= 4
 #    define SHAKA_EXPORT __attribute__((visibility("default")))
