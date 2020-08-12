@@ -471,6 +471,36 @@ void XMLHttpRequest::Reset() {
 void XMLHttpRequest::OnRequestComplete(CURLcode code) {
   // Careful, this is called from the worker thread, so we cannot call into V8.
   std::unique_lock<Mutex> lock(mutex_);
+
+#ifdef OS_IOS
+  // HACK: On some requests, iOS returns an abort error at the end of the
+  // request.  This error usually happens during the SSL handshake, but this
+  // case is after we have received the whole response.  If we get this error
+  // at the end of the request, just ignore it.
+  if (status != 0 && code == CURLE_RECV_ERROR) {
+    curl_off_t len;
+    const auto res =
+        curl_easy_getinfo(curl_, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &len);
+    if (res == 0) {
+      if (len < 0 && temp_data_.Size() > 0) {
+        // We don't know when the request ends; assume we have everything so
+        // long as we have seen the headers and gotten some data back.  This
+        // could mask a real network abort, but we'll probably get errors
+        // later in that case.
+        LOG(WARNING) << "Ignoring CURLE_RECV_ERROR due to possible iOS bug.  "
+                        "We can't tell if the request was aborted due to lack "
+                        "of Content-Length header.";
+        code = CURLE_OK;
+      } else if (len > 0 && temp_data_.Size() == static_cast<size_t>(len)) {
+        // Since we have the Content-Length header, we know when we have
+        // received all the data.  Only ignore when we have received everything.
+        VLOG(1) << "Ignoring CURLE_RECV_ERROR due to possible iOS bug.";
+        code = CURLE_OK;
+      }
+    }
+  }
+#endif
+
   if (code == CURLE_OK) {
     response_text = temp_data_.CreateString();
     response.SetFromDynamicBuffer(temp_data_);
