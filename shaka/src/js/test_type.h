@@ -60,6 +60,9 @@ constexpr const TestStringEnum EXPECTED_STRING_ENUM = TestStringEnum::OTHER;
 // Used to verify that Unicode characters and embedded nulls are converted
 // correctly.
 constexpr const char EXPECTED_STRING[] = "ab\xe2\x8d\x85_\0_\xf0\x90\x90\xb7!";
+// Used to verify ByteBuffer accepts partial ranges.
+const uint8_t EXPECTED_DATA[] = {1, 2, 3, 4, 5};
+constexpr const size_t EXPECTED_DATA_SIZE = sizeof(EXPECTED_DATA);
 
 
 /**
@@ -106,6 +109,7 @@ class TestType : public BackingObject {
   bool IsExpectedArrayOfStrings(const std::vector<std::string>& data) const;
   bool IsExpectedStringWithAny(Any anything) const;
   bool IsTruthy(Any anything) const;
+  bool IsExpectedByteBuffer(ByteBuffer buffer) const;
 
   void InvokeCallbackWithString(Callback callback) const;
   void StoreByteBuffer(ByteBuffer buffer);

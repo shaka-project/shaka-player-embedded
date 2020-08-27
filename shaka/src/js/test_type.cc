@@ -19,6 +19,7 @@
 
 #include "src/js/test_type.h"
 
+#include <cstring>
 #include <utility>
 
 #include "src/core/js_manager_impl.h"
@@ -104,6 +105,12 @@ bool TestType::IsExpectedStringWithAny(Any anything) const {
 
 bool TestType::IsTruthy(Any anything) const {
   return anything.IsTruthy();
+}
+
+bool TestType::IsExpectedByteBuffer(ByteBuffer buffer) const {
+  if (buffer.size() != EXPECTED_DATA_SIZE)
+    return false;
+  return std::memcmp(buffer.data(), EXPECTED_DATA, EXPECTED_DATA_SIZE) == 0;
 }
 
 void TestType::InvokeCallbackWithString(Callback callback) const {
@@ -228,6 +235,7 @@ TestTypeFactory::TestTypeFactory() {
   AddMemberFunction("isExpectedStringWithAny",
                     &TestType::IsExpectedStringWithAny);
   AddMemberFunction("isTruthy", &TestType::IsTruthy);
+  AddMemberFunction("isExpectedByteBuffer", &TestType::IsExpectedByteBuffer);
 
   AddMemberFunction("invokeCallbackWithString",
                     &TestType::InvokeCallbackWithString);

@@ -445,7 +445,7 @@ testGroup('TestType', function() {
       }
     });
 
-    test('represents a common buffer', function() {
+    test('RepresentsCommonBuffer', function() {
       let test = new TestType();
       let arr = [1, 2, 3, 4, 5];
       let buffer = new Uint8Array(arr);
@@ -463,6 +463,35 @@ testGroup('TestType', function() {
       for (let i = 0; i < buffer.length; i++) {
         expectEq(after[i], buffer[i]);
       }
+    });
+
+    test('CanUseSubViews', function() {
+      const buffer1 = new Uint8Array([1, 2, 3, 4, 5]);
+      const buffer2 = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+      const buffer3 = new Uint8Array([99, 99, 99, 1, 2, 3, 4, 5]);
+      const buffer4 = new Uint8Array([99, 99, 99, 1, 2, 3, 4, 5, 6, 7, 8]);
+
+      const test = new TestType();
+      expectTrue(test.isExpectedByteBuffer(buffer1));
+      expectTrue(test.isExpectedByteBuffer(buffer1.buffer));
+      expectFalse(test.isExpectedByteBuffer(buffer2));
+      expectFalse(test.isExpectedByteBuffer(buffer2.buffer));
+
+      expectTrue(test.isExpectedByteBuffer(
+          new Uint8Array(buffer2.buffer, 0, 5)));
+      expectTrue(test.isExpectedByteBuffer(
+          new Uint8Array(buffer3.buffer, 3, 5)));
+      expectTrue(test.isExpectedByteBuffer(
+          new Uint8Array(buffer4.buffer, 3, 5)));
+
+      expectFalse(test.isExpectedByteBuffer(
+          new Uint8Array(buffer4.buffer, 0, 5)));
+      expectFalse(test.isExpectedByteBuffer(
+          new Uint8Array(buffer4.buffer, 6, 5)));
+      expectFalse(test.isExpectedByteBuffer(
+          new Uint8Array(buffer4.buffer, 3, 4)));
+      expectFalse(test.isExpectedByteBuffer(
+          new Uint8Array(buffer4.buffer, 3, 6)));
     });
   });
 
