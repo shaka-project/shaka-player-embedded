@@ -113,6 +113,10 @@ void HTMLMediaElement::Load() {
   // we don't need to do anything here.
 }
 
+void HTMLMediaElement::Preload() {
+  // Similar to Load(), just do nothing here since we already started loading.
+}
+
 CanPlayTypeEnum HTMLMediaElement::CanPlayType(const std::string& type) {
   auto info =
       ConvertMimeToDecodingConfiguration(type, media::MediaDecodingType::File);
@@ -444,6 +448,7 @@ HTMLMediaElementFactory::HTMLMediaElementFactory() {
                      &HTMLMediaElement::SetMuted);
 
   AddMemberFunction("load", &HTMLMediaElement::Load);
+  AddMemberFunction("preload", &HTMLMediaElement::Preload);
   AddMemberFunction("play", &HTMLMediaElement::Play);
   AddMemberFunction("pause", &HTMLMediaElement::Pause);
   AddMemberFunction("setMediaKeys", &HTMLMediaElement::SetMediaKeys);
@@ -452,7 +457,6 @@ HTMLMediaElementFactory::HTMLMediaElementFactory() {
 
   NotImplemented("crossOrigin");
   NotImplemented("networkState");
-  NotImplemented("preload");
   NotImplemented("getStartDate");
   NotImplemented("playable");
   NotImplemented("mediaGroup");

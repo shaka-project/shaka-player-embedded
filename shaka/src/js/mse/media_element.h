@@ -70,6 +70,7 @@ class HTMLMediaElement : public dom::Element, media::MediaPlayer::Client {
 
   // HTMLMediaElement members.
   void Load();
+  void Preload();
   CanPlayTypeEnum CanPlayType(const std::string& type);
 
   bool autoplay;
