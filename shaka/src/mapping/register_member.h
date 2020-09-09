@@ -482,6 +482,22 @@ struct JsConstructorCreateOrThrow<This, void> {
   }
 };
 template <typename This, typename... Args>
+struct JsConstructorCreateOrThrow<This, ExceptionOr<This*>(*)(Args...)> {
+  static bool CreateOrThrow(const CallbackArguments& arguments) {
+    // There is a Create method.
+    const std::string type_name = TypeName<This>::name();
+    auto ctor = [&](Args... args) -> ExceptionOr<void> {
+      auto backing = This::Create(std::forward<Args>(args)...);
+      if (holds_alternative<js::JsError>(backing))
+        return get<js::JsError>(std::move(backing));
+      CHECK(ConstructWrapperObject(arguments, get<This*>(backing)));
+      return {};
+    };
+    return CallHelper<0, sizeof...(Args)>::ConvertAndCallFunction(
+        "constructor", type_name, false, arguments, std::move(ctor));
+  }
+};
+template <typename This, typename... Args>
 struct JsConstructorCreateOrThrow<This, This*(*)(Args...)> {
   static bool CreateOrThrow(const CallbackArguments& arguments) {
     // There is a Create method.

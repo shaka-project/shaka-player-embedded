@@ -63,6 +63,7 @@
 #include "src/js/mse/video_element.h"
 #include "src/js/navigator.h"
 #include "src/js/test_type.h"
+#include "src/js/text_coders.h"
 #include "src/js/timeouts.h"
 #include "src/js/url.h"
 #include "src/js/vtt_cue.h"
@@ -110,6 +111,8 @@ struct Environment::Impl {
   js::ConsoleFactory console;
   js::LocationFactory location;
   js::NavigatorFactory navigator;
+  js::TextDecoderFactory text_decoder;
+  js::TextEncoderFactory text_encoder;
   js::URLFactory url;
   js::VTTCueFactory vtt_cue;
   js::XMLHttpRequestFactory xml_http_request;
@@ -210,6 +213,8 @@ ADD_GET_FACTORY(js::Debug, debug);
 ADD_GET_FACTORY(js::Location, location);
 ADD_GET_FACTORY(js::TestType, test_type);
 ADD_GET_FACTORY(js::Navigator, navigator);
+ADD_GET_FACTORY(js::TextDecoder, text_decoder);
+ADD_GET_FACTORY(js::TextEncoder, text_encoder);
 ADD_GET_FACTORY(js::URL, url);
 ADD_GET_FACTORY(js::VTTCue, vtt_cue);
 ADD_GET_FACTORY(js::XMLHttpRequest, xml_http_request);
