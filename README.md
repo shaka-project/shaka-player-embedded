@@ -18,7 +18,7 @@ Releases: <https://github.com/google/shaka-player-embedded/releases>
 
 ## Platform support
 
-We only support iOS at this time, but other platforms could be added.
+We only support iOS at this time, but other platforms could be added very soon.
 
 Because many on our team use Linux, there is a Linux port included to make it
 easier to work on non-iOS-specific features.  Linux is not, however, a
