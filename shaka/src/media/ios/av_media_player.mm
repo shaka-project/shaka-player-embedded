@@ -180,9 +180,17 @@ class shaka::media::ios::AvMediaPlayer::Impl {
       [player_ pause];
       player_ = nil;
     }
+
+    for (auto track : audio_tracks_)
+      clients_->OnRemoveAudioTrack(track);
     audio_tracks_.clear();
+    for (auto track : video_tracks_)
+      clients_->OnRemoveVideoTrack(track);
     video_tracks_.clear();
+    for (auto track : text_tracks_)
+      clients_->OnRemoveTextTrack(track);
     text_tracks_.clear();
+
     old_playback_state_ = VideoPlaybackState::Detached;
     old_ready_state_ = VideoReadyState::NotAttached;
     requested_play_ = false;
