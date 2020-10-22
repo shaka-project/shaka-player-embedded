@@ -159,7 +159,8 @@
 // MARK: rendering
 
 - (void)renderLoop {
-  if (!_player) {
+  if (!_player || !_player.mediaPlayer ||
+      _player.mediaPlayer->PlaybackState() == shaka::media::VideoPlaybackState::Detached) {
     self->_imageLayer.contents = nil;
     return;
   }
