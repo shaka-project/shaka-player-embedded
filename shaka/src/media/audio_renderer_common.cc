@@ -63,7 +63,6 @@ uint8_t BytesPerSample(std::shared_ptr<DecodedFrame> frame) {
 size_t BytesToSamples(std::shared_ptr<DecodedFrame> frame, size_t bytes) {
   size_t bytes_per_sample =
       BytesPerSample(frame) * frame->stream_info->channel_count;
-  CHECK_EQ(bytes % bytes_per_sample, 0);
   return bytes / bytes_per_sample;
 }
 

@@ -31,6 +31,8 @@ extern "C" {
 // Special error code added by //third_party/ffmpeg/mov.patch
 #define AVERROR_SHAKA_RESET_DEMUXER (-123456)
 
+#define LOG_ERROR(code) LOG(ERROR) << "Error from FFmpeg: " << av_err2str(code)
+
 namespace shaka {
 namespace media {
 namespace ffmpeg {
@@ -38,10 +40,6 @@ namespace ffmpeg {
 namespace {
 
 constexpr const size_t kInitialBufferSize = 2048;
-
-void LogError(int code) {
-  LOG(ERROR) << "Error from FFmpeg: " << av_err2str(code);
-}
 
 std::string GetCodec(const std::string& mime, AVCodecID codec) {
   std::unordered_map<std::string, std::string> params;
@@ -208,7 +206,7 @@ Rational<uint32_t> GetSarFromH264(const std::vector<uint8_t>& extra_data) {
   std::vector<uint8_t> temp(sps_size);
   RemoveEmulationPrevention(reader.data(), sps_size, &temp);
   util::BufferReader sps_reader(temp.data(), temp.size());
-  if (sps_reader.ReadUint8() != 0x67) {
+  if ((sps_reader.ReadUint8() & 0x1f) != 0x7) {
     LOG(DFATAL) << "Non-SPS found in avcC configuration";
     return {0, 0};
   }
@@ -537,7 +535,7 @@ void FFmpegDemuxer::ThreadMain() {
       }
       if (ret < 0) {
         av_packet_unref(&pkt);
-        LogError(ret);
+        LOG_ERROR(ret);
         return OnError();
       }
 
@@ -595,14 +593,14 @@ bool FFmpegDemuxer::ReinitDemuxer() {
   const int open_code = avformat_open_input(&demuxer, nullptr, format, &dict);
   av_dict_free(&dict);
   if (open_code < 0) {
-    LogError(open_code);
+    LOG_ERROR(open_code);
     return false;
   }
 
   demuxer_ctx_.reset(demuxer);
   const int find_code = avformat_find_stream_info(demuxer, nullptr);
   if (find_code < 0) {
-    LogError(find_code);
+    LOG_ERROR(find_code);
     return false;
   }
 
