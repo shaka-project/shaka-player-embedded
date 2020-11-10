@@ -8,7 +8,7 @@ https://durian.blender.org/
 All encrypted assets are encrypted using [Shaka Packager][] (possibly modified),
 using the following key:
 
-Key ID: bba271e8bcf552bbd2e86a434a9a5d9
+Key ID: abba271e8bcf552bbd2e86a434a9a5d9
 Key: 69eaa802a6763af979e8d1940fb88392
 
 [Shaka Packager]: https://github.com/google/shaka-packager
