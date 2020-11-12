@@ -314,6 +314,12 @@ SHAKA_EXPORT
 - (ShakaStats *)getStats;
 
 /**
+ * Get information about what the player has buffered. If the player has not loaded content or is currently
+ * loading content, the buffered content will be empty.
+ */
+- (ShakaBufferedInfo *)getBufferedInfo;
+
+/**
  * Return a list of text tracks available for the current Period. If there are
  * multiple Periods, then you must seek to the Period before being able to
  * switch.
