@@ -454,6 +454,16 @@ std::shared_ptr<shaka::JsManager> ShakaGetGlobalEngine() {
   }
 }
 
+- (ShakaBufferedInfo *)getBufferedInfo {
+  auto results = _player->GetBufferedInfo();
+  if (results.has_error()) {
+    _client.OnError(results.error());
+    return [[ShakaBufferedInfo alloc] init];
+  } else {
+    return [[ShakaBufferedInfo alloc] initWithCpp:results.results()];
+  }
+}
+
 - (NSArray<ShakaTrack *> *)getTextTracks {
   auto results = _player->GetTextTracks();
   if (results.has_error())

@@ -313,6 +313,9 @@ SHAKA_EXPORT
 /** Return playback and adaptation stats. */
 - (ShakaStats *)getStats;
 
+/** Return current buffered ranges. */
+- (ShakaBufferedInfo *)getBufferedInfo;
+
 /**
  * Return a list of text tracks available for the current Period. If there are
  * multiple Periods, then you must seek to the Period before being able to
