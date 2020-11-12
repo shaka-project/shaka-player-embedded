@@ -313,10 +313,7 @@ SHAKA_EXPORT
 /** Return playback and adaptation stats. */
 - (ShakaStats *)getStats;
 
-/**
- * Get information about what the player has buffered. If the player has not loaded content or is currently
- * loading content, the buffered content will be empty.
- */
+/** Return current buffered ranges. */
 - (ShakaBufferedInfo *)getBufferedInfo;
 
 /**
