@@ -28,6 +28,7 @@
   CALayer *_avPlayerLayer;
   ShakaPlayer *_player;
   shaka::VideoFillMode _gravity;
+  CGImageRef _image;
 
   NSMutableDictionary<NSValue *, NSSet<CALayer *> *> *_cues;
 }
@@ -121,6 +122,12 @@
 
   _gravity = shaka::VideoFillMode::MaintainRatio;
   _cues = [[NSMutableDictionary alloc] init];
+
+  [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+  [[NSNotificationCenter defaultCenter]
+     addObserver:self selector:@selector(orientationChanged:)
+     name:UIDeviceOrientationDidChangeNotification
+     object:[UIDevice currentDevice]];
 }
 
 - (ShakaPlayer *)player {
@@ -167,6 +174,7 @@
 
   shaka::Rational<uint32_t> aspect_ratio;
   if (CGImageRef image = _player.videoRenderer->Render(nullptr, &aspect_ratio)) {
+    _image = image;
     _imageLayer.contents = (__bridge_transfer id)image;
 
     // Fit image in frame.
@@ -175,8 +183,8 @@
     shaka::ShakaRect<uint32_t> dest_bounds = {
         0,
         0,
-        static_cast<uint32_t>(self.bounds.size.width),
-        static_cast<uint32_t>(self.bounds.size.height),
+        static_cast<uint32_t>(self.superview.bounds.size.width),
+        static_cast<uint32_t>(self.superview.bounds.size.height),
     };
     shaka::ShakaRect<uint32_t> src;
     shaka::ShakaRect<uint32_t> dest;
@@ -298,6 +306,30 @@
     cueLayer.frame = CGRectMake(cueLayer.frame.origin.x, y, size.width, size.height);
   }
   return YES;
+}
+
+- (void) orientationChanged:(NSNotification *)note {
+  if (_imageLayer.contents == nil) {
+    return;
+  }
+  // Fit image in frame.
+  shaka::ShakaRect<uint32_t> image_bounds = {0, 0, CGImageGetWidth(_image),
+                                                   CGImageGetHeight(_image)};
+  shaka::ShakaRect<uint32_t> dest_bounds = {
+    0,
+    0,
+    static_cast<uint32_t>(self.superview.bounds.size.width),
+    static_cast<uint32_t>(self.superview.bounds.size.height),
+  };
+  shaka::Rational<uint32_t> aspect_ratio;
+  shaka::ShakaRect<uint32_t> src;
+  shaka::ShakaRect<uint32_t> dest;
+  shaka::FitVideoToRegion(image_bounds, dest_bounds, aspect_ratio,
+                          _player.videoRenderer->fill_mode(), &src, &dest);
+  _imageLayer.contentsRect = CGRectMake(
+    static_cast<CGFloat>(src.x) / image_bounds.w, static_cast<CGFloat>(src.y) / image_bounds.h,
+    static_cast<CGFloat>(src.w) / image_bounds.w, static_cast<CGFloat>(src.h) / image_bounds.h);
+  _imageLayer.frame = CGRectMake(dest.x, dest.y, dest.w, dest.h);
 }
 
 @end

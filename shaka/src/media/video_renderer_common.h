@@ -51,13 +51,12 @@ class VideoRendererCommon : public VideoRenderer, MediaPlayer::Client {
   struct VideoPlaybackQuality VideoPlaybackQuality() const override;
   bool SetVideoFillMode(VideoFillMode mode) override;
 
- protected:
-  mutable Mutex mutex_;
-  const MediaPlayer* player_;
-
  private:
   void OnSeeking() override;
 
+  mutable Mutex mutex_;
+
+  const MediaPlayer* player_;
   const DecodedStream* input_;
   struct VideoPlaybackQuality quality_;
   std::atomic<VideoFillMode> fill_mode_;

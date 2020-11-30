@@ -59,8 +59,7 @@ CGImageRef AppleVideoRenderer::Impl::Render(
   if (delay)
     *delay = loc_delay;
 
-  const bool is_paused = player_->PlaybackState() == VideoPlaybackState::Paused;
-  if (!frame || (frame == prev_frame_ && !is_paused))
+  if (!frame || frame == prev_frame_)
     return nullptr;
 
   if (sample_aspect_ratio)
