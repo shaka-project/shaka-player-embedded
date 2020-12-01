@@ -184,8 +184,8 @@
     shaka::ShakaRect<uint32_t> dest_bounds = {
         0,
         0,
-        static_cast<uint32_t>(self.superview.bounds.size.width),
-        static_cast<uint32_t>(self.superview.bounds.size.height),
+        static_cast<uint32_t>(self.bounds.size.width),
+        static_cast<uint32_t>(self.bounds.size.height),
     };
     shaka::ShakaRect<uint32_t> src;
     shaka::ShakaRect<uint32_t> dest;
@@ -320,8 +320,8 @@
   shaka::ShakaRect<uint32_t> dest_bounds = {
     0,
     0,
-    static_cast<uint32_t>(self.superview.bounds.size.width),
-    static_cast<uint32_t>(self.superview.bounds.size.height),
+    static_cast<uint32_t>(self.bounds.size.width),
+    static_cast<uint32_t>(self.bounds.size.height),
   };
   shaka::ShakaRect<uint32_t> src;
   shaka::ShakaRect<uint32_t> dest;
