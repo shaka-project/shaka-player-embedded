@@ -32,7 +32,7 @@ FOUNDATION_EXPORT const NSErrorUserInfoKey ShakaPlayerErrorSeverityKey;
  * Represents a Player error.  This can be either a Shaka error or a more
  * generic JavaScript error.
  *
- * @see https://github.com/google/shaka-player/blob/master/lib/util/error.js
+ * @see https://github.com/shaka-project/shaka-player/blob/main/lib/util/error.js
  * @ingroup player
  */
 SHAKA_EXPORT

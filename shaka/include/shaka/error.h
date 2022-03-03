@@ -28,7 +28,7 @@ namespace shaka {
  * generic JavaScript error.  Shaka errors have the category/code/severity
  * fields set; native errors just have the message.
  *
- * @see https://github.com/google/shaka-player/blob/master/lib/util/error.js
+ * @see https://github.com/shaka-project/shaka-player/blob/main/lib/util/error.js
  * @ingroup player
  */
 class SHAKA_EXPORT Error final {

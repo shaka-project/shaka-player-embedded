@@ -14,7 +14,7 @@ partial compatibility between major versions.  It should be assumed that v2 is
 completely incompatible with v1.
 
 We also only maintain ABI compatibility with release versions and release
-branches; master branch can break ABI at any time.  Any commit that will break
+branches; main branch can break ABI at any time.  Any commit that will break
 ABI should have a line in the commit message with `Abi-Breaking:` and a reason.
 
 
