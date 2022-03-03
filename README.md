@@ -9,11 +9,11 @@ In addition to the C++ API, we provide a high-level wrapper for iOS called
 `ShakaPlayer` and `ShakaPlayerView` which can be used from either Objective-C or
 Swift.
 
-Documentation: <https://google.github.io/shaka-player-embedded/>
-Tutorials: <https://google.github.io/shaka-player-embedded/usergroup0.html>
-Releases: <https://github.com/google/shaka-player-embedded/releases>
+Documentation: <https://shaka-project.github.io/shaka-player-embedded/>
+Tutorials: <https://shaka-project.github.io/shaka-player-embedded/usergroup0.html>
+Releases: <https://github.com/shaka-project/shaka-player-embedded/releases>
 
-[Shaka Player]: https://www.github.com/google/shaka-player
+[Shaka Player]: https://www.github.com/shaka-project/shaka-player
 
 
 ## Platform support
@@ -50,7 +50,7 @@ mailing list: https://groups.google.com/forum/#!forum/shaka-player-users
 This is a very low-volume list that only admins of the project may post to.
 
 For issues or to start a discussion, please use github issues:
-https://github.com/google/shaka-player-embedded/issues
+https://github.com/shaka-project/shaka-player-embedded/issues
 
 
 ## Widevine support
@@ -69,7 +69,7 @@ This requires the use of at least v15.2.3 of the Widevine CDM.
 ## Setting up for development
 
 1. The source is managed by Git at
-<https://www.github.com/google/shaka-player-embedded>.  You will need these
+<https://www.github.com/shaka-project/shaka-player-embedded>.  You will need these
 tools available on your development system:
 
 * Git v1.7.5+
@@ -91,7 +91,7 @@ details.
 3. Get the source
 
 ```shell
-git clone https://github.com/google/shaka-player-embedded.git
+git clone https://github.com/shaka-project/shaka-player-embedded.git
 cd shaka-player-embedded
 ```
 

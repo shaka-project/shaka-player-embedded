@@ -41,7 +41,7 @@ Player Embedded.
 If you don't already have it, you can fetch the code with:
 
 ```shell
-git clone https://github.com/google/shaka-player-embedded.git
+git clone https://github.com/shaka-project/shaka-player-embedded.git
 cd shaka-player-embedded
 ```
 

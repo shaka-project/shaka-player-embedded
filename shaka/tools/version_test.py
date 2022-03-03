@@ -78,6 +78,7 @@ class VersionTest(unittest.TestCase):
   def test_errors(self):
     bad = [
         '',
+        'main',
         'master',
         'v0.0.0',
         'v0.0.0-beta2',

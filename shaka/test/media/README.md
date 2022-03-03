@@ -11,7 +11,7 @@ using the following key:
 Key ID: abba271e8bcf552bbd2e86a434a9a5d9
 Key: 69eaa802a6763af979e8d1940fb88392
 
-[Shaka Packager]: https://github.com/google/shaka-packager
+[Shaka Packager]: https://github.com/shaka-project/shaka-packager
 
 - `clear_high.mp4`: 426x182 video-only, fragmented, single-file asset.
 - `clear_low.mp4`: 256x110 video-only, NOT FRAGMENTED, used as the source asset

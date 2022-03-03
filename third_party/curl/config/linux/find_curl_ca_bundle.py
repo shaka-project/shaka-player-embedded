@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 # Modified from:
-# https://github.com/google/shaka-packager/blob/master/packager/third_party/curl/config/linux/find_curl_ca_bundle.sh
+# https://github.com/shaka-project/shaka-packager/blob/main/packager/third_party/curl/config/linux/find_curl_ca_bundle.sh
 
 from __future__ import print_function
 
