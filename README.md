@@ -1,3 +1,9 @@
+# :warning: DEPRECATED :warning:
+Due to lack of internal funding and external maintainers, it is with great sadness that I announce the official shutdown of Shaka Player Embedded. The repo will remain available in archived form, and you may fork it and continue development under the terms of the Apache License if you wish.
+
+I'll wait to archive the repo until the end of March, 2024, so that this announcement can be discussed on https://github.com/shaka-project/shaka-player-embedded/issues/248.  After that deadline, I will archive the repo, putting it in a readonly state that will prevent further updates to issues.
+
+
 # Shaka Player Embedded
 
 Shaka Player Embedded is a framework that runs [Shaka Player][] in native (C++)
